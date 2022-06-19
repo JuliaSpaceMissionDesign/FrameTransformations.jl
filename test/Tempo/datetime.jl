@@ -51,8 +51,8 @@
     @test J2000 == DateTime(0.0)
     
     D2 = DateTime(SECONDS_PER_DAY/3)
-    @test j2000(D2)-0.5 ≈ 1/3
-    @test j2000seconds(D2) ≈ SECONDS_PER_DAY/3 + SECONDS_PER_DAY/2
+    @test j2000(D2) ≈ 1/3
+    @test j2000seconds(D2) ≈ SECONDS_PER_DAY/3
 
     DTR = J2000:(J2000+2days)
     @test DTR == [J2000, J2000+1days, J2000+2days]

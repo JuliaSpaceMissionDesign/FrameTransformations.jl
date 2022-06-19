@@ -246,7 +246,7 @@ function Base.show(io::IO, t::Time)
     m = lpad(minute(t), 2, '0')
     s = lpad(second(t), 2, '0')
     f = lpad(findfractionofsecond(t), 3, '0')
-    return print(io, h, ":", m, ":", s, ".", f)
+    return print(io, h, ":", m, ":", s, ".", f[3:6])
 end
 
 struct DateTime{T} <: AbstractDateTimeEpoch
@@ -269,7 +269,7 @@ function sec2hms(s::Float64)
     sec = floor(Int64, sec_)
     frac = sec_ - sec
     hr, min = divrem(mins, 60)
-    return floor(Int64, hr), floor(Int64, min), sec, frac
+    return abs(floor(Int64, hr)), floor(Int64, min), sec, frac
 end
 
 # !!!! seconds since `d` at midnight
@@ -283,11 +283,11 @@ end
 function DateTime(seconds::Float64)
     nday, remsec = divrem(seconds+SECONDS_PER_DAY/2, SECONDS_PER_DAY)
     hrs, min, sec, frac = sec2hms(remsec)
-    DateTime(Date(J2000_DATE, floor(Int, nday)), Time(hrs, min, sec, frac))
+    DateTime(Date(floor(Int, nday)), Time(hrs, min, sec, frac))
 end 
 
-# !!!! referred to MIDNIGHT
-j2000(dt::DateTime) = j2000(Date(dt)) + findfractionofday(Time(dt))
+# !!!! referred true J2000 Epoch (2000-01-01T12:00:00.0000)
+j2000(dt::DateTime) = j2000(Date(dt)) + findfractionofday(Time(dt)) - 0.5
 j2000seconds(dt::DateTime) = j2000(dt) * SECONDS_PER_DAY
 
 function Base.isless(d1::DateTime, d2::DateTime)
