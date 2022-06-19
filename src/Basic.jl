@@ -1,4 +1,4 @@
-module AstronautBase
+module Basic
 
     using Reexport
 

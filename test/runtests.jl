@@ -1,7 +1,7 @@
-using AstronautBase
+using Basic
 using Test
 
-@testset "AstronautBase.jl" begin
+@testset "Basic.jl" begin
     # Write your tests here.
     include("instant.jl")
 end
