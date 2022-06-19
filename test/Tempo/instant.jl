@@ -29,7 +29,7 @@
     @test seconds(y) == 3.15576e7seconds
     @test seconds(c) == 3.15576e9seconds
 
-    @test zero(Instant{AstronautBase.Tempo.Year}) == 0.0years
+    @test zero(Instant{Tempo.Year}) == 0.0years
     @test zero(1years) == 0years
     @test zero(1.0years) == 0.0years
 

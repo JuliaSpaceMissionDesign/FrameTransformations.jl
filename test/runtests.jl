@@ -3,5 +3,6 @@ using Test
 
 @testset "Basic.jl" begin
     # Write your tests here.
-    include("instant.jl")
+    include("Tempo/instant.jl")
+    include("Tempo/datetime.jl")
 end
