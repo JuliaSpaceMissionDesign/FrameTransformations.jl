@@ -108,10 +108,12 @@ function DateTime(ep::Epoch)
     return DateTime(value(ep))
 end
 
+Epoch(e::Epoch) = e
+
 # FIXME: not working if origin is JD - something weird with DateTime type to be fixed
 function Base.show(io::IO, ep::Epoch) 
     if ep.format == :ISO
-        Base.show(io, DateTime(ep))
+        print(io, DateTime(ep), " ", timescale(ep))
     elseif ep.format == :DAY 
         print(io, "JD ", value(ep)/SECONDS_PER_DAY)
     elseif ep.format == :SEC 
@@ -120,3 +122,23 @@ function Base.show(io::IO, ep::Epoch)
         throw(error("Format $(ep.format) Epochs cannot be show in the REPL."))
     end
 end 
+
+Base.:-(e1::Epoch{S}, e2::Epoch{S}) where {S} = DateTime(e1) - DateTime(e2)
+Base.:+(e::Epoch, i::Instant) = Epoch(DateTime(e) + i, timescale(e))
+Base.:-(e::Epoch, i::Instant) = Epoch(DateTime(e) - i, timescale(e))
+Base.:+(e::Epoch, x::Number) = Epoch(DateTime(e) + x, timescale(e))
+Base.:-(e::Epoch, x::Number) = Epoch(DateTime(e) - x, timescale(e))
+
+function Base.isless(e1::Epoch{S}, e2::Epoch{S}) where {S}
+    return value(e1) < value(e2)
+end
+
+(::Base.Colon)(start::Epoch, stop::Epoch) = (:)(start, 1days, stop)
+function (::Base.Colon)(start::Epoch, step::Instant{U}, stop::Epoch) where {U}
+    step = start < stop ? step : -step
+    StepRangeLen(start, step, floor(Int, value(seconds(stop-start))/value(seconds(step)))+1)
+end
+
+function Base.isapprox(e1::Epoch{S}, e2::Epoch{S}; kwargs...) where {S}
+    return isapprox(value(e1), value(e2); kwargs...)
+end

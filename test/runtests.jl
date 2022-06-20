@@ -5,4 +5,5 @@ using Test
     # Write your tests here.
     include("Tempo/instant.jl")
     include("Tempo/datetime.jl")
+    include("Tempo/epoch.jl")
 end
