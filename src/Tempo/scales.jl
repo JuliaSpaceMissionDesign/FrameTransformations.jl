@@ -8,7 +8,7 @@ export
 struct NotATimeScale <: TimeScale end
 
 const NAMES = (
-    :UniversalTime,
+    # :UniversalTime,
     :InternationalAtomicTime,
     :TerrestrialTime,
     :GeocentricCoordinateTime,
@@ -17,7 +17,7 @@ const NAMES = (
 )
 
 const ACRONYMS = (
-    :UT1,
+    # :UT1,
     :TAI,
     :TT,
     :TCG,
@@ -67,7 +67,7 @@ function link_scales!(s1, s2; oneway=false)
 end
 
 link_scales!(TAI, TT)
-link_scales!(TAI, UT1)
+# link_scales!(TAI, UT1)
 link_scales!(TT, TCG)
 link_scales!(TT, TDB)
 link_scales!(TCB, TDB)

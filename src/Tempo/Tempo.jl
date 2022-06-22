@@ -17,5 +17,6 @@ module Tempo
     include("datetime.jl")
     include("epoch.jl")
     include("scales.jl")
+    include("offsets.jl")
 
 end
