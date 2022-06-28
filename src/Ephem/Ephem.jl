@@ -1,15 +1,8 @@
 module Ephem
-    
-    using NodeGraphs: NodeGraph, SimpleGraph, get_nodes, add_edge!, add_vertex!
 
-    export SPK, DAF, position!, velocity!, state!
+export AbstractEphemeris
 
-    const SECONDS_PER_DAY = 86400.0
-    
-    include("types.jl")
-    include("daf.jl")
-    include("segment.jl")
-    include("spk.jl")
-    include("compute.jl")
- 
+include("abstract.jl")
+include("spk.jl")
+
 end

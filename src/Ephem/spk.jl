@@ -1,86 +1,29 @@
-using LinearAlgebra: transpose!
+using Calceph: Ephem as CalcephEphem, unsafe_compute!, useNaifId, unitKM, unitSec
 
-const SIZE_FLOAT64 = sizeof(Float64)
-const SIZE_INT32 = sizeof(Int32)
-
-jd(sec) = 2451545.0 + sec / 86400.0
-seconds(jd) = (jd - 2451545.0) * 86400.0
-
-struct OutOfRangeError <: Exception
-    date::Float64
-    startdate::Float64
-    finaldate::Float64
-end
-
-Base.showerror(io::IO, err::OutOfRangeError) = print(io,
-   "The requested date $(err.date) is outside the interval ($(err.startdate), $(err.finaldate)).")
-
-function get_segments_naifids(segments::Dict{Int, Dict{Int, SPKSegment}})
-    s = Vector{Vector{Int}}()
-    for (k,v) in segments
-        for l in keys(v)
-            push!(s, [k, l])
-        end
-    end
-    sort!(s)
-end
-
-@inline function checkdate(seg::SPKSegment, tdb::Float64)
-    if !(seg.descriptor.firstdate <= tdb <= seg.descriptor.lastdate)
-        throw(OutOfRangeError(tdb, seg.descriptor.firstdate, seg.descriptor.lastdate))
+struct SPK <: AbstractEphemeris
+    handler::CalcephEphem
+    function SPK(files::Vector{<:AbstractString})
+        new(CalcephEphem(files))
     end
 end
 
-function SPK(filename)
-    daf = DAF(filename)
-    segments = Dict{Int, Dict{Int, SPKSegment}}()
-    for (name, summary) in get_summaries(daf)
-        spktype = reinterpret_getindex(Int32, summary, 29, daf.little)
-        # TODO : important to add support for type 21 
-        # TODO : extend support to type 3 and one of the simple types (12, 13, or)
-        seg = parse_segment(daf, name, summary, Val(2))
-        if haskey(segments, seg.descriptor.center)
-            merge!(segments[seg.descriptor.center], Dict(seg.descriptor.target=>seg))
-        else
-            merge!(segments, Dict(seg.descriptor.center=>Dict(seg.descriptor.target=>seg)))
-        end
-    end
+SPK(file::AbstractString) = SPK([file])
 
-    g = NodeGraph{Int, Int}(SimpleGraph())
-    ids = get_segments_naifids(segments)
-    for id_i in unique(reduce(vcat, ids))
-        add_vertex!(g, id_i)
-    end 
-    for idx in ids
-        add_edge!(g, idx[1], idx[2])
-    end
-    SPK(daf, segments, g)
+# TODO: check if this offset is right
+to_julian(jd2000::Float64) = jd2000 + 2451545.0
+
+function vector3!(r::Vector{Float64}, eph::SPK, from::Int, to::Int, jd2000::Float64; time::Float64=0.0)
+    unsafe_compute!(r, eph.handler, to_julian(jd2000), time, from, to, useNaifId+unitKM+unitSec, 0)
 end
 
-Base.show(io::IO, spk::SPK) = print(io, "SPK($(spk.segments[0][1].descriptor.name))")
-
-segments(spk::SPK) = spk.segments
-
-function list_segments(spk::SPK)
-    s = String[]
-    for (k,v) in spk.segments
-        for l in keys(v)
-            push!(s, "($k) => ($l)")
-        end
-    end
-    sort!(s, lt=segstrlt)
+function vector6!(rv::Vector{Float64}, eph::SPK, from::Int, to::Int, jd2000::Float64; time::Float64=0.0)
+    unsafe_compute!(rv, eph.handler, to_julian(jd2000), time, from, to, useNaifId+unitKM+unitSec, 1)
 end
 
-function print_segments(spk::SPK)
-    s = list_segments(spk)
-    println(join(s, "\n"))
+function vector9!(rva::Vector{Float64}, eph::SPK, from::Int, to::Int, jd2000::Float64; time::Float64=0.0)
+    unsafe_compute!(rva, eph.handler, to_julian(jd2000), time, from, to, useNaifId+unitKM+unitSec, 2)
 end
 
-function segstrlt(a::String, b::String)
-   rex = r"\([0-9]*\)$"
-   ma = match(rex, a)
-   mb = match(rex, b)
-   ia = parse(Int, a[ma.offset+1:end-1])
-   ib = parse(Int, b[mb.offset+1:end-1])
-   ia < ib
+function vector12!(rvaj::Vector{Float64}, eph::SPK, from::Int, to::Int, jd2000::Float64; time::Float64=0.0)
+    unsafe_compute!(rvaj, eph.handler, to_julian(jd2000), time, from, to, useNaifId+unitKM+unitSec, 3)
 end

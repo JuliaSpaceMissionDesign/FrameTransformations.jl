@@ -7,7 +7,7 @@ abstract type AbstractEphemeris end
 
 
 """
-    vector3!(r::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, tdb::N, [tdb2]::N) where {N, NV}
+    vector3!(r::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, jd2000::N, [time]::N) where {N, NV}
 
 Compute position vector from the center `from` to the target `to`. 
 
@@ -18,13 +18,13 @@ Compute position vector from the center `from` to the target `to`.
            of `AbstractEphemeris`
 - `from` -- observer
 - `to` -- target
-- `tdb` -- integer part of the date (in TDB scale)
-- `tdb2` -- fractional part of the date (in TDB scale), optional
+- `jd2000` -- integer part of the date (in TDB scale)
+- `time` -- fractional part of the date (in TDB scale), optional
 """
 function vector3! end 
 
 """
-    vector6!(rv::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, tdb::N, [tdb2]::N) where {N, NV}
+    vector6!(rv::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, jd2000::N, [time]::N) where {N, NV}
 
 Compute position and velocity vector from the center `from` to the target `to`. 
 
@@ -35,13 +35,13 @@ Compute position and velocity vector from the center `from` to the target `to`.
            of `AbstractEphemeris`
 - `from` -- observer
 - `to` -- target
-- `tdb` -- integer part of the date (in TDB scale)
-- `tdb2` -- fractional part of the date (in TDB scale), optional
+- `jd2000` -- integer part of the date (in TDB scale)
+- `time` -- fractional part of the date (in TDB scale), optional
 """
 function vector6! end 
 
 """
-    vector9!(rva::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, tdb::N, [tdb2]::N) where {N, NV}
+    vector9!(rva::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, jd2000::N, [time]::N) where {N, NV}
 
 Compute position, velocity and acceleration vector from the center 
 `from` to the target `to`. 
@@ -53,13 +53,13 @@ Compute position, velocity and acceleration vector from the center
            of `AbstractEphemeris`
 - `from` -- observer
 - `to` -- target
-- `tdb` -- integer part of the date (in TDB scale)
-- `tdb2` -- fractional part of the date (in TDB scale), optional
+- `jd2000` -- integer part of the date (in TDB scale)
+- `time` -- fractional part of the date (in TDB scale), optional
 """
 function vector9! end 
 
 """
-    vector12!(rva::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, tdb::N, [tdb2]::N) where {N, NV}
+    vector12!(rva::Vector{NV}, eph::AbstractEphemeris, from::Int, to::Int, jd2000::N, [time]::N) where {N, NV}
 
 Compute position, velocity, acceleration and jerk vector from the center 
 `from` to the target `to`. 
@@ -71,8 +71,8 @@ Compute position, velocity, acceleration and jerk vector from the center
            of `AbstractEphemeris`
 - `from` -- observer
 - `to` -- target
-- `tdb` -- integer part of the date (in TDB scale)
-- `tdb2` -- fractional part of the date (in TDB scale), optional
+- `jd2000` -- integer part of the date (in TDB scale)
+- `time` -- fractional part of the date (in TDB scale), optional
 """
 function vector12! end 
 
