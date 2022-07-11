@@ -1,7 +1,7 @@
 name = "Basic"
 uuid = "f7345b97-8646-4350-bca5-2368100b77e2"
 authors = ["andreapasquale94 <andrea.pasquale@outlook.it> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Calceph = "cb942f8c-38e0-4457-a178-5418a63c3995"
