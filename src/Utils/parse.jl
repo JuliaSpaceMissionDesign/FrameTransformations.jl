@@ -35,3 +35,16 @@ function parse_pck(filename::String)
     end
     return mapped
 end
+
+"""
+    parse_property(name::String, naifid::Int, pck::Dict)
+Parse `BODY` property from pck file.
+"""
+function parse_pck_property(name::String, naifid::Int, pck::Dict) 
+    try 
+        return pck[Symbol(join(["BODY$naifid", name], "_"))]
+    catch err 
+        err isa KeyError
+        return nothing
+    end
+end
