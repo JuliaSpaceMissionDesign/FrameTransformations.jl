@@ -1,33 +1,43 @@
-export parse_tpc
+export load
+
 
 """
-    parse_tpc(filename::T) where T <: AbstractString
+    load(filename::T) where T <: AbstractFile
+    load(filenames::Vector{T}) where T <: AbstractFile
+
+Generic loader of different file/s format.
+"""
+function load() end
+
+
+"""
+    load(file::TPC) where T <: AbstractString
 
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
-function parse_tpc(filename::T) where T <: AbstractString
+function load(file::TPC)
     mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
-    _parse_tpc!(mapped, filename)
-    mapped
+    load_tpc!(mapped, filepath(file))
+    sort(mapped)
 end
 
 """
-    parse_tpc(filenames::Vector{T}) where T <: AbstractString
+    load(files::Vector{TPC})
 
 Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
 """
-function parse_tpc(filenames::Vector{T}) where T <: AbstractString
+function load(files::Vector{TPC})
     mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
-    for file in filenames
-        _parse_tpc!(mapped, file)
+    for file in files
+        load_tpc!(mapped, filepath(file))
     end
-    mapped
+    sort(mapped)
 end
 
 
-function _parse_tpc!(dict::Dict{Int64, Dict{Symbol, 
+function load_tpc!(dict::Dict{Int64, Dict{Symbol, 
     Union{Float64, Vector{Float64}}}}, filename::String)
-    # read and strip lines (remove tabs and spaces)
+    # load and strip lines (remove tabs and spaces)
     # extract lines which are within `\begindata` and `\begintext`
     parsed = split(join(strip.(readlines(filename)), " "), 
         r"(?<=\\begintext).*?(?=\\begindata\s*BODY*)") 
@@ -41,7 +51,6 @@ function _parse_tpc!(dict::Dict{Int64, Dict{Symbol,
     datas_idx = findall.(r"=\D{1,}\(([^()]*)\)", parsed)
 
     # data are mapped to a dictionary
-   
     for i in range(1, length(names_idx))
         if length(names_idx[i]) > 0
             # extract names using idx and split to separate the `=` sign.
@@ -54,7 +63,7 @@ function _parse_tpc!(dict::Dict{Int64, Dict{Symbol,
             # trasform naifids to integers
             naif = parse.(Int64, [raw_names[j][ids[1]] for (j, ids) in enumerate(naif_idxs)])
             # trasform property names to symbols
-            prop = Symbol.(strip.([raw_names[j][ids[1]] for (j, ids) in enumerate(prop_idxs)]))
+            prop = Symbol.(lowercase.(strip.([raw_names[j][ids[1]] for (j, ids) in enumerate(prop_idxs)])))
             data = split.([replace(parsed[i][idx], "D" => "E") for idx in datas_idx[i]])
 
             for (name, body, value_) in zip(prop, naif, data)
