@@ -1,50 +1,72 @@
-export parse_pck
+export parse_tpc
 
 """
-    parse_pck(filename:: String)
-Open a NAIF ASCII PCK file and parse its data in a dictionary 
-with Symbol => Vector{Float64} structure.
+    parse_tpc(filename::T) where T <: AbstractString
+
+Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
-function parse_pck(filename::String)
+function parse_tpc(filename::T) where T <: AbstractString
+    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
+    _parse_tpc!(mapped, filename)
+    mapped
+end
+
+"""
+    parse_tpc(filenames::Vector{T}) where T <: AbstractString
+
+Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
+"""
+function parse_tpc(filenames::Vector{T}) where T <: AbstractString
+    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
+    for file in filenames
+        _parse_tpc!(mapped, file)
+    end
+    mapped
+end
+
+
+function _parse_tpc!(dict::Dict{Int64, Dict{Symbol, 
+    Union{Float64, Vector{Float64}}}}, filename::String)
     # read and strip lines (remove tabs and spaces)
-    lines = strip.(readlines(filename))
     # extract lines which are within `\begindata` and `\begintext`
-    parsed = split(join(lines, " "), r"(?<=\\begintext).*?(?=\\begindata\s*BODY*)") 
-    
+    parsed = split(join(strip.(readlines(filename)), " "), 
+        r"(?<=\\begintext).*?(?=\\begindata\s*BODY*)") 
     # extract lines which actually have data using the `BODY**** =` pattern
-    # this is useful to filter the header and eventual trailings
-    # this vector contains a list of `BODY******* =` elements which will be splitted afterwards
+    # this is useful to filter the header and eventual trailings.
+    # This vector contains a list of `BODY******* =` elements which will be 
+    # splitted afterwards
     names_idx = findall.(r"(BODY\w{1,}\D{1,}=)", parsed)
-    # row data are extracted as between square brackets, the `=` before the brackets is added
-    raw_datas_idx = findall.(r"=\D{1,}\(([^()]*)\)", parsed)
+    # row data are extracted as between square brackets, the `=` 
+    # before the brackets is added
+    datas_idx = findall.(r"=\D{1,}\(([^()]*)\)", parsed)
 
     # data are mapped to a dictionary
-    mapped = Dict{Symbol, Vector{Float64}}()
+   
     for i in range(1, length(names_idx))
         if length(names_idx[i]) > 0
             # extract names using idx and split to separate the `=` sign.
-            sliced_names = split.([parsed[i][idx] for idx in names_idx[i]])
-            # extract data and replace unsopported characters
-            # split to separate the initial `= (` and the final `)`.
-            sliced_datas = split.([replace(parsed[i][idx], "D" => "E") for idx in raw_datas_idx[i]])
-            for j in range(1, length(sliced_names))
-                # `parse` is called to transfrom strings into Float64
-                push!(mapped, Symbol(sliced_names[j][1]) => parse.(Float64, sliced_datas[j][3:end-1]))
+            raw_names = [parsed[i][idx] for idx in names_idx[i]]
+            # extract the naif ids
+            naif_idxs = findall.(r"(?<=BODY)(.*?)(?=_)", raw_names)
+            # extract the property name
+            prop_idxs = findall.(r"(?<=\d_)(.*?)(?==)", raw_names)
+
+            # trasform naifids to integers
+            naif = parse.(Int64, [raw_names[j][ids[1]] for (j, ids) in enumerate(naif_idxs)])
+            # trasform property names to symbols
+            prop = Symbol.(strip.([raw_names[j][ids[1]] for (j, ids) in enumerate(prop_idxs)]))
+            data = split.([replace(parsed[i][idx], "D" => "E") for idx in datas_idx[i]])
+
+            for (name, body, value_) in zip(prop, naif, data)
+                # parse a vector of floats
+                value = parse.(Float64, value_[3:end-1])
+                # create a temporary dictionary
+                temp = Dict(body => Dict(name => length(value) > 1 ? value : value[1]))
+                # merge with the global dictionary
+                mergewith!(merge!, dict, temp)
             end
         end
-    end
-    return mapped
+    end 
+    nothing
 end
 
-"""
-    parse_property(name::String, naifid::Int, pck::Dict)
-Parse `BODY` property from pck file.
-"""
-function parse_pck_property(name::String, naifid::Int, pck::Dict) 
-    try 
-        return pck[Symbol(join(["BODY$naifid", name], "_"))]
-    catch err 
-        err isa KeyError
-        return nothing
-    end
-end
