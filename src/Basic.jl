@@ -12,12 +12,4 @@ module Basic
     include(joinpath("Utils", "Utils.jl"))
     @reexport using .Utils
 
-    include(joinpath("Tempo", "Tempo.jl"))
-    @reexport using .Tempo
-
-    include(joinpath("Orient", "Orient.jl"))
-    @reexport using .Orient
-
-    include(joinpath("Ephem", "Ephem.jl"))
-    @reexport using .Ephem
 end

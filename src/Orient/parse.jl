@@ -1,4 +1,4 @@
-export iau_orient
+export orient_iau
 
 function parse_angle_string(a, b, nuts::Bool, Θ, trig::Symbol, trigrate::Symbol, sign)
     # parse function
@@ -20,18 +20,19 @@ function parse_angle_string(a, b, nuts::Bool, Θ, trig::Symbol, trigrate::Symbol
 end
 
 """
-    iau_orient(pck::Dict, id2name::Dict)
+    orient_iau(pck::Dict, id2name::Dict)
+    
 This function automatically parse the body right ascention, declination and rotation 
 and their rates from a parsed PCK2 file.
 
 !!!! note 
-    PCK *type 2* kernels are a Basic.jl modern rewriting of classical NAIF PCK kernels.
+    PCK *type 2* kernels are a `Basic.jl` modern rewriting of classical NAIF PCK kernels.
     Be sure to load the kernels of this format to parse the data.
 
 !!!! note 
     This function requires the bodies associated types to be already parsed.
 """
-function iau_orient(pck::Dict, id2name::Dict)
+function orient_iau(pck::Dict, id2name::Dict)
     @info "[Orient] Populating IAU constants for celestial bodies body-fixed frames."
     sv = Vector{Expr}()
     for id in keys(id2name)

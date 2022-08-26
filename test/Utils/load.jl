@@ -1,6 +1,5 @@
 @testset "Load .tpc files" begin 
     data = load(TPC(joinpath(@__DIR__, "test.tpc")))
-    @show data 
     @test data[399] == Dict(:gm => 3.9860043543609598E+05)
     @test length(keys(data[599])) == 7
     for (k, l, fv, lv) in zip(

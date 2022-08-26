@@ -1,6 +1,5 @@
 export load
 
-
 """
     load(filename::T) where T <: AbstractFile
     load(filenames::Vector{T}) where T <: AbstractFile
@@ -9,9 +8,20 @@ Generic loader of different file/s format.
 """
 function load() end
 
+"""
+    load(file::JSON)
+
+Open a JSON file and parse its data in a dictionary.
+"""
+function load(file::JSON)
+    open(filepath(file), "r") do f 
+        data = JSON3.read(f)
+        return data
+    end
+end
 
 """
-    load(file::TPC) where T <: AbstractString
+    load(file::TPC)
 
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
@@ -33,7 +43,6 @@ function load(files::Vector{TPC})
     end
     sort(mapped)
 end
-
 
 function load_tpc!(dict::Dict{Int64, Dict{Symbol, 
     Union{Float64, Vector{Float64}}}}, filename::String)
@@ -78,4 +87,3 @@ function load_tpc!(dict::Dict{Int64, Dict{Symbol,
     end 
     nothing
 end
-
