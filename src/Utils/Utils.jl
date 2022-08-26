@@ -9,5 +9,6 @@ module Utils
     include("IO/load.jl")
     include("IO/write.jl")
     include("accurate_arithmetic.jl")
+    include("format.jl")
     
 end
