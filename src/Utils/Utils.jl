@@ -5,9 +5,9 @@ module Utils
     using JLD2
 
     include("make.jl")
-    include("file.jl")
-    include("load.jl")
-    include("write.jl")
+    include("IO/file.jl")
+    include("IO/load.jl")
+    include("IO/write.jl")
     include("accurate_arithmetic.jl")
     
 end
