@@ -4,4 +4,4 @@
 /Manifest.toml
 
 .vscode
-temp/
+temp*
