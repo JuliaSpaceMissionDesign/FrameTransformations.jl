@@ -12,4 +12,7 @@ module Basic
     include(joinpath("Utils", "Utils.jl"))
     @reexport using .Utils
 
+    include(joinpath("Bodies", "Bodies.jl"))
+    @reexport using .Bodies
+
 end
