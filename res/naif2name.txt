@@ -1,172 +1,172 @@
-0           'SOLAR_SYSTEM_BARYCENTER'
-1           'MERCURY_BARYCENTER'
-2           'VENUS_BARYCENTER'
-3           'EARTH_BARYCENTER'
-4           'MARS_BARYCENTER'
-5           'JUPITER_BARYCENTER'
-6           'SATURN_BARYCENTER'
-7           'URANUS_BARYCENTER'
-8           'NEPTUNE_BARYCENTER'
-9           'PLUTO_BARYCENTER'
-10          'SUN'
-199         'MERCURY'
-299         'VENUS'
-399         'EARTH'
-301         'MOON'
-499         'MARS'
-401         'PHOBOS'                
-402         'DEIMOS'                
-599         'JUPITER'
-501         'IO'                  
-502         'EUROPA'  
-503         'GANYMEDE'          
-504         'CALLISTO'         
-505         'AMALTHEA'        
-506         'HIMALIA'               
-507         'ELARA'                 
-508         'PASIPHAE'              
-509         'SINOPE'               
-510         'LYSITHEA'             
-511         'CARME'                 
-512         'ANANKE'               
-513         'LEDA'                  
-514         'THEBE'                
-515         'ADRASTEA'             
-516         'METIS'                 
-517         'CALLIRRHOE'            
-518         'THEMISTO'              
-519         'MEGACLITE'            
-520         'TAYGETE'               
-521         'CHALDENE'              
-522         'HARPALYKE'             
-523         'KALYKE'            
-524         'IOCASTE'           
-525         'ERINOME'               
-526         'ISONOE'               
-527         'PRAXIDIKE'            
-528         'AUTONOE'              
-529         'THYONE'             
-530         'HERMIPPE'           
-531         'AITNE'               
-532         'EURYDOME'           
-533         'EUANTHE'            
-534         'EUPORIE'             
-535         'ORTHOSIE'           
-536         'SPONDE'             
-537         'KALE'             
-538         'PASITHEE'      
-539         'HEGEMONE'
-540         'MNEME'
-541         'AOEDE'
-542         'THELXINOE'
-543         'ARCHE'
-544         'KALLICHORE'
-545         'HELIKE'
-546         'CARPO'
-547         'EUKELADE'
-548         'CYLLENE'
-549         'KORE'
-550         'HERSE'
-553         'DIA'
-699         'SATURN'
-601         'MIMAS'                 
-602         'ENCELADUS'       
-603         'TETHYS'      
-604         'DIONE'           
-605         'RHEA'               
-606         'TITAN'             
-607         'HYPERION'           
-608         'IAPETUS'          
-609         'PHOEBE'             
-610         'JANUS'               
-611         'EPIMETHEUS'          
-612         'HELENE'               
-613         'TELESTO'              
-614         'CALYPSO'            
-615         'ATLAS'             
-616         'PROMETHEUS'         
-617         'PANDORA'          
-618         'PAN'              
-619         'YMIR'             
-620         'PAALIAQ'      
-621         'TARVOS'          
-622         'IJIRAQ'           
-623         'SUTTUNGR'         
-624         'KIVIUQ'            
-625         'MUNDILFARI'          
-626         'ALBIORIX'           
-627         'SKATHI'            
-628         'ERRIAPUS'           
-629         'SIARNAQ'         
-630         'THRYMR'           
-631         'NARVI'               
-632         'METHONE'           
-633         'PALLENE'            
-634         'POLYDEUCES'        
-635         'DAPHNIS'
-636         'AEGIR'
-637         'BEBHIONN'
-638         'BERGELMIR'
-639         'BESTLA'
-640         'FARBAUTI'
-641         'FENRIR'
-642         'FORNJOT'
-643         'HATI'
-644         'HYRROKKIN'
-645         'KARI'
-646         'LOGE'
-647         'SKOLL'
-648         'SURTUR'
-649         'ANTHE'
-650         'JARNSAXA'
-651         'GREIP'
-652         'TARQEQ'
-653         'AEGAEON'
-799         'URANUS'
-701         'ARIEL'              
-702         'UMBRIEL'               
-703         'TITANIA'            
-704         'OBERON'             
-705         'MIRANDA'          
-706         'CORDELIA'           
-707         'OPHELIA'            
-708         'BIANCA'              
-709         'CRESSIDA'           
-710         'DESDEMONA'           
-711         'JULIET'            
-712         'PORTIA'             
-713         'ROSALIND'           
-714         'BELINDA'       
-715         'PUCK'              
-716         'CALIBAN'            
-717         'SYCORAX'               
-718         'PROSPERO'             
-719         'SETEBOS'            
-720         'STEPHANO'          
-721         'TRINCULO'        
-722         'FRANCISCO'
-723         'MARGARET'
-724         'FERDINAND'
-725         'PERDITA'
-726         'MAB'
-727         'CUPID'
-899         'NEPTUNE'
-801         'TRITON'                
-802         'NEREID'            
-803         'NAIAD'               
-804         'THALASSA'           
-805         'DESPINA'           
-806         'GALATEA'             
-807         'LARISSA'             
-808         'PROTEUS'             
-809         'HALIMEDE'
-810         'PSAMATHE'
-811         'SAO'
-812         'LAOMEDEIA'
-813         'NESO'
-999         'PLUTO'
-901         'CHARON'
-902         'NIX'
-903         'HYDRA'
-904         'KERBEROS'
-905         'STYX'
+0           'SOLAR_SYSTEM_BARYCENTER'           BARYCENTER
+1           'MERCURY_BARYCENTER'                BARYCENTER
+2           'VENUS_BARYCENTER'                  BARYCENTER
+3           'EARTH_BARYCENTER'                  BARYCENTER
+4           'MARS_BARYCENTER'                   BARYCENTER
+5           'JUPITER_BARYCENTER'                BARYCENTER
+6           'SATURN_BARYCENTER'                 BARYCENTER
+7           'URANUS_BARYCENTER'                 BARYCENTER
+8           'NEPTUNE_BARYCENTER'                BARYCENTER
+9           'PLUTO_BARYCENTER'                  BARYCENTER
+10          'SUN'                               CELESTIAL_BODY
+199         'MERCURY'                           PLANET
+299         'VENUS'                             PLANET
+399         'EARTH'                             PLANET
+301         'MOON'                              NATURAL_SATELLITE
+499         'MARS'                              PLANET
+401         'PHOBOS'                            NATURAL_SATELLITE
+402         'DEIMOS'                            NATURAL_SATELLITE
+599         'JUPITER'                           PLANET
+501         'IO'                                NATURAL_SATELLITE
+502         'EUROPA'                            NATURAL_SATELLITE
+503         'GANYMEDE'                          NATURAL_SATELLITE
+504         'CALLISTO'                          NATURAL_SATELLITE
+505         'AMALTHEA'                          NATURAL_SATELLITE
+506         'HIMALIA'                           NATURAL_SATELLITE
+507         'ELARA'                             NATURAL_SATELLITE
+508         'PASIPHAE'                          NATURAL_SATELLITE
+509         'SINOPE'                            NATURAL_SATELLITE
+510         'LYSITHEA'                          NATURAL_SATELLITE
+511         'CARME'                             NATURAL_SATELLITE
+512         'ANANKE'                            NATURAL_SATELLITE
+513         'LEDA'                              NATURAL_SATELLITE
+514         'THEBE'                             NATURAL_SATELLITE
+515         'ADRASTEA'                          NATURAL_SATELLITE
+516         'METIS'                             NATURAL_SATELLITE
+517         'CALLIRRHOE'                        NATURAL_SATELLITE
+518         'THEMISTO'                          NATURAL_SATELLITE
+519         'MEGACLITE'                         NATURAL_SATELLITE
+520         'TAYGETE'                           NATURAL_SATELLITE
+521         'CHALDENE'                          NATURAL_SATELLITE
+522         'HARPALYKE'                         NATURAL_SATELLITE
+523         'KALYKE'                            NATURAL_SATELLITE
+524         'IOCASTE'                           NATURAL_SATELLITE
+525         'ERINOME'                           NATURAL_SATELLITE
+526         'ISONOE'                            NATURAL_SATELLITE
+527         'PRAXIDIKE'                         NATURAL_SATELLITE
+528         'AUTONOE'                           NATURAL_SATELLITE
+529         'THYONE'                            NATURAL_SATELLITE
+530         'HERMIPPE'                          NATURAL_SATELLITE
+531         'AITNE'                             NATURAL_SATELLITE
+532         'EURYDOME'                          NATURAL_SATELLITE
+533         'EUANTHE'                           NATURAL_SATELLITE
+534         'EUPORIE'                           NATURAL_SATELLITE
+535         'ORTHOSIE'                          NATURAL_SATELLITE
+536         'SPONDE'                            NATURAL_SATELLITE
+537         'KALE'                              NATURAL_SATELLITE
+538         'PASITHEE'                          NATURAL_SATELLITE
+539         'HEGEMONE'                          NATURAL_SATELLITE
+540         'MNEME'                             NATURAL_SATELLITE
+541         'AOEDE'                             NATURAL_SATELLITE
+542         'THELXINOE'                         NATURAL_SATELLITE
+543         'ARCHE'                             NATURAL_SATELLITE
+544         'KALLICHORE'                        NATURAL_SATELLITE
+545         'HELIKE'                            NATURAL_SATELLITE
+546         'CARPO'                             NATURAL_SATELLITE
+547         'EUKELADE'                          NATURAL_SATELLITE
+548         'CYLLENE'                           NATURAL_SATELLITE
+549         'KORE'                              NATURAL_SATELLITE
+550         'HERSE'                             NATURAL_SATELLITE
+553         'DIA'                               NATURAL_SATELLITE
+699         'SATURN'                            PLANET
+601         'MIMAS'                             NATURAL_SATELLITE
+602         'ENCELADUS'                         NATURAL_SATELLITE
+603         'TETHYS'                            NATURAL_SATELLITE
+604         'DIONE'                             NATURAL_SATELLITE
+605         'RHEA'                              NATURAL_SATELLITE
+606         'TITAN'                             NATURAL_SATELLITE
+607         'HYPERION'                          NATURAL_SATELLITE
+608         'IAPETUS'                           NATURAL_SATELLITE
+609         'PHOEBE'                            NATURAL_SATELLITE
+610         'JANUS'                             NATURAL_SATELLITE
+611         'EPIMETHEUS'                        NATURAL_SATELLITE
+612         'HELENE'               NATURAL_SATELLITE
+613         'TELESTO'              NATURAL_SATELLITE
+614         'CALYPSO'            NATURAL_SATELLITE
+615         'ATLAS'             NATURAL_SATELLITE
+616         'PROMETHEUS'         NATURAL_SATELLITE
+617         'PANDORA'          NATURAL_SATELLITE
+618         'PAN'              NATURAL_SATELLITE
+619         'YMIR'             NATURAL_SATELLITE
+620         'PAALIAQ'      NATURAL_SATELLITE
+621         'TARVOS'          NATURAL_SATELLITE
+622         'IJIRAQ'           NATURAL_SATELLITE
+623         'SUTTUNGR'         NATURAL_SATELLITE
+624         'KIVIUQ'            NATURAL_SATELLITE
+625         'MUNDILFARI'          NATURAL_SATELLITE
+626         'ALBIORIX'           NATURAL_SATELLITE
+627         'SKATHI'            NATURAL_SATELLITE
+628         'ERRIAPUS'           NATURAL_SATELLITE
+629         'SIARNAQ'         NATURAL_SATELLITE
+630         'THRYMR'           NATURAL_SATELLITE
+631         'NARVI'               NATURAL_SATELLITE
+632         'METHONE'           NATURAL_SATELLITE
+633         'PALLENE'            NATURAL_SATELLITE
+634         'POLYDEUCES'        NATURAL_SATELLITE
+635         'DAPHNIS'           NATURAL_SATELLITE
+636         'AEGIR'             NATURAL_SATELLITE
+637         'BEBHIONN'          NATURAL_SATELLITE
+638         'BERGELMIR'         NATURAL_SATELLITE
+639         'BESTLA'            NATURAL_SATELLITE
+640         'FARBAUTI'          NATURAL_SATELLITE
+641         'FENRIR'            NATURAL_SATELLITE
+642         'FORNJOT'           NATURAL_SATELLITE
+643         'HATI'              NATURAL_SATELLITE
+644         'HYRROKKIN'         NATURAL_SATELLITE
+645         'KARI'              NATURAL_SATELLITE
+646         'LOGE'              NATURAL_SATELLITE
+647         'SKOLL'             NATURAL_SATELLITE
+648         'SURTUR'            NATURAL_SATELLITE
+649         'ANTHE'             NATURAL_SATELLITE
+650         'JARNSAXA'          NATURAL_SATELLITE
+651         'GREIP'             NATURAL_SATELLITE
+652         'TARQEQ'            NATURAL_SATELLITE
+653         'AEGAEON'           NATURAL_SATELLITE
+799         'URANUS'            PLANET
+701         'ARIEL'              NATURAL_SATELLITE
+702         'UMBRIEL'               NATURAL_SATELLITE
+703         'TITANIA'            NATURAL_SATELLITE
+704         'OBERON'             NATURAL_SATELLITE
+705         'MIRANDA'          NATURAL_SATELLITE
+706         'CORDELIA'           NATURAL_SATELLITE
+707         'OPHELIA'            NATURAL_SATELLITE
+708         'BIANCA'              NATURAL_SATELLITE
+709         'CRESSIDA'           NATURAL_SATELLITE
+710         'DESDEMONA'           NATURAL_SATELLITE
+711         'JULIET'            NATURAL_SATELLITE
+712         'PORTIA'             NATURAL_SATELLITE
+713         'ROSALIND'           NATURAL_SATELLITE
+714         'BELINDA'       NATURAL_SATELLITE
+715         'PUCK'              NATURAL_SATELLITE
+716         'CALIBAN'            NATURAL_SATELLITE
+717         'SYCORAX'               NATURAL_SATELLITE
+718         'PROSPERO'             NATURAL_SATELLITE
+719         'SETEBOS'            NATURAL_SATELLITE
+720         'STEPHANO'          NATURAL_SATELLITE
+721         'TRINCULO'        NATURAL_SATELLITE
+722         'FRANCISCO'         NATURAL_SATELLITE
+723         'MARGARET'          NATURAL_SATELLITE
+724         'FERDINAND'         NATURAL_SATELLITE
+725         'PERDITA'           NATURAL_SATELLITE
+726         'MAB'               NATURAL_SATELLITE
+727         'CUPID'             NATURAL_SATELLITE
+899         'NEPTUNE'           PLANET
+801         'TRITON'             NATURAL_SATELLITE
+802         'NEREID'            NATURAL_SATELLITE
+803         'NAIAD'               NATURAL_SATELLITE
+804         'THALASSA'           NATURAL_SATELLITE
+805         'DESPINA'           NATURAL_SATELLITE
+806         'GALATEA'             NATURAL_SATELLITE
+807         'LARISSA'             NATURAL_SATELLITE
+808         'PROTEUS'             NATURAL_SATELLITE
+809         'HALIMEDE'                NATURAL_SATELLITE
+810         'PSAMATHE'          NATURAL_SATELLITE
+811         'SAO'               NATURAL_SATELLITE
+812         'LAOMEDEIA'           NATURAL_SATELLITE
+813         'NESO'              NATURAL_SATELLITE
+999         'PLUTO'             PLANET
+901         'CHARON'            NATURAL_SATELLITE
+902         'NIX'               NATURAL_SATELLITE
+903         'HYDRA'               NATURAL_SATELLITE
+904         'KERBEROS'             NATURAL_SATELLITE
+905         'STYX'              NATURAL_SATELLITE

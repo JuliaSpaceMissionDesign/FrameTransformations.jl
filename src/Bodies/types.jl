@@ -8,10 +8,8 @@ export CelestialBody,
 
        NAIFId,
 
-       body_along_orbit_radius,
        body_declination,
        body_declination_rate,
-       body_ellipsoid,
        body_equatorial_radius,
        body_from_naifid,
        body_gm,
@@ -23,7 +21,6 @@ export CelestialBody,
        body_right_ascension_rate,
        body_rotation_angle,
        body_rotation_rate,
-       body_subplanetary_radius,
        body_system_equivalent
 
 """
@@ -101,7 +98,7 @@ Get the NAIF ID code for `body`.
 function body_naifid end
 
 """
-    from_naifid(id::NAIFId)
+    body_from_naifid(id::NAIFId)
 
 Return a celestial body instance based on its NAIF ID code.
 """
@@ -166,50 +163,6 @@ Return the polar radius of `body` in km.
    volume 130, Article number: 22 (2018)
 """
 function body_equatorial_radius end
-
-"""
-    body_subplanetary_radius(body::CelestialBody)::Float64
-
-Return the polar radius of `body` in km.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_subplanetary_radius end
-
-"""
-    body_along_orbit_radius(body::CelestialBody)::Float64
-
-Return the polar radius of `body` in km.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_along_orbit_radius end
-
-"""
-    ellipsoid(body::CelestialBody)::Float64
-
-Return the subplanetary, along-orbit, and polar radii of `body` in km which constitute its
-tri-axial ellipsoid.
-
-# Example
-```jldoctest
-julia> ellipsoid(earth)
-(6378.1366, 6378.1366, 6356.7519)
-```
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_ellipsoid(body::CelestialBody) where {T}
-    return body_subplanetary_radius(body), body_along_orbit_radius(body), body_polar_radius(body)
-end
 
 """
     right_ascension(body::CelestialBody, ep::Float64)
@@ -294,3 +247,11 @@ TDB time scale.
    volume 130, Article number: 22 (2018)
 """
 function body_rotation_rate end
+for fun in (:body_parent, :body_system_equivalent, :body_equatorial_radius,
+    :body_polar_radius, :body_mean_radius, :body_right_ascension,
+    :body_declination, :body_gm, :body_right_ascension_rate,
+    :body_declination_rate, :body_rotation_angle, :body_rotation_rate)
+    @eval begin
+        $fun(id::NAIFId) = $fun(Val(id))
+    end
+end

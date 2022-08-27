@@ -103,5 +103,6 @@ function template_generated(code::String)
     #%BODY
     $(code)
     #%ENDS
+
     """
 end
