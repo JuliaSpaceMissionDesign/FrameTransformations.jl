@@ -106,6 +106,7 @@ body_from_naifid(id::NAIFId) = body_from_naifid(Val(id))
 
 """
     body_parent(body::CelestialBody)::NAIFId
+    body_parent(body::NAIFId)::NAIFId
 
 Get parent of a given body
 """
@@ -120,6 +121,7 @@ function body_system_equivalent end
 
 """
     body_gm(body::CelestialBody)::Float64
+    body_gm(body::NAIFId)::Float64
 
 Return the gravitational parameter ``\\mu = GM`` of `body` in km^3/s^2.
 
@@ -130,6 +132,7 @@ function body_gm end
 
 """
     body_mean_radius(body::CelestialBody)::Float64
+    body_mean_radius(body::NAIFId)::Float64
 
 Return the mean radius of `body` in km.
 
@@ -142,6 +145,7 @@ function body_mean_radius end
 
 """
     body_polar_radius(body::CelestialBody)::Float64
+    body_polar_radius(body::NAIFId)::Float64
 
 Return the polar radius of `body` in km.
 
@@ -154,6 +158,7 @@ function body_polar_radius end
 
 """
     body_equatorial_radius(body::CelestialBody)::Float64
+    body_equatorial_radius(body::NAIFId)::Float64
 
 Return the polar radius of `body` in km.
 
@@ -164,93 +169,8 @@ Return the polar radius of `body` in km.
 """
 function body_equatorial_radius end
 
-"""
-    right_ascension(body::CelestialBody, ep::Float64)
-
-Return the right ascension of the body-fixed frame of `body` w.r.t. the ICRF 
-at epoch `ep` in rad. Here `ep` is expressed in centuries since J2000 in the 
-TDB time scale.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_right_ascension end
-
-"""
-    right_ascension_rate(body::CelestialBody, ep::Float64)
-
-Return the right ascension rate of change of the body-fixed frame of `body` w.r.t. the
-ICRF at epoch `ep` in rad/s. Here `ep` is expressed in centuries since J2000 in the 
-TDB time scale.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_right_ascension_rate end
-
-"""
-    body_declination(body::CelestialBody, ep::Float64)
-
-Return the declination of the body-fixed frame of `body` w.r.t. the ICRF 
-at epoch `ep` in rad. Here `ep` is expressed in centuries since J2000 in the 
-TDB time scale.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_declination end
-
-"""
-    body_declination_rate(body::CelestialBody, ep::Float64)
-
-Return the declination rate of change of the body-fixed frame of `body` w.r.t. the
-ICRF at epoch `ep` in rad/s. Here `ep` is expressed in centuries since J2000 in the 
-TDB time scale.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_declination_rate end
-
-"""
-    body_rotation_angle(body::CelestialBody, ep::Float64)
-
-Return the declination of the body-fixed frame of `body` w.r.t. the ICRF 
-at epoch `ep` in rad. Here `ep` is expressed in centuries since J2000 in the 
-TDB time scale.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_rotation_angle end
-
-"""
-    body_rotation_rate(body::CelestialBody, ep::Float64)
-
-Return the declination rate of change of the body-fixed frame of `body` w.r.t. the
-ICRF at epoch `ep` in rad/s. Here `ep` is expressed in centuries since J2000 in the 
-TDB time scale.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_rotation_rate end
 for fun in (:body_parent, :body_system_equivalent, :body_equatorial_radius,
-    :body_polar_radius, :body_mean_radius, :body_right_ascension,
-    :body_declination, :body_gm, :body_right_ascension_rate,
-    :body_declination_rate, :body_rotation_angle, :body_rotation_rate)
+    :body_polar_radius, :body_mean_radius, :body_gm)
     @eval begin
         $fun(id::NAIFId) = $fun(Val(id))
     end
