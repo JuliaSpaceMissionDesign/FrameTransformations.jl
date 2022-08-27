@@ -44,7 +44,7 @@ template_singleton(name, typ) = "const $name = $typ()\n"
 function template_inlineconst(typs::Tuple, fun, value)
     string = ""
     for typ in typs
-        template_inlineconst(typ, fun, value)
+        string *= template_inlineconst(typ, fun, value)
     end
     string 
 end
