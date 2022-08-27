@@ -28,8 +28,11 @@ const BodyGraph{T} = NodeGraph{T, T} where {T <: Integer}
 Convenience constructor for graphs of bodies. 
 Return a BodyGraph of `NAIFId` body types.
 """
+function BodyGraph(::Type{T}) where {T <: Integer}
+    BodyGraph{T}(SimpleGraph())
+end
 function BodyGraph()
-    BodyGraph{NAIFId}(SimpleGraph())
+    BodyGraph(Int64)
 end
 
 """
@@ -54,9 +57,9 @@ Find the shortest path linking two objects in a BodyGraph-type graph.
 """
 function find_path(g::BodyGraph{N}, from::CelestialBody, 
     to::CelestialBody) where {N <: Integer}
-    get_edgenodes(g, body_from_naifid(from), body_from_naifid(to))
+    find_path(g, body_naifid(from), body_naifid(to))
 end
 
-function find_path(g::BodyGraph, from::N, to:: N) where {N <: Signed}
-    get_edgenodes(g, from, to)
+function find_path(g::BodyGraph, from::N, to:: N) where {N <: Integer}
+    get_nodes(g, from, to)
 end
