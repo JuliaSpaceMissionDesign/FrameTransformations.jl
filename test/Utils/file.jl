@@ -1,6 +1,6 @@
 @testset "Generate unique fileids" begin
-    fp1 = joinpath(@__DIR__, "test.tpc")
-    fp2 = joinpath(@__DIR__, "test2.tpc")
+    fp1 = joinpath(@__DIR__, "..", "assets", "test.tpc")
+    fp2 = joinpath(@__DIR__, "..", "assets", "test2.tpc")
 
     fid1 = Basic.Utils.fileid(fp1)
     fid2 = Basic.Utils.fileid(fp2)

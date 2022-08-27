@@ -12,7 +12,8 @@ const FILE_FORMAT = (
     :TPC, 
     :JSON,
     :CONFIG,
-    :ADF
+    :ADF,
+    :TEXT
 )
 
 for fmt in FILE_FORMAT

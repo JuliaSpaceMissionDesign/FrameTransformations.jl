@@ -1,0 +1,131 @@
+{
+    "title": "Universe",
+    "description": "Simulation environment definition",
+    "type": "object",
+    "version": "0.1.0",
+    "properties": {
+        "bodies": {
+            "title": "Bodies",
+            "description": "Define the active bodies",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "point": {
+                        "description": "Name of the body",
+                        "oneOf": [             
+                            {"type": "string", "description": "Body name"},               
+                            {"type": "number", "description": "Body NAIFID"}
+                        ]
+                    },
+                    "center": {
+                        "description": "Name of the point defined as center of the body",
+                        "oneOf": [             
+                            {"type": "string", "description": "Body name"},               
+                            {"type": "number", "description": "Body NAIFID"}
+                        ]
+                    },
+                    "gm": {
+                        "description": "Gravitational parameter of the body",
+                        "default": "Parsed from constants",
+                        "oneOf": [                            
+                            {"type": "number", "description": "Gravitational parameters in km,s units"},
+                            {"type": "string"}
+                        ]
+                    },
+                    "radius": {
+                        "description": "Equatorial radius of the body",
+                        "default": "Parsed from constants",
+                        "oneOf": [                            
+                            {"type": "number", "description": "Radius in km"},
+                            {"type": "string"}
+                        ]
+                    },
+                    "flattening": {
+                        "description": "Flattening of the body",
+                        "default": "Parsed from constants",
+                        "oneOf": [                            
+                            {"type": "number"},
+                            {"type": "string"}
+                        ]
+                    },
+                    "gravity": {
+                        "description": "Gravity model specification",
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "description": "Gravitational model to be used for the body",
+                                "type": "string",
+                                "enum": ["point", "poly", "harmonics"],
+                                "default": "point"
+                            },
+                            "file": {
+                                "description": "Gravitational model data file",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["model"]
+                    }
+                },
+                "required": ["point", "center"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "constants": {
+            "description": "Environment constants configuration",
+            "type": "object",
+            "properties": {
+                "ephemeris": {
+                    "description": "Constants loaded from ephemeris objects",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "database": {
+                    "description": "Constants loaded from database objects",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                }
+            },
+            "required": [
+                "ephemeris"
+            ]
+        },
+        "ephemeris": {
+            "description": "Ephemeris data configuration",
+            "type": "object",
+            "properties": {
+                "files": {
+                    "description": "Ephemeris files to load",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Name of the kernel file"},
+                            "path": {"type": "string", "description": "Kernel path"}
+                        },
+                        "required": ["name", "path"]
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "mappings": {
+                    "description": "Environment objects NAIF ID to names",
+                    "type": "string",
+                    "default": "Parsed from NASA JPL NAIF-to-names file."
+                }
+            },
+            "required": [
+                "files"
+            ]
+        }
+    }
+}

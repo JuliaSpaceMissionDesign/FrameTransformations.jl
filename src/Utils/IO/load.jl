@@ -21,6 +21,15 @@ function load(file::JSON)
 end
 
 """
+    load(file::TEXT)
+
+Open a TEXT file and parse its data in a list of strings.
+"""
+function load(file::TEXT)
+    readlines(filepath(file))
+end
+
+"""
     load(file::TPC)
 
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.

@@ -1,5 +1,5 @@
 @testset "Load .tpc files" begin 
-    data = load(TPC(joinpath(@__DIR__, "test.tpc")))
+    data = load(TPC(joinpath(@__DIR__, "..", "assets", "test.tpc")))
     @test data[399] == Dict(:gm => 3.9860043543609598E+05)
     @test length(keys(data[599])) == 7
     for (k, l, fv, lv) in zip(
@@ -14,8 +14,8 @@
     end
 
     datas = load(
-        [TPC(joinpath(@__DIR__, "test.tpc")), 
-        TPC(joinpath(@__DIR__, "test2.tpc"))])
+        [TPC(joinpath(@__DIR__, "..", "assets", "test.tpc")), 
+        TPC(joinpath(@__DIR__, "..", "assets", "test2.tpc"))])
 
     @test datas[999][:gm] == -1.0
     @test datas[299][:radii][2] == 6051.8
