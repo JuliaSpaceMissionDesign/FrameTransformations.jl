@@ -1,7 +1,7 @@
 @testset "Load .tpc files" begin 
     data = load(TPC(joinpath(@__DIR__, "..", "assets", "test.tpc")))
     @test data[399] == Dict(:gm => 3.9860043543609598E+05)
-    @test length(keys(data[599])) == 7
+    @test length(keys(data[599])) == 9
     for (k, l, fv, lv) in zip(
         [:pole_ra, :pole_dec, :pm, :nut_prec_ra, :nut_prec_dec, :nut_prec_pm],
         [3, 3, 3, 15, 15, 15],
