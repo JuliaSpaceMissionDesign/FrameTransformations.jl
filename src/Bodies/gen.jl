@@ -73,6 +73,8 @@ Generate properties for a celestial object.
 function generate_body!(gen::String, gname::Symbol, 
     bname::Symbol, bid::N, centid::Union{N, Nothing}, 
     objtype::Symbol, data::D) where {N<:Integer, D<:AbstractDict}
+    
+    @debug "[Bodies] Generating code for $bname"
 
     sid = "$(bid)"
     if objtype == :NaturalSatellite || objtype == :Planet
