@@ -106,3 +106,5 @@ function template_generated(code::String)
 
     """
 end
+
+template_inlineconst(body, fun, value) = "@inline $fun(::$body) = $value\n"

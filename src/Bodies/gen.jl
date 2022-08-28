@@ -1,3 +1,5 @@
+export generate_body!
+
 using Basic.Utils: format_camelcase
 
 const DEF_NAIF2NAME = joinpath(@__DIR__, "..", "..", "res", "naif2name.txt")
@@ -88,7 +90,7 @@ function generate_body!(gen::String, gname::Symbol,
 
     # parse code 
     gen *= "\n"
-    gen *= "#%$bname\n"
+    gen *= "#%BODIES::$bname\n"
     gen *= template_structwithparent(bname, objtype)
     if centid === nothing
         gen *= "register!($gname, $bid)\n"

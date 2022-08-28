@@ -1,7 +1,9 @@
+export generate_iauangles!
+
 function parse_iauanglestr(A::NV, B::Union{Nothing, NV}, Θ::Union{Nothing, NM}, 
     t::Symbol, χ::Symbol; conv::Real=π/180) where {NV<:AbstractArray, NM<:AbstractArray}
     # β = ∑AᵢTⁱ + ∑ Bᵢ χ(θ₀ᵢ + θ₁ᵢ t)
-
+    nuts = false
     if (B !== nothing && Θ !== nothing)
         if length(B) != size(Θ)[1]
             throw(error("[Orient] Rotation/nutation angles and coeffs" 
@@ -112,3 +114,29 @@ function parse_iauconstants(bodiesid::Vector{N},
     end
     parsed
 end
+
+function template_iauangle(func::String, id::Integer, code::String, t::Symbol)
+    """
+    @inline @fastmath function $func(::Val{$id}, $t::N) where {N <: Real}
+        $code 
+    end
+    """
+end
+
+function generate_iauangles!(gen::String, bid::N, 
+    iaudata::D) where {N<:Integer, D<:AbstractDict}
+    @debug "[Orient] Generating IAU model for $bid"
+
+    if haskey(iaudata, bid)
+        gen *= "\n"
+        gen *= "#%ORIENT::$bid\n"
+        iauconst = iaudata[bid]
+        for (angle, data) in pairs(iauconst)
+            gen *= "#%ORIENT::$bid/$angle\n"
+            β, δβ = parse_iauanglestr(data[:A], data[:B], data[:Θ], :T, data[:χ])
+            gen *= template_iauangle(angle, bid, β, :T)
+            gen *= template_iauangle(join((angle,"rate"),"_"), bid, δβ, :T)
+        end 
+    end
+    gen
+end 
