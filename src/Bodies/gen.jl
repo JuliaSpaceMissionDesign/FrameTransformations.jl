@@ -1,6 +1,6 @@
 export generate_body!, parse_naifnames
 
-using Basic.Utils: format_camelcase
+using Basic.Utils
 
 const DEF_NAIF2NAME = joinpath(@__DIR__, "..", "..", "res", "naif2name.txt")
 
@@ -39,17 +39,12 @@ function parse_naifnames()
     parse_naifnames(DEF_NAIF2NAME)
 end
 
-template_inlineconst(body, fun, value) = "@inline $fun(::$body) = $value\n"
+template_inconst(body, fun, value) = "@inline $fun(::$body) = $value\n"
+function template_inconstpar(type, par, fun, value)
+    "@inline $par.$fun(::$type) = $value"
+end
 template_structwithparent(name, parent) = "struct $(name) <: $(parent) end\n"
 template_singleton(name, typ) = "const $name = $typ()\n"
-
-function template_inlineconst(typs::Tuple, fun, value)
-    string = ""
-    for typ in typs
-        string *= template_inlineconst(typ, fun, value)
-    end
-    string 
-end
 
 """
     generate_body!(gen::String, bname::Symbol, bid::N, 
@@ -77,44 +72,43 @@ function generate_body!(gen::String, bname::Symbol, bid::N,
     if objtype == :NaturalSatellite || objtype == :Planet
         bseb = sid[1]
     elseif objtype == :Barycenter 
-        bseb = nothing 
+        bseb = bid 
     else 
         bseb = 0
     end
-    bnameid = (bname, Val{bid})
 
     # parse code 
     gen *= "\n"
     gen *= "#%BODIES::$bname\n"
+    # subtype 
     gen *= template_structwithparent(bname, objtype)
-    gen *= template_inlineconst(bname, :body_naifid, bid)
+    gen *= genf_psngin(:Bodies, :body_naifid, bid, (nothing, "Type{$bname}"))
+    gen *= genf_psngin(:Bodies, :body_from_naifid, bname, (nothing, Val{bid}))
     if bid != 0
-        gen *= template_inlineconst(bnameid, :body_gm, data[bid][:gm])
+        gen *= genf_psngin(:Bodies, :body_gm, data[bid][:gm], (nothing, Val{bid}))
     else 
-        gen *= template_inlineconst(bnameid, :body_gm, 
-            sum([data[i][:gm] for i in range(1,10)]))
+        gen *= genf_psngin(:Bodies, :body_gm, 
+            sum([data[i][:gm] for i in range(1,10)]), (nothing, Val{bid}))
     end
+    gen *= genf_psngin(:Bodies, :body_system_equivalent, bseb, (nothing, Val{bid}))
     if bid > 9 
-        gen *= template_inlineconst(bnameid, :body_system_equivalent, bseb)
-        gen *= template_inlineconst(bnameid, :body_equatorial_radius, 
-            data[bid][:radii][1])
-        gen *= template_inlineconst(bnameid, :body_polar_radius, 
-            data[bid][:radii][3])
-        gen *= template_inlineconst(bnameid, :body_mean_radius, 
-            sum(data[bid][:radii])/length(data[bid][:radii]))
+        gen *= genf_psngin(:Bodies, :body_equatorial_radius, 
+            data[bid][:radii][1], (nothing, Val{bid}))
+        gen *= genf_psngin(:Bodies, :body_polar_radius, 
+            data[bid][:radii][3], (nothing, Val{bid}))
+        gen *= genf_psngin(:Bodies, :body_mean_radius, 
+            sum(data[bid][:radii])/length(data[bid][:radii]), 
+            (nothing, Val{bid}))
     else # barycenters 
         prop = (
-            :body_system_equivalent, :body_equatorial_radius,
+            :body_equatorial_radius,
             :body_polar_radius, :body_mean_radius
         )
         for p in prop 
             sp = join(uppercasefirst.(split.("$(p)", "_")[2:end]), " ")
-            gen *= template_inlineconst(bname, 
-                p, 
-                """throw(error("[Bodies] $(bname) has no $sp"))""")
-            gen *= template_inlineconst(Val{bid}, 
-                p, 
-                """throw(error("[Bodies] $(bname) has no $sp"))""")
+            gen *= genf_psngin(:Bodies, p, 
+                """throw(error("[Bodies] $(bname) has no $sp"))""", 
+                (nothing, Val{bid}))
         end
     end
     gen

@@ -91,33 +91,43 @@ Abstract supertype for comets.
 abstract type Comet <: MinorBody end
 
 """
-    to_naifid(body::CelestialBody)::NAIFId
+    body_naifid(body::T)::NAIFId where {T <: CelestialBody}
+    body_naifid(body::Type{T})::NAIFId where {T <: CelestialBody}
 
 Get the NAIF ID code for `body`.
 """
 function body_naifid end
+body_naifid(::T) where {T <: CelestialBody} = body_naifid(T)
 
 """
     body_from_naifid(id::NAIFId)
 
-Return a celestial body instance based on its NAIF ID code.
+Return a celestial body type based on its NAIFID code.
 """
 body_from_naifid(id::NAIFId) = body_from_naifid(Val(id))
 
 """
-    body_parent(body::CelestialBody)::NAIFId
+    body_parent(body::T)::T  where {T <: CelestialBody}
     body_parent(body::NAIFId)::NAIFId
 
-Get parent of a given body
+Get parent of a given body.
 """
 function body_parent end 
 
 """
-    body_system_equivalent(body::CelestialBody)::NAIFId
+    body_system_equivalent(body::NAIFId)::NAIFId
+    body_system_equivalent(body::Type{T})::Type{T} where {T <: CelestialBody}
 
 Return the body system equivalent body or barycenter.
 """
 function body_system_equivalent end 
+body_system_equivalent(body::Integer) = body_system_equivalent(Val(body))
+function body_system_equivalent(::Type{T}) where {T<:CelestialBody} 
+    body_from_naifid(body_system_equivalent(body_naifid(T)))
+end
+function body_system_equivalent(::T) where {T<:CelestialBody}
+    body_system_equivalent(T)
+end
 
 """
     body_gm(body::CelestialBody)::Float64
@@ -169,9 +179,14 @@ Return the polar radius of `body` in km.
 """
 function body_equatorial_radius end
 
-for fun in (:body_parent, :body_system_equivalent, :body_equatorial_radius,
-    :body_polar_radius, :body_mean_radius, :body_gm)
+
+# parse overloads
+for fun in (:body_gm, :body_equatorial_radius, :body_polar_radius, :body_mean_radius)
     @eval begin
-        $fun(id::NAIFId) = $fun(Val(id))
+        @inline $fun(naifid::NAIFId) = $fun(Val(naifid))
+        @inline function $fun(bodytype::Type{T}) where {T<:CelestialBody} 
+            $fun(body_naifid(T))
+        end
+        @inline $fun(body::T) where {T<:CelestialBody} = $fun(T)
     end
 end
