@@ -107,4 +107,59 @@ function template_generated(code::String)
     """
 end
 
-template_inlineconst(body, fun, value) = "@inline $fun(::$body) = $value\n"
+function _fun_meta(args...; rettype, wherestr)
+    arg = ""
+    for (i, argi) in enumerate(args)
+        arg *= argi[1] === nothing ? "::$(argi[2])"  : "$(argi[1])::$(argi[2])" 
+        arg *= i < length(args) ? ", " : ""
+    end
+    ret = rettype === nothing ? "" : "::$rettype"
+    wstr = wherestr === nothing ? "" : " where {$wherestr}"
+    return arg, ret, wstr
+end
+
+function _fun_multiline(pre::String, fun, val, args::Tuple...;
+    rettype=nothing, wherestr=nothing)
+    arg, ret, wstr = _fun_meta(args...;rettype, wherestr)
+    return """
+    $pre function $fun($(arg))$ret$wstr
+        $val
+    end\n
+    """
+end
+
+function _fun_singleline(pre::String, fun, val, args::Tuple...;
+    rettype=nothing, wherestr=nothing)
+    arg, ret, wstr = _fun_meta(args...;rettype, wherestr)
+    return "$pre $fun($(arg))$ret$wstr = $val\n"
+end
+
+function genf_mltin(fun, val, args::Tuple...;
+    kwargs...)
+    _fun_multiline("@inline", fun, val, args...; kwargs...)
+end
+
+function genf_sngin(fun, val, args::Tuple...;
+    kwargs...)
+    _fun_singleline("@inline", fun, val, args...; kwargs...)
+end
+
+function genf_mltinfst(fun, val, args::Tuple...;
+    kwargs...)
+    _fun_multiline("@inline @fastmath", fun, val, args...; kwargs...)
+end
+
+function genf_snginfst(fun, val, args::Tuple...;
+    kwargs...)
+    _fun_singleline("@inline @fastmath", fun, val, args...; kwargs...)
+end
+
+for gen in (:genf_mltin, :genf_sngin, :genf_snginfst, :genf_mltinfst)
+    fname = Symbol("genf_p$(split(String(gen), "_")[2])")
+    @eval begin 
+        function $(fname)(par, fun, val, args::Tuple...; kwargs...)
+            $gen(join(String.((par, fun)), "."), val, args...; kwargs...)
+        end
+        export $gen, $fname
+    end
+end
