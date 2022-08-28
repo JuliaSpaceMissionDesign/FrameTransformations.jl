@@ -39,13 +39,6 @@ function parse_naifnames()
     parse_naifnames(DEF_NAIF2NAME)
 end
 
-template_inconst(body, fun, value) = "@inline $fun(::$body) = $value\n"
-function template_inconstpar(type, par, fun, value)
-    "@inline $par.$fun(::$type) = $value"
-end
-template_structwithparent(name, parent) = "struct $(name) <: $(parent) end\n"
-template_singleton(name, typ) = "const $name = $typ()\n"
-
 """
     generate_body!(gen::String, bname::Symbol, bid::N, 
         objtype::Symbol, data::D) where {N<:Integer, D<:AbstractDict}
@@ -81,7 +74,7 @@ function generate_body!(gen::String, bname::Symbol, bid::N,
     gen *= "\n"
     gen *= "#%BODIES::$bname\n"
     # subtype 
-    gen *= template_structwithparent(bname, objtype)
+    gen *= "struct $(bname) <: $(objtype) end\n"
     gen *= genf_psngin(:Bodies, :body_naifid, bid, (nothing, "Type{$bname}"))
     gen *= genf_psngin(:Bodies, :body_from_naifid, bname, (nothing, Val{bid}))
     if bid != 0
