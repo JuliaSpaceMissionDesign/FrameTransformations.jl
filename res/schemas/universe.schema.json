@@ -67,7 +67,7 @@
                         "required": ["model"]
                     }
                 },
-                "required": ["point", "center"]
+                "required": ["point"]
             },
             "minItems": 1,
             "uniqueItems": true
@@ -116,16 +116,24 @@
                     },
                     "minItems": 1,
                     "uniqueItems": true
-                },
-                "mappings": {
-                    "description": "Environment objects NAIF ID to names",
-                    "type": "string",
-                    "default": "Parsed from NASA JPL NAIF-to-names file."
                 }
             },
             "required": [
                 "files"
             ]
+        },
+        "mappings": {
+            "description": "Environment objects mappings",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Name of the file"},
+                    "path": {"type": "string", "description": "File to be loaded"}
+                }
+            },
+            "minItems": 1,
+            "uniqueItems": true
         }
     }
 }
