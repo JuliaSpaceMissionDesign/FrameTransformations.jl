@@ -1,6 +1,6 @@
 export generate_body!, parse_naifnames
 
-using Basic.Utils
+import Basic.Utils: genf_psngin, format_camelcase
 
 const DEF_NAIF2NAME = joinpath(@__DIR__, "..", "..", "res", "naif2name.txt")
 
