@@ -1,4 +1,4 @@
-export generate_body!
+export generate_body!, parse_naifnames
 
 using Basic.Utils: format_camelcase
 
@@ -52,19 +52,15 @@ function template_inlineconst(typs::Tuple, fun, value)
 end
 
 """
-    generate_body!(gen::String, gname::Symbol, bname::Symbol, 
-        bid::N, centid::Union{N, Nothing}, objtype::Symbol, 
-        data::D) where {N<:Integer, D<:AbstractDict}
+    generate_body!(gen::String, bname::Symbol, bid::N, 
+        objtype::Symbol, data::D) where {N<:Integer, D<:AbstractDict}
 
 Generate properties for a celestial object. 
 
 ### Input/s 
 
 - `gen` -- In-place modified generated code 
-- `gname` -- Name of the graph where to append the objects 
-- `bname` -- Body NAIF name 
 - `bid` -- Body NAIF id 
-- `centid` -- Body center id 
 - `objtype` -- Body object type. Shall be one of `AbstractBody` subtypes.
 - `data` -- Bodies data dictionary of type `Dict{NAIFId, Any}`
 
@@ -72,8 +68,7 @@ Generate properties for a celestial object.
 
 `gen` is modified and given as output.
 """
-function generate_body!(gen::String, gname::Symbol, 
-    bname::Symbol, bid::N, centid::Union{N, Nothing}, 
+function generate_body!(gen::String, bname::Symbol, bid::N, 
     objtype::Symbol, data::D) where {N<:Integer, D<:AbstractDict}
     
     @debug "[Bodies] Generating code for $bname"
@@ -92,15 +87,7 @@ function generate_body!(gen::String, gname::Symbol,
     gen *= "\n"
     gen *= "#%BODIES::$bname\n"
     gen *= template_structwithparent(bname, objtype)
-    if centid === nothing
-        gen *= "register!($gname, $bid)\n"
-    else 
-        gen *= "connect!($gname, $centid, $bid)\n"
-    end
     gen *= template_inlineconst(bname, :body_naifid, bid)
-    gen *= template_inlineconst(bnameid, :body_parent, 
-        centid === nothing ? 0 : centid)
-    # gen *= template_inlineconst(Val{bid}, :body_from_naifid, bname)
     if bid != 0
         gen *= template_inlineconst(bnameid, :body_gm, data[bid][:gm])
     else 
