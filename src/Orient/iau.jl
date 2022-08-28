@@ -1,13 +1,16 @@
 export generate_iauangles!, parse_iauconstants
 
+import Basic.Utils: genf_psnginfst
+
 function parse_iauanglestr(A::NV, B::Union{Nothing, NV}, Θ::Union{Nothing, NM}, 
     t::Symbol, χ::Symbol; conv::Real=π/180) where {NV<:AbstractArray, NM<:AbstractArray}
     # β = ∑AᵢTⁱ + ∑ Bᵢ χ(θ₀ᵢ + θ₁ᵢ t)
     nuts = false
     if (B !== nothing && Θ !== nothing)
-        if length(B) != size(Θ)[1]
+        if length(B) > size(Θ)[1]
+            # the length of B and Θ are NOT equal because, according to IAU
             throw(error("[Orient] Rotation/nutation angles and coeffs" 
-                * "must be of the same length."))
+                * "must compatible in size as for IAU standards."))
         end
         nuts = true
     end
@@ -75,7 +78,7 @@ end
 function parse_iauconstants(bodiesid::Vector{N}, 
     data::D) where {N <: Integer, D <: AbstractDict}
 
-    parsed = Dict{N, Dict{String, Dict{Symbol, Union{Array, Nothing, Symbol}}}}()
+    parsed = Dict{N,Union{Dict{String,Dict{Symbol,Union{Array,Nothing,Symbol}}},Nothing}}()
     for bid in bodiesid
         @debug "[Orient] Parsing constants for object with NAIF ID: $bid."
         sid = "$(bid)"
@@ -115,33 +118,41 @@ function parse_iauconstants(bodiesid::Vector{N},
             end 
         end
 
-        !(isempty(di)) ? push!(parsed, bid => di) : ()
+        !(isempty(di)) ? push!(parsed, bid => di) : push!(parsed, bid => nothing)
     end
     parsed
 end
 
-function template_iauangle(func::String, id::Integer, code::String, t::Symbol)
-    """
-    @inline @fastmath function $func(::Val{$id}, $t::N) where {N <: Real}
-        $code 
-    end
-    """
-end
-
 function generate_iauangles!(gen::String, bid::N, 
-    iaudata::D) where {N<:Integer, D<:AbstractDict}
+    iaudata::D; conv::Real=π/180) where {N<:Integer, D<:AbstractDict}
     @debug "[Orient] Generating IAU model for $bid"
 
     if haskey(iaudata, bid)
         gen *= "\n"
         gen *= "#%ORIENT::$bid\n"
         iauconst = iaudata[bid]
-        for (angle, data) in pairs(iauconst)
-            gen *= "#%ORIENT::$bid/$angle\n"
-            β, δβ = parse_iauanglestr(data[:A], data[:B], data[:Θ], :T, data[:χ])
-            gen *= template_iauangle(angle, bid, β, :T)
-            gen *= template_iauangle(join((angle,"rate"),"_"), bid, δβ, :T)
-        end 
+        if !(iauconst === nothing)
+            for (angle, data) in pairs(iauconst)
+                gen *= "#%ORIENT::$bid/$angle\n"
+                β, δβ = parse_iauanglestr(data[:A], data[:B], data[:Θ], :T, data[:χ]; conv=conv)
+                angle = "orient_$angle"
+                gen *= genf_psnginfst(:Orient, angle == "orient_rotation" ? "orient_rotation_angle" : angle, β, 
+                    (nothing, Val{bid}), (:T, :Real); rettype=Real)
+                gen *= genf_psnginfst(:Orient, join((angle,"rate"),"_"), δβ, 
+                    (nothing, Val{bid}), (:T, :Real); rettype=Real)
+            end 
+        else 
+            for fun in ("orient_declination", "orient_declination_rate", 
+                "orient_right_ascension", "orient_right_ascension_rate", 
+                "orient_rotation_angle", "orient_rotation_rate")
+                errorprop = join(uppercasefirst.(split(fun,"_")[2:end]), " ")
+                gen *= genf_psnginfst(:Orient, fun, 
+                    """throw(error("[Orient] IAU `$(errorprop)` cannot be computed for $bid."))""", 
+                    (nothing, Val{bid}), (:T, :Real); rettype=Real)
+
+            end
+        end
+
     end
     gen
 end 
