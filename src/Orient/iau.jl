@@ -1,4 +1,4 @@
-export generate_iauangles!
+export generate_iauangles!, parse_iauconstants
 
 function parse_iauanglestr(A::NV, B::Union{Nothing, NV}, Θ::Union{Nothing, NM}, 
     t::Symbol, χ::Symbol; conv::Real=π/180) where {NV<:AbstractArray, NM<:AbstractArray}
@@ -65,6 +65,11 @@ function _format_iauconst(hasnuts, dbid, nuts, prop, χ)
         :Θ => nuts,
         :χ => χ
     )
+end
+
+function parse_iauconstants(file::String)
+    tpc = load(TPC(file))
+    parse_iauconstants(collect(keys(tpc)), tpc)
 end
 
 function parse_iauconstants(bodiesid::Vector{N}, 
