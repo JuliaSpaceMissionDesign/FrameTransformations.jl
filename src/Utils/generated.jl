@@ -51,7 +51,7 @@ function load(file::GEN)
     return file
 end
 
-read_generated(file::String) = join(load(TEXT(file)), "\n")
+read_generated(file::String) = join(load(TXT(file)), "\n")
 
 """
     parse_generated(data::String)

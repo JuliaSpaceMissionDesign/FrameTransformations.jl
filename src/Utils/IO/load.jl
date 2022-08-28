@@ -16,17 +16,26 @@ Open a JSON file and parse its data in a dictionary.
 function load(file::JSON)
     open(filepath(file), "r") do f 
         data = JSON3.read(f)
-        return data
+        return OrderedDict(data)
     end
 end
 
 """
-    load(file::TEXT)
+    load(file::TXT)
 
 Open a TEXT file and parse its data in a list of strings.
 """
-function load(file::TEXT)
+function load(file::TXT)
     readlines(filepath(file))
+end
+
+"""
+    load(file::YAML)
+
+Open a YAML file and parse its data in a dictionary.
+"""
+function load(file::YAML)
+    YAMLLib.load_file(filepath(file); dicttype=OrderedDict{Symbol, Any})
 end
 
 """

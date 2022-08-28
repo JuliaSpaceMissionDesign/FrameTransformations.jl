@@ -1,4 +1,6 @@
-export validate, UniverseSchema
+export UniverseSchema,
+       validate
+
 using JSONSchema: validate, Schema
 
 const UniverseSchema = Schema(

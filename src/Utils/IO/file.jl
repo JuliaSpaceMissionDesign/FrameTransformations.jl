@@ -11,9 +11,8 @@ const FILE_OPENMODE = Dict([
 const FILE_FORMAT = (
     :TPC, 
     :JSON,
-    :CONFIG,
-    :ADF,
-    :TEXT
+    :TXT,
+    :YAML
 )
 
 for fmt in FILE_FORMAT
@@ -23,15 +22,18 @@ for fmt in FILE_FORMAT
     end
 end
 
+const YML = YAML
+export YML
+
 filepath(file::T) where {T<:AbstractFile} = file.path
 
 """
     fileid(file::String)::String
-    fileid(file::CONFIG)::String
+    fileid(file::F) where {F <: AbstractFile}
 
 Get a unique string descriptor for a file - based on sha256.
 """
-function fileid(file::CONFIG)
+function fileid(file::F) where {F <: AbstractFile}
     fileid(filepath(file))
 end
 
