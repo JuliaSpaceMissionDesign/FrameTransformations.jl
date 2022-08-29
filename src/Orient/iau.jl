@@ -137,9 +137,9 @@ function generate_iauangles!(gen::String, bid::N,
                 β, δβ = parse_iauanglestr(data[:A], data[:B], data[:Θ], :T, data[:χ]; conv=conv)
                 angle = "orient_$angle"
                 gen *= genf_psnginfst(:Orient, angle == "orient_rotation" ? "orient_rotation_angle" : angle, β, 
-                    (nothing, Val{bid}), (:T, :Real); rettype=Real)
+                    (nothing, Val{bid}), (:T, :Real))
                 gen *= genf_psnginfst(:Orient, join((angle,"rate"),"_"), δβ, 
-                    (nothing, Val{bid}), (:T, :Real); rettype=Real)
+                    (nothing, Val{bid}), (:T, :Real))
             end 
         else 
             for fun in ("orient_declination", "orient_declination_rate", 
@@ -148,7 +148,7 @@ function generate_iauangles!(gen::String, bid::N,
                 errorprop = join(uppercasefirst.(split(fun,"_")[2:end]), " ")
                 gen *= genf_psnginfst(:Orient, fun, 
                     """throw(error("[Orient] IAU `$(errorprop)` cannot be computed for $bid."))""", 
-                    (nothing, Val{bid}), (:T, :Real); rettype=Real)
+                    (nothing, Val{bid}), (:T, :Real))
 
             end
         end

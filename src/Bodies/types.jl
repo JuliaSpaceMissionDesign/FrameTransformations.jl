@@ -8,8 +8,6 @@ export CelestialBody,
 
        NAIFId,
 
-       body_declination,
-       body_declination_rate,
        body_equatorial_radius,
        body_from_naifid,
        body_gm,
@@ -17,10 +15,6 @@ export CelestialBody,
        body_naifid,
        body_parent,
        body_polar_radius,
-       body_right_ascension,
-       body_right_ascension_rate,
-       body_rotation_angle,
-       body_rotation_rate,
        body_system_equivalent
 
 """
@@ -98,6 +92,7 @@ Get the NAIF ID code for `body`.
 """
 function body_naifid end
 body_naifid(::T) where {T <: CelestialBody} = body_naifid(T)
+body_naifid(::Type{T}) where {T <: CelestialBody} = body_naifid(T)
 
 """
     body_from_naifid(id::NAIFId)

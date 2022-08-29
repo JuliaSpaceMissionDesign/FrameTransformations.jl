@@ -1,4 +1,4 @@
-using Basic.Bodies: body_naifid, CelestialBody
+import Basic.Bodies: body_naifid, CelestialBody
 
 """
     orient_declination_rate(body::NAIFId, T::Float64)
@@ -88,11 +88,11 @@ for fun in (:orient_declination, :orient_declination_rate,
     :orient_right_ascension, :orient_right_ascension_rate, 
     :orient_rotation_angle, :orient_rotation_rate)
     @eval begin
-        @inline $fun(id::Integer, T::Real)::Real = $fun(Val(id), T)
-        @inline function $fun(bodytype::Type{B}, T::Real) where {B<:CelestialBody} 
-            $fun(body_naifid(B), T)
+        $fun(id::Integer, T::Real) = $fun(Val(id), T)
+        function $fun(bodytype::Type{B}, T::Real) where {B<:CelestialBody} 
+            $fun(Val(body_naifid(B)), T)
         end
-        @inline $fun(body::B, T::Real) where {B<:CelestialBody} = $fun(B, T)
+        $fun(body::B, T::Real) where {B<:CelestialBody} = $fun(Val(body_naifid(B)), T)
         export $fun
     end
 end
