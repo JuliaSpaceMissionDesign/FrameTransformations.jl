@@ -17,4 +17,7 @@ module Basic
 
     include(joinpath("Orient", "Orient.jl"))
     @reexport using .Orient
+
+    include("schema.jl")
+    
 end
