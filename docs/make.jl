@@ -11,7 +11,7 @@ makedocs(;
     sitename="Basic",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://astronaut-tools.gitlab.io/julia/Core/Basic",
+        canonical="https://astronaut-tools.gitlab.io/julia/core/Basic",
         highlights = ["yaml"],
         ansicolor = true,
         assets=[]
@@ -24,6 +24,9 @@ makedocs(;
             ],
             "Orient" => [
                 "API" => "Orient/api.md"
+            ],
+            "Utils" => [
+                "API" => "Utils/api.md"
             ]
         ]
     ],
