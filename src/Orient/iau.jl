@@ -3,7 +3,7 @@ export generate_iauangles!, parse_iauconstants
 import Basic.Utils: genf_psnginfst
 
 function parse_iauanglestr(A::NV, B::Union{Nothing, NV}, Θ::Union{Nothing, NM}, 
-    t::Symbol, χ::Symbol; conv::Real=π/180) where {NV<:AbstractArray, NM<:AbstractArray}
+    t::Symbol, χ::Symbol; conv::AbstractFloat=π/180) where {NV<:AbstractArray, NM<:AbstractArray}
     # β = ∑AᵢTⁱ + ∑ Bᵢ χ(θ₀ᵢ + θ₁ᵢ t)
     nuts = false
     if (B !== nothing && Θ !== nothing)
@@ -124,7 +124,7 @@ function parse_iauconstants(bodiesid::Vector{N},
 end
 
 function generate_iauangles!(gen::String, bid::N, 
-    iaudata::D; conv::Real=π/180) where {N<:Integer, D<:AbstractDict}
+    iaudata::D; conv::N2=π/180) where {N<:Integer, D<:AbstractDict, N2<:AbstractFloat}
     @debug "[Orient] Generating IAU model for $bid"
 
     if haskey(iaudata, bid)
@@ -137,9 +137,9 @@ function generate_iauangles!(gen::String, bid::N,
                 β, δβ = parse_iauanglestr(data[:A], data[:B], data[:Θ], :T, data[:χ]; conv=conv)
                 angle = "orient_$angle"
                 gen *= genf_psnginfst(:Orient, angle == "orient_rotation" ? "orient_rotation_angle" : angle, β, 
-                    (nothing, Val{bid}), (:T, :Real))
+                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat")
                 gen *= genf_psnginfst(:Orient, join((angle,"rate"),"_"), δβ, 
-                    (nothing, Val{bid}), (:T, :Real))
+                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat")
             end 
         else 
             for fun in ("orient_declination", "orient_declination_rate", 
@@ -148,7 +148,7 @@ function generate_iauangles!(gen::String, bid::N,
                 errorprop = join(uppercasefirst.(split(fun,"_")[2:end]), " ")
                 gen *= genf_psnginfst(:Orient, fun, 
                     """throw(error("[Orient] IAU `$(errorprop)` cannot be computed for $bid."))""", 
-                    (nothing, Val{bid}), (:T, :Real))
+                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat")
 
             end
         end

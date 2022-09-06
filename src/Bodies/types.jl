@@ -25,7 +25,15 @@ NAIFId
    # References
    - [NASA NAIF](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html)
 """
-const NAIFId = Integer
+struct NAIFId
+    valId::Val
+    NAIFId(id::Integer) = new(Val(id))
+end
+
+function Base.show(io::IO, id::NAIFId)
+    m = match(r"\{(\d{1,})\}", "$(id.valId)")
+    println(io, "NAIFId($(m.captures[1]))")
+end
 
 """
     AbstractBody
@@ -92,7 +100,6 @@ Get the NAIF ID code for `body`.
 """
 function body_naifid end
 body_naifid(::T) where {T <: CelestialBody} = body_naifid(T)
-body_naifid(::Type{T}) where {T <: CelestialBody} = body_naifid(T)
 
 """
     body_from_naifid(id::NAIFId)
@@ -178,10 +185,8 @@ function body_equatorial_radius end
 # parse overloads
 for fun in (:body_gm, :body_equatorial_radius, :body_polar_radius, :body_mean_radius)
     @eval begin
-        @inline $fun(naifid::NAIFId) = $fun(Val(naifid))
-        @inline function $fun(bodytype::Type{T}) where {T<:CelestialBody} 
-            $fun(body_naifid(T))
-        end
+        @inline $fun(id::Integer) = $fun(NAIFId(id))
+        @inline $fun(naifid::NAIFId) = $fun(naifid.valId)
         @inline $fun(body::T) where {T<:CelestialBody} = $fun(T)
     end
 end

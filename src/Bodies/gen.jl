@@ -74,8 +74,10 @@ function generate_body!(gen::String, bname::Symbol, bid::N,
     gen *= "\n"
     gen *= "#%BODIES::$bname\n"
     # subtype 
-    gen *= "struct $(bname) <: $(objtype) end\n"
-    gen *= genf_psngin(:Bodies, :body_naifid, bid, (nothing, "Type{$bname}"))
+    gen *= """
+           struct $(bname) <: $(objtype) end
+           """
+    gen *= genf_psngin(:Bodies, :body_naifid, "NAIFId($bid)", (nothing, bname))
     gen *= genf_psngin(:Bodies, :body_from_naifid, bname, (nothing, Val{bid}))
     if bid != 0
         gen *= genf_psngin(:Bodies, :body_gm, data[bid][:gm], (nothing, Val{bid}))
