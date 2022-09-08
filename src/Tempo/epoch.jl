@@ -19,7 +19,6 @@ A type to represent Epoch-like data.
 
 `Epoch{S}(second::N, frac::T, err::T=zero(T), origin::O=J2000) 
 where {N<:Number, S<:TimeScale, T<:AbstractFloat, O<:AbstractEpochOrigin}`
-
 """
 struct Epoch{S, N, T, O} <: AbstractDateTimeEpoch
     scale::S 
@@ -38,8 +37,25 @@ struct Epoch{S, N, T, O} <: AbstractDateTimeEpoch
     end
 end
 
+"""
+    second(ep::Epoch)
+
+Seconds from origin.
+"""
 second(ep::Epoch) = ep.second
+
+"""
+    timescale(ep::Epoch)
+
+Epoch timescale.
+"""
 timescale(ep::Epoch) = ep.scale
+
+"""
+    value(ep::Epoch)
+
+Full `Epoch` value.
+"""
 value(ep::Epoch) = ep.second + ep.fraction
 
 function offsets(js1::N1, js2::N2, 
@@ -68,7 +84,7 @@ end
 
 Construct an `Epoch` from seconds since `origin` in the scale `scale`.
 """
-function Epoch(js::T, scale::S=J2000; origin::O=J2000) where {T<:Number, S<:TimeScale, O<:AbstractEpochOrigin}
+function Epoch(js::T, scale::S=TDB; origin::O=J2000) where {T<:Number, S<:TimeScale, O<:AbstractEpochOrigin}
     Epoch{typeof(scale)}(js; origin=origin)
 end
 
@@ -78,11 +94,12 @@ end
 
 Construct an `Epoch` from [`DateTime`](@ref).
 """
-function Epoch(dt::DateTime, scale::S=J2000; origin::O=J2000) where {S<:TimeScale, O<:AbstractEpochOrigin}
+function Epoch(dt::DateTime, scale::S=TDB; origin::O=J2000) where {S<:TimeScale, O<:AbstractEpochOrigin}
     Epoch(j2000seconds(dt), scale; origin=origin)
 end 
 
 Epoch(e::Epoch) = e 
+Epoch{S, N, T, O}(e::Epoch{S, N, T, O}) where {S, N, T, O} = e
 
 function DateTime(ep::Epoch)
     return DateTime(value(ep))
@@ -135,4 +152,26 @@ end
 
 function Base.show(io::IO, ep::Epoch) 
     print(io, DateTime(ep), " ", timescale(ep))
+end
+
+# ----
+# Operations
+
+Base.:-(e1::Epoch{S}, e2::Epoch{S}) where {S} = value(e1) - value(e2)
+Base.:+(e::Epoch, x::N) where {N<:Number} = Epoch(DateTime(e) + x, timescale(e))
+Base.:-(e::Epoch, x::N) where {N<:Number} = Epoch(DateTime(e) - x, timescale(e))
+
+function (::Base.Colon)(start::Epoch, step::T, stop::Epoch) where {T<:AbstractFloat}
+    step = start < stop ? step : -step
+    StepRangeLen(start, step, floor(Int, (stop-start)/step)+1)
+end
+
+(::Base.Colon)(start::Epoch, stop::Epoch) = (:)(start, 86400.0, stop)
+
+function Base.isless(e1::Epoch{S}, e2::Epoch{S}) where {S}
+    return value(e1) < value(e2)
+end
+
+function Base.isapprox(e1::Epoch{S}, e2::Epoch{S}; kwargs...) where {S}
+    return isapprox(value(e1), value(e2); kwargs...)
 end
