@@ -1,8 +1,4 @@
-export BodyGraph,
-       
-       find_path,
-       connect!,
-       register!
+export BodyGraph
 
 const BODY_TYPES = (
     :CelestialBody,

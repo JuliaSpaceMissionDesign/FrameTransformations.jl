@@ -22,6 +22,9 @@ makedocs(;
             "Bodies" => [
                 "API" => "Bodies/api.md"
             ],
+            "Tempo" => [
+                "API" => "Tempo/api.md"
+            ],
             "Orient" => [
                 "API" => "Orient/api.md"
             ],
