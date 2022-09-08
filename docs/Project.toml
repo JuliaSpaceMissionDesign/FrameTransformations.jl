@@ -1,3 +1,4 @@
 [deps]
 Basic = "f7345b97-8646-4350-bca5-2368100b77e2"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+NodeGraphs = "cd92a020-7965-4392-a5ae-986e533432b4"
