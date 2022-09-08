@@ -10,7 +10,7 @@ function Base.Tuple(dcm::DCM)
     return dcm.data
 end
 
-function similar_type(::Type{A}, ::Type{T}, s::Size{(3,3)}) where {A<:DCM, T}
+function similar_type(::Type{DCM}, ::Type{T}, s::Size{(3,3)}) where {T}
     return DCM{T}
 end
 

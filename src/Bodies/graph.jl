@@ -1,49 +1,22 @@
-export BodyGraph
-
-const BODY_TYPES = (
-    :CelestialBody,
-    :Barycenter,
-    :Planet,
-    :NaturalSatellite,
-    :MinorBody,
-    :Asteroid,
-    :Comet,
-)
+export BODIES 
 
 """
-    BodyGraph{T} where {T <: Integer}
+    register!(id::Integer) 
+    register!(id::NAIFId)
 
-Type alias of `NodeGraph{T, T} where {T <: Integer}`, to represent graphs of 
-connected bodies.
+Register a new object with identifier `id` in the bodies graph.
 """
-const BodyGraph{T} = NodeGraph{T, T} where {T <: Integer}
-
-"""
-    BodyGraph()
-
-Convenience constructor for graphs of bodies. 
-Return a BodyGraph of `NAIFId` body types.
-"""
-function BodyGraph(::Type{T}) where {T <: Integer}
-    BodyGraph{T}(SimpleGraph())
-end
-function BodyGraph()
-    BodyGraph(Int64)
-end
+register!(id::NAIFId) = add_vertex!(BODIES, id)
+register!(id::Integer) = register!(NAIFId(id))
 
 """
-    register!(g::BodyGraph{N}, id::N) where {N <: Integer}
+    connect!(id1::Integer, id2::Integer)
+    connect!(id1::NAIFId, id2::NAIFId)
 
-Register a new object with identifier `id` in the body graph `g`.
+Connect two object within the bodies graph.
 """
-register!(g::BodyGraph{N}, id::N) where {N <: Integer} = add_vertex!(g, id)
-
-"""
-    connect!(g::BodyGraph{N}, id1::N, id2::N) where {N <: Integer}
-
-Connect two object within a body graph `g`.
-"""
-connect!(g::BodyGraph{N}, id1::N, id2::N) where {N <: Integer} = add_edge!(g, id1, id2)
+connect!(id1::NAIFId, id2::NAIFId) = add_edge!(BODIES, id1, id2)
+connect!(id1::Integer, id2::Integer) = connect!(id1, id2)
 
 """
     find_path(g::BodyGraph, from::CelestialBody, to::CelestialBody)
@@ -51,11 +24,12 @@ connect!(g::BodyGraph{N}, id1::N, id2::N) where {N <: Integer} = add_edge!(g, id
 
 Find the shortest path linking two objects in a BodyGraph-type graph.
 """
-function find_path(g::BodyGraph{N}, from::CelestialBody, 
-    to::CelestialBody) where {N <: Integer}
-    find_path(g, body_naifid(from), body_naifid(to))
+function find_path(from::CelestialBody, to::CelestialBody) 
+    find_path(BODIES, body_naifid(from), body_naifid(to))
 end
 
-function find_path(g::BodyGraph, from::N, to:: N) where {N <: Integer}
-    get_nodes(g, from, to)
+function find_path(from::NAIFId, to::NAIFId)
+    get_nodes(BODIES, from, to)
 end
+
+const BODIES = NodeGraph{CelestialBody, NAIFId, Int64}(SimpleGraph{Int64}())

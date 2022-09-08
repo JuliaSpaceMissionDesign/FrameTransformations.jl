@@ -11,6 +11,7 @@ module Basic
     
     # Common 
     include("graph.jl")
+    include("schema.jl")
 
     include(joinpath("Utils", "Utils.jl"))
     @reexport using .Utils
@@ -27,6 +28,4 @@ module Basic
     include(joinpath("Orient", "Orient.jl"))
     @reexport using .Orient
 
-    include("schema.jl")
-    
 end
