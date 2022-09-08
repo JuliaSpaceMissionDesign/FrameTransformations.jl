@@ -485,7 +485,7 @@ function DateTime(seconds::T) where {T<:AbstractFloat}
 end 
 
 function DateTime(d::Date{N}, sec::T) where {T<:AbstractFloat, N<:Integer}
-    nday, remsec = divrem(sec, SECONDS_PER_DAY)
+    nday, remsec = divrem(sec, 86400.0)
     h, m, s, frac = sec2hms(remsec)
     DateTime(Date(d, floor(N, nday)), Time(h, m, s, frac))
 end

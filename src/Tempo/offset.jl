@@ -5,6 +5,12 @@ function Epoch(ep::Epoch{S1}, ::S2) where {S1<:TimeScale, S2<:TimeScale}
     Epoch{S2}(second, fraction, error)
 end
 
+Epoch(ep::Epoch{S}, ::S) where {S<:TimeScale} = ep
+
+j2000seconds(e::Epoch) = value(Epoch(e, TDB))
+j2000(e::Epoch) = j2000seconds(e)/86400.0
+j2000centuries(e::Epoch) = j2000seconds(e)/(86400.0*365.25*100.0)
+
 @inline function apply_offset(second::N, fraction::T,
     error::T, from::S1, to::S2)::Tuple{N, T, T} where {T, N<:Integer,
     S1<:TimeScale, S2<:TimeScale}

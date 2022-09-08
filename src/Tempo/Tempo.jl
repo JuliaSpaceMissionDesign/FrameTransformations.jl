@@ -18,5 +18,7 @@ module Tempo
     include("datetime.jl")
     include("epoch.jl")
     include("offset.jl")
+    
+    export j2000, j2000seconds, j2000centuries
 
 end
