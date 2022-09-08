@@ -1,0 +1,33 @@
+export smallangle_to_dcm
+
+"""
+    smallangle_to_dcm(θx::Number, θy::Number, θz::Number; normalize = true)
+
+Create a direction cosine matrix from three small rotations of angles `θx`,
+`θy`, and `θz` [rad] about the axes X, Y, and Z, respectively.
+
+If the keyword `normalize` is `true`, then the matrix will be normalized using
+the function `orthonormalize`.
+"""
+@inline function smallangle_to_dcm(
+    θx::T1,
+    θy::T2,
+    θz::T3;
+    normalize = true
+) where {T1<:Number, T2<:Number, T3<:Number}
+    # Since we might orthonormalize `D`, we need to get the float to avoid type
+    # instabilities.
+    T = float(promote_type(T1, T2, T3))
+
+    D = DCM{T}(
+          1, +θz, -θy,
+        -θz,   1, +θx,
+        +θy, -θx,   1
+    )'
+
+    if normalize
+        return orthonormalize(D)
+    else
+        return D
+    end
+end
