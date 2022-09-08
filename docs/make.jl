@@ -28,6 +28,9 @@ makedocs(;
             "Orient" => [
                 "API" => "Orient/api.md"
             ],
+            "Rotate" => [
+                "API" => "Rotate/api.md"
+            ],
             "Utils" => [
                 "API" => "Utils/api.md"
             ]
