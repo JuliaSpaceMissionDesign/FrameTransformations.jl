@@ -18,6 +18,9 @@ module Basic
     include(joinpath("Rotate", "Rotate.jl"))
     @reexport using .Rotate
 
+    include(joinpath("Tempo", "Tempo.jl"))
+    @reexport using .Tempo
+
     include(joinpath("Bodies", "Bodies.jl"))
     @reexport using .Bodies
 
