@@ -479,6 +479,10 @@ function sec2hms(s::T) where {T<:AbstractFloat}
 end
 
 function DateTime(seconds::T) where {T<:AbstractFloat}
+    if seconds < 0.0
+        throw(error("[Tempo/DateTime] CANNOT PARSE DateTime WITH NEGATIVE SECONDS!"))
+    end
+
     nday, remsec = divrem(seconds+86400.0/2, 86400.0)
     hrs, min, sec, frac = sec2hms(remsec)
     DateTime(Date(floor(Int, nday)), Time(hrs, min, sec, frac))
