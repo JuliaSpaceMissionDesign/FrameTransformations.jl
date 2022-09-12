@@ -1,5 +1,5 @@
 using NodeGraphs
-import NodeGraphs: SimpleGraph
+import Basic: register!, connect!, find_path
 
 export TIMESCALES
 
