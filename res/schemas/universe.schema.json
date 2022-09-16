@@ -11,6 +11,10 @@
             "items": {
                 "type": "object",
                 "properties": {
+                    "name": {
+                        "description": "Custom/simulation associated body name. \n Handled and transformed to **CamelCase** in the simulation environment if parsed in *snake_case*, *kebab-case* or *normal text*.",
+                        "type": "string"
+                    },
                     "point": {
                         "description": "Name of the body",
                         "oneOf": [             
@@ -49,25 +53,61 @@
                             {"type": "string"}
                         ]
                     },
-                    "gravity": {
-                        "description": "Gravity model specification",
-                        "type": "object",
-                        "properties": {
-                            "model": {
-                                "description": "Gravitational model to be used for the body",
-                                "type": "string",
-                                "enum": ["point", "poly", "harmonics"],
-                                "default": "point"
-                            },
-                            "file": {
-                                "description": "Gravitational model data file",
-                                "type": "string"
-                            }
-                        },
-                        "required": ["model"]
+                    "models": {
+                        "description": "Body associated models specification",
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "description": "Gravitational model specification",
+                                    "properties": {
+                                        "typed": {
+                                            "description": "Model type keyword (fixed)",
+                                            "type": "string",
+                                            "const": "gravity"
+                                        },
+                                        "model": {
+                                            "description": "Gravitational model used for the body",
+                                            "type": "string",
+                                            "enum": ["point", "polyhedron", "harmonics", "mascons"],
+                                            "default": "point"
+                                        },
+                                        "file": {
+                                            "description": "Gravitational model data file",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["typed", "model"]
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Atmospheric model specification",
+                                    "properties": {
+                                        "typed": {
+                                            "description": "Model type keyword (fixed)",
+                                            "type": "string",
+                                            "const": "atmosphere"
+                                        },
+                                        "model": {
+                                            "description": "Atmospheric model used for the body",
+                                            "type": "string",
+                                            "enum": ["jacchia"],
+                                            "default": "jacchia"
+                                        },
+                                        "file": {
+                                            "description": "Atmospheric model data file",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["typed", "model", "file"]
+                                }
+                            ]
+                        }
                     }
                 },
-                "required": ["point"]
+                "required": ["name", "point"]
             },
             "minItems": 1,
             "uniqueItems": true
