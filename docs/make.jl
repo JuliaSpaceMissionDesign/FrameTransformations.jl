@@ -25,6 +25,9 @@ makedocs(;
             "Tempo" => [
                 "API" => "Tempo/api.md"
             ],
+            "Ephemeris" => [
+                "API" => "Ephemeris/api.md"
+            ],
             "Orient" => [
                 "API" => "Orient/api.md"
             ],
