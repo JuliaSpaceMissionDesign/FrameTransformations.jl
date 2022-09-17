@@ -27,12 +27,12 @@ NAIFId
 """
 struct NAIFId
     valId::Val
-    NAIFId(id::Integer) = new(Val(id))
+    id::Int
+    NAIFId(id::Integer) = new(Val(id), id)
 end
 
 function Base.show(io::IO, id::NAIFId)
-    m = match(r"\{(\d{1,})\}", "$(id.valId)")
-    println(io, "NAIFId($(m.captures[1]))")
+    println(io, "NAIFId($(id.id))")
 end
 
 """

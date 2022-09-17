@@ -28,6 +28,7 @@ connect!(g::NodeGraph, id1::Integer, id2::Integer) = connect!(g, NAIFId(id1), NA
 
 """
     find_path(g::NodeGraph, from::CelestialBody, to::CelestialBody)
+    find_path(g::NodeGraph, from::NAIFId, to::NAIFId)
     find_path(g::NodeGraph, from::N, to::N) where {N <: Integer}
 
 Find the shortest path linking two objects in a `NodeGraph`-type graph.
@@ -40,3 +41,6 @@ function find_path(g::NodeGraph, from::NAIFId, to::NAIFId)
     get_nodes(g, from, to)
 end
 
+function find_path(g::NodeGraph, from::N, to::N) where {N<:Integer}
+    find_path(g, NAIFId(from), NAIFId(to))
+end

@@ -25,6 +25,9 @@ module Basic
     include(joinpath("Bodies", "Bodies.jl"))
     @reexport using .Bodies
 
+    include(joinpath("Ephemeris", "Ephemeris.jl"))
+    @reexport using .Ephemeris
+
     include(joinpath("Orient", "Orient.jl"))
     @reexport using .Orient
 
