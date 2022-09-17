@@ -175,7 +175,6 @@
             "minItems": 1,
             "uniqueItems": true
         },
-
         "connections": {
             "description": "Bodies graph nodes connections definition",
             "type": "array",
@@ -208,6 +207,87 @@
                 },
                 "required": ["name", "points"]
             }
+        },
+        "frames": {
+            "description": "Frames models definition",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "anyOf": [
+                    {"$ref": "#/definitions/frames/ICRF"},
+                    {"$ref": "#/definitions/frames/FixedRotationQuaternion"},
+                    {"$ref": "#/definitions/frames/FixedRotationEuler"},
+                    {"$ref": "#/definitions/frames/FixedAxisAngle"}
+                ]
+            }
         }
+    },
+    "definitions": {
+        "vector3": {
+            "type": "array", 
+            "description": "Three-dimensional vector",
+            "maxLength": 3, "minLength": 3, 
+            "items": {"type": "number"}
+        },
+
+        "frames": {
+
+            "ICRF": {
+                "type": "object",
+                "description": "Realization of the Internationa Celestial Reference System (ICRS)",
+                "default": "Created automatically with the ephemeris files parsed"
+            }, 
+            "FixedRotationQuaternion": {
+                "type": "object",
+                "description": "Quaternion based, fixed rotation frame (FRQ)",
+                "additionalProperties": false,
+                "properties": {
+                    "parent": {"type": "string", "description": "Name of axes to be used as parent frame for the fixed rotation axes"},
+                    "quaternion": {
+                        "type": "object",
+                        "description": "Quaterion",
+                        "properties": {
+                            "x": {"type": "number", "description": "First component of vector part (coefficient of i)"},
+                            "y": {"type": "number", "description": "Second component of vector part (coefficient of j)"},
+                            "z": {"type": "number", "description": "First component of vector part (coefficient of k)"},
+                            "s": {"type": "number", "description": "Scalar component"}
+                        },
+                        "required" : ["x", "y", "z", "s"]
+                    }
+                },
+                "required": ["parent", "quaternion"]
+            },
+            "FixedRotationEuler": {
+                "type": "object", 
+                "description": "Euler angle based, fixed rotation frame (FRE)",
+                "additionalProperties": false,
+                "properties": {
+                    "parent": {"type": "string", "description": "Name of axes to be used as parent frame for the fixed rotation axes"},
+                    "axis": {
+                        "type": "string",
+                        "description": "Rotation axis",
+                        "enum": ["x", "y", "z"]
+                    },
+                    "angle": {"type": "number", "description": "Rotation angle in degrees"}
+                },
+                "required": ["parent", "axis", "angle"]
+            },
+            "FixedAxisAngle": {
+                "type": "object", 
+                "description": "Euler angle based, fixed rotation frame (FRE)",
+                "additionalProperties": false,
+                "properties": {
+                    "parent": {"type": "string", "description": "Name of axes to be used as parent frame for the fixed rotation axes"},
+                    "axis": {
+                        "type": "array",
+                        "description": "Rotation axis",
+                        "items": {"type": "number"}
+                    },
+                    "angle": {"type": "number", "description": "Rotation angle in degrees"}
+                },
+                "required": ["parent", "axis", "angle"]
+            }
+        }
+        
     }
 }
