@@ -4,6 +4,71 @@
     "type": "object",
     "version": "0.1.0",
     "properties": {
+        "constants": {
+            "description": "Environment constants configuration",
+            "type": "object",
+            "properties": {
+                "ephemeris": {
+                    "description": "Ephemeris object user-defined name",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "database": {
+                    "description": "Constants loaded from database objects",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                }
+            },
+            "required": [
+                "ephemeris"
+            ]
+        },
+        "ephemeris": {
+            "description": "Ephemeris data configuration",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "User-defined ephemeris name"},
+                    "files": {
+                        "type": "array",
+                        "description": "Ephemeris file to load (path)",
+                        "uniqueItems": true,
+                        "minItems": 1,
+                        "items": {"type": "string"}
+                    }
+                },
+                "required": ["name", "files"]
+            }
+        },
+        "mappings": {
+            "description": "Environment objects mappings",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"properties": {
+                    "name": {"type": "string", "description": "Name of the mapping definition"},
+                    "path": {"type": "string", "description": "File to be loaded"}
+                    }},
+                    {"properties": {
+                        "name": {"type": "string", "description": "Name of the mapping definition"},
+                        "data": {"type": "object", "description": "Mapping data entries"}
+                    }}
+                ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
         "bodies": {
             "title": "Bodies",
             "description": "Define the active bodies",
@@ -18,7 +83,7 @@
                     "point": {
                         "description": "Name of the body",
                         "oneOf": [             
-                            {"type": "string", "description": "Body name"},               
+                            {"type": "string", "description": "Body name (a mapping definition shall be associated to the universe to use this)"},               
                             {"type": "number", "description": "Body NAIFID"}
                         ]
                     },
@@ -112,69 +177,6 @@
             "minItems": 1,
             "uniqueItems": true
         },
-        "constants": {
-            "description": "Environment constants configuration",
-            "type": "object",
-            "properties": {
-                "ephemeris": {
-                    "description": "Constants loaded from ephemeris objects",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true
-                },
-                "database": {
-                    "description": "Constants loaded from database objects",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true
-                }
-            },
-            "required": [
-                "ephemeris"
-            ]
-        },
-        "ephemeris": {
-            "description": "Ephemeris data configuration",
-            "type": "object",
-            "properties": {
-                "files": {
-                    "description": "Ephemeris files to load",
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string", "description": "Name of the kernel file"},
-                            "path": {"type": "string", "description": "Kernel path"}
-                        },
-                        "required": ["name", "path"]
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true
-                }
-            },
-            "required": [
-                "files"
-            ]
-        },
-        "mappings": {
-            "description": "Environment objects mappings",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string", "description": "Name of the file"},
-                    "path": {"type": "string", "description": "File to be loaded"}
-                }
-            },
-            "minItems": 1,
-            "uniqueItems": true
-        },
         "connections": {
             "description": "Bodies graph nodes connections definition",
             "type": "array",
@@ -214,7 +216,7 @@
             "items": {
                 "type": "object",
                 "anyOf": [
-                    {"$ref": "#/definitions/frames/ICRF"},
+                    {"$ref": "#/definitions/frames/Ephemeris"},
                     {"$ref": "#/definitions/frames/FixedRotationQuaternion"},
                     {"$ref": "#/definitions/frames/FixedRotationEuler"},
                     {"$ref": "#/definitions/frames/FixedAxisAngle"}
@@ -222,6 +224,7 @@
             }
         }
     },
+    "required": ["constants", "ephemeris"],
     "definitions": {
         "vector3": {
             "type": "array", 
@@ -229,13 +232,17 @@
             "maxLength": 3, "minLength": 3, 
             "items": {"type": "number"}
         },
-
         "frames": {
-
-            "ICRF": {
+            "Ephemeris": {
                 "type": "object",
-                "description": "Realization of the Internationa Celestial Reference System (ICRS)",
-                "default": "Created automatically with the ephemeris files parsed"
+                "description": "Configure points in Frames module graph",
+                "additionalProperties": false,
+                "properties": {
+                    "source": {"type": "string", "description": "Ephemerides source user-defined name"},
+                    "only": {"type": "array", "items": "number", "description": "List of integer identifiers to load (if absent load everything)"},
+                    "ignore": {"type": "array", "items": "number", "description": "List of integer identifiers to ignore"}
+                },
+                "required": ["source"]
             }, 
             "FixedRotationQuaternion": {
                 "type": "object",
@@ -288,6 +295,5 @@
                 "required": ["parent", "axis", "angle"]
             }
         }
-        
     }
 }
