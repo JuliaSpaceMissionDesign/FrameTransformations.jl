@@ -1,4 +1,8 @@
-## Types
+# [Ephemeris] (@id basic_ephemeris)
+
+## [API](@id basic_ephemeris_api)
+
+### Types
 
 ```@meta
 DocTestSetup = quote
@@ -11,21 +15,21 @@ Modules = [Basic.Ephemeris]
 Order = [:type]
 ```
 
-## Functions
+### Functions
 
 ```@autodocs
 Modules = [Basic.Ephemeris]
 Order = [:function]
 ```
 
-## Macros
+### Macros
 
 ```@autodocs
 Modules = [Basic.Ephemeris]
 Order = [:macro]
 ```
 
-## Constants
+### Constants
 
 ```@autodocs
 Modules = [Basic.Ephemeris]

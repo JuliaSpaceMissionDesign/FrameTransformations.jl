@@ -1,4 +1,8 @@
-## Types
+# [Tempo](@id basic_tempo)
+
+## [API](@id basic_tempo_api)
+
+### Types
 
 ```@meta
 DocTestSetup = quote
@@ -11,21 +15,21 @@ Modules = [Basic.Tempo]
 Order = [:type]
 ```
 
-## Functions
+### Functions
 
 ```@autodocs
 Modules = [Basic.Tempo]
 Order = [:function]
 ```
 
-## Macros
+### Macros
 
 ```@autodocs
 Modules = [Basic.Tempo]
 Order = [:macro]
 ```
 
-## Constants
+### Constants
 
 ```@autodocs
 Modules = [Basic.Tempo]

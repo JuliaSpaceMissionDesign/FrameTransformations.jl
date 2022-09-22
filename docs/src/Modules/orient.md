@@ -1,4 +1,8 @@
-## Types
+# [Orient](@id basic_orient)
+
+## [API](@id basic_orient_api) 
+
+### Types
 
 ```@meta
 DocTestSetup = quote
@@ -11,21 +15,21 @@ Modules = [Basic.Orient]
 Order = [:type]
 ```
 
-## Functions
+### Functions
 
 ```@autodocs
 Modules = [Basic.Orient]
 Order = [:function]
 ```
 
-## Macros
+### Macros
 
 ```@autodocs
 Modules = [Basic.Orient]
 Order = [:macro]
 ```
 
-## Constants
+### Constants
 
 ```@autodocs
 Modules = [Basic.Orient]

@@ -1,4 +1,8 @@
-## Types
+# [Rotate](@id basic_rotate)
+
+## [API](@id basic_rotate_api)
+
+### Types
 
 ```@meta
 DocTestSetup = quote
@@ -11,21 +15,21 @@ Modules = [Basic.Rotate]
 Order = [:type]
 ```
 
-## Functions
+### Functions
 
 ```@autodocs
 Modules = [Basic.Rotate]
 Order = [:function]
 ```
 
-## Macros
+### Macros
 
 ```@autodocs
 Modules = [Basic.Rotate]
 Order = [:macro]
 ```
 
-## Constants
+### Constants
 
 ```@autodocs
 Modules = [Basic.Rotate]

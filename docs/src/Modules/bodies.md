@@ -1,4 +1,8 @@
-## Types
+# [Bodies](@id basic_bodies)
+
+## [API](@id basic_bodies_api)
+
+### Types
 
 ```@meta
 DocTestSetup = quote
@@ -11,21 +15,21 @@ Modules = [Basic.Bodies]
 Order = [:type]
 ```
 
-## Functions
+### Functions
 
 ```@autodocs
 Modules = [Basic.Bodies]
 Order = [:function]
 ```
 
-## Macros
+### Macros
 
 ```@autodocs
 Modules = [Basic.Bodies]
 Order = [:macro]
 ```
 
-## Constants
+### Constants
 
 ```@autodocs
 Modules = [Basic.Bodies]

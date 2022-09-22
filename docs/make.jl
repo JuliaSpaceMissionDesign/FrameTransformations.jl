@@ -14,29 +14,20 @@ makedocs(;
         canonical="https://astronaut-tools.gitlab.io/julia/core/Basic",
         highlights = ["yaml"],
         ansicolor = true,
-        assets=[]
+        assets=["assets/init.js"]
     ),
     pages=[
         "Home" => "index.md",
+        "Manual" => [
+            "Overview" => "manual.md"
+        ],
         "Modules" => [
-            "Bodies" => [
-                "API" => "Bodies/api.md"
-            ],
-            "Tempo" => [
-                "API" => "Tempo/api.md"
-            ],
-            "Ephemeris" => [
-                "API" => "Ephemeris/api.md"
-            ],
-            "Orient" => [
-                "API" => "Orient/api.md"
-            ],
-            "Rotate" => [
-                "API" => "Rotate/api.md"
-            ],
-            "Utils" => [
-                "API" => "Utils/api.md"
-            ]
+            "Bodies" => "Modules/bodies.md",
+            "Tempo" => "Modules/time.md",
+            "Ephemeris" => "Modules/ephem.md",
+            "Orient" => "Modules/orient.md",
+            "Rotate" => "Modules/rotate.md",
+            "Utils" => "Modules/utils.md"
         ]
     ],
     strict = !("strict=false" in ARGS),
