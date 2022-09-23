@@ -5,25 +5,27 @@ export TIMESCALES
 
 struct NotATimeScale <: TimeScale end
 
-const NAMES = (
+const TIMESCALES_NAMES = (
     # :UniversalTime,
     :InternationalAtomicTime,
+    :CoordinatedUniversalTime,
     :TerrestrialTime,
     :GeocentricCoordinateTime,
     :BarycentricCoordinateTime,
     :BarycentricDynamicalTime,
 )
 
-const ACRONYMS = (
+const TIMESCALES_ACRONYMS = (
     # :UT1,
     :TAI,
+    :UTC,
     :TT,
     :TCG,
     :TCB,
     :TDB,
 )
 
-for (acronym, name) in zip(ACRONYMS, NAMES)
+for (acronym, name) in zip(TIMESCALES_ACRONYMS, TIMESCALES_NAMES)
     acro_str = String(acronym)
     name_str = String(name)
     name_split = join(split(name_str, r"(?=[A-Z])"), " ")
@@ -31,7 +33,9 @@ for (acronym, name) in zip(ACRONYMS, NAMES)
     @eval begin
         """
             $($name_str)
+
         A type representing the $($name_split) ($($acro_str)) time scale.
+
         # References
         - [Wikipedia](https://en.wikipedia.org/wiki/$($wiki))
         """
@@ -39,8 +43,10 @@ for (acronym, name) in zip(ACRONYMS, NAMES)
 
         """
             $($acro_str)
+
         The singleton instance of the [`$($name_str)`](@ref) type representing
         the $($name_split) ($($acro_str)) time scale.
+
         # References
         - [Wikipedia](https://en.wikipedia.org/wiki/$($wiki))
         """
@@ -49,16 +55,10 @@ for (acronym, name) in zip(ACRONYMS, NAMES)
         export $name, $acronym
 
         Base.show(io::IO, ::$name) = print(io, "$($acro_str)")
-        tryparse(::Val{Symbol($acro_str)}) = $acronym
+        Base.tryparse(::Val{Symbol($acro_str)}) = $acronym
     end
 end
 
-
-"""
-    TIMESCALES = NodeGraph{TimeScale, UInt8, Int16}(SimpleGraph{UInt8}())
-
-Time Scales Graph singleton.
-"""
 const TIMESCALES = NodeGraph{TimeScale, UInt8, Int16}(SimpleGraph{UInt8}())
 
 """
@@ -82,6 +82,7 @@ function connect!(s1::TS1, s2::TS2;
 end
 
 connect!(TAI, TT)
+connect!(TAI, UTC)
 # connect!(TAI, UT1)
 connect!(TT, TCG)
 connect!(TT, TDB)
@@ -90,3 +91,35 @@ connect!(TCB, TDB)
 function find_path(from::TS1, to::TS2) where {TS1<:TimeScale, TS2<:TimeScale} 
     get_nodes(TIMESCALES, from, to)
 end
+
+
+"""
+    TIMESCALES
+
+Time Scales Graph singleton. 
+
+It is a `NodeGraph{TimeScale, UInt8, Int16}` type instance, containing the 
+following scales: $(String.(TIMESCALES_ACRONYMS))
+
+It can be easily extended using the `register!` and/or `connect!` methods and 
+defining an appropriate type for the new item, as well as its relation with 
+the other nodes in the graph.
+
+### Example
+
+```@example
+# define a new timescale type - shall be a TimeScale subtype
+struct NewTimeScale <: TimeScale end 
+
+# create the user-defined timescale singleton instance
+const NTS = NewTimeScale()
+
+# define offset to and from another timescale in the graph 
+offset(::InternationalAtomicTime, ::NewTimeScale) = 1.0
+offset(::NewTimeScale, ::InternationalAtomicTime) = -1.0
+
+# connect to the graph, with the parent node used in `offset`
+connect!(TAI, NTS)
+```
+"""
+TIMESCALES

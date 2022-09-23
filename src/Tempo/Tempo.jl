@@ -15,10 +15,13 @@ module Tempo
     include("parse.jl")
     include("scales.jl")
     include("origin.jl")
-    include("datetime.jl")
-    include("epoch.jl")
+    include("convert.jl")
     include("offset.jl")
+    include("datetime.jl")
+    # include("epoch.jl")
     
-    export j2000, j2000seconds, j2000centuries
+    
+    
+    # export j2000, j2000seconds, j2000centuries
 
 end

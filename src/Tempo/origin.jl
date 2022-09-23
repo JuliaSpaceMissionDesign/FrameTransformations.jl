@@ -1,17 +1,42 @@
+export DJ2000, DJM0, DMJD
+
 abstract type AbstractEpochOrigin end
+
+"""
+    DJ2000
+
+Reference epoch (J2000.0), Julian Date (`2451545.0`). 
+It is `12:00 01-01-2000`.
+"""
+const DJ2000 = 2451545.0
+
+"""
+    DMJD
+
+Reference epoch (J2000.0), Modified Julian Date (`51544.5`).
+"""
+const DMJD = 51544.5
+
+"""
+    DJM0
+
+Julian Date of Modified Julian Date zero (`2400000.5`).
+It is `00:00 17-11-1858`.
+"""
+const DJM0 = 2400000.5
 
 const EPOCH_ORIGIN = (
     :JulianDate,
     :ModifiedJulianDate,
     :JulianDate2000,
-    :ModifiedJulianDate2000
+    :ModifiedJulianDate2000,
 )
 
 const EPOCH_ORIGIN_ACRONYMS = (
     :JD,
     :MJD,
     :J2000,
-    :MDJ2000
+    :MJ2000
 )
 
 const EPOCH_STARTS = (
@@ -22,10 +47,10 @@ const EPOCH_STARTS = (
 )
 
 const EPOCH_ORIGIN_TO_J2000 = (
-    2.451545e6 * 86400.0,
-    51544.5 * 86400.0, 
+    DJ2000,
+    DMJD, 
     0.0, 
-    0.5 * 86400.0
+    -0.5,
 )
 
 for (name, acr, off, start) in zip(EPOCH_ORIGIN, EPOCH_ORIGIN_ACRONYMS, 
@@ -54,7 +79,14 @@ for (name, acr, off, start) in zip(EPOCH_ORIGIN, EPOCH_ORIGIN_ACRONYMS,
         export $name, $acr
 
         Base.show(io::IO, ::$name) = print(io, "$($acro_str)")
-        tryparse(::Val{Symbol($acro_str)}) = $acr
+        Base.tryparse(::Val{Symbol($acro_str)}) = $acr
+
+        """
+            offset(::$($name))
+
+        Offset to shift J2000 epochs (with origin at `2000-01-01T12:00`) 
+        to [`$($name_str)`](@ref) (with origin at `$($start)`)
+        """
         @inline offset(::$name) = $(off)
     end
 end
