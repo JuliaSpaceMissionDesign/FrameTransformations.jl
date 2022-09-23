@@ -31,6 +31,8 @@ Type to represent a calendar date.
 
 - `Date(year::N, dayinyear::N) where {N<:Integer}` -- initialize giving the 
    year and the day of the year.
+
+- `Date(dt::DateTime)` -- extract date from [`DateTime`](@ref) objects.
 """
 struct Date{N<:Integer}
     year::N 
@@ -387,6 +389,8 @@ A type wrapping a date and a time since a reference date.
     as seconds since `d`.
 
 - `DateTime{N, T}(dt::DateTime) where {N, T}` -- ghost constructor
+
+- `DateTime(e::Epoch)` -- construct from `Epoch`
 """
 struct DateTime{N<:Integer, T<:AbstractFloat} <: AbstractDateTimeEpoch
     date::Date{N}

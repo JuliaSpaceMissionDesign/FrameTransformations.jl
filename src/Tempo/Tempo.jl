@@ -18,7 +18,7 @@ module Tempo
     include("convert.jl")
     include("offset.jl")
     include("datetime.jl")
-    # include("epoch.jl")
+    include("epoch.jl")
     
     
     

@@ -209,4 +209,32 @@ end
         dt2 = dt + dtr
         @test Tempo.j2000s(dt2) - Tempo.j2000s(dt) ≈ dtr
     end
+    @testset "Epoch" begin
+        s, ry, rm, rd, rH, rM, rS, rF = generate_random_epoch()
+        e = Epoch(s)
+        dt = DateTime(e)
+
+        @test all((ry, rm, rd, rH, rM, rS+rF) .≈ (year(dt), month(dt), 
+            day(dt), hour(dt), minute(dt), second(dt)))
+        @test Epoch("-0.5") ≈ Epoch("2000-01-01T00:00:00.0000 TDB")
+        @test Epoch("0.5") ≈ Epoch("2000-01-02T00:00:00.0000 TDB")
+        @test Epoch("JD 2400000.5") ≈ Epoch("1858-11-17T00:00:00.0000 TDB")
+        @test Epoch("JD 2400000.5") ≈ Epoch("MJD 0.0")
+        
+        s, ry, rm, rd, rH, rM, rS, rF = generate_random_epoch()
+        e = Epoch(s)
+        dt = DateTime(e)
+        @test DateTime(e) ≈ dt
+
+        rn = rand(0:10000)
+        @test value(e + rn) ≈ e.second + rn
+        rn = rand(0:10000)
+        @test value(e - rn) ≈ e.second - rn
+
+        rn0 = rand(-2000:2000)
+        rn1 = rand(-1000:1000)
+        @test Epoch("$rn0") - Epoch("$rn1") ≈ (rn0 - rn1)*Tempo.DAY2SEC
+        @test all(
+            collect(Epoch("0"):86400.0:Epoch("2")) .== [Epoch("0"), Epoch("1"), Epoch("2")])
+    end
 end

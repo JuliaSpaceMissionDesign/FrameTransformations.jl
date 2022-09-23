@@ -110,7 +110,7 @@ function parse_iso(s::S) where {S<: AbstractString}
     end
 
     @label done
-    return (dy, dm, dd, th, tm, ts, tms)
+    return (dy, dm, dd, th, tm, ts, Float64(tms))
 
     @label error
     throw(ArgumentError("Invalid ISO Epoch string! The correct format is YYYY-MM-DDThh:mm:ss.ffffffff!"))
