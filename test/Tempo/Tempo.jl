@@ -41,9 +41,6 @@ end
     end
 end
 
-
-
-
 @testset "scales.jl" begin
     # check if all declared scales are inserted in the graph
     scales = collect(keys(TIMESCALES.nodes))
@@ -102,6 +99,39 @@ end
     end
 end
 
+function generate_random_datetime()
+    ry = rand(1800:2100)
+    rm = rand(1:12)
+    ly = Tempo.isleapyear(ry)
+    if ly && rm == 2
+        rd = rand(1:29)
+    elseif rm == 2
+        rd = rand(1:28)
+    else
+        rd = rand(1:Tempo.MTAB[rm])
+    end
+    rH = rand(0:23)
+    rM = rand(0:59)
+    rS = rand(0:59)
+    rF = rand(0.:0.000000001:1.)
+
+    return ry, rm, rd, rH, rM, rS, rF
+end
+
+function generate_random_datetimeiso()
+    ry, rm, rd, rH, rM, rS, rF = generate_random_datetime()
+    rs = rS + rF
+    return "$ry-$rm-$(rd)T$rH:$rM:$rs", ry, rm, rd, rH, rM, rS, rF
+end
+
+function generate_random_epoch()
+    ry, rm, rd, rH, rM, rS, rF = generate_random_datetime()
+    rs = rS + rF
+    nscales = length(Tempo.TIMESCALES_ACRONYMS)
+    rscale = rand(1:nscales)
+    return "$ry-$rm-$(rd)T$rH:$rM:$rs $(String(Tempo.TIMESCALES_ACRONYMS[rscale]))", ry, rm, rd, rH, rM, rS, rF
+end
+
 @testset "parse.jl" begin 
     s = "2022-01-01T12:00"
     @test all(Tempo.parse_iso("2022-12-20") .== (2022, 12, 20, 0, 0, 0, 0))
@@ -110,6 +140,12 @@ end
     @test all(Tempo.parse_iso("2022-12-20T13:32:12") .== (2022, 12, 20, 13, 32, 12, 0))
     @test all(Tempo.parse_iso("2022-12-20T13:32:12.2132") .== (2022, 12, 20, 13, 32, 12, 0.2132))
     @test all(Tempo.parse_iso("2022-12-20T12:00:00.0 TDB") .== (2022, 12, 20, 12, 0, 0, 0))
+
+    s, ry, rm, rd, rH, rM, rS, rF = generate_random_epoch()
+    @test all(isapprox.(Tempo.parse_iso(s),(ry, rm, rd, rH, rM, rS, rF); rtol=1e-3)) 
+
+    s, ry, rm, rd, rH, rM, rS, rF = generate_random_datetimeiso()
+    @test all(isapprox.(Tempo.parse_iso(s),(ry, rm, rd, rH, rM, rS, rF); rtol=1e-3)) 
 end
 
 @testset "datetime.jl" begin 
@@ -143,16 +179,34 @@ end
         @test Tempo.second(Int64, t) == 15
         @test Tempo.fraction_of_second(t) ≈ 0.300300300
     end
+
+    @testset "DateTime" begin
+        d = Date(2000, 1, 1)
+        t0 = Time(12, 0, 0.0)
+        J2000 = DateTime(d, 0.0)
+        @test t0 == Time(J2000)
+        @test d == Date(J2000)
+
+        s = "2000-01-01T12:00:00.0"
+        @test J2000 == DateTime(s)
+        @test J2000 == DateTime(0.0)
+
+        D2 = DateTime(Tempo.DAY2SEC/3)
+        @test Tempo.j2000(D2) ≈ 1/3
+        @test Tempo.j2000s(D2) ≈ 1/3 * Tempo.DAY2SEC
+        @test Tempo.j2000c(D2) ≈ 1/3 / Tempo.CENTURY2DAY
+
+        ry, rm, rd, rH, rM, rS, rF = generate_random_datetime()
+        dt = DateTime(ry, rm, rd, rH, rM, rS, rF)
+        @test year(dt) == ry 
+        @test month(dt) == rm
+        @test day(dt) == rd
+        @test hour(dt) == rH
+        @test minute(dt) == rM
+        @test second(dt) == rS + rF
+
+        dtr = rand(0.0:1.0:365.25*86400.0)
+        dt2 = dt + dtr
+        @test Tempo.j2000s(dt2) - Tempo.j2000s(dt) ≈ dtr
+    end
 end
-
-
-# function Epoch(ep::Epoch{S1}, ::S2) where {S1<:TimeScale, S2<:TimeScale}
-#     second, fraction, error = apply_offset(ep.second, ep.fraction, ep.error, S1(), S2())
-#     Epoch{S2}(second, fraction, error)
-# end
-
-# Epoch(ep::Epoch{S}, ::S) where {S<:TimeScale} = ep
-
-# j2000seconds(e::Epoch) = value(Epoch(e, TDB))
-# j2000(e::Epoch) = j2000seconds(e)/86400.0
-# j2000centuries(e::Epoch) = j2000seconds(e)/(86400.0*365.25*100.0)

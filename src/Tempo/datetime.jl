@@ -1,6 +1,7 @@
 export Date, Time, 
        year, month, day, 
-       isleapyear, find_dayinyear, j2000, cal2jd,
+       isleapyear, find_dayinyear, cal2jd,
+       j2000, j2000s, j2000c,
        hour, minute, second, fraction_of_second,
        fraction_of_day, second_in_day, DateTime
 
@@ -356,6 +357,10 @@ function Base.show(io::IO, t::Time)
     return print(io, h, ":", m, ":", s, ".", f[3:6])
 end
 
+############
+# DATETIME #
+############
+
 """
     DateTime{N<:Integer, T<:AbstractFloat} <: AbstractDateTimeEpoch
 
@@ -416,4 +421,89 @@ Date(dt::DateTime) = dt.date
 Time(dt::DateTime) = dt.time
 DateTime{N, T}(dt::DateTime) where {N, T} = dt
 
+"""
+    year(d::DateTime)
+
+Get year associated to `DateTime` type.
+"""
+year(dt::DateTime) = year(Date(dt))
+
+"""
+    month(d::DateTime)
+
+Get month associated to `DateTime` type.
+"""
+month(dt::DateTime) = month(Date(dt))
+
+"""
+    day(d::DateTime)
+
+Get day associated to `DateTime` type.
+"""
+day(dt::DateTime) = day(Date(dt))
+
+"""
+    hour(d::DateTime)
+
+Get hour associated to `DateTime` type.
+"""
+hour(dt::DateTime) = hour(Time(dt))
+
+"""
+    minute(d::DateTime)
+
+Get minute associated to `DateTime` type.
+"""
+minute(dt::DateTime) = minute(Time(dt))
+
+"""
+    second(d::DateTime)
+
+Get second associated to `DateTime` type.
+"""
+second(dt::DateTime) = second(Float64, Time(dt))
+
 Base.show(io::IO, dt::DateTime) = print(io, Date(dt), "T", Time(dt))
+
+"""
+    j2000(dt::DateTime)
+
+Convert `DateTime` in Julian Date since J2000 (days)
+"""
+function j2000(dt::DateTime)
+    jd1, jd2 = calhms2jd(
+        year(dt), month(dt), day(dt), hour(dt), minute(dt), second(dt)
+    )
+    return j2000(jd1, jd2)
+end
+
+"""
+    j2000s(dt::DateTime)
+
+Convert `DateTime` in Julian Date since J2000 (seconds)
+"""
+function j2000s(dt::DateTime)
+    return j2000(dt::DateTime)*DAY2SEC
+end
+
+"""
+    j2000c(dt::DateTime)
+
+Convert `DateTime` in Julian Date since J2000 (centuries)
+"""
+function j2000c(dt::DateTime)
+    return j2000(dt)/CENTURY2DAY
+end
+
+Base.isless(d1::DateTime, d2::DateTime) = j2000(d1) < j2000(d2)
+Base.:(==)(d1::DateTime, d2::DateTime) = j2000(d1) == j2000(d2)
+
+Base.isapprox(d1::DateTime, d2::DateTime; kwargs...) = isapprox(j2000(d1), j2000(d2); kwargs...)
+
+function Base.:+(d1::DateTime, δs::N) where {N<:Number}
+    return DateTime(j2000s(d1) + δs)
+end 
+
+function Base.:-(d1::DateTime, δs::N) where {N<:Number}
+    return DateTime(j2000s(d1) - δs)
+end 
