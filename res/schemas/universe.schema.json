@@ -27,6 +27,7 @@
                     "uniqueItems": true
                 }
             },
+            "additionalProperties": false,
             "required": [
                 "ephemeris"
             ]
@@ -37,6 +38,7 @@
             "uniqueItems": true,
             "items": {
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "name": {"type": "string", "description": "User-defined ephemeris name"},
                     "files": {
@@ -45,9 +47,14 @@
                         "uniqueItems": true,
                         "minItems": 1,
                         "items": {"type": "string"}
+                    },
+                    "parser": {
+                        "type": "string",
+                        "description": "Ephemeris parser type",
+                        "enum": ["calceph"]
                     }
                 },
-                "required": ["name", "files"]
+                "required": ["name", "files", "parser"]
             }
         },
         "mappings": {
@@ -55,22 +62,16 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "oneOf": [
-                    {   "type": "object",
-                        "properties": {
-                            "name": {"type": "string", "description": "Name of the mapping definition"},
-                            "path": {"type": "string", "description": "File to be loaded"}
-                        },
-                        "required": ["name", "path"]
-                    },
-                    {   "type": "object",
-                        "properties": {
-                            "name": {"type": "string", "description": "Name of the mapping definition"},
-                            "data": {"type": "array", "description": "Mapping data entries"}
-                        },
-                        "required": ["name", "data"]
+                "additionalProperties": false,
+                "properties": {
+                    "name": {"type": "string", "description": "Name of the mapping definition."},
+                    "paths": {
+                        "type": "array",
+                        "description": "File to be loaded",
+                        "items": {"type": "string"}
                     }
-                ]
+                },
+                "required": ["name", "paths"]
             },
             "minItems": 1,
             "uniqueItems": true
@@ -81,6 +82,7 @@
             "type": "array",
             "items": {
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "name": {
                         "description": "User-defined body name. \n Handled and transformed to **CamelCase** in the simulation environment if parsed in *snake_case*, *kebab-case* or *normal text*.",
@@ -245,8 +247,16 @@
                 "additionalProperties": false,
                 "properties": {
                     "source": {"type": "string", "description": "Ephemerides source user-defined name"},
-                    "only": {"type": "array", "items": "number", "description": "List of integer identifiers to load (if absent load everything)"},
-                    "ignore": {"type": "array", "items": "number", "description": "List of integer identifiers to ignore"}
+                    "only": {
+                        "type": "array", 
+                        "items": {"type": "number"}, 
+                        "description": "List of integer identifiers to load (if absent load everything)"
+                    },
+                    "ignore": {
+                        "type": "array", 
+                        "items": {"type": "number"}, 
+                        "description": "List of integer identifiers to ignore"
+                    }
                 },
                 "required": ["source"]
             }, 
