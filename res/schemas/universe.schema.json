@@ -152,6 +152,7 @@
                                             "type": "string"
                                         }
                                     },
+                                    "additionalProperties": false,
                                     "required": ["typed", "model"]
                                 },
                                 {
@@ -174,6 +175,7 @@
                                             "type": "string"
                                         }
                                     },
+                                    "additionalProperties": false,
                                     "required": ["typed", "model", "file"]
                                 }
                             ]
