@@ -56,14 +56,20 @@
             "items": {
                 "type": "object",
                 "oneOf": [
-                    {"properties": {
-                    "name": {"type": "string", "description": "Name of the mapping definition"},
-                    "path": {"type": "string", "description": "File to be loaded"}
-                    }},
-                    {"properties": {
-                        "name": {"type": "string", "description": "Name of the mapping definition"},
-                        "data": {"type": "object", "description": "Mapping data entries"}
-                    }}
+                    {   "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Name of the mapping definition"},
+                            "path": {"type": "string", "description": "File to be loaded"}
+                        },
+                        "required": ["name", "path"]
+                    },
+                    {   "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Name of the mapping definition"},
+                            "data": {"type": "array", "description": "Mapping data entries"}
+                        },
+                        "required": ["name", "data"]
+                    }
                 ]
             },
             "minItems": 1,
