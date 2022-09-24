@@ -276,3 +276,16 @@ end
 function Base.isapprox(e1::Epoch{S}, e2::Epoch{S}; kwargs...) where {S}
     return isapprox(value(e1), value(e2); kwargs...)
 end
+
+function Base.convert(to::S2, e::Epoch{S1}) where {S1<:TimeScale, S2<:TimeScale}
+    apply_offsets(e, timescale(e), to)
+end
+
+function Base.convert(::Type{S2}, e::Epoch{S1}) where {S1<:TimeScale, S2<:TimeScale}
+    convert(S2(), e)
+end
+
+function apply_offsets(e::Epoch{S1}, from::S1, to::S2) where {S1<:TimeScale, S2<:TimeScale}
+    sec, frac = apply_offsets(e.second, e.fraction, from, to)    
+    return Epoch(sec, frac, to)
+end

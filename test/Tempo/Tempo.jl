@@ -227,14 +227,22 @@ end
         @test DateTime(e) ≈ dt
 
         rn = rand(0:10000)
-        @test value(e + rn) ≈ e.second + rn
+        @test value(e + rn) ≈ value(e) + rn
         rn = rand(0:10000)
-        @test value(e - rn) ≈ e.second - rn
+        @test value(e - rn) ≈ value(e) - rn
 
         rn0 = rand(-2000:2000)
         rn1 = rand(-1000:1000)
         @test Epoch("$rn0") - Epoch("$rn1") ≈ (rn0 - rn1)*Tempo.DAY2SEC
         @test all(
             collect(Epoch("0"):86400.0:Epoch("2")) .== [Epoch("0"), Epoch("1"), Epoch("2")])
+
+        # Based on Vallado "Fundamental of astrodynamics" page 196
+        e = Epoch("2004-05-14T16:43:00 UTC")
+        @test DateTime("2004-05-14T16:43:32.0000") ≈ DateTime(convert(TAI, e))
+        @test DateTime("2004-05-14T16:44:04.1840") ≈ DateTime(convert(TT, e))
+        @test DateTime("2004-05-14T16:44:04.1856") ≈ DateTime(convert(TDB, e))
+        @test DateTime("2004-05-14T16:44:17.5255") ≈ DateTime(convert(TCB, e))
+        @test DateTime("2004-05-14T16:44:04.7836") ≈ DateTime(convert(TCG, e))
     end
 end
