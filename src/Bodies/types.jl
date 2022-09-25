@@ -181,9 +181,17 @@ Return the polar radius of `body` in km.
 """
 function body_equatorial_radius end
 
+"""
+    body_flattening(body::CelestialBody)::Float64
+    body_flattening(body::NAIFId)::Float64
+
+Return the flattening of `body`.
+"""
+function body_flattening end
 
 # parse overloads
-for fun in (:body_gm, :body_equatorial_radius, :body_polar_radius, :body_mean_radius)
+for fun in (:body_gm, :body_equatorial_radius, :body_flattening, 
+    :body_polar_radius, :body_mean_radius)
     @eval begin
         @inline $fun(id::Integer) = $fun(NAIFId(id))
         @inline $fun(naifid::NAIFId) = $fun(naifid.valId)
