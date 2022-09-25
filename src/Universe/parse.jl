@@ -4,6 +4,8 @@ using Basic.Utils: YAML, JSON, filepath
 import YAML as YAMLLib
 import JSON3
 
+const DEF_UNIVERSE_FILE = joinpath(@__DIR__, "..", "..", "gen/src", "temp.jl")
+
 function _parse_universe(configfile::YAML)
     YAMLLib.load_file(filepath(configfile); dicttype=OrderedDict{String, Any})
 end
@@ -15,7 +17,7 @@ function _parse_universe(configfile::JSON)
     end
 end
 
-function parse_universe(configfile::Union{YAML, JSON})
+function parse_universe(configfile::Union{YAML, JSON}, file=DEF_UNIVERSE_FILE)
     config = _parse_universe(configfile)
     data = OrderedDict()
     push!(data, :gen => Vector{Tuple{GenMeta, String}}())
@@ -34,5 +36,38 @@ function parse_universe(configfile::Union{YAML, JSON})
         validate(UniverseSchema, config)
         throw(error("[Universe] Input universe file is not valid!"))
     end
+    if length(data[:gen]) > 0
+        gen = _parse_generated(file, data[:gen])  
+        write(gen)
+    end
     return data 
+end
+
+function _parse_generated(filename, data)
+    GEN(
+        filename, 
+        [meta for (meta, _) in data],
+        [gen for (_, gen) in data],
+    )
+end
+
+function writelines(gen::GEN)
+    s = ""
+    for (m, d) in zip(gen.meta, gen.body)
+        meta = template_metadata(m.generated, m.id)
+        data = template_generated(d)
+        s *= meta*"\n"*data 
+    end
+    return s
+end
+
+function write(gen::GEN)
+    lines = split(writelines(gen), "\n")
+    open(gen.path, "w") do f 
+        for line in lines
+            Base.write(f, line)
+            Base.write(f, "\n")
+        end
+    end
+    nothing
 end

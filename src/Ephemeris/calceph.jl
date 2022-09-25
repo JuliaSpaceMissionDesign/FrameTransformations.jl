@@ -4,6 +4,7 @@ using Calceph: Ephem as CalcephEphemHandler,
 
 using NodeGraphs: NodeGraph
 import Basic: register!, connect!
+using Basic.Bodies: NAIFId
 
 export CalcephProvider, 
        ephem_timespan, ephem_timescale, ephem_position_records
@@ -82,10 +83,11 @@ end
 
 Register and connect the bodies present in the ephemeris file in a body graph.
 """
-function register!(g::NodeGraph, eph::CalcephProvider) 
+function register!(g::NodeGraph{NAIFId, N, G, N}, 
+    eph::CalcephProvider) where {N<:Integer, G}
     pos_records = ephem_position_records(eph)
     for p in pos_records
-        connect!(g, p.center, p.target)
+        connect!(g, NAIFId(p.center), NAIFId(p.target))
     end
 end
 

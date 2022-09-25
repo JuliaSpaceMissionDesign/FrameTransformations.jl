@@ -41,9 +41,13 @@ function generate_body!(gen::String, bname::Symbol, bid::N,
            struct $(bname) <: $(objtype) end
            """
     gen *= genf_psngin(:Bodies, :body_naifid, "NAIFId($bid)", (nothing, bname))
-    gen *= genf_psngin(:Bodies, :body_from_naifid, bname, (nothing, Val{bid}))
-    gen *= genf_psngin(:Bodies, :body_gm, pop!(data, :gm), (nothing, Val{bid}))
-    gen *= genf_psngin(:Bodies, :body_system_equivalent, bseb, (nothing, Val{bid}))
+    # gen *= genf_psngin(:Bodies, :body_from_naifid, bname, (nothing, Val{bid})) # removed 
+    if haskey(data, :gm)
+        gen *= genf_psngin(:Bodies, :body_gm, pop!(data, :gm), (nothing, Val{bid}))
+    else 
+        throw(error("[Bodies] gravitational parameter must be loaded for $bname to declare the body!"))
+    end
+    gen *= genf_psngin(:Bodies, :body_system_equivalent, "NAIFId($bseb)", (nothing, Val{bid}))
     if bid > 9 
         for (k, v) in data
             gen *= genf_psngin(:Bodies, Symbol("body_", k), v, (nothing, Val{bid}))

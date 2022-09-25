@@ -9,7 +9,6 @@ export CelestialBody,
        NAIFId,
 
        body_equatorial_radius,
-       body_from_naifid,
        body_gm,
        body_mean_radius,
        body_naifid,
@@ -102,13 +101,6 @@ function body_naifid end
 body_naifid(::T) where {T <: CelestialBody} = body_naifid(T)
 
 """
-    body_from_naifid(id::NAIFId)
-
-Return a celestial body type based on its NAIFID code.
-"""
-body_from_naifid(id::NAIFId) = body_from_naifid(Val(id))
-
-"""
     body_parent(body::T)::T  where {T <: CelestialBody}
     body_parent(body::NAIFId)::NAIFId
 
@@ -123,9 +115,10 @@ function body_parent end
 Return the body system equivalent body or barycenter.
 """
 function body_system_equivalent end 
-body_system_equivalent(body::Integer) = body_system_equivalent(Val(body))
+body_system_equivalent(id::Integer) = body_system_equivalent(Val(id))
+body_system_equivalent(naifid::NAIFId) = body_system_equivalent(naifid.valId)
 function body_system_equivalent(::Type{T}) where {T<:CelestialBody} 
-    body_from_naifid(body_system_equivalent(body_naifid(T)))
+    body_system_equivalent(body_naifid(T))
 end
 function body_system_equivalent(::T) where {T<:CelestialBody}
     body_system_equivalent(T)

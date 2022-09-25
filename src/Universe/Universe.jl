@@ -9,6 +9,7 @@ module Universe
     include("Parsers/bodies.jl")
     include("Parsers/constants.jl")
     include("Parsers/ephemeris.jl")
+    include("Parsers/connections.jl")
     include("schema.jl")
     include("parse.jl")
 

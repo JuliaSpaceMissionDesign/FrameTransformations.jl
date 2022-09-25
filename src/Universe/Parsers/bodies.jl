@@ -6,29 +6,30 @@ using Basic.Bodies: generate_body!, NAIFId
 function parse_bodies!(datadict::D1, 
     configdict::D2) where {D1 <: AbstractDict, D2 <: AbstractDict}
     field = configdict["bodies"]
-    bgen = ""
+    push!(
+        field, 
+        OrderedDict("name" => "SolarSystemB", "point" => 0)
+    )
+    gen = ""
 
-    bdata = OrderedDict{NAIFId, Symbol}()
+    bdata = OrderedDict{Symbol, NAIFId}()
     for body in field
-        name, bid, bgen = _parse_body!(bgen, datadict, body)
+        name, bid, gen = _parse_body!(gen, datadict, body)
         push!(
             bdata, 
-            NAIFId(bid) => name
+            name => NAIFId(bid)
         )
     end
     push!(
         datadict,
-        :bodies => OrderedDict(
-            :naifid2name => bdata, 
-            :name2naifid => OrderedDict(v => k for (k, v) in bdata)
-        )
+        :bodies => bdata
     )
-    bcodeid = bytes2hex(sha256(bgen))
+    codeid = bytes2hex(sha256(gen))
     push!(
         datadict[:gen], 
-        (GenMeta("Universe/Bodies", bcodeid), bgen)
+        (GenMeta("Universe/Bodies", codeid), gen)
     )
-    @info "[Universe] Autogen code for bodies with id: $bcodeid"
+    @info "[Universe/Bodies] Autogen code for `bodies` with id: $codeid"
     nothing
 end
 
@@ -48,7 +49,9 @@ function _parse_body!(gen::String, data::D1,
 
     @info "[Universe/Bodies] Generating code for $bname ($bid)..."
     # generate body 
-    gen = generate_body!(gen, name, bid, bobtype, bconst)
+    btname = Symbol(name, "Type")
+    gen = generate_body!(gen, btname, bid, bobtype, bconst)
+    gen = __remove_duplicated!(gen, name)
 
     # generate model associated to body
     if bmodels !== nothing
@@ -59,7 +62,32 @@ function _parse_body!(gen::String, data::D1,
             end
         end
     end
+    # create singleton
+    gen *= "const $name = $(btname)()\n"
     return name, bid, gen
+end
+
+function __remove_duplicated!(gen::String, bname)
+    s = split(gen, "\n")
+    uniques = Vector{String}()
+    duplicated = false
+    for line in s
+        if line != ""
+            if !(line in uniques)
+                push!(
+                    uniques, line
+                )
+            else
+                duplicated = true
+            end
+        else 
+            push!(uniques, "")
+        end
+    end
+    if duplicated 
+        @warn "[Universe/Bodies] Removing duplicated items for body $bname..."
+    end
+    return join(uniques, "\n")
 end
 
 function __get_body_identifiers(data::D, bname::String) where {D<:AbstractDict}
