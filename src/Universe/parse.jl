@@ -5,6 +5,14 @@ import YAML as YAMLLib
 import JSON3
 
 const DEF_UNIVERSE_FILE = joinpath(@__DIR__, "..", "..", "gen/src", "temp.jl")
+const UNIVERSE_EVAL_SEQ = (
+    :mappings,
+    :constants, 
+    :ephemeris, 
+    :bodies, 
+    :connections, 
+    :frames
+)
 
 function _parse_universe(configfile::YAML)
     YAMLLib.load_file(filepath(configfile); dicttype=OrderedDict{String, Any})
@@ -22,18 +30,20 @@ function parse_universe(configfile::Union{YAML, JSON}, file=DEF_UNIVERSE_FILE)
     # insert generated configfile at the top 
     raw = join(["#@config $line" for line in Base.readlines(filepath(configfile))], "\n")
     fileid = bytes2hex(sha256(raw))
-    
+
     data = OrderedDict()
     push!(data, :gen => Vector{Tuple{GenMeta, String}}())
     push!(data[:gen], (GenMeta("Universe/@config", fileid), raw))
 
     # validation step 
     if isvaliduniverse(config)
-        for k in keys(config)
-            parser = Symbol("parse_$(k)!")
-            @info "[Universe] Parsing $k..."
-            @eval begin 
-                $parser($data, $config)
+        for k in UNIVERSE_EVAL_SEQ
+            if haskey(config, String(k))
+                parser = Symbol("parse_$(k)!")
+                @info "[Universe] Parsing $k..."
+                @eval begin 
+                    $parser($data, $config)
+                end
             end
         end
     else
