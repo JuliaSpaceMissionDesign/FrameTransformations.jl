@@ -19,8 +19,13 @@ end
 
 function parse_universe(configfile::Union{YAML, JSON}, file=DEF_UNIVERSE_FILE)
     config = _parse_universe(configfile)
+    # insert generated configfile at the top 
+    raw = join(["#@config $line" for line in Base.readlines(filepath(configfile))], "\n")
+    fileid = bytes2hex(sha256(raw))
+    
     data = OrderedDict()
     push!(data, :gen => Vector{Tuple{GenMeta, String}}())
+    push!(data[:gen], (GenMeta("Universe/@config", fileid), raw))
 
     # validation step 
     if isvaliduniverse(config)

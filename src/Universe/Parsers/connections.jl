@@ -5,6 +5,7 @@ function parse_connections!(datadict::D1,
     field = configdict["connections"]
     gen = ""
     for group in field
+        gen *= "\n"
         gen = _parse_connections_graph(gen::String, group["name"], 
             group["points"], datadict)
     end
@@ -33,7 +34,7 @@ function _parse_connections_graph(gen::String, name, points, data)
             parent = :SolarSystemB
         end
         gen *= "@inline Bodies.body_parent(::$(Symbol(this, "Type"))) = $parent\n"
-        gen *= "connect!(gname, $this, $parent)\n"
+        gen *= "connect!($gname, $this, $parent)\n"
     end
     return gen
 end
