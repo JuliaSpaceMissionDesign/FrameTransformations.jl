@@ -95,36 +95,21 @@
                             {"type": "number", "description": "Body NAIFID"}
                         ]
                     },
-                    "center": {
-                        "description": "Name of the point defined as center of the body",
-                        "oneOf": [             
-                            {"type": "string", "description": "Body name"},               
-                            {"type": "number", "description": "Body NAIFID"}
-                        ]
-                    },
                     "gm": {
-                        "description": "Gravitational parameter of the body",
+                        "description": "Gravitational parameter of the body in km^3/s^2",
                         "default": "Parsed from constants",
-                        "oneOf": [                            
-                            {"type": "number", "description": "Gravitational parameters in km,s units"},
-                            {"type": "string"}
-                        ]
+                        "type": "number"
+                        
                     },
                     "radius": {
-                        "description": "Equatorial radius of the body",
+                        "description": "Equatorial radius of the body in km",
                         "default": "Parsed from constants",
-                        "oneOf": [                            
-                            {"type": "number", "description": "Radius in km"},
-                            {"type": "string"}
-                        ]
+                        "type": "number"
                     },
                     "flattening": {
                         "description": "Flattening of the body",
                         "default": "Parsed from constants",
-                        "oneOf": [                            
-                            {"type": "number"},
-                            {"type": "string"}
-                        ]
+                        "type": "number"
                     },
                     "models": {
                         "description": "Body associated models specification",
