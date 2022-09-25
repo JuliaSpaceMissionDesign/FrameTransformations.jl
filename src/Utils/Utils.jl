@@ -10,7 +10,6 @@ module Utils
     include("IO/load.jl")
     include("IO/write.jl")
     include("format.jl")
-    include("schema.jl")
     include("generated.jl")
     
 end
