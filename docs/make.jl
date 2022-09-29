@@ -27,7 +27,8 @@ makedocs(;
             "Ephemeris" => "Modules/ephem.md",
             "Orient" => "Modules/orient.md",
             "Rotate" => "Modules/rotate.md",
-            "Utils" => "Modules/utils.md"
+            "Utils" => "Modules/utils.md",
+            "Universe" => "Modules/universe.md",
         ]
     ],
     strict = !("strict=false" in ARGS),
