@@ -355,8 +355,8 @@ function Base.show(io::IO, t::Time)
     h = lpad(hour(t), 2, '0')
     m = lpad(minute(t), 2, '0')
     s = lpad(second(t), 2, '0')
-    f = lpad(fraction_of_second(t), 9, '0')
-    return print(io, h, ":", m, ":", s, ".", f[3:6])
+    f = rpad(millisecond(t), 3, '0')
+    return print(io, h, ":", m, ":", s, ".", f)
 end
 
 ############
