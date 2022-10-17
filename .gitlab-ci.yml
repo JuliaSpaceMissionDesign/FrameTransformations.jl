@@ -1,0 +1,31 @@
+before_script:
+  # check github installation
+  - which git || (apt-get update -qq && apt-get install --no-install-recommends -qqqy git)
+  # - which git || apk add git
+  # Configure git to use Gitlab deploy keys
+  # These must be created as: https://docs.gitlab.com/ee/user/project/deploy_keys/index.html
+  - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
+  - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
+
+pages:
+  image: julia:1.7
+  stage: deploy
+  script:
+    - |
+      julia --project=docs -e '
+        using Pkg
+        Pkg.Registry.add("General")
+        Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/Register.git"))
+        Pkg.develop(PackageSpec(path=pwd()))
+        Pkg.instantiate()
+        using Documenter: doctest
+        using Basic
+        doctest(Basic)
+        include("docs/make.jl")'
+    - mkdir -p public
+    - mv docs/build public/dev
+  artifacts:
+    paths:
+      - public
+  only:
+    - master

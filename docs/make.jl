@@ -33,5 +33,5 @@ makedocs(;
     ],
     strict = !("strict=false" in ARGS),
     doctest = ("doctest=only" in ARGS) ? :only : true,
-    clean = false,
+    # clean = false,
 )
