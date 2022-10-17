@@ -6,6 +6,8 @@ before_script:
   # These must be created as: https://docs.gitlab.com/ee/user/project/deploy_keys/index.html
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
+  - apt-get install python3.6
+  - command -v pip
 
 pages:
   image: julia:1.7
