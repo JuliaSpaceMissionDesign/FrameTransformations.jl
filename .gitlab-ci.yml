@@ -20,8 +20,9 @@ pages:
         Pkg.instantiate()
         using Documenter: doctest
         using Basic
-        doctest(Basic)
+        doctest(Basic) 
         include("docs/make.jl")'
+    - sh res/schemas/makeschema.sh
     - mkdir -p public
     - mv docs/build public/dev
   artifacts:
