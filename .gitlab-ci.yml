@@ -7,7 +7,7 @@ before_script:
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
   - apt-get install python3.6
-  - command -v pip
+  - apt install python3-pip
 
 pages:
   image: julia:1.7
