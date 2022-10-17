@@ -22,15 +22,15 @@ pages:
         using Basic
         doctest(Basic) 
         include("docs/make.jl")'
+  after_script:
+    - apt-get -y install python3.6
+    - apt-get -y install python3-pip
+    - sh res/schemas/makeschema.sh
+    - mkdir -p public
+    - mv docs/build public/dev
   artifacts:
     paths:
       - public
   only:
     - master
 
-after_script:
-  - apt-get install python3.6
-  - apt-get install python3-pip
-  - sh res/schemas/makeschema.sh
-  - mkdir -p public
-  - mv docs/build public/dev
