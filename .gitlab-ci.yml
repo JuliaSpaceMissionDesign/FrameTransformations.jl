@@ -7,30 +7,49 @@ before_script:
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
 
-pages:
-  image: julia:1.7
-  stage: deploy
+# Build the documentation for the package 
+Documentation:
+  image: julia:1.7  
+  artifacts:
+    paths:
+      - documentation   
   script:
-    - |
-      julia --project=docs -e '
-        using Pkg
-        Pkg.Registry.add("General")
-        Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/Register.git"))
-        Pkg.develop(PackageSpec(path=pwd()))
-        Pkg.instantiate()
-        using Documenter: doctest
-        using Basic
-        doctest(Basic) 
-        include("docs/make.jl")'
-  after_script:
+    - julia --project=docs/ -e "using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
+    # Perform doctests 
+    - julia --project=docs/ -e "using Documenter; using Documentation; doctest(Documentation)"
+    # Render the documentation
+    - julia --project=docs/ docs/make.jl    
+    # Move the rendered documentation to a folder called "documentation" in the root of
+    # the repo which will be saved in an artifact.
+    - mkdir documentation
+    # make schema
     - apt-get -y install python3.6
     - apt-get -y install python3-pip
     - sh res/schemas/makeschema.sh
-    - mkdir -p public
-    - mv docs/build public/dev
+    # move docs
+    - mv docs/build/* documentation/    
+
+# Use the special job name "pages" to actually trigger deployment of the documentation 
+# on main/master branch.
+# https://docs.gitlab.com/ee/user/project/pages/getting_started_part_four.html#job
+pages:
+  stage: deploy  
+  image: julia:1.7
+  dependencies:
+    - Documentation
+  script:   
+    # public folder needed for Gitlab Pages to work 
+    # do nothing if already exists
+    - mkdir -p public/
+    - echo "Deploying documentation at public/stable"
+    # create target folder and deploy docs
+    - rm -rf public/stable
+    - mkdir -p public/stable
+    - mv documentation/* public/stable/ 
   artifacts:
     paths:
+      # Required to be called public for GitLab Pages
       - public
   only:
-    - master
-
+    - master 
+    - /^v[0-9]+\.[0-9]+\.[0-9]+$/
