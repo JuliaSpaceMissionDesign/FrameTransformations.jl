@@ -16,7 +16,7 @@ Documentation:
   script:
     - julia --project=docs/ -e "using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
     # Perform doctests 
-    - julia --project=docs/ -e "using Documenter; using Documentation; doctest(Documentation)"
+    - julia --project=docs/ -e "using Documenter; using Basic; doctest(Basic)"
     # Render the documentation
     - julia --project=docs/ docs/make.jl    
     # Move the rendered documentation to a folder called "documentation" in the root of
