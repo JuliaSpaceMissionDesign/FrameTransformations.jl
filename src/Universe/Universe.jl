@@ -4,6 +4,7 @@ module Universe
     using SHA
 
     using Basic.Utils
+    using CodeGen
 
     include("Parsers/mappings.jl")
     include("Parsers/bodies.jl")

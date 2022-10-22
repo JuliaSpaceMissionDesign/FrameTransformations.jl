@@ -6,7 +6,6 @@ before_script:
   # These must be created as: https://docs.gitlab.com/ee/user/project/deploy_keys/index.html
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
-  - git clone git@gitlab.com:astronaut-tools/Register.git ~/.julia/registries/
   
 # Build the documentation for the package 
 Documentation:
@@ -15,7 +14,7 @@ Documentation:
     paths:
       - documentation   
   script:
-    - julia --project=docs/ -e "using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
+    - julia --project=docs/ -e "using Pkg;  pkg\"registry add https://github.com/JuliaRegistries/General\"; pkg\"registry add git@gitlab.com:astronaut-tools/Register.git\"; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
     # Perform doctests 
     - julia --project=docs/ -e "using Documenter; using Basic; doctest(Basic)"
     # Render the documentation

@@ -1,7 +1,7 @@
 export generate_body!
 
-import Basic.Utils: genf_psngin, format_camelcase
-
+import Basic.Utils: format_camelcase
+using CodeGen
 
 """
     generate_body!(gen::String, bname::Symbol, bid::N, 
@@ -40,24 +40,38 @@ function generate_body!(gen::String, bname::Symbol, bid::N,
     gen *= """
            struct $(bname) <: $(objtype) end
            """
-    gen *= genf_psngin(:Bodies, :body_naifid, "NAIFId($bid)", (nothing, bname))
-    # gen *= genf_psngin(:Bodies, :body_from_naifid, bname, (nothing, Val{bid})) # removed 
+    gen *= generate_fun_single_withmodule(
+        :Bodies, :body_naifid, "NAIFId($bid)", (nothing, bname); 
+        prefixes=("inline", )
+    )
     if haskey(data, :gm)
-        gen *= genf_psngin(:Bodies, :body_gm, pop!(data, :gm), (nothing, Val{bid}))
+        gen *= generate_fun_single_withmodule(
+            :Bodies, :body_gm, pop!(data, :gm), (nothing, Val{bid}); 
+            prefixes=("inline", )
+        )
     else 
         throw(error("[Bodies] gravitational parameter must be loaded for $bname to declare the body!"))
     end
-    gen *= genf_psngin(:Bodies, :body_system_equivalent, "NAIFId($bseb)", (nothing, Val{bid}))
+    gen *= generate_fun_single_withmodule(
+        :Bodies, :body_system_equivalent, "NAIFId($bseb)", (nothing, Val{bid}); 
+        prefixes=("inline", )
+    )
     if bid > 9 
         for (k, v) in data
-            gen *= genf_psngin(:Bodies, Symbol("body_", k), v, (nothing, Val{bid}))
+            gen *= generate_fun_single_withmodule(
+                :Bodies,  Symbol("body_", k), v, (nothing, Val{bid}); 
+                prefixes=("inline", )
+            )
         end
     else # barycenters 
         for (k, _) in data
             sp = join(uppercasefirst.(split.("$(k)", "_")[2:end]), " ")
-            gen *= genf_psngin(:Bodies, Symbol("body_", k), 
-                """throw(error("[Bodies] $(bname) has no $sp"))""", 
-                (nothing, Val{bid}))
+            gen *= generate_fun_single_withmodule(
+                    :Bodies,  Symbol("body_", k), 
+                    """throw(error("[Bodies] $(bname) has no $sp"))""", 
+                    (nothing, Val{bid}); 
+                    prefixes=("inline", )
+                )
         end
     end
     gen

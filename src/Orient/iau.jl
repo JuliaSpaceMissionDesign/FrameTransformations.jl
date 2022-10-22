@@ -1,6 +1,6 @@
 export generate_iauangles!, parse_iauconstants
 
-import Basic.Utils: genf_psnginfst
+using CodeGen: generate_fun_multi_withmodule
 
 function parse_iauanglestr(A::NV, B::Union{Nothing, NV}, Θ::Union{Nothing, NM}, 
     t::Symbol, χ::Symbol; conv::AbstractFloat=π/180) where {NV<:AbstractArray, NM<:AbstractArray}
@@ -136,20 +136,25 @@ function generate_iauangles!(gen::String, bid::N,
                 gen *= "#%ORIENT::$bid/$angle\n"
                 β, δβ = parse_iauanglestr(data[:A], data[:B], data[:Θ], :T, data[:χ]; conv=conv)
                 angle = "orient_$angle"
-                gen *= genf_psnginfst(:Orient, angle == "orient_rotation" ? "orient_rotation_angle" : angle, β, 
-                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat")
-                gen *= genf_psnginfst(:Orient, join((angle,"rate"),"_"), δβ, 
-                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat")
+                gen *= generate_fun_multi_withmodule(
+                    :Orient, angle == "orient_rotation" ? "orient_rotation_angle" : angle, β,
+                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat"
+                )
+                gen *= generate_fun_multi_withmodule(
+                    :Orient, join((angle,"rate"),"_"), δβ,
+                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat"
+                )
             end 
         else 
             for fun in ("orient_declination", "orient_declination_rate", 
                 "orient_right_ascension", "orient_right_ascension_rate", 
                 "orient_rotation_angle", "orient_rotation_rate")
                 errorprop = join(uppercasefirst.(split(fun,"_")[2:end]), " ")
-                gen *= genf_psnginfst(:Orient, fun, 
+                gen *= generate_fun_multi_withmodule(
+                    :Orient, fun, 
                     """throw(error("[Orient] IAU `$(errorprop)` cannot be computed for $bid."))""", 
-                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat")
-
+                    (nothing, Val{bid}), (:T, :N); wherestr="N<:AbstractFloat"
+                )
             end
         end
 

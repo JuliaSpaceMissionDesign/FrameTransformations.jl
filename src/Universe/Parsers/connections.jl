@@ -33,7 +33,10 @@ function _parse_connections_graph(gen::String, name, points, data)
             # ssb 
             parent = :SolarSystemB
         end
-        gen *= "@inline Bodies.body_parent(::$(Symbol(this, "Type"))) = $parent\n"
+        gen *= generate_fun_single_withmodule(
+            :Bodies, :body_parent, parent, (nothing, Symbol(this, "Type")); 
+            prefixes=("inline", )
+        )
         gen *= "connect!($gname, $this, $parent)\n"
     end
     return gen
