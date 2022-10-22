@@ -18,7 +18,7 @@
     # output types 
     calhmsec = Tempo.jd2calhms(jd1, jd2+fd-0.5)
     @test all(typeof.(calhmsec) .== (Int, Int, Int, Int, Int, Float64))
-    @test all(typeof.((jd1, jd1)) .== (Float64, Float64))
+    @test all(typeof.((jd1, jd2)) .== Int64)
 end
 
 @testset "origin.jl" begin 

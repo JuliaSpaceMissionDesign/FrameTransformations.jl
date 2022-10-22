@@ -1,7 +1,6 @@
 module Orient
 
     using Basic.Tempo 
-    using Basic.Rotate 
     using StaticArrays
     using LinearAlgebra
 
