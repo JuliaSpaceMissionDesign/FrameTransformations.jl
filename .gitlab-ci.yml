@@ -6,7 +6,6 @@ before_script:
   # These must be created as: https://docs.gitlab.com/ee/user/project/deploy_keys/index.html
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
-  - git clone git@gitlab.com:astronaut-tools/Register.git ~/.julia/registries/astronaut
   
 # Build the documentation for the package 
 Documentation:
