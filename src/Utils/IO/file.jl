@@ -17,7 +17,9 @@ const FILE_FORMAT = (
 
 for fmt in FILE_FORMAT
     @eval begin
-        @make_struct_fromschema $(fmt) $AbstractFile (path, String)
+        struct $(fmt) <: $AbstractFile
+            path::String
+        end
         export $(fmt)
     end
 end

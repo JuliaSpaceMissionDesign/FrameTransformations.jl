@@ -13,9 +13,6 @@
     return sec + fi + f2i + fri, ff + f2f - fri
 end
 
-using StaticArrays
-
-
 """
     apply_offsets(second::N, fraction::T, 
     from::S1, to::S2)::Tuple{N, T} where {N<:Integer,
@@ -148,9 +145,8 @@ This routine is accurate to ~40 microseconds over the interval 1900-2100.
     trajectory of the observer. For two observers fixed on Earth's surface
     the quantity TDB-TT can differ by as much as ~4 microseconds.
 
-
 ### References 
-- [https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html#TDB](https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html#TDB)
+- https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html#TDB
 - [Issue #26](https://github.com/JuliaAstro/AstroTime.jl/issues/26)
 """
 @inline function offset(::TerrestrialTime, ::BarycentricDynamicalTime,
@@ -173,7 +169,7 @@ This routine is accurate to ~40 microseconds over the interval 1900-2100.
     the quantity TDB-TT can differ by as much as ~4 microseconds. 
 
 ### References
-- [https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html#TDB](https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html#TDB)
+- https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html#TDB
 - [Issue #26](https://github.com/JuliaAstro/AstroTime.jl/issues/26)
 """
 @inline function offset(::BarycentricDynamicalTime, ::TerrestrialTime,
