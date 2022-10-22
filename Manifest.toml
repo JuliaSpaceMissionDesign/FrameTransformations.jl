@@ -35,6 +35,11 @@ git-tree-sha1 = "dbbb73c4f4266081e011ca7df3cd666a0d2606f3"
 uuid = "cb942f8c-38e0-4457-a178-5418a63c3995"
 version = "1.0.0"
 
+[[deps.CodeGen]]
+git-tree-sha1 = "33037bb8f172c0989da21481f63002093710d8ab"
+uuid = "357458e2-47fd-11ed-00de-b76f6ea61b3e"
+version = "0.1.0"
+
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
 git-tree-sha1 = "ded953804d019afa9a3f98981d99b33e3db7b6da"
