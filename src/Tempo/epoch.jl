@@ -285,6 +285,9 @@ function Base.convert(::Type{S2}, e::Epoch{S1}) where {S1<:TimeScale, S2<:TimeSc
     convert(S2(), e)
 end
 
+Base.convert(::Type{S}, e::Epoch{S}) where {S<:TimeScale} = e
+Base.convert(::S, e::Epoch{S}) where {S<:TimeScale} = e
+
 function apply_offsets(e::Epoch{S1}, from::S1, to::S2) where {S1<:TimeScale, S2<:TimeScale}
     sec, frac = apply_offsets(e.second, e.fraction, from, to)    
     return Epoch(sec, frac, to)
