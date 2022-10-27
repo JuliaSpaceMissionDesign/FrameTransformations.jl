@@ -1,5 +1,5 @@
 """
-    fw_angles(::IAU2006, j2000ttc::N)
+    fw_angles(::IAU2006Model, j2000ttc::N) where {N<:Number}
 
 Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
 
@@ -16,7 +16,7 @@ Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
 ### References 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
-function fw_angles(::IAU2006, j2000ttc::N) where {N<:Number}
+function fw_angles(::IAU2006Model, j2000ttc::N) where {N<:Number}
     γ = @evalpoly(
         j2000ttc,
         -0.052928,

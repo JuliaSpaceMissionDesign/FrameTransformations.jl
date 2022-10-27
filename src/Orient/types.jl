@@ -10,7 +10,7 @@ export iau2006, iau2006a
 
 abstract type IAUModel end
 abstract type IAU2006Model <: IAUModel end
-abstract type IAU2010Model <: IAUModel end
+
 
 ########
 # 2006 #
