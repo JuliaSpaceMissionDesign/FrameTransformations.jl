@@ -7,10 +7,11 @@ module Orient
     using Basic.Tempo 
     using Basic.Utils: arcsec2rad
 
-    include("abstract.jl")
-    include("iau.jl")
-    include("types.jl")
+    include("Planets/abstract.jl")
+    include("Planets/angles.jl")
+    include("Planets/gen.jl")
 
+    include("Earth/types.jl")
     include("Earth/obliquity.jl")
     include("Earth/precession.jl")
     include("Earth/nutation.jl")
