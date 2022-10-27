@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-export iau2006, iau2006a
+export iau2006a, iau2006b
 
 abstract type IAUModel end
 abstract type IAU2006Model <: IAUModel end
