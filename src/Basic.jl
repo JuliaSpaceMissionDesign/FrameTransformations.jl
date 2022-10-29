@@ -27,8 +27,8 @@ module Basic
     include(joinpath("Orient", "Orient.jl"))
     @reexport using .Orient
 
-    # include(joinpath("Frames", "Frames.jl"))
-    # @reexport using .Frames
+    include(joinpath("Frames", "Frames.jl"))
+    @reexport using .Frames
 
     include(joinpath("Universe", "Universe.jl"))
     @reexport using .Universe

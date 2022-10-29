@@ -1,13 +1,20 @@
 export ICRF, 
        MEME2000,
+       ECLIPJ2000,
+       MEMEOD,
        
        # types 
        InternationalCelestialReferenceFrame, 
-       MeanEquatorMeanEquinoxJ2000
+       MeanEquatorMeanEquinoxJ2000,
+       EclipticEquinoxJ2000,
+       MeanEquatorMeanEquinoxOfDate
 
 # ------------------------------------------------------------------------------
 #                                 INERTIAL
 # ------------------------------------------------------------------------------
+#
+#   Celestial
+#
 
 """
     InternationalCelestialReferenceFrame 
@@ -41,6 +48,33 @@ realization of the spice `J2000` frame.
 """
 const MEME2000 = MeanEquatorMeanEquinoxJ2000()
 
+"""
+    EclipticEquinoxJ2000
+
+A type representing the Ecliptic and Equinox of J2000.
+"""
+struct EclipticEquinoxJ2000 <: AbstractInertialFrame end
+
+"""
+    ECLIPJ2000
+
+Singleton instance of the [`EclipticEquinoxJ2000`](@ref).
+"""
+const ECLIPJ2000 = EclipticEquinoxJ2000()
+
+"""
+    MeanEquatorMeanEquinoxOfDate
+
+A type representing the Mean Ecliptic and Equinox of Date.
+"""
+struct MeanEquatorMeanEquinoxOfDate <: AbstractInertialFrame end
+
+"""
+    MEMEOD
+
+Singleton instance of the [`MeanEquatorMeanEquinoxOfDate`](@ref).
+"""
+const MEMEOD = MeanEquatorMeanEquinoxOfDate()
 
 # ------------------------------------------------------------------------------
 #                                 ROTATING

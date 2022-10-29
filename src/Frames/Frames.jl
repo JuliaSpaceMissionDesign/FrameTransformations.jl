@@ -7,4 +7,13 @@ module Frames
     using Basic.Tempo
     using Basic.Orient
 
+    include("abstract.jl")
+    include("graph.jl")
+    include("transform.jl")
+
+    export Rotation
+
+    include("Definitions/types.jl")
+    include("Definitions/rotations.jl")
+
 end

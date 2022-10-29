@@ -20,3 +20,6 @@ function orient_obliquity(::M, t::N) where {N<:Number, M<:IAU2006Model}
         0.00200340, -0.000000576, -0.0000000434) |> arcsec2rad
 end
 
+const EQ2ECL_J2000 = angle_to_dcm(
+    orient_obliquity(iau2006a, 0.0), :X
+)

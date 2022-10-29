@@ -67,7 +67,7 @@ function fw_matrix(γ, ϕ, ψ, ε)
 end
 
 """
-    precession_bias(::IAU2006, t::N) where {N<:Number}
+    orient_precession_bias(::IAU2006, t::N) where {N<:Number}
 
 Precession matrix (including frame bias) from GCRS to a specified
 date, IAU 2006 model. This uses the Fukushima-Williams model.

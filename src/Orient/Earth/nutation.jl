@@ -49,7 +49,7 @@ const ARCSECTURN = 1296000.0
 
 
 """
-    nutation(::IAU2006B, t::N) where {N<:Number}
+    orient_nutation(::IAU2006B, t::N) where {N<:Number}
 
 Nutation, IAU 2000B model.
 

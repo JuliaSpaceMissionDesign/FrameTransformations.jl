@@ -49,8 +49,6 @@ function update!(::F, args...) where {F<:AbstractUpdatableFrame}
     throw(error("[Frames] `update!` method shall be defined for $F as it is updatable"))
 end
 
-function 
-
 """
     AbstractFrozenFrame
 
