@@ -9,7 +9,6 @@ module Orient
 
     include("Planets/abstract.jl")
     include("Planets/angles.jl")
-    include("Planets/gen.jl")
 
     include("Earth/types.jl")
     include("Earth/obliquity.jl")
