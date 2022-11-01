@@ -39,7 +39,7 @@
         # Testing Mean Longitude of Uranus
         @test rad2deg(fa.λ_Ur) ≈ 332.317825 atol=1e-7 rtol=1e-7
         # Testing Mean Longitude of Neptune (from SOFA routines)
-        @test fa.λ_Ne ≈ 0.0010392485238758336 atol=1e-20 rtol=1e-20
+        @test fa.λ_Ne ≈ 5.474423134426369 atol=1e-20 rtol=1e-20
         # Testing General Accumulated Precession 
         @test rad2deg(fa.pₐ) ≈ 0.059545 atol=1e-6 rtol=1e-7
     end 
@@ -72,7 +72,7 @@ end
 
     @test earth_rotation_angle(Tᵤ) ≈ θₑ atol=1e-7 rtol=1e-7
 
-    # Testing ERA Matrix (froM Vallado 4th ed. Example 3-14, pp. 221)
+    # Testing ERA Matrix (from Vallado 4th ed. Example 3-14, pp. 221)
     r_TIRS = SA[-1033.4750312, 7901.3055856, 6380.3445327]
     r_CIRS = SA[5100.0184047, 6122.7863648, 6380.3445327]
 
