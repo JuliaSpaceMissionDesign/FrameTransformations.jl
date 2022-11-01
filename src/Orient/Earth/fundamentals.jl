@@ -1,4 +1,7 @@
-
+# ### Notes
+# This implementation follows SOFA routines, where even though  `t` is strictly 
+# expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
+# which makes no significant differences (< 0.01 μas) in the final result.
 struct FundamentalArguments{N <: Number}
 
     # Planetary arguments (mean longitutes)
@@ -51,11 +54,6 @@ Returns the mean anomaly of the Moon 'Mₐ` in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -78,11 +76,6 @@ Returns the mean anomaly of the Sun `Sₐ` in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -100,15 +93,10 @@ end
 """
     fa_mlon_moon(t::Number) 
 
-Returns the mean longitude of the Moon's ascending node `Ωₘ` in radians.  
+Returns the mean longitude of the Moon's ascending node `Ω` in radians.  
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
@@ -128,15 +116,10 @@ end
     fa_mlat_moon(t::Number) 
 
 Returns the mean longitude of the Moon minus the mean longitude of the 
-ascending node `uₘ` in radians.  
+ascending node `F` in radians.  
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
@@ -154,15 +137,10 @@ end
 """
     fa_melo_moon(t::Number) 
 
-Returns the mean elongation of the Moon from the Sun `Dₛ` in radians. 
+Returns the mean elongation of the Moon from the Sun `D` in radians. 
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
@@ -185,11 +163,6 @@ Returns the general accumulated precession in longitude `pₐ` in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -207,11 +180,6 @@ Returns the mean heliocentric longitude of Mercury in radians.
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
@@ -231,11 +199,6 @@ Returns the mean heliocentric longitude of Venus in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -253,11 +216,6 @@ Returns the mean heliocentric longitude of Earth in radians.
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
@@ -277,11 +235,6 @@ Returns the mean heliocentric longitude of Mars in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -299,11 +252,6 @@ Returns the mean heliocentric longitude of Jupiter in radians.
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
@@ -323,11 +271,6 @@ Returns the mean heliocentric longitude of Saturn in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -346,11 +289,6 @@ Returns the mean heliocentric longitude of Uranus in radians.
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
 
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
-
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
@@ -368,11 +306,6 @@ Returns the mean heliocentric longitude of Neptune in radians.
 
 ### Inputs 
 - `t`-- `TDB` Julian centuries since J2000.0 (see Notes)
-
-### Notes
-This implementation follows SOFA routines, where even though  `t` is strictly 
-expressed as TDB, it is usually more convenient to use Terrestrial Time (TT), 
-which makes no significant differences in the final result.
 
 ### References 
 - Luzum, B. and Petit G. (2012). _The IERS Conventions (2010)_, 
