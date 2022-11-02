@@ -58,7 +58,3 @@ function orient_nutation(m::IAU2006B, t::Number)
     return δψ_ls + δψ_pl, δϵ_ls + δϵ_pl
 end
 
-
-open("nut00a.jl", "w") do io 
-    write(io, build_nutation_series(:nutation00, :IAU2006A,  NUTATION_2000Aψ, NUTATION_2000Aϵ))
-end   
