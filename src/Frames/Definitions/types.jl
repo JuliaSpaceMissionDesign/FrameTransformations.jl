@@ -29,6 +29,7 @@ struct InternationalCelestialReferenceFrame <: AbstractInertialFrame end
 Singleton instance of the [`InternationalCelestialReferenceFrame`](@ref).
 """
 const ICRF = InternationalCelestialReferenceFrame()
+register!(ICRF)
 
 """
     MeanEquatorMeanEquinoxJ2000

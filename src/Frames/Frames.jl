@@ -14,6 +14,6 @@ module Frames
     export Rotation
 
     include("Definitions/types.jl")
-    include("Definitions/rotations.jl")
-
+    include("Definitions/default.jl")
+    include("Definitions/planets.jl")
 end

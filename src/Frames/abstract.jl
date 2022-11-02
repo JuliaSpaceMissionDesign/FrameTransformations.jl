@@ -5,6 +5,12 @@ A type representing all reference frames.
 """
 abstract type AbstractFrame end
 
+function build(::Type{F}, args...) where {F<:AbstractFrame}
+    throw(
+        error("[Frames] Cannot build $F frames, `build` function not implemented.")
+    )
+end
+
 """
     AbstractInertialFrame
 
@@ -67,3 +73,11 @@ abstract type AbstractRotatingFrame <: AbstractDynamicFrame end
 function Base.show(io::IO, ::F) where {F<:AbstractFrame}
     println(io, join(split(String(Symbol(F)), r"(?=[A-Z])"), " ") )
 end
+
+"""
+    AbstractBodyCentricInertialFrame
+
+A type representing an inertial frame associated to a celestial body.
+This frame has the fundamental plane coincident with the body equator. 
+"""
+abstract type AbstractBodyCentricInertialFrame <: AbstractInertialFrame end
