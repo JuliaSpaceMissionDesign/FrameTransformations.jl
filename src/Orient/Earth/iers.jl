@@ -116,6 +116,25 @@ function fw2xy(ϵ::Number, ψ::Number, γ::Number, φ::Number)
     return X, Y
 end
 
+"""
+    cip_coords
+Computes CIP X, Y coordinates 
+"""
+function cip_coords(m::IAU2006Model, t::Number)
+ 
+    # Computes Fukushima-Williams angles
+    ϵ, ψ, γ, ϕ = fw_angles(m, t)
+
+    # Computes IAU 2000 nutation components 
+    Δψ, Δϵ = orient_nutation(m, t) 
+    
+    # Applies IAU-2006 compatible nutations 
+    ψₙ = ψ + Δψ
+    ϵₙ = ϵ + Δϵ
+    
+    # Retrieves CIP coordinates 
+    fw2xy(ϵₙ, ψₙ, γ, ϕ)
+end
 
 include("constants/cio_locator.jl")
 
@@ -123,18 +142,51 @@ cio_locator(::IAU2006Model, ::Number, ::FundamentalArguments) = ()
 build_cio_series(:cio_locator, :IAU2006Model, COEFFS_CIO2006_SP, COEFFS_CIO2006_S)
 
 """
+    cio_locator()
+
 Compute CIO Locator  
 
 Notes: some of the values are slighly different than SOFA but equal to IERS
 """
-function cio_locator(m::IAU2006Model, t::Number, x::Number, y::Number, 
-                    fa::FundamentalArguments)
-
+function cio_locator(m::IAU2006Model, t::Number, x::Number, y::Number)
+    fa = FundamentalArguments(t, iau2006a)
     cio_locator(m, t, fa)*1e-6*π/648000 - x*y/2
 end
 
-    
+
+function cirs2gcrs(m::IAU2006Model, t::Number)
+
+    # Computes CIP X, Y coordinates 
+    x, y = cip_coords(m, t)
+
+    # Computes cio locator `s`
+    s = cio_locator(m, t, x, y) 
+
+    # Computes rotation matrix from CIRS to GCRS
+    a = 0.5 + 1/8*(x^2 + y^2)
+
+    Rs = SMatrix{3, 3, typeof(a), 9}(1-a*x^2, -a*x*y,    -x, 
+                                     -a*x*y,  1-a*y^2,   -y, 
+                                     x, y,   -a*(x^2 + y^2))
+
+    sₛ, cₛ = sincos(s) 
+
+    Rs*SMatrix{3, 3, typeof(a), 9}(cₛ, -sₛ, 0, sₛ, cₛ, 0, 0, 0, 1)
+
+end
 
 
+function itrs2gcrs(m::IAU2006Model, t::Number, xₚ::Number, yₚ::Number)
 
+    # Polar motion matrix
+    sp = tio_locator(t)
+    W = polar_motion(xₚ, yₚ, sp)
 
+    # Earth Rotation Angle matrix 
+    R = era_rotm(t) 
+
+    # Precession-Nutation matrix 
+    Q = cirs2gcrs(m, t) 
+
+    return Q*R*W 
+end

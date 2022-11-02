@@ -1,50 +1,139 @@
 
 @testset "Fundamental Arguments" begin 
-    # Testing Fundamental Arguments (from Vallado 4th ed. Example 3-14 pp. 220)
+
+    # Testing Fundamental Arguments 
+    # 1st set data from Vallado 4th ed. Example 3-14 pp. 220
+    # 2nd set data from ERFA values in radians (guarantees a higher precision!)
+    
     # Missing the longitude of neptune as Vallado uses a different value wrt to 
     # SOFA\IERS 2010 conventions 
 
-    t = 0.0426236319
+    tv = 0.0426236319
+    te = 0.12345
 
-    fa = FundamentalArguments(t)
+    fav = FundamentalArguments(tv)
+    fae = FundamentalArguments(te)
 
     # Testing Delaunay's Arguments 
-    @testset "Delaunay arguments" begin
-        # Testing mean elongation of the moon from the sun 
-        @test rad2deg(fa.Dₛ) ≈ 196.7516428 atol=1e-7 rtol=1e-7
+    @testset "Delaunay arguments 2003" begin
+
         # Testing Mean Anomaly of the Moon 
-        @test rad2deg(fa.Mₐ) ≈ 314.9122873 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.Mₐ) ≈ 314.9122873 atol=1e-7 rtol=1e-7
+        @test fae.Mₐ ≈ 9.0124422693240238e-2 atol=1e-6
+
         # Testing Mean Anomaly of the Sun 
-        @test rad2deg(fa.Sₐ) ≈ 91.9393769 atol=1e-7 rtol=1e-7
-        # Testing Mean Longitude of the Moon
-        @test rad2deg(fa.Ωₘ) ≈ 42.6046467 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.Sₐ) ≈ 91.9393769 atol=1e-7 rtol=1e-7
+        @test fae.Sₐ ≈ 2.122527458615575 atol=1e-9
+
         # Testing Mean Argument of Latitude of the Moon 
-        @test rad2deg(fa.uₘ) ≈ 169.0970043 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.uₘ) ≈ 169.0970043 atol=1e-7 rtol=1e-7
+        @test fae.uₘ ≈ 6.013725526098429 atol=1e-9
+
+        # Testing mean elongation of the moon from the sun 
+        @test rad2deg(fav.Dₛ) ≈ 196.7516428 atol=1e-7 rtol=1e-7
+        @test fae.Dₛ ≈ 3.247622743094825 atol=1e-9
+
+        # Testing Mean Longitude of the Moon
+        @test rad2deg(fav.Ωₘ) ≈ 42.6046467 atol=1e-7 rtol=1e-7
+        @test fae.Ωₘ ≈ -1.984867574205391+2π atol=1e-9 
+
     end
+
+    @testset "Delaunay arguments IAU2000B" begin 
+        # Testing the truncated expressions of the Delunary Arguments 
+
+        fa = FundamentalArguments(te, iau2006b);
+
+        # Testing Mean Anomaly of the Moon 
+        @test fa.Mₐ ≈ 9.012187106285367e-02 atol=1e-6
+
+        # Testing Mean Anomaly of the Sun 
+        @test fa.Sₐ ≈ 2.122527499497290 atol=1e-9
+
+        # Testing Mean Argument of Latitude of the Moon 
+        @test fa.uₘ ≈ 6.013726468232121 atol=1e-9
+
+        # Testing mean elongation of the moon from the sun 
+        @test fa.Dₛ ≈ 3.247623213717811 atol=1e-9
+
+        # Testing Mean Longitude of the Moon
+        @test fa.Ωₘ ≈ -1.984868126360060+2π atol=1e-9 
+
+        for f in [:λ_Me, :λ_Ve, :λ_Ea, :λ_Ma, :λ_Ju, :λ_Sa, :λ_Ur, :λ_Ne, :pₐ]
+            @test getproperty(fa, f) == getproperty(fae, f)
+        end
+
+    end 
 
     # Testing Planetary Arguments 
     @testset "Planetary Arguments" begin
+
         # Testing Mean Longitude of Mercury
-        @test rad2deg(fa.λ_Me) ≈ 143.319167 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.λ_Me) ≈ 143.319167 atol=1e-7 rtol=1e-7
+        @test fae.λ_Me ≈ 6.015322458572193 atol=1e-14 rtol=1e-14
+
         # Testing Mean Longitude of Venus
-        @test rad2deg(fa.λ_Ve) ≈ 156.221635 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.λ_Ve) ≈ 156.221635 atol=1e-7 rtol=1e-7
+        @test fae.λ_Ve ≈ 3.595450621383065 atol=1e-14 rtol=1e-14
+
         # Testing Mean Longitude of Earth
-        @test rad2deg(fa.λ_Ea) ≈ 194.890465 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.λ_Ea) ≈ 194.890465 atol=1e-7 rtol=1e-7
+        @test fae.λ_Ea ≈ 3.919817995983848 atol=1e-14 rtol=1e-14
+
         # Testing Mean Longitude of Mars
-        @test rad2deg(fa.λ_Ma) ≈ 91.262347 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.λ_Ma) ≈ 91.262347 atol=1e-7 rtol=1e-7
+        @test fae.λ_Ma ≈ 3.461044170354398 atol=1e-14 rtol=1e-14
+
         # Testing Mean Longitude of Jupiter
-        @test rad2deg(fa.λ_Ju) ≈ 163.710186 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.λ_Ju) ≈ 163.710186 atol=1e-7 rtol=1e-7
+        @test fae.λ_Ju ≈ 8.553961236235601e-1 atol=1e-14 rtol=1e-14
+
         # Testing Mean Longitude of Saturn
-        @test rad2deg(fa.λ_Sa) ≈ 102.168400 atol=1e-7 rtol=1e-7
+        @test rad2deg(fav.λ_Sa) ≈ 102.168400 atol=1e-7 rtol=1e-7
+        @test fae.λ_Sa ≈ 3.507194207731200 atol=1e-14 rtol=1e-14
+
         # Testing Mean Longitude of Uranus
-        @test rad2deg(fa.λ_Ur) ≈ 332.317825 atol=1e-7 rtol=1e-7
-        # Testing Mean Longitude of Neptune (from SOFA routines)
-        @test fa.λ_Ne ≈ 5.474423134426369 atol=1e-20 rtol=1e-20
+        @test rad2deg(fav.λ_Ur) ≈ 332.317825 atol=1e-7 rtol=1e-7
+        @test fae.λ_Ur ≈ 1.212873991300292e-1 atol=1e-14 rtol=1e-14
+
+        # Testing Mean Longitude of Neptune (only from SOFA routines)
+        @test fae.λ_Ne ≈ 5.782638611951110 atol=1e-20 rtol=1e-20
+
         # Testing General Accumulated Precession 
-        @test rad2deg(fa.pₐ) ≈ 0.059545 atol=1e-6 rtol=1e-7
+        @test rad2deg(fav.pₐ) ≈ 0.059545 atol=1e-6 rtol=1e-7
+        @test fae.pₐ ≈ 3.010009133483176e-3 atol=1e-14 rtol=1e-14
+
     end 
 
-end 
+end;
+
+@testset "nutation" begin 
+
+    t = -0.038913073237503454; 
+
+    ERFA_DJ00 = 2451545.
+    ERFA_DJC = 36525.
+
+    date1 = 2450123.7;
+    t = ((date1 - ERFA_DJ00)) / ERFA_DJC;
+
+    # Testing IAU 2000B Nutation model from ERFA 
+
+    fa = FundamentalArguments(t, iau2006b);
+    Δψ, Δϵ = nutation00(iau2006b, t, fa)
+
+    @test Δψ ≈  3.545257283580251e-05 atol = 1e-8
+    @test Δϵ ≈ -4.139189402616098e-05 atol = 1e-8
+
+    # Testing IAU 2000B Nutation model from ERFA 
+
+    fa = FundamentalArguments(t);
+    Δψ, Δϵ = nutation00(iau2006a, t, fa)
+
+    @test Δψ ≈  3.545257283580251e-05 atol = 1e-8
+    @test Δϵ ≈ -4.139189402616098e-05 atol = 1e-8
+    
+end
 
 @testset "itrf2gcrf" begin
 

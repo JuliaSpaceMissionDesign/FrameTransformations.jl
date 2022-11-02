@@ -4,6 +4,13 @@
 # which makes no significant differences (< 0.01 μas) in the final result.
 struct FundamentalArguments{N <: Number}
 
+    # Moon-Sun Delaunay Arguments
+	  Mₐ::N # moon anomaly 
+    Sₐ::N # sun anomaly
+    uₘ::N # moon latitude
+    Dₛ::N # moon elongation
+    Ωₘ::N # moon raan 
+
     # Planetary arguments (mean longitutes)
     λ_Me::N 
     λ_Ve::N 
@@ -14,35 +21,58 @@ struct FundamentalArguments{N <: Number}
     λ_Ur::N
     λ_Ne::N
 
-    # Moon-Sun Delaunay Arguments
-    uₘ::N # moon latitude
-    Dₛ::N # moon elongation
-    Ωₘ::N # moon raan 
-    Mₐ::N # moon anomaly 
-    Sₐ::N # sun anomaly
-
-    pₐ::N # general accumulated precession
+	  pₐ::N # general accumulated precession
 
 end
 
+function LuniSolarArguments(t::Number, ::IAU2006Model) 
+	Mₐ = fa_mano_moon(t)
+	Sₐ = fa_mano_sun(t)
+	uₘ = fa_mlat_moon(t) 
+	Dₛ = fa_melo_moon(t)
+	Ωₘ = fa_mlon_moon(t)
+
+	return Mₐ, Sₐ, uₘ, Dₛ, Ωₘ
+end
+
+# Approximated values consistent with IAU2006B
+function LuniSolarArguments(t::Number, ::IAU2006B)
+
+    # Mean anomalies of the Moon and Sun
+    Mₐ = mod(485868.249036 + 1717915923.2178t, ARCSECTURN) |> arcsec2rad
+    Sₐ = mod(1287104.79305 + 129596581.0481t, ARCSECTURN) |> arcsec2rad
+
+    # Mean argument of the latitude of the Moon. 
+    uₘ = mod(335779.526232 + 1739527262.8478t, ARCSECTURN) |> arcsec2rad
+
+    # Mean elongation of the Moon from the Sun. 
+    Dₛ = mod(1072260.70369 + 1602961601.2090t, ARCSECTURN) |> arcsec2rad
+
+    # Mean longitude of the ascending node of the Moon. 
+    Ωₘ = mod(450160.398036 -6962890.5431t, ARCSECTURN) |> arcsec2rad
+
+	return Mₐ, Sₐ, uₘ, Dₛ, Ωₘ
+end
+
+function PlanetaryArguments(t::Number)
+	λ_Me = fa_mlon_mercury(t)
+	λ_Ve = fa_mlon_venus(t)
+	λ_Ea = fa_mlon_earth(t)
+	λ_Ma = fa_mlon_mars(t)
+	λ_Ju = fa_mlon_jupiter(t)
+	λ_Sa = fa_mlon_saturn(t)
+	λ_Ur = fa_mlon_uranus(t)
+	λ_Ne = fa_mlon_neptune(t)
+	pₐ   = fa_precession(t)
+
+	return λ_Me, λ_Ve, λ_Ea, λ_Ma, λ_Ju, λ_Sa, λ_Ur, λ_Ne, pₐ
+end
+
 # Computes Fundamental Arguments at epoch t
-function FundamentalArguments(t::Number)
-    FundamentalArguments( 
-        fa_mlon_mercury(t), 
-        fa_mlon_venus(t), 
-        fa_mlon_earth(t), 
-        fa_mlon_mars(t),
-        fa_mlon_jupiter(t),
-        fa_mlon_saturn(t), 
-        fa_mlon_uranus(t), 
-        fa_mlon_neptune(t), 
-        fa_mlat_moon(t),
-        fa_melo_moon(t),
-        fa_mlon_moon(t), 
-        fa_mano_moon(t),
-        fa_mano_sun(t),
-        fa_precession(t)
-    )
+FundamentalArguments(t::Number) = FundamentalArguments(t, iau2006a)
+function FundamentalArguments(t::Number, m::IAU2006Model)
+    FundamentalArguments(LuniSolarArguments(t, m)..., 
+						 PlanetaryArguments(t)...)
 end
 
 

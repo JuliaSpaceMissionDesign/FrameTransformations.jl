@@ -8,18 +8,38 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
     # Generates ad-hoc functions to compute the IAU Series including only 
     # the non-null coefficients. 
 
+    # cpoly and ctrig must have the same number of elements
+    nblocks = length(cpoly)
+    fcn_body = Expr(:block)
+
     # Maps IAUSeries coefficients to Fundamental Argument name
     MAPPING = SVector(:Mₐ, :Sₐ, :uₘ, :Dₛ, :Ωₘ, :λ_Me, :λ_Ve, :λ_Ea, 
                       :λ_Ma, :λ_Ju, :λ_Sa, :λ_Ur, :λ_Ne, :pₐ)
+    
+    # Pre-computes all the Fundamental Arguments multiplications
+    fad = Dict{Symbol, Vector{Int}}()
+    for (m, fm) in enumerate(MAPPING) 
+        fad[fm] = Vector{Int}()
 
-    # cpoly and ctrig must have the same number of elements
-    nblocks = length(cpoly)
+        # Finds all the multiplicative factors of argument `fm`
+        for i = 1:nblocks 
+            for s in ctrig[i]
+                if !(s.N[m] in fad[fm]) && s.N[m] != 0 
+                    push!(fad[fm], s.N[m])
+                end
+            end
+        end
 
-    fcn_body = Expr(:block)
+        # Register the expression for that facotr
+        for (k, mk) in enumerate(fad[fm])
+            fae = Expr(:(.), :fa, QuoteNode(fm))
+            push!(fcn_body.args, Expr(:(=), Symbol("$fm$k"), Expr(:call, :(*), mk, fae)))
+        end
+    end
 
     # Final @evalpoly call expression (depends on nblocks)
     poly_call = Expr(:macrocall, Symbol("@evalpoly"), :, :t)
-    
+
     # Stores the indexes of all the contributions that have already been computed 
     dct = Dict{Int, Vector{Int}}()
 
@@ -31,16 +51,14 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
     end
 
     for i = 1:nblocks 
-
         # Parses the trigonometric series
         for s in ctrig[i]
-            
+
             # Computes the ARGUMENT expression
-            argv = Vector{Expr}()
+            argv = Vector{Symbol}()
             for (j, n) in enumerate(s.N) 
                 if n != 0 
-                    f = Expr(:(.), :fa, QuoteNode(MAPPING[j]))
-                    push!(argv, Expr(:call, :(*), n, f))
+                    push!(argv, Symbol("$(MAPPING[j])$(argmin(abs.(fad[MAPPING[j]] .- n)))"))
                 end
             end
 
@@ -52,7 +70,7 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
             # Re-parses the entire trigonometric coefficients vector to check 
             # for elements with same arg coeffs 
             cn, sn = false, false 
-            
+
             for ii = 1:nblocks 
                 fcc, scc = 0., 0. 
 
@@ -64,7 +82,7 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
                         # Groups together all the sin\cos terms
                         fcc += sk.fc
                         scc += sk.sc 
-   
+
                         # Stores whether sin\cos are actually computed
                         sn = sn ? sn : sk.fc != 0.
                         cn = cn ? cn : sk.sc != 0.
@@ -85,17 +103,14 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
 
                 # Reassigns the arg variable
                 push!(fcn_body.args, Expr(:(=), :arg, arge))
-                
+
                 # Computes and stores sin(ARG) and cos(ARG)
                 cn && push!(fcn_body.args, Expr(:(=), :carg, Expr(:call, :cos, :arg)))
                 sn && push!(fcn_body.args, Expr(:(=), :sarg, Expr(:call, :sin, :arg)))
-                            
+                    
                 push!(fcn_body.args, blkₑ...)
-
             end
-
         end
-
     end
 
     push!(fcn_body.args, poly_call)
@@ -124,8 +139,30 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
     # ψseries and ϵseries must have the same number of elements (should be 2)
     nblocks = length(ψseries)
-
     fcn_body = Expr(:block)
+
+    # Pre-computes all the Fundamental Arguments multiplications
+    fad = Dict{Symbol, Vector{Int}}()
+    for (m, fm) in enumerate(MAPPING) 
+        fad[fm] = Vector{Int}()
+
+        # Finds all the multiplicative factors of argument `fm`
+        for i = 1:nblocks 
+            for series in (ψseries, ϵseries)
+                for s in series[i]
+                    if !(s.N[m] in fad[fm]) && s.N[m] != 0 
+                        push!(fad[fm], s.N[m])
+                    end
+                end
+            end
+        end
+
+        # Register the expression for that facotr
+        for (k, mk) in enumerate(fad[fm])
+            fae = Expr(:(.), :fa, QuoteNode(fm))
+            push!(fcn_body.args, Expr(:(=), Symbol("$fm$k"), Expr(:call, :(*), mk, fae)))
+        end
+    end
 
     # Final @evalpoly call expression (depends on nblocks)
     pcall = Vector{Expr}(undef, 2); 
@@ -134,8 +171,7 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
         # Automatically includes transformation to radians
         pcall[i] = Expr(:(=), var, Expr(:call, :(/), Expr(:call, :(*), 
-                            Expr(:macrocall, Symbol("@evalpoly"), :, :t), 
-                        π*1e-7), 648000))
+                        Expr(:macrocall, Symbol("@evalpoly"), :, :t), π*1e-7), 648000))
     end
 
     # Stores the indexes of all the contributions that have already been computed 
@@ -144,7 +180,6 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
     # Initialises the variables 
     for i = 1:nblocks 
-    
         for j = 1:2 # Adds ψ and ϵ contributions 
             dct[(j, i)] = Vector{Int}() # initialises dictionary keys 
 
@@ -156,16 +191,15 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
     for i = 1:nblocks 
         for series in (ψseries, ϵseries)
-            
+
             # Parses ψ or ϵ block 
             for s in series[i]
-                
+
                 # Computes the ARGUMENT expression
-                argv = Vector{Expr}()
+                argv = Vector{Symbol}()
                 for (j, n) in enumerate(s.N) 
                     if n != 0 
-                        f = Expr(:(.), :fa, QuoteNode(MAPPING[j]))
-                        push!(argv, Expr(:call, :(*), n, f))
+                        push!(argv, Symbol("$(MAPPING[j])$(argmin(abs.(fad[MAPPING[j]] .- n)))"))
                     end
                 end
 
@@ -177,7 +211,7 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
                 # Re-parses the entire ψ and ϵ vectors to check 
                 # for elements with same arg coeffs 
                 cn, sn = false, false 
-                
+
                 for ii = 1:nblocks 
 
                     # Parse ψ and ϵ
@@ -194,7 +228,7 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
                                 # Groups together all the sin\cos terms
                                 fcc += sk.fc 
                                 scc += sk.sc
-        
+
                                 # Stores whether sin\cos are actually computed
                                 # For ψ fc = sin, sc = cos, for ϵ fc = cos, sc = sin
                                 cn = cn ? cn : (v == 1 ? sk.sc : sk.fc) != 0.
@@ -218,7 +252,6 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
                             var = v == 1 ? "ψ" : "ϵ"
                             push!(blkₑ, Expr(:(+=), Symbol("d"*var*"$(ii-1)"), sumₑ))
                         end
-
                     end
                 end
 
@@ -227,13 +260,12 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
                     # Reassigns the arg variable
                     push!(fcn_body.args, Expr(:(=), :arg, arge))
-                    
+
                     # Computes and stores sin(ARG) and cos(ARG)
                     cn && push!(fcn_body.args, Expr(:(=), :carg, Expr(:call, :cos, :arg)))
                     sn && push!(fcn_body.args, Expr(:(=), :sarg, Expr(:call, :sin, :arg)))
-                                
+                        
                     push!(fcn_body.args, blkₑ...)
-
                 end
             end
         end
@@ -242,9 +274,6 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
     for i = 1:2 
         push!(fcn_body.args, pcall[i])
     end
-    
-    res = Expr(:call, :(./), Expr(:call, :(.*), Expr(:tuple, :dψ, :dϵ), 
-                                 π*1e-7), 648000)
 
     # Adds return types 
     push!(fcn_body.args, Expr(:return, Expr(:tuple, :dψ, :dϵ)))
@@ -260,6 +289,8 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
     return eval(fcn)
 end
 
-include("iers.jl")
+include("obliquity.jl")
 include("nutation.jl")
+include("precession.jl")
 
+include("iers.jl")
