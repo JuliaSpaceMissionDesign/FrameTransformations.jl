@@ -302,7 +302,7 @@ function dat(iyear::N, imonth::N) where {N<:Integer}
     # If pre-UTC year, set warning status and return 0.0
     if iyear < LEAP_TABLE[1][1] 
         @warn "[Tempo] UTC not available for year $iyear, 0 is returned"
-        return zero(T)
+        return 0.0
     end
 
     # If suspiciously late year, proceed
@@ -459,7 +459,7 @@ function tai2utc(tai1, tai2)
     u1 = a1
     u2 = a2
     #  Iterate (though in most cases just once is enough)
-    for _ in 1:3
+    for _ in 1:2
         g1, g2 = utc2tai(u1, u2)
         u2 += a1 - g1 
         u2 += a2 - g2 
