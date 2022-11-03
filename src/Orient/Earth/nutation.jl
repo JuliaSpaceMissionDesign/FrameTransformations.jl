@@ -36,7 +36,6 @@ function orient_nutation(m::IAU2006A, t::Number)
     return Δψ, Δϵ
 end
 
-
 function orient_nutation(m::IAU2006B, t::Number)
 
     # questa utilizza una versione semplificata degli FA, tanto l'errore introdotto è 

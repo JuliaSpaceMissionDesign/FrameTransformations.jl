@@ -27,8 +27,8 @@ The singleton instance of type `IAU2006b`, representing the IAU 2006B family of 
 const iau2006b = IAU2006B()
 
 struct IAUSeries{N <: Number}
-    fc::N # First Coefficient 
-    sc::N # Second Coefficient
+    sc::N # Sin coefficient
+    cc::N # Cos coefficient
     N::SVector{14, Int}
 end
 

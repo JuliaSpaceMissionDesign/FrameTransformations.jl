@@ -72,7 +72,7 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
             cn, sn = false, false 
 
             for ii = 1:nblocks 
-                fcc, scc = 0., 0. 
+                sc, cc = 0., 0. 
 
                 for (k, sk) in enumerate(ctrig[ii])
                     if sk.N == s.N && !(k in dct[ii])
@@ -80,20 +80,20 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
                         push!(dct[ii], k)
                         
                         # Groups together all the sin\cos terms
-                        fcc += sk.fc
-                        scc += sk.sc 
+                        sc += sk.sc
+                        cc += sk.cc 
 
                         # Stores whether sin\cos are actually computed
-                        sn = sn ? sn : sk.fc != 0.
-                        cn = cn ? cn : sk.sc != 0.
+                        sn = sn ? sn : sk.sc != 0.
+                        cn = cn ? cn : sk.cc != 0.
                     end
                 end
 
                 sumₑ = Expr(:call, :(+))
-                fcc != 0. && push!(sumₑ.args, Expr(:call, :(*), fcc, :sarg))
-                scc != 0. && push!(sumₑ.args, Expr(:call, :(*), scc, :carg))
+                sc != 0. && push!(sumₑ.args, Expr(:call, :(*), sc, :sarg))
+                cc != 0. && push!(sumₑ.args, Expr(:call, :(*), cc, :carg))
 
-                if fcc != 0. || scc != 0. 
+                if sc != 0. || cc != 0. 
                     push!(blkₑ, Expr(:(+=), Symbol("w$ii"), sumₑ))    
                 end      
             end
@@ -171,7 +171,7 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
         # Automatically includes transformation to radians
         pcall[i] = Expr(:(=), var, Expr(:call, :(/), Expr(:call, :(*), 
-                        Expr(:macrocall, Symbol("@evalpoly"), :, :t), π*1e-7), 648000))
+                        Expr(:macrocall, Symbol("@evalpoly"), :, :t), π*1e-6), 648000))
     end
 
     # Stores the indexes of all the contributions that have already been computed 
@@ -216,7 +216,7 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
 
                     # Parse ψ and ϵ
                     for (v, vct) in enumerate([ψseries, ϵseries])
-                        fcc, scc = 0., 0. 
+                        sc, cc = 0., 0. 
 
                         # Parses the inner series 
                         for (k, sk) in enumerate(vct[ii])
@@ -226,29 +226,20 @@ function build_nutation_series(fname::Symbol, iau_model::Symbol,
                                 push!(dct[(v, ii)], k)
                                 
                                 # Groups together all the sin\cos terms
-                                fcc += sk.fc 
-                                scc += sk.sc
+                                sc += sk.sc 
+                                cc += sk.cc
 
                                 # Stores whether sin\cos are actually computed
-                                # For ψ fc = sin, sc = cos, for ϵ fc = cos, sc = sin
-                                cn = cn ? cn : (v == 1 ? sk.sc : sk.fc) != 0.
-                                sn = sn ? sn : (v == 1 ? sk.fc : sk.sc) != 0.
+                                sn = sn ? sn : sk.sc != 0.
+                                cn = cn ? cn : sk.cc != 0.
                             end
                         end
 
                         sumₑ = Expr(:call, :(+))
+                        sc != 0. && push!(sumₑ.args, Expr(:call, :(*), sc, :sarg))
+                        cc != 0. && push!(sumₑ.args, Expr(:call, :(*), cc, :carg))
 
-                        if fcc != 0. 
-                            push!(sumₑ.args, 
-                                Expr(:call, :(*), fcc, v == 1 ? (:sarg) : (:carg)))
-                        end
-
-                        if scc != 0. 
-                            push!(sumₑ.args, 
-                                Expr(:call, :(*), scc, v == 1 ? (:carg) : (:sarg)))
-                        end
-
-                        if fcc != 0. || scc != 0. 
+                        if sc != 0. || cc != 0. 
                             var = v == 1 ? "ψ" : "ϵ"
                             push!(blkₑ, Expr(:(+=), Symbol("d"*var*"$(ii-1)"), sumₑ))
                         end
