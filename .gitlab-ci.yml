@@ -22,10 +22,10 @@ Documentation:
     # Move the rendered documentation to a folder called "documentation" in the root of
     # the repo which will be saved in an artifact.
     - mkdir documentation
-    # make schema
-    - apt-get -y install python3.6
-    - apt-get -y install python3-pip
-    - sh res/schemas/makeschema.sh
+    # # make schema
+    # - apt-get -y install python3.6
+    # - apt-get -y install python3-pip
+    # - sh res/schemas/makeschema.sh
     # move docs
     - mv docs/build/* documentation/    
 

@@ -9,7 +9,6 @@ module Utils
     include("IO/load.jl")
     include("IO/write.jl")
     include("format.jl")
-    include("generated.jl")
     include("angles.jl")
     
 end
