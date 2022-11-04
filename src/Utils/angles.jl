@@ -1,4 +1,4 @@
-export sec2rad, rad2secW
+export arcsec2rad, rad2arcsec
 
 const ARCSECONDS_PER_DEGREE = 3600
 

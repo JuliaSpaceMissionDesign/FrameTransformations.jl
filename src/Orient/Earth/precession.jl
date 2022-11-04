@@ -1,11 +1,13 @@
+export orient_precession_bias
+
 """
-    fw_angles(::IAU2006, j2000ttc::N)
+    fw_angles(::IAU2006Model, t::N) where {N<:Number}
 
 Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
 
 ### Inputs
 - IAU Model type
-- `j2000ttc`  -- `TT` centuries since J2000
+- `t`  -- `TT` centuries since J2000
 
 ### Outputs
 - `γ` -- F-W 1st angle -- `rad`
@@ -16,9 +18,9 @@ Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
 ### References 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
-function fw_angles(::IAU2006, j2000ttc::N) where {N<:Number}
+function fw_angles(::IAU2006Model, t::N) where {N<:Number}
     γ = @evalpoly(
-        j2000ttc,
+        t,
         -0.052928,
         10.556378,
         0.4932044,
@@ -28,7 +30,7 @@ function fw_angles(::IAU2006, j2000ttc::N) where {N<:Number}
     ) |> arcsec2rad
 
     ϕ = @evalpoly(
-        j2000ttc,
+        t,
         84381.412819,
         -46.811016,
         0.0511268,
@@ -38,7 +40,7 @@ function fw_angles(::IAU2006, j2000ttc::N) where {N<:Number}
     ) |> arcsec2rad
 
     ψ = @evalpoly(
-        j2000ttc,
+        t,
         -0.041775,
         5038.481484,
         1.5584175,
@@ -47,7 +49,7 @@ function fw_angles(::IAU2006, j2000ttc::N) where {N<:Number}
         -0.0000000148,
     ) |> arcsec2rad
 
-    ε = mean_obliquity(iau2006, j2000ttc)
+    ε = orient_obliquity(iau2006a, t)
     return γ, ϕ, ψ, ε
 
 end
@@ -65,17 +67,18 @@ function fw_matrix(γ, ϕ, ψ, ε)
 end
 
 """
-    fw_precession_bias(::IAU2006, j2000ttc::N) where {N<:Number}
+    orient_precession_bias(::IAU2006, t::N) where {N<:Number}
 
 Precession matrix (including frame bias) from GCRS to a specified
 date, IAU 2006 model. This uses the Fukushima-Williams model.
 
 ### Inputs 
-- `j2000ttc`-- `TT` centuries since J2000
+- `t`-- `TT` centuries since J2000
 
 ### Output 
 Rotation matrix. 
 
+### Notes
 The matrix operates in the sense V(date) = RBP * V(GCRS), where the vector 
 V(GCRS) is with respect to the Geocentric Celestial Reference System (IAU, 2000) 
 and the vector V(date) is with respect to the mean equatorial triad of the 
@@ -92,14 +95,14 @@ given date.
 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pmat06.c) software library
 """
-function fw_precession_bias(q::M, j2000ttc::N) where {N<:Number, M<:IAU2006Model}
+function orient_precession_bias(q::M, t::N) where {N<:Number, M<:IAU2006Model}
     # Bias-precession Fukushima-Williams angles.
-    γ, ϕ, ψ, ε = fw_angles(q, j2000ttc)
+    γ, ϕ, ψ, ε = fw_angles(q, t)
     # form the matrix
     return fw_matrix(γ, ϕ, ψ, ε)
 end
 
-const ICRF2J2000_BIAS= fw_precession_bias(iau2006a, 0.0)
+const ICRF2J2000_BIAS = orient_precession_bias(iau2006a, 0.0)
 
 """
     ICRF2J2000_BIAS

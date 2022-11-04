@@ -1,16 +1,8 @@
-#
-# Copyright (c) 2018-2020 Helge Eichhorn and the AstroBase.jl contributors
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-
-export iau2006, iau2006a
+export iau2006a, iau2006b
 
 abstract type IAUModel end
 abstract type IAU2006Model <: IAUModel end
-abstract type IAU2010Model <: IAUModel end
+
 
 ########
 # 2006 #
