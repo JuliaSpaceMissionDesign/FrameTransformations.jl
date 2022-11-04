@@ -17,7 +17,6 @@ abstract type AbstractFrameRotation{F1<:AbstractFrame,
     Rotation{F1, F2, T<:AbstractFloat}
 
 A type representing Rotations between reference frames.
-
 """
 struct Rotation{F1, F2, T<:AbstractFloat} <: AbstractFrameRotation{F1, F2}
     origin::F1
@@ -77,4 +76,21 @@ function apply(rot::Rotation, vec::VN) where {VN<:AbstractVector}
     vel = @view vec[4:6]
     veln = rot.dm * pos + rot.m * vel
     return SA[posn[1], posn[2], posn[3], veln[1], veln[2], veln[3]]
+end
+
+function Rotation(from::F1, to::F2, ep::Epoch) where {F1<:AbstractFrame,F2<:AbstractFrame}
+    frames = find_path(from, to)
+    return _Rotation(ep, frames...)
+end
+
+function _Rotation(ep::Epoch, path::AbstractFrame...)::Rotation
+    f1 = path[1]
+    f2 = path[2]
+    rot = Rotation(f1, f2, ep)
+    for i in 2:length(path)-1
+        f1 = path[i]
+        f2 = path[i+1]
+        rot = compose(rot, Rotation(f1, f2, ep))
+    end
+    return rot
 end
