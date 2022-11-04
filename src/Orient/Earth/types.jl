@@ -25,3 +25,10 @@ struct IAU2006B <: IAU2006Model end
 The singleton instance of type `IAU2006b`, representing the IAU 2006B family of models.
 """
 const iau2006b = IAU2006B()
+
+struct IAUSeries{N <: Number}
+    sc::N # Sin coefficient
+    cc::N # Cos coefficient
+    N::SVector{14, Int}
+end
+
