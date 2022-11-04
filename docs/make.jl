@@ -26,6 +26,7 @@ makedocs(;
             "Tempo" => "Modules/time.md",
             "Ephemeris" => "Modules/ephem.md",
             "Orient" => "Modules/orient.md",
+            "Frames" => "Modules/frames.md",
             "Utils" => "Modules/utils.md"
         ]
     ],
