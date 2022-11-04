@@ -24,7 +24,7 @@ function polar_motion(xₚ::Number, yₚ::Number, t::Number)
 end
 
 function polar_motion(xₚ::Number, yₚ::Number, ::Number, sp::Number)
-    angle_to_dcm(-sp, xₚ, yₚ, :ZYX)
+    angle_to_dcm(yₚ, xₚ, -sp, :XYZ)
 end
 
 
@@ -55,15 +55,14 @@ end
 Earth Rotation IAU-2006/2000, CIO Based
 
 ### Input 
-- `Tᵤ` -- Julian UT1 date - 2451545.0
+- `t` -- Julian UT1 date
 
 ### Output
 Rotation matrix from TIRS to CIRS
 """
 
-function era_rotm(Tᵤ::Number) 
-    ERA = earth_rotation_angle(Tᵤ)
-    angle_to_dcm(-ERA, :Z)
+function era_rotm(t::Number) 
+    angle_to_dcm(-earth_rotation_angle(t), :Z)
 end
 
 
@@ -75,13 +74,15 @@ and the Terrestrial Intermediate Origin (TIO). It uses the fractional UT1 date t
 additional precision in the computations (0.002737.. instead of 1.002737..)
 
 ### Input 
-- `Tᵤ` -- Julian UT1 date - 2451545.0
+- `t` -- Julian UT1 date
 
 ### Output 
 Earth Rotation Angle (ERA) in radians at time Tᵤ
 """
-@inline function earth_rotation_angle(Tᵤ::Number)
-    return mod2pi(2π * (Tᵤ % 1 + 0.7790572732640 + 0.00273781191135448Tᵤ))
+@inline function earth_rotation_angle(t::Number)
+    f = t % 1.0 
+    Tᵤ = t - 2451545.0
+    return mod2pi(2π * (f % 1 + 0.7790572732640 + 0.00273781191135448Tᵤ))
 end
 
 
@@ -101,7 +102,7 @@ angles.
 - `X`, `Y` -- CIP coordinates X, Y
 
 """
-function fw2xy(ϵ::Number, ψ::Number, γ::Number, φ::Number)
+function fw2xy(γ::Number, φ::Number, ψ::Number, ϵ::Number)
     sϵ, cϵ = sincos(ϵ)
     sψ, cψ = sincos(ψ)
     sγ, cγ = sincos(γ)
@@ -132,7 +133,7 @@ function cip_coords(m::IAU2006Model, t::Number)
     ϵₙ = ϵ + Δϵ
     
     # Retrieves CIP coordinates 
-    fw2xy(ϵₙ, ψₙ, γ, ϕ)
+    fw2xy(γ, ϕ, ψₙ, ϵₙ)
 end 
 
 
@@ -153,7 +154,9 @@ function cio_locator(m::IAU2006Model, t::Number, x::Number, y::Number)
     cio_locator(m, t, fa)/1e6*π/648000 - x*y/2
 end
 
-
+"""
+Rotation matrix from CIRS to GCRS
+"""
 function cip_motion(m::IAU2006Model, t::Number)
 
     # Computes CIP X, Y coordinates 
@@ -163,26 +166,12 @@ function cip_motion(m::IAU2006Model, t::Number)
     s = cio_locator(m, t, x, y)
     
     # Retrieves spherical angles E and d. 
-    r2 = sqrt(x^2 + y^2)
+    r2 = x^2 + y^2
     E = (r2 > 0) ? atan(y, x) : 0.0 
     d = atan(sqrt(r2 / (1.0 - r2)))
 
     # This formulation (compared to simplified versions) ensures 
     # that the resulting matrix is orthonormal.
-    angle_to_dcm(-E, -d, E+s, :ZYZ)
-end
-
-
-function itrs2gcrs(m::IAU2006Model, t::Number, xₚ::Number, yₚ::Number)
-
-    # Polar motion matrix
-    W = polar_motion(xₚ, yₚ, t)
-
-    # Earth Rotation Angle matrix 
-    R = era_rotm(t) 
-
-    # Precession-Nutation matrix arising from the CIP motion
-    Q = cip_motion(m, t) 
-
-    return Q*R*W 
+    angle_to_dcm(E+s, -d, -E, :ZYZ)
+    
 end

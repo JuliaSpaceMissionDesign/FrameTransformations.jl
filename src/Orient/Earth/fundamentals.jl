@@ -135,12 +135,11 @@ Returns the mean longitude of the Moon's ascending node `Ω` in radians.
 """
 function fa_mlon_moon(t::Number) 
     mod2pi(@evalpoly(t, 450160.398036, 
-                        -6962890.54311, 
+                        -6962890.5431, 
                         7.4722,
                         0.007702, 
                         -0.00005939)*π/648000)
 end
-
 
 """
     fa_mlat_moon(t::Number) 
@@ -178,7 +177,7 @@ Returns the mean elongation of the Moon from the Sun `D` in radians.
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/nut00b.c) software library
 """
 function fa_melo_moon(t::Number)
-    mod2pi(@evalpoly(t, 1072260.70369 , 
+    mod2pi(@evalpoly(t, 1072260.703692 , 
                         1602961601.2090, 
                         -6.3706,
                         +0.006593, 

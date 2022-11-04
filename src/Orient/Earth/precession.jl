@@ -50,8 +50,8 @@ function fw_angles(::IAU2006Model, t::N) where {N<:Number}
           -0.0000000148,
     ) |> arcsec2rad
 
-    ε = orient_obliquity(iau2006a, t)
-    return γ, ϕ, ψ, ε
+    ϵ = orient_obliquity(iau2006a, t)
+    return γ, ϕ, ψ, ϵ
 
 end
 
@@ -63,8 +63,8 @@ Form rotation matrix given the Fukushima-Williams angles.
 ### References
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pmat06.c) software library
 """
-function fw_matrix(γ, ϕ, ψ, ε)
-    return angle_to_dcm(γ, :Z) * angle_to_dcm(ϕ, -ψ, -ε, :XZX)
+function fw_matrix(γ, ϕ, ψ, ϵ)
+    angle_to_dcm(-ϵ, :X)*angle_to_dcm(γ, ϕ, -ψ, :ZXZ)
 end
 
 """

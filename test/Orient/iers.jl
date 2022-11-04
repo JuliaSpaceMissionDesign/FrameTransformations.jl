@@ -1,174 +1,314 @@
-
+@testset "IERS Conventions "
 @testset "Fundamental Arguments" begin 
 
-    # Testing Fundamental Arguments 
-    # 1st set data from Vallado 4th ed. Example 3-14 pp. 220
-    # 2nd set data from ERFA values in radians (guarantees a higher precision!)
-    
-    # Missing the longitude of neptune as Vallado uses a different value wrt to 
-    # SOFA\IERS 2010 conventions 
+    # Testing IERS 2010 conventions Fundamental Arguments 
+    # Test values are in radians and taken from ERFA 
+    # Absolute tolerance of 1e-13 guarantees an error below 0.02 μas
 
-    tv = 0.0426236319
-    te = 0.12345
+    # Testing at t = 1. to check correct coefficients!
 
-    fav = FundamentalArguments(tv)
-    fae = FundamentalArguments(te)
+    t = [0.06567, 1.]
+    fa = [FundamentalArguments(t[1]), FundamentalArguments(t[2])]
+
+    atol, rtol = 1e-13, 1e-12 
 
     # Testing Delaunay's Arguments 
     @testset "Delaunay arguments 2003" begin
 
         # Testing Mean Anomaly of the Moon 
-        @test rad2deg(fav.Mₐ) ≈ 314.9122873 atol=1e-7 rtol=1e-7
-        @test fae.Mₐ ≈ 9.0124422693240238e-2 atol=1e-6
+        @test fa[1].Mₐ ≈ 2.663600612437975    atol=atol rtol=rtol
+        @test fa[2].Mₐ ≈ 5.826604253498457    atol=atol rtol=rtol
 
         # Testing Mean Anomaly of the Sun 
-        @test rad2deg(fav.Sₐ) ≈ 91.9393769 atol=1e-7 rtol=1e-7
-        @test fae.Sₐ ≈ 2.122527458615575 atol=1e-9
+        @test fa[1].Sₐ ≈ 3.518352361195792    atol=atol rtol=rtol
+        @test fa[2].Sₐ ≈ 6.223481898965822    atol=atol rtol=rtol
 
         # Testing Mean Argument of Latitude of the Moon 
-        @test rad2deg(fav.uₘ) ≈ 169.0970043 atol=1e-7 rtol=1e-7
-        @test fae.uₘ ≈ 6.013725526098429 atol=1e-9
+        @test fa[1].uₘ ≈ 2.533320307830868    atol=atol rtol=rtol
+        @test fa[2].uₘ ≈ 3.059317938336433    atol=atol rtol=rtol
 
         # Testing mean elongation of the moon from the sun 
-        @test rad2deg(fav.Dₛ) ≈ 196.7516428 atol=1e-7 rtol=1e-7
-        @test fae.Dₛ ≈ 3.247622743094825 atol=1e-9
+        @test fa[1].Dₛ ≈ 3.236084178870326e-1 atol=atol rtol=rtol
+        @test fa[2].Dₛ ≈ 4.275356347495070    atol=atol rtol=rtol
 
         # Testing Mean Longitude of the Moon
-        @test rad2deg(fav.Ωₘ) ≈ 42.6046467 atol=1e-7 rtol=1e-7
-        @test fae.Ωₘ ≈ -1.984867574205391+2π atol=1e-9 
+        @test fa[1].Ωₘ ≈ -3.438585492123376e-2 + 2π atol=atol rtol=rtol
+        @test fa[2].Ωₘ ≈ -1.586439578169723e-1 + 2π atol=atol rtol=rtol
 
     end
 
-    @testset "Delaunay arguments IAU2000B" begin 
-        # Testing the truncated expressions of the Delunary Arguments 
-
-        fa = FundamentalArguments(te, iau2006b);
-
-        # Testing Mean Anomaly of the Moon 
-        @test fa.Mₐ ≈ 9.012187106285367e-02 atol=1e-6
-
-        # Testing Mean Anomaly of the Sun 
-        @test fa.Sₐ ≈ 2.122527499497290 atol=1e-9
-
-        # Testing Mean Argument of Latitude of the Moon 
-        @test fa.uₘ ≈ 6.013726468232121 atol=1e-9
-
-        # Testing mean elongation of the moon from the sun 
-        @test fa.Dₛ ≈ 3.247623213717811 atol=1e-9
-
-        # Testing Mean Longitude of the Moon
-        @test fa.Ωₘ ≈ -1.984868126360060+2π atol=1e-9 
-
-        for f in [:λ_Me, :λ_Ve, :λ_Ea, :λ_Ma, :λ_Ju, :λ_Sa, :λ_Ur, :λ_Ne, :pₐ]
-            @test getproperty(fa, f) == getproperty(fae, f)
-        end
-
-    end 
-
-    # Testing Planetary Arguments 
     @testset "Planetary Arguments" begin
 
         # Testing Mean Longitude of Mercury
-        @test rad2deg(fav.λ_Me) ≈ 143.319167 atol=1e-7 rtol=1e-7
-        @test fae.λ_Me ≈ 6.015322458572193 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Me ≈ 6.075865478867676 atol=atol rtol=rtol
+        @test fa[2].λ_Me ≈ 5.671020519871966 atol=atol rtol=rtol
 
         # Testing Mean Longitude of Venus
-        @test rad2deg(fav.λ_Ve) ≈ 156.221635 atol=1e-7 rtol=1e-7
-        @test fae.λ_Ve ≈ 3.595450621383065 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Ve ≈ 1.131754499992205    atol=atol rtol=rtol
+        @test fa[2].λ_Ve ≈ 3.454962478273771e-1 atol=atol rtol=rtol
 
         # Testing Mean Longitude of Earth
-        @test rad2deg(fav.λ_Ea) ≈ 194.890465 atol=1e-7 rtol=1e-7
-        @test fae.λ_Ea ≈ 3.919817995983848 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Ea ≈ 5.315317577813381 atol=atol rtol=rtol
+        @test fa[2].λ_Ea ≈ 1.742524595141305 atol=atol rtol=rtol
 
         # Testing Mean Longitude of Mars
-        @test rad2deg(fav.λ_Ma) ≈ 91.262347 atol=1e-7 rtol=1e-7
-        @test fae.λ_Ma ≈ 3.461044170354398 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Ma ≈ 3.008541490420559 atol=atol rtol=rtol
+        @test fa[2].λ_Ma ≈ 9.727169953023775e-1 atol=atol rtol=rtol
 
         # Testing Mean Longitude of Jupiter
-        @test rad2deg(fav.λ_Ju) ≈ 163.710186 atol=1e-7 rtol=1e-7
-        @test fae.λ_Ju ≈ 8.553961236235601e-1 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Ju ≈ 4.078027048663447 atol=atol rtol=rtol
+        @test fa[2].λ_Ju ≈ 3.303160303663311 atol=atol rtol=rtol
 
         # Testing Mean Longitude of Saturn
-        @test rad2deg(fav.λ_Sa) ≈ 102.168400 atol=1e-7 rtol=1e-7
-        @test fae.λ_Sa ≈ 3.507194207731200 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Sa ≈ 2.274751979272320 atol=atol rtol=rtol
+        @test fa[2].λ_Sa ≈ 3.354371331461241 atol=atol rtol=rtol
 
         # Testing Mean Longitude of Uranus
-        @test rad2deg(fav.λ_Ur) ≈ 332.317825 atol=1e-7 rtol=1e-7
-        @test fae.λ_Ur ≈ 1.212873991300292e-1 atol=1e-14 rtol=1e-14
+        @test fa[1].λ_Ur ≈ 5.972384629789489 atol=atol rtol=rtol
+        @test fa[2].λ_Ur ≈ 3.930831143408273e-1 atol=atol rtol=rtol
 
-        # Testing Mean Longitude of Neptune (only from SOFA routines)
-        @test fae.λ_Ne ≈ 5.782638611951110 atol=1e-20 rtol=1e-20
+        # Testing Mean Longitude of Neptune
+        @test fa[1].λ_Ne ≈ 5.562305932034747 atol=atol rtol=rtol
+        @test fa[2].λ_Ne ≈ 2.842004543620414 atol=atol rtol=rtol
 
         # Testing General Accumulated Precession 
-        @test rad2deg(fav.pₐ) ≈ 0.059545 atol=1e-6 rtol=1e-7
-        @test fae.pₐ ≈ 3.010009133483176e-3 atol=1e-14 rtol=1e-14
+        @test fa[1].pₐ ≈ 1.601172753812795e-3 atol=atol rtol=rtol
+        @test fa[2].pₐ ≈ 2.438713691000000e-2 atol=atol rtol=rtol
+
+    end 
+
+    # Testing the truncated expressions of the Delunary Arguments 
+    fab = [FundamentalArguments(t[1], iau2006b), 
+           FundamentalArguments(t[2], iau2006b)];
+
+    @testset "Delaunay arguments IAU2000B" begin 
+
+        # Testing Mean Anomaly of the Moon 
+        @test fab[1].Mₐ ≈ 2.663599945842266      atol=atol rtol=rtol
+        @test fab[2].Mₐ ≈ 5.826449449627781      atol=atol rtol=rtol
+
+        # Testing Mean Anomaly of the Sun 
+        @test fab[1].Sₐ ≈ 3.518352372771510          atol=atol rtol=rtol
+        @test fab[2].Sₐ ≈ 6.223484580361229          atol=atol rtol=rtol
+
+        # Testing Mean Argument of Latitude of the Moon 
+        @test fab[1].uₘ ≈ 2.533320574432192          atol=atol rtol=rtol
+        @test fab[2].uₘ ≈ 3.059379762905646          atol=atol rtol=rtol
+
+        # Testing mean elongation of the moon from the sun 
+        @test fab[1].Dₛ ≈ 3.236085510636535e-1       atol=atol rtol=rtol
+        @test fab[2].Dₛ ≈ 4.275387201216140          atol=atol rtol=rtol
+
+        # Testing Mean Longitude of the Moon
+        @test fab[1].Ωₘ ≈ -3.438601115926876e-2 + 2π  atol=atol rtol=rtol 
+        @test fab[2].Ωₘ ≈ -1.586802211172697e-1 + 2π  atol=atol rtol=rtol 
+
+        for f in [:λ_Me, :λ_Ve, :λ_Ea, :λ_Ma, :λ_Ju, :λ_Sa, :λ_Ur, :λ_Ne, :pₐ]
+            for i in eachindex(fab)
+                @test getproperty(fab[i], f) == getproperty(fa[i], f)
+            end
+        end
 
     end 
 
 end;
 
-@testset "nutation" begin 
 
-    t = -0.038913073237503454; 
+@testset "Nutation" begin 
 
+    jdₜ = 2400000.5 + 53750.892855; 
     ERFA_DJ00 = 2451545.
     ERFA_DJC = 36525.
 
-    date1 = 2450123.7;
-    t = ((date1 - ERFA_DJ00)) / ERFA_DJC;
+    t = ((jdₜ - ERFA_DJ00)) / ERFA_DJC;
 
-    # Testing IAU 2000B Nutation model from ERFA 
+    r2a = 180/π*3600 
 
-    fa = FundamentalArguments(t, iau2006b);
-    Δψ, Δϵ = nutation00(iau2006b, t, fa)
+    # Current Nutation series are taken from ERFA 
+    @testset "IAU 2006 A/B Nutation Models" begin
 
-    @test Δψ ≈  3.545257283580251e-05 atol = 1e-8
-    @test Δϵ ≈ -4.139189402616098e-05 atol = 1e-8
+        # Testing IAU 2000A Nutation model from ERFA 
+        # must be precise up to 1 μas
+        atol, rtol = 1e-7, 1e-7
 
-    # Testing IAU 2000B Nutation model from ERFA 
+        fa = FundamentalArguments(t);
+        Δψ, Δϵ = nutation00(iau2006a, t, fa) .* r2a
 
-    fa = FundamentalArguments(t);
-    Δψ, Δϵ = nutation00(iau2006a, t, fa)
+        @test Δψ ≈ -1.071332651430803 atol=atol rtol=rtol
+        @test Δϵ ≈  8.656842463521295 atol=atol rtol=rtol
 
-    @test Δψ ≈  3.545257283580251e-05 atol = 1e-8
-    @test Δϵ ≈ -4.139189402616098e-05 atol = 1e-8
-    
+        Δψ, Δϵ = orient_nutation(iau2006a, t) .* r2a
+        @test Δψ ≈ -1.071332974891340 atol=atol rtol=rtol
+        @test Δϵ ≈  8.656841011106838 atol=atol rtol=rtol
+        
+        # Testing IAU 2000B Nutation model from ERFA 
+        # Must be precise up to n 1 mas 
+        atol, rtol = 1e-12, 1e-12
+        Δψ, Δϵ = orient_nutation(iau2006b, t) .* r2a
+
+        @test Δψ ≈ -1.071752875965778 atol=atol rtol=rtol
+        @test Δϵ ≈  8.656781912467901 atol=atol rtol=rtol
+    end  
 end
 
-@testset "itrf2gcrf" begin
+@testset "Precession" begin 
 
-    # Testing TIO Locator (from Vallado 4th ed. Example 3-14, pp. 220)
-    TT = 0.0426236319
-    sp = tio_locator(TT)
+    jdₜ = 2400000.5 + 53750.892855; 
+    ERFA_DJ00 = 2451545.
+    ERFA_DJC = 36525.
 
-    @test sp ≈ -9.712e-12 atol=1e-12 rtol=1e-12
+    t = ((jdₜ - ERFA_DJ00)) / ERFA_DJC;
 
-    # Testing Polar Motion Matrix (from Vallado 4th ed. Example 3-14, pp. 220)
-    xₚ = -0.140682 |> arcsec2rad
-    yₚ = 0.333309 |> arcsec2rad
-    TT = 0.0426236319
-    
-    W = polar_motion(xₚ, yₚ, tio_locator(TT))
+    r2a = 180/π*3600 
+    atol, rtol = 1e-12, 1e-12
 
-    r_ITRF = SA[-1033.4793830, 7901.2952754, 6380.3565958]
-    r_TIRS = SA[-1033.4750312, 7901.3055856, 6380.3445327]
+    # Testing Fukushima-Williams angles in μas 
+    # Values taken from ERFA, error must be below 1 μas to be acceptable.
 
-    @test maximum(abs.(W*r_ITRF - r_TIRS)) ≈ 0. atol=1e-7 rtol=1e-7
+    fw = [fw_angles(iau2006a, t).* r2a, fw_angles(iau2006a, 0).* r2a] 
 
-    # Testing ERA (from Vallado 4th ed. Example 3-14, pp. 221)
-    Tᵤ = 2453101.827406783 - 2451545
-    θₑ = deg2rad(312.7552829)
+    @testset "Fukushima-Williams angles" begin 
+        # Testing γ
+        @test fw[1][1] ≈ 5.865586624386230e-1 atol=atol rtol=rtol
+        @test fw[2][1] ≈ -5.292800000000158e-2 atol=atol rtol=rtol
 
-    @test earth_rotation_angle(Tᵤ) ≈ θₑ atol=1e-7 rtol=1e-7
+        # Testing ϕ 
+        @test fw[1][2] ≈ 8.437858525780872e4 atol=atol rtol=rtol
+        @test fw[2][2] ≈ 8.438141281900251e4 atol=atol rtol=rtol
 
-    # Testing ERA Matrix (from Vallado 4th ed. Example 3-14, pp. 221)
-    r_TIRS = SA[-1033.4750312, 7901.3055856, 6380.3445327]
-    r_CIRS = SA[5100.0184047, 6122.7863648, 6380.3445327]
+        # Testing longitude ψ
+        @test fw[1][3] ≈ 3.043272121523480e2 atol=atol rtol=rtol
+        @test fw[2][3] ≈ -4.177500000000124e-2 atol=atol rtol=rtol
 
-    Tᵤ = 2453101.827406783 - 2451545
-    Rₑ = era_rotm(Tᵤ)
+        # Testing obliquity ϵ
+        @test fw[1][4] ≈ 8.43785766962175e4 atol=atol rtol=rtol
+        @test fw[2][4] ≈ 8.438140600000251e4 atol=atol rtol=rtol
+    end
 
-    @test maximum(abs.(Rₑ*r_TIRS - r_CIRS)) ≈ 0. atol=1e-7 rtol=1e-7
+    @testset "Rotation Matrices" begin 
+
+        γ, ϕ, ψ, ϵ = fw_angles(iau2006a, t); 
+        FW = fw_matrix(γ, ϕ, ψ, ϵ)
+
+        # Check the matrix originating from the FW Precession Angles 
+        @test FW[1, 1] ≈ 9.999989154136046e-1  atol=atol rtol=rtol
+        @test FW[1, 2] ≈ -1.350835287774888e-3 atol=atol rtol=rtol
+        @test FW[1, 3] ≈ -5.868693548984236e-4 atol=atol rtol=rtol
+        @test FW[2, 1] ≈  1.350835311644812e-3 atol=atol rtol=rtol
+        @test FW[2, 2] ≈  9.999990876215008e-1 atol=atol rtol=rtol
+        @test FW[2, 3] ≈ -3.557088188443913e-7 atol=atol rtol=rtol
+        @test FW[3, 1] ≈  5.868692999554672e-4 atol=atol rtol=rtol
+        @test FW[3, 2] ≈ -4.370554148591665e-7 atol=atol rtol=rtol
+        @test FW[3, 3] ≈  9.999998277921019e-1 atol=atol rtol=rtol
+
+        # Check the whole Assembly process 
+        FW2 = orient_precession_bias(iau2006a, t);
+
+        @test FW2[1, 1] ≈ 9.999989154136046e-1  atol=atol rtol=rtol
+        @test FW2[1, 2] ≈ -1.350835287774888e-3 atol=atol rtol=rtol
+        @test FW2[1, 3] ≈ -5.868693548984236e-4 atol=atol rtol=rtol
+        @test FW2[2, 1] ≈  1.350835311644812e-3 atol=atol rtol=rtol
+        @test FW2[2, 2] ≈  9.999990876215008e-1 atol=atol rtol=rtol
+        @test FW2[2, 3] ≈ -3.557088188443913e-7 atol=atol rtol=rtol
+        @test FW2[3, 1] ≈  5.868692999554672e-4 atol=atol rtol=rtol
+        @test FW2[3, 2] ≈ -4.370554148591665e-7 atol=atol rtol=rtol
+        @test FW2[3, 3] ≈  9.999998277921019e-1 atol=atol rtol=rtol
+
+    end
+
+end
+
+@testset "ITRF to GCRF Routines" begin
+
+    r2a = 180/π*3600 
+
+    jdₜ = 2400000.5 + 53750.892855; 
+    ERFA_DJ00 = 2451545.
+    ERFA_DJC = 36525.
+
+    t = ((jdₜ - ERFA_DJ00)) / ERFA_DJC;
+
+    atol, rtol = 1e-12, 1e-12
+
+    @testset "Polar Motion" begin 
+        # Testing TIO Locator Position [in arcseconds] 
+        sp = tio_locator(t) .* r2a
+        @test sp ≈ -2.839163974949028e-6 atol=atol rtol=rtol
+
+        # Polar Motion Matrix 
+        xₚ, yₚ = 1.857, 0.123;  
+        W = polar_motion(xₚ, yₚ, t)
+
+        @test W[1, 1] ≈ -2.823123663590987e-1   atol=atol rtol=rtol
+        @test W[1, 2] ≈  1.176993683001583e-1   atol=atol rtol=rtol
+        @test W[1, 3] ≈ -9.520748849236963e-1   atol=atol rtol=rtol
+        @test W[2, 1] ≈  3.885932432356596e-12  atol=atol rtol=rtol
+        @test W[2, 2] ≈  9.924450321335735e-1   atol=atol rtol=rtol
+        @test W[2, 3] ≈  1.226900900374203e-1   atol=atol rtol=rtol
+        @test W[3, 1] ≈  9.593225358557600e-1   atol=atol rtol=rtol
+        @test W[3, 2] ≈  3.463692964357531e-2   atol=atol rtol=rtol
+        @test W[3, 3] ≈ -2.801795055034182e-1   atol=atol rtol=rtol
+    end
+
+    @testset "Earth Rotation Angle" begin 
+        
+        # Testing Earth Rotation Angle [radians]
+        # Note in this case the input time should be expressed in UT1
+        era = earth_rotation_angle(jdₜ); 
+        @test era ≈ 1.335810933027503 atol=atol rtol=rtol
+    end
+
+    @testset "Precession-Nutation" begin 
+
+        # Testing CIP Coordinates from FW angles 
+        # Error should be below 1μas
+        x, y = fw2xy(0.1, 0.7, 1.1, -2.5);
+
+        @test x ≈ -5.614951267014441e-1 atol=atol rtol=rtol        
+        @test y ≈  2.536947155044642e-1 atol=atol rtol=rtol
+
+        atol, rtol = 1e-7, 1e-7
+        # Testing X, Y coordinates including IAU2000A nutation series 
+        # Error must be below 1 μas
+        x, y = cip_coords(iau2006a, t) .* r2a;
+        @test x ≈ 1.206359974143122e2 atol=atol rtol=rtol
+        @test y ≈ 8.567258642517157   atol=atol rtol=rtol
+
+        # Testing CIO Locator [in radians]
+        # Error should be below 1 μas 
+        s = cio_locator(iau2006a, t, 0.125, 0.745); 
+        @test s ≈ -4.656250032319267e-2 atol=1e-12 rtol=1e-12
+        
+        atol, rtol = 1e-12, 1e-12
+
+        # Testing IAU 2006A CIP Motion Rotation Matrix 
+        Q = cip_motion(iau2006a, t); 
+        @test Q[1, 1] ≈  9.999998289694806e-1   atol=atol rtol=rtol
+        @test Q[1, 2] ≈ -2.461548571919270e-8   atol=atol rtol=rtol
+        @test Q[1, 3] ≈  5.848598198075143e-4   atol=atol rtol=rtol
+        @test Q[2, 1] ≈  3.231916262391721e-10  atol=atol rtol=rtol
+        @test Q[2, 2] ≈  9.999999991374118e-1   atol=atol rtol=rtol
+        @test Q[2, 3] ≈  4.153524199496106e-5   atol=atol rtol=rtol
+        @test Q[3, 1] ≈ -5.848598203254312e-4   atol=atol rtol=rtol
+        @test Q[3, 2] ≈ -4.153523470214526e-5   atol=atol rtol=rtol
+        @test Q[3, 3] ≈  9.999998281068927e-1   atol=atol rtol=rtol
+        
+        # Testing IAU2000B CIP Motion Rotation Matrix 
+        # Tolerances are 1000x the previous because this model is 1000x less 
+        # precise than the IAU2006A 
+        atol, rtol = 1e-9, 1e-9
+        Q = cip_motion(iau2006b, t); 
+        @test Q[1, 1] ≈  9.999998289699551e-1   atol=atol rtol=rtol
+        @test Q[1, 2] ≈ -2.461541308285131e-8   atol=atol rtol=rtol
+        @test Q[1, 3] ≈  5.848590084916441e-4   atol=atol rtol=rtol
+        @test Q[2, 1] ≈  3.232319550905416e-10  atol=atol rtol=rtol
+        @test Q[2, 2] ≈  9.999999991374174e-1   atol=atol rtol=rtol
+        @test Q[2, 3] ≈  4.153510643734409e-5   atol=atol rtol=rtol
+        @test Q[3, 1] ≈ -5.848590090095588e-4   atol=atol rtol=rtol
+        @test Q[3, 2] ≈ -4.153509914454784e-5   atol=atol rtol=rtol
+        @test Q[3, 3] ≈  9.999998281073728e-1   atol=atol rtol=rtol
+
+    end
 
     
 end
