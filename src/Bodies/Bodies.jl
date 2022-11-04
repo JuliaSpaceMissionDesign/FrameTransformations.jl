@@ -5,6 +5,5 @@ module Bodies
         
     include("types.jl")
     include("graph.jl")
-    include("gen.jl")
 
 end

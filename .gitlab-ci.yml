@@ -14,7 +14,7 @@ Documentation:
     paths:
       - documentation   
   script:
-    - julia --project=docs/ -e "using Pkg;  pkg\"registry add https://github.com/JuliaRegistries/General\"; pkg\"registry add https://gitlab.com/astronaut-tools/Register.git\"; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
+    - julia --project=docs/ -e "using Pkg;  pkg\"registry add https://github.com/JuliaRegistries/General\"; pkg\"registry add git@gitlab.com:astronaut-tools/Register.git\"; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
     # Perform doctests 
     - julia --project=docs/ -e "using Documenter; using Basic; doctest(Basic)"
     # Render the documentation
@@ -22,10 +22,10 @@ Documentation:
     # Move the rendered documentation to a folder called "documentation" in the root of
     # the repo which will be saved in an artifact.
     - mkdir documentation
-    # make schema
-    - apt-get -y install python3.6
-    - apt-get -y install python3-pip
-    - sh res/schemas/makeschema.sh
+    # # make schema
+    # - apt-get -y install python3.6
+    # - apt-get -y install python3-pip
+    # - sh res/schemas/makeschema.sh
     # move docs
     - mv docs/build/* documentation/    
 
