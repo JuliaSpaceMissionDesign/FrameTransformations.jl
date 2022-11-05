@@ -1,10 +1,12 @@
 @testset "Generate unique fileids" begin
-    fp1 = joinpath(@__DIR__, "..", "assets", "test.tpc")
-    fp2 = joinpath(@__DIR__, "..", "assets", "test2.tpc")
-
-    fid1 = Basic.Utils.fileid(fp1)
-    fid2 = Basic.Utils.fileid(fp2)
-    fid1_ = Basic.Utils.fileid(CONFIG(fp1))
-    @test fid1 == fid1_ 
+    fp1 = joinpath(@__DIR__, "..", "assets", "gms.tpc")
+    fp2 = joinpath(@__DIR__, "..", "assets", "orient.tpc")
+    fid1 = Utils.fileid(fp1)
+    fid2 = Utils.fileid(fp2)
     @test fid2 != fid1
+end
+
+@testset "Function filepath" begin
+    file = TPC(joinpath(@__DIR__, "..", "assets", "gms.tpc"))
+    @test Utils.filepath(file) == joinpath(@__DIR__, "..", "assets", "gms.tpc")
 end
