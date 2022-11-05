@@ -22,7 +22,7 @@ function find_dayinyear(month::N, day::N, isleap::Bool) where {N<:Integer}
 end
 
 """
-    hmd2fd(ihour::N, imin::N, sec::T) where {N <: Integer, T <: AbstractFloat}
+    hms2fd(ihour::N, imin::N, sec::T) where {N <: Integer, T <: AbstractFloat}
 
 Convert hours, minutes, seconds to day fraction. The day fraction is returned 
 converted in type `T`.
@@ -64,8 +64,8 @@ Convert day fraction to hour, minute, second, fraction of seconds.
 """
 function fd2hmsf(fd::T) where {T<:AbstractFloat}
     h, m, sid = fd2hms(fd)
-    sec = Integer(sid ÷ 60)
-    fsec = sid - 60 * sec 
+    sec = Integer(sid ÷ 1)
+    fsec = sid - sec 
     return h, m, sec, fsec 
 end 
 
@@ -276,7 +276,7 @@ const LEAP_RELEASE = 2021;
 
 
 """
-    dat(iyear::N, imonth::N) where {N<:Integer}
+    leapseconds(iyear::N, imonth::N) where {N<:Integer}
 
 For a given UTC date, calculate Delta(AT) = TAI-UTC.
 
@@ -297,7 +297,7 @@ For a given UTC date, calculate Delta(AT) = TAI-UTC.
 
 - [ERFA software library](https://github.com/liberfa/erfa/blob/master/src/dat.c)
 """
-function dat(iyear::N, imonth::N) where {N<:Integer}
+function leapseconds(iyear::N, imonth::N) where {N<:Integer}
 
     # If pre-UTC year, set warning status and return 0.0
     if iyear < LEAP_TABLE[1][1] 
@@ -376,11 +376,11 @@ function utc2tai(utc1, utc2)
     
     # Get TAI-UTC at 0h today
     iy, im, id, fd = jd2cal(u1, u2)
-    Δt0 = dat(iy, im)
+    Δt0 = leapseconds(iy, im)
     
     # Get TAI-UTC at 0h tomorrow (to detect jumps)
     iyt, imt, _, _ = jd2cal(u1+1.5, u2-fd)
-    Δt24 = dat(iyt, imt)
+    Δt24 = leapseconds(iyt, imt)
 
     # Detect any jump
     # Remove any scaling applied to spread leap into preceding day
