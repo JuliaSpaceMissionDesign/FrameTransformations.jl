@@ -1,8 +1,9 @@
 
 """ 
-    polar_motion(xₚ::N, yₚ::N, t::N)
+    polar_motion(xₚ::N, yₚ::N, t::N, sp::Number)
 
-Polar Motion IAU-2006/2000, CIO Based
+Compute the Polar Motion rotation matrix from ITRF to TIRS, according to the 
+IERS 2010 Conventions.
 
 ### Inputs
 
@@ -10,13 +11,10 @@ Polar Motion IAU-2006/2000, CIO Based
                 (CIP), with respect to the International Terrestrial Reference
                 Frame (ITRF).
                 
-- `t`  -- Terrestrial Time 
+- `t`  -- Terrestrial Time `TT` in Julian centuries since J2000
 
 - `sp` -- The Terrestrial Intermediate Origin (TIO) locator, in radians. It provides 
          the position of the TIO on the equatior fo the CIP. 
-
-### Output
-Rotation matrix from ITRF to TIRS
 """
 function polar_motion(xₚ::Number, yₚ::Number, t::Number)
     sp = tio_locator(t)
@@ -28,21 +26,21 @@ function polar_motion(xₚ::Number, yₚ::Number, ::Number, sp::Number)
 end
 
 
-
 """
     tio_locator(t::N)
 
-Compute the TIO locator `s'`, positioning the Terrestrial Intermediate Origin on 
+Compute the TIO locator `s'` at date, positioning the Terrestrial Intermediate Origin on 
 the equator of the Celestial Intermediate Pole (CIP).
 
+### Input
+- `t` -- Terrestrial Time `TT` in Julian centuries since J2000
+
+### Notes 
 This function approximates the unpredictable motion of the TIO locator s' with 
 its secular drift of ~0.47 μas/century. 
 
-### Input
-- `tt` -- Terrestrial time 
+### References
 
-### Output 
-TIO locator at date t
 """
 function tio_locator(t::Number)
     return -47e-6*t |> arcsec2rad; # arcseconds
@@ -52,15 +50,14 @@ end
 """ 
     era_rotm(Tᵤ::N)
 
-Earth Rotation IAU-2006/2000, CIO Based
+Compute the TIRS to CIRS Earth Rotation matrix, according to the IERS 2010 
+conventions.
 
 ### Input 
 - `t` -- Julian UT1 date
 
-### Output
-Rotation matrix from TIRS to CIRS
+### References
 """
-
 function era_rotm(t::Number) 
     angle_to_dcm(-earth_rotation_angle(t), :Z)
 end
@@ -75,9 +72,6 @@ additional precision in the computations (0.002737.. instead of 1.002737..)
 
 ### Input 
 - `t` -- Julian UT1 date
-
-### Output 
-Earth Rotation Angle (ERA) in radians at time Tᵤ
 """
 @inline function earth_rotation_angle(t::Number)
     f = t % 1.0 
@@ -89,18 +83,16 @@ end
 """
     fw2xy(ϵ::Number, ψ::Number, γ::Number, φ::Number)
 
-Compute CIP X and Y coordinates from Fukushima-Williams bias-precession-nutation 
-angles.
+Compute the CIP X and Y coordinates from Fukushima-Williams bias-precession-nutation 
+angles, in radians.
 
 ### Inputs 
-- `ϵ` -- F-W angle with IAU 2000A/B nutation corrections. 
-- `ψ` -- F-W angle with IAU 2000A/B nutation corrections.
+- `ϵ` -- F-W angle with IAU 2006A/B nutation corrections. 
+- `ψ` -- F-W angle with IAU 2006A/B nutation corrections.
 - `γ` -- F-W angle  
-- `ϕ` -- F-W angle  
+- `ϕ` -- F-W angle
 
-### Outpus 
-- `X`, `Y` -- CIP coordinates X, Y
-
+### References
 """
 function fw2xy(γ::Number, φ::Number, ψ::Number, ϵ::Number)
     sϵ, cϵ = sincos(ϵ)
@@ -117,8 +109,13 @@ function fw2xy(γ::Number, φ::Number, ψ::Number, ϵ::Number)
 end
 
 """
-    cip_coords
-Computes CIP X, Y coordinates 
+    cip_coords(m::IAU2006Model, t::Number)
+
+Computes the CIP X, Y coordinates according to the IAU 2006/2000 A/B. 
+
+### Inputs 
+
+### References
 """
 function cip_coords(m::IAU2006Model, t::Number)
  
