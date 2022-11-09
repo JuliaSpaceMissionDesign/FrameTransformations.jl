@@ -3,13 +3,11 @@ export orient_obliquity
 """
     orient_obliquity(::M, j2000ttc::N) where {N<:Number, M<:IAU2006Model}
 
-Mean obliquity of the ecliptic, IAU 2006 precession model.
+Compute the mean obliquity of the ecliptic at epoch, in radians, according 
+to the IAU 2006 precession model.
 
 ### Inputs
 - `t` --  `TT` centuries since J2000
-
-### Output
-Obliquity of the ecliptic at epoch -- `rad`
 
 ### References 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/obl06.c) library

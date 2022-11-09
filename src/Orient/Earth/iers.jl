@@ -157,10 +157,13 @@ end
 """
 Rotation matrix from CIRS to GCRS
 """
-function cip_motion(m::IAU2006Model, t::Number)
+function cip_motion(m::IAU2006Model, t::Number, dx::Number=0.0, dy::Number=0.0)
 
     # Computes CIP X, Y coordinates 
     x, y = cip_coords(m, t)
+
+    x += dx 
+    y += dy
 
     # Computes cio locator `s`
     s = cio_locator(m, t, x, y)

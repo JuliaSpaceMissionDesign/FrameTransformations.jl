@@ -3,7 +3,8 @@ export orient_precession_bias
 """
     fw_angles(::IAU2006Model, t::N) where {N<:Number}
 
-Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
+Compute the precession angles, following the IAU 2006 Fukushima-Williams 
+4-angle formulation.
 
 ### Inputs
 - IAU Model type
@@ -58,7 +59,7 @@ end
 """
     fw_matrix(γ, ϕ, ψ, ε)
 
-Form rotation matrix given the Fukushima-Williams angles.
+Form the rotation matrix given the Fukushima-Williams angles.
 
 ### References
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pmat06.c) software library
