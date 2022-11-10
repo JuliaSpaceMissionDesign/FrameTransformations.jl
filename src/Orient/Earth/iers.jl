@@ -15,6 +15,10 @@ IERS 2010 Conventions.
 
 - `sp` -- The Terrestrial Intermediate Origin (TIO) locator, in radians. It provides 
          the position of the TIO on the equatior fo the CIP. 
+
+### References 
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
 """
 function polar_motion(xₚ::Number, yₚ::Number, t::Number)
     sp = tio_locator(t)
@@ -40,7 +44,10 @@ This function approximates the unpredictable motion of the TIO locator s' with
 its secular drift of ~0.47 μas/century. 
 
 ### References
-
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
+- Lambert, S. and Bizouard C. (2002), _Positioning the Terrestrial Ephemeris Origin
+in the Terrestrial Reference Frame_, [DOI: 10.1051/0004-6361:20021139](https://www.aanda.org/articles/aa/pdf/2002/40/aa2747.pdf)
 """
 function tio_locator(t::Number)
     return -47e-6*t |> arcsec2rad; # arcseconds
@@ -57,6 +64,8 @@ conventions.
 - `t` -- Julian UT1 date
 
 ### References
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
 """
 function era_rotm(t::Number) 
     angle_to_dcm(-earth_rotation_angle(t), :Z)
@@ -66,17 +75,25 @@ end
 """
     earth_rotation_angle(t::N) where {N <: Number}
 
-Compute the Earth Rotation Angle (ERA), i.e., the angle between the Celestial Intermediate Origin (CIO) 
-and the Terrestrial Intermediate Origin (TIO). It uses the fractional UT1 date to gain 
-additional precision in the computations (0.002737.. instead of 1.002737..)
+Compute the Earth Rotation Angle (ERA), i.e., the angle between the Celestial 
+Intermediate Origin (CIO) and the Terrestrial Intermediate Origin (TIO). 
 
 ### Input 
 - `t` -- Julian UT1 date
+
+### Notes 
+- The function uses the fractional UT1 date to gain additional precision in the 
+computations (0.002737.. instead of 1.002737..)
+
+### References 
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
+- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 @inline function earth_rotation_angle(t::Number)
     f = t % 1.0 
     Tᵤ = t - 2451545.0
-    return mod2pi(2π * (f % 1 + 0.7790572732640 + 0.00273781191135448Tᵤ))
+    return mod2pi(2π * (f + 0.7790572732640 + 0.00273781191135448Tᵤ))
 end
 
 
@@ -93,6 +110,9 @@ angles, in radians.
 - `ϕ` -- F-W angle
 
 ### References
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
+- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 function fw2xy(γ::Number, φ::Number, ψ::Number, ϵ::Number)
     sϵ, cϵ = sincos(ϵ)
@@ -108,14 +128,20 @@ function fw2xy(γ::Number, φ::Number, ψ::Number, ϵ::Number)
     return X, Y
 end
 
+
 """
     cip_coords(m::IAU2006Model, t::Number)
 
 Computes the CIP X, Y coordinates according to the IAU 2006/2000 A/B. 
 
 ### Inputs 
+- `m` -- IAU 2006 model 
+- `t` -- Terrestrial Time `TT` in Julian Centuries since J2000.0
 
 ### References
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
+- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 function cip_coords(m::IAU2006Model, t::Number)
  
@@ -140,19 +166,45 @@ cio_locator(::IAU2006Model, ::Number, ::FundamentalArguments) = ()
 build_cio_series(:cio_locator, :IAU2006Model, COEFFS_CIO2006_SP, COEFFS_CIO2006_S)
 
 """
-    cio_locator()
+    cio_locator(m::IAU2006Model, t::Number, x::Number, y::Number)
 
-Compute CIO Locator  
+Compute the CIO Locator `s` in radians, according to the IAU 2010 Conventions.   
 
-Notes: some of the values are slighly different than SOFA but equal to IERS
+### Inputs 
+- `m` -- IAU 2006 Model 
+- `t` -- Terrestrial Time `TT` in Julian Centuries since J2000.0
+- `x, y` -- CIP X, Y coordinates at date `t` in radians.
+
+### References 
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
+- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 function cio_locator(m::IAU2006Model, t::Number, x::Number, y::Number)
     fa = FundamentalArguments(t, iau2006a)
     cio_locator(m, t, fa)/1e6*π/648000 - x*y/2
 end
 
+
 """
-Rotation matrix from CIRS to GCRS
+    cip_motion(m::IAU2006Model, t::Number, dx::Number=0.0, dy::Number=0.0)
+
+Compute the CIRS to GCRS rotation matrix, according to the IAU 2010 Conventions. 
+
+### Inputs 
+- `m` -- IAU 2006 Model 
+- `t` -- Terrestrial Time `TT` in Julian Centuries since J2000.0
+- `dx, dy` -- Optional IERS corrections to account for the free-core nutation and 
+time dependent effects. Default are set to zero.
+
+### References 
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
+- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 function cip_motion(m::IAU2006Model, t::Number, dx::Number=0.0, dy::Number=0.0)
 

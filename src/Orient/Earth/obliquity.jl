@@ -7,7 +7,7 @@ Compute the mean obliquity of the ecliptic at epoch, in radians, according
 to the IAU 2006 precession model.
 
 ### Inputs
-- `t` --  `TT` centuries since J2000
+- `t` --  Terrestrial Time `TT` Julian centuries since J2000
 
 ### References 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/obl06.c) library

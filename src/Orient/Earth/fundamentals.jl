@@ -51,12 +51,12 @@ end
 Compute the fundamental luni-solar and planetary arguments associated to 
 the given IAU model, in radians. 
 
-!!! note 
-	Only the planetary arguments are affected by the IAU Model choice.
-
 ### Inputs 
 - `t` -- `TDB` Julian centuries since J2000.0.
 - `m` -- `IAU2006Model` Desired IAU 2006 Model.
+
+### Notes 
+	Only the planetary arguments are affected by the IAU Model choice.
 """
 function FundamentalArguments(t::Number, m::IAU2006Model=iau2006a)
 	FundamentalArguments(LuniSolarArguments(t, m)..., 

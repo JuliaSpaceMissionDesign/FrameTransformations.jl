@@ -3,20 +3,24 @@ export orient_precession_bias
 """
     fw_angles(::IAU2006Model, t::N) where {N<:Number}
 
-Compute the precession angles, following the IAU 2006 Fukushima-Williams 
-4-angle formulation.
+Compute the precession angles in radians, following the IAU 2006 
+Fukushima-Williams 4-angle formulation.
 
 ### Inputs
 - IAU Model type
-- `t`  -- `TT` centuries since J2000
+- `t`  -- Terrestrial Time `TT` Julian centuries since J2000
 
 ### Outputs
-- `γ` -- F-W 1st angle -- `rad`
-- `ϕ` -- F-W 2nd angle -- `rad`
-- `ψ` -- F-W 3rd angle -- `rad`   
-- `ε` -- F-W 4th angle -- `rad`
+- `γ` -- F-W 1st angle
+- `ϕ` -- F-W 2nd angle
+- `ψ` -- F-W 3rd angle   
+- `ε` -- F-W 4th angle
 
 ### References 
+- Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
+[IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 function fw_angles(::IAU2006Model, t::N) where {N<:Number}
@@ -56,29 +60,48 @@ function fw_angles(::IAU2006Model, t::N) where {N<:Number}
 
 end
 
+
 """
     fw_matrix(γ, ϕ, ψ, ε)
 
-Form the rotation matrix given the Fukushima-Williams angles.
+Form the Nutation-Precession-Bias (NPB) rotation matrix given the 
+Fukushima-Williams angles, expressed in radians.
+
+### Notes 
+The present function can construct three different matrices depending on which 
+angles are supplied as arguments: 
+
+- To obtain the NPB matrix, generate the four standard FW precession angles 
+(̄γ, ̄ϕ, ̄ψ, ϵₐ) then generate the nutation components Δψ and Δϵ and add them to 
+̄ψ, ϵₐ. Finally, call the present functions using those four angles as arguments. 
+
+- To obtain the precession-frame bias matrix (PB), generate the four standard FW 
+precession angles and call the present function. 
+
+- To obtain the frame bias matrix (B), generate the four standard FW precession angles 
+at date J2000.0 and call this function.
+
+The remaining nutation-only and precession only matrices can be obtained by 
+combining these three appropriately. 
 
 ### References
-- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pmat06.c) software library
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
+- [ERFA](https://github.com/liberfa/erfa/blob/master/src/pmat06.c) library
 """
 function fw_matrix(γ, ϕ, ψ, ϵ)
     angle_to_dcm(-ϵ, :X)*angle_to_dcm(γ, ϕ, -ψ, :ZXZ)
 end
 
-"""
-    orient_precession_bias(::IAU2006, t::N) where {N<:Number}
 
-Precession matrix (including frame bias) from GCRS to a specified
-date, IAU 2006 model. This uses the Fukushima-Williams model.
+"""
+    orient_precession_bias(q::IAU2006, t::N) where {N<:Number}
+
+Form the precession-frame bias (PB) matrix from GCRS to a specified
+date, using the Fukushima-Williams angles and following the IAU 2006 model.
 
 ### Inputs 
-- `t`-- `TT` centuries since J2000
-
-### Output 
-Rotation matrix. 
+- `t`-- Terrestrial Time `TT` Julian centuries since J2000
 
 ### Notes
 The matrix operates in the sense V(date) = RBP * V(GCRS), where the vector 
@@ -87,14 +110,10 @@ and the vector V(date) is with respect to the mean equatorial triad of the
 given date.
 
 ### References:
-
-- Capitaine, N. & Wallace, P.T., 2006, Astron.Astrophys. 450, 855
-
 - IAU: Trans. International Astronomical Union, Vol. XXIVB;  Proc.
     24th General Assembly, Manchester, UK.  Resolutions B1.3, B1.6. (2000)
-
-- Wallace, P.T. & Capitaine, N., 2006, Astron.Astrophys. 459, 981
-
+- Wallace P. T. and Capitaine N. (2006), _Precession-nutation procedures consistent with 
+    IAU 2006 resolutions_, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pmat06.c) software library
 """
 function orient_precession_bias(q::M, t::N) where {N<:Number, M<:IAU2006Model}
@@ -105,6 +124,7 @@ function orient_precession_bias(q::M, t::N) where {N<:Number, M<:IAU2006Model}
 end
 
 const ICRF2J2000_BIAS = orient_precession_bias(iau2006a, 0.0)
+
 
 """
     ICRF2J2000_BIAS
