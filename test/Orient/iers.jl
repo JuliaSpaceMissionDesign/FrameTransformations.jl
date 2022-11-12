@@ -9,7 +9,7 @@
         # Testing at t = 1. to check correct coefficients!
 
         t = [0.06567, 1.]
-        fa = [FundamentalArguments(t[1]), FundamentalArguments(t[2])]
+        fa = [Orient.FundamentalArguments(t[1]), Orient.FundamentalArguments(t[2])]
 
         atol, rtol = 1e-13, 1e-12 
 
@@ -79,8 +79,8 @@
         end 
 
         # Testing the truncated expressions of the Delunary Arguments 
-        fab = [FundamentalArguments(t[1], iau2006b), 
-            FundamentalArguments(t[2], iau2006b)];
+        fab = [Orient.FundamentalArguments(t[1], iau2006b), 
+            Orient.FundamentalArguments(t[2], iau2006b)];
 
         @testset "Delaunay arguments IAU2000B" begin 
 
@@ -132,20 +132,20 @@
             # must be precise up to 1 μas
             atol, rtol = 1e-7, 1e-7
 
-            fa = FundamentalArguments(t);
-            Δψ, Δϵ = nutation00(iau2006a, t, fa) .* r2a
+            fa = Orient.FundamentalArguments(t);
+            Δψ, Δϵ = Orient.nutation00(iau2006a, t, fa) .* r2a
 
             @test Δψ ≈ -1.071332651430803 atol=atol rtol=rtol
             @test Δϵ ≈  8.656842463521295 atol=atol rtol=rtol
 
-            Δψ, Δϵ = orient_nutation(iau2006a, t) .* r2a
+            Δψ, Δϵ = Orient.orient_nutation(iau2006a, t) .* r2a
             @test Δψ ≈ -1.071332974891340 atol=atol rtol=rtol
             @test Δϵ ≈  8.656841011106838 atol=atol rtol=rtol
             
             # Testing IAU 2000B Nutation model from ERFA 
             # Must be precise up to n 1 mas 
             atol, rtol = 1e-12, 1e-12
-            Δψ, Δϵ = orient_nutation(iau2006b, t) .* r2a
+            Δψ, Δϵ = Orient.orient_nutation(iau2006b, t) .* r2a
 
             @test Δψ ≈ -1.071752875965778 atol=atol rtol=rtol
             @test Δϵ ≈  8.656781912467901 atol=atol rtol=rtol
@@ -166,7 +166,7 @@
         # Testing Fukushima-Williams angles in μas 
         # Values taken from ERFA, error must be below 1 μas to be acceptable.
 
-        fw = [fw_angles(iau2006a, t).* r2a, fw_angles(iau2006a, 0).* r2a] 
+        fw = [Orient.fw_angles(iau2006a, t).* r2a, Orient.fw_angles(iau2006a, 0).* r2a] 
 
         @testset "Fukushima-Williams angles" begin 
             # Testing γ
@@ -188,8 +188,8 @@
 
         @testset "Rotation Matrices" begin 
 
-            γ, ϕ, ψ, ϵ = fw_angles(iau2006a, t); 
-            FW = fw_matrix(γ, ϕ, ψ, ϵ)
+            γ, ϕ, ψ, ϵ = Orient.fw_angles(iau2006a, t); 
+            FW = Orient.fw_matrix(γ, ϕ, ψ, ϵ)
 
             # Check the matrix originating from the FW Precession Angles 
             @test FW[1, 1] ≈ 9.999989154136046e-1  atol=atol rtol=rtol
@@ -203,7 +203,7 @@
             @test FW[3, 3] ≈  9.999998277921019e-1 atol=atol rtol=rtol
 
             # Check the whole Assembly process 
-            FW2 = orient_precession_bias(iau2006a, t);
+            FW2 = Orient.orient_precession_bias(iau2006a, t);
 
             @test FW2[1, 1] ≈ 9.999989154136046e-1  atol=atol rtol=rtol
             @test FW2[1, 2] ≈ -1.350835287774888e-3 atol=atol rtol=rtol
@@ -233,12 +233,12 @@
 
         @testset "Polar Motion" begin 
             # Testing TIO Locator Position [in arcseconds] 
-            sp = tio_locator(t) .* r2a
+            sp = Orient.tio_locator(t) .* r2a
             @test sp ≈ -2.839163974949028e-6 atol=atol rtol=rtol
 
             # Polar Motion Matrix 
             xₚ, yₚ = 1.857, 0.123;  
-            W = polar_motion(xₚ, yₚ, t)
+            W = Orient.polar_motion(xₚ, yₚ, t)
 
             @test W[1, 1] ≈ -2.823123663590987e-1   atol=atol rtol=rtol
             @test W[1, 2] ≈  1.176993683001583e-1   atol=atol rtol=rtol
@@ -255,7 +255,7 @@
             
             # Testing Earth Rotation Angle [radians]
             # Note in this case the input time should be expressed in UT1
-            era = earth_rotation_angle(jdₜ); 
+            era = Orient.earth_rotation_angle(jdₜ); 
             @test era ≈ 1.335810933027503 atol=atol rtol=rtol
         end
 
@@ -263,7 +263,7 @@
 
             # Testing CIP Coordinates from FW angles 
             # Error should be below 1μas
-            x, y = fw2xy(0.1, 0.7, 1.1, -2.5);
+            x, y = Orient.fw2xy(0.1, 0.7, 1.1, -2.5);
 
             @test x ≈ -5.614951267014441e-1 atol=atol rtol=rtol        
             @test y ≈  2.536947155044642e-1 atol=atol rtol=rtol
@@ -271,19 +271,19 @@
             atol, rtol = 1e-7, 1e-7
             # Testing X, Y coordinates including IAU2000A nutation series 
             # Error must be below 1 μas
-            x, y = cip_coords(iau2006a, t) .* r2a;
+            x, y = Orient.cip_coords(iau2006a, t) .* r2a;
             @test x ≈ 1.206359974143122e2 atol=atol rtol=rtol
             @test y ≈ 8.567258642517157   atol=atol rtol=rtol
 
             # Testing CIO Locator [in radians]
             # Error should be below 1 μas 
-            s = cio_locator(iau2006a, t, 0.125, 0.745); 
+            s = Orient.cio_locator(iau2006a, t, 0.125, 0.745); 
             @test s ≈ -4.656250032319267e-2 atol=1e-12 rtol=1e-12
             
             atol, rtol = 1e-12, 1e-12
 
             # Testing IAU 2006A CIP Motion Rotation Matrix 
-            Q = cip_motion(iau2006a, t); 
+            Q = Orient.cip_motion(iau2006a, t); 
             @test Q[1, 1] ≈  9.999998289694806e-1   atol=atol rtol=rtol
             @test Q[1, 2] ≈ -2.461548571919270e-8   atol=atol rtol=rtol
             @test Q[1, 3] ≈  5.848598198075143e-4   atol=atol rtol=rtol
@@ -298,7 +298,7 @@
             # Tolerances are 1000x the previous because this model is 1000x less 
             # precise than the IAU2006A 
             atol, rtol = 1e-9, 1e-9
-            Q = cip_motion(iau2006b, t); 
+            Q = Orient.cip_motion(iau2006b, t); 
             @test Q[1, 1] ≈  9.999998289699551e-1   atol=atol rtol=rtol
             @test Q[1, 2] ≈ -2.461541308285131e-8   atol=atol rtol=rtol
             @test Q[1, 3] ≈  5.848590084916441e-4   atol=atol rtol=rtol
@@ -311,7 +311,6 @@
 
         end
 
-        
     end
 
 end;

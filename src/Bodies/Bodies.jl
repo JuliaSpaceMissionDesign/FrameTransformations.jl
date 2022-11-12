@@ -4,6 +4,7 @@ module Bodies
         add_edge!, add_vertex!, get_nodes
         
     include("types.jl")
-    include("graph.jl")
+    include("abstract.jl")
+    # include("graph.jl")
 
 end

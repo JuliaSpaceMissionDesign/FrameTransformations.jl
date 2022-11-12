@@ -1,11 +1,13 @@
-"""
-    orient_body_angles(b::Union{NAIFId, B}, t::N) where {N<:AbstractFloat, B <: CelestialBody}
+import Basic.Bodies: CelestialBody
 
-Construct Euler angles for planetary reference frames definition. 
+"""
+    orient_body_angles(b::CelestialBody, TDB::Number)
+
+Construct Euler angles from angles for planetary reference frames definition. 
 
 ### Inputs 
 - `b` -- body name 
-- `t` -- `TDB` centuries since J2000
+- `TDB` -- `TDB` centuries since J2000
 
 ### Outputs 
 Euler angles:
@@ -18,18 +20,22 @@ Euler angles:
     and rotational elements: 2015." Celestial Mechanics and Dynamical Astronomy 
     130.3 (2018): 1-46, [doi](https://link.springer.com/content/pdf/10.1007/s10569-017-9805-5.pdf)
 """
-function orient_body_angles(b::Union{NAIFId, B}, t::N) where {N<:AbstractFloat, B <: CelestialBody}
-    orient_right_ascension(b, t) + π/2, π/2 - orient_declination(b, t), mod2pi(orient_rotation_angle(b, t))
+function orient_body_angles(b::CelestialBody, TDB::Number)
+    return (
+        orient_right_ascension(b, TDB) + π/2, 
+        π/2 - orient_declination(b, TDB), 
+        mod2pi(orient_rotation_angle(b, TDB))
+    )
 end
 
 """
-    orient_body_rates(b::Union{NAIFId, B}, t::N) where {N<:AbstractFloat, B <: CelestialBody}
+    orient_body_rates(b::CelestialBody, TDB::Number)
 
-Construct Euler angles rates for planetary reference frames definition. 
+Construct Euler angles rates from angles for planetary reference frames definition. 
 
 ### Inputs 
 - `b` -- body name 
-- `t` -- `TDB` centuries since J2000
+- `TDB` -- `TDB` centuries since J2000
 
 ### Outputs 
 Rates of the Euler angles defined as:
@@ -42,6 +48,10 @@ Rates of the Euler angles defined as:
     and rotational elements: 2015." Celestial Mechanics and Dynamical Astronomy 
     130.3 (2018): 1-46, [doi](https://link.springer.com/content/pdf/10.1007/s10569-017-9805-5.pdf)
 """
-function orient_body_rates(b::Union{NAIFId, B}, t::N) where {N<:AbstractFloat, B <: CelestialBody}
-    orient_right_ascension_rate(b, t), -orient_declination_rate(b, t), orient_rotation_rate(b, t)
+function orient_body_rates(b::CelestialBody, TDB::Number)
+    return (
+        orient_right_ascension_rate(b, TDB), 
+        -orient_declination_rate(b, TDB), 
+        orient_rotation_rate(b, TDB) 
+    )
 end
