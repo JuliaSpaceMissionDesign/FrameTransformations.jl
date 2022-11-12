@@ -17,16 +17,16 @@ makedocs(;
         assets=["assets/init.js"]
     ),
     pages=[
-        "Home" => "index.md",
-        "Manual" => [
-            "Overview" => "manual.md"
-        ],
+        # "Home" => "index.md",
+        # "Manual" => [
+        #     "Overview" => "manual.md"
+        # ],
         "Modules" => [
             "Bodies" => "Modules/bodies.md",
             "Tempo" => "Modules/time.md",
             "Ephemeris" => "Modules/ephem.md",
             "Orient" => "Modules/orient.md",
-            "Frames" => "Modules/frames.md",
+            # "Frames" => "Modules/frames.md",
             "Utils" => "Modules/utils.md"
         ]
     ],

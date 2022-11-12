@@ -6,7 +6,7 @@ export CelestialBody,
        Asteroid, 
        Comet,
 
-       NAIFId,
+       BodyId,
 
        body_equatorial_radius,
        body_gm,
@@ -17,21 +17,21 @@ export CelestialBody,
        body_system_equivalent
 
 """
-NAIFId
+    BodyId
    
-   An integer code to identify celestial bodies and other objects in space.
+An integer code to identify celestial bodies and other objects in space.
    
-   # References
-   - [NASA NAIF](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html)
+# References
+- [NASA NAIF](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html)
 """
-struct NAIFId
-    valId::Val
-    id::Int
-    NAIFId(id::Integer) = new(Val(id), id)
+struct BodyId
+    astroid::Int
+    naifid::Int
+    BodyId(astroid::Integer, naifid::Integer) = new(astroid, naifid)
 end
 
-function Base.show(io::IO, id::NAIFId)
-    println(io, "NAIFId($(id.id))")
+function Base.show(io::IO, id::BodyId)
+    println(io, "BodyId(astroid=$(id.astroid), naifid=$(id.naifid))")
 end
 
 """
@@ -90,104 +90,3 @@ abstract type Asteroid <: MinorBody end
 Abstract supertype for comets.
 """
 abstract type Comet <: MinorBody end
-
-"""
-    body_naifid(body::T)::NAIFId where {T <: CelestialBody}
-    body_naifid(body::Type{T})::NAIFId where {T <: CelestialBody}
-
-Get the NAIF ID code for `body`.
-"""
-function body_naifid end
-body_naifid(::T) where {T <: CelestialBody} = body_naifid(T)
-
-"""
-    body_parent(body::T)::T  where {T <: CelestialBody}
-    body_parent(body::NAIFId)::NAIFId
-
-Get parent of a given body.
-"""
-function body_parent end 
-
-"""
-    body_system_equivalent(body::NAIFId)::NAIFId
-    body_system_equivalent(body::Type{T})::Type{T} where {T <: CelestialBody}
-
-Return the body system equivalent body or barycenter.
-"""
-function body_system_equivalent end 
-body_system_equivalent(id::Integer) = body_system_equivalent(Val(id))
-body_system_equivalent(naifid::NAIFId) = body_system_equivalent(naifid.valId)
-function body_system_equivalent(::Type{T}) where {T<:CelestialBody} 
-    body_system_equivalent(body_naifid(T))
-end
-function body_system_equivalent(::T) where {T<:CelestialBody}
-    body_system_equivalent(T)
-end
-
-"""
-    body_gm(body::CelestialBody)::Float64
-    body_gm(body::NAIFId)::Float64
-
-Return the gravitational parameter ``\\mu = GM`` of `body` in km^3/s^2.
-
-# References
-- [NASA NAIF](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc)
-"""
-function body_gm end
-
-"""
-    body_mean_radius(body::CelestialBody)::Float64
-    body_mean_radius(body::NAIFId)::Float64
-
-Return the mean radius of `body` in km.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_mean_radius end
-
-"""
-    body_polar_radius(body::CelestialBody)::Float64
-    body_polar_radius(body::NAIFId)::Float64
-
-Return the polar radius of `body` in km.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_polar_radius end
-
-"""
-    body_equatorial_radius(body::CelestialBody)::Float64
-    body_equatorial_radius(body::NAIFId)::Float64
-
-Return the polar radius of `body` in km.
-
-# References
-- Archinal, Brent Allen, et al. "Report of the IAU Working Group on Cartographic Coordinates 
-   and Rotational Elements: 2015." *Celestial Mechanics and Dynamical Astronomy* 
-   volume 130, Article number: 22 (2018)
-"""
-function body_equatorial_radius end
-
-"""
-    body_flattening(body::CelestialBody)::Float64
-    body_flattening(body::NAIFId)::Float64
-
-Return the flattening of `body`.
-"""
-function body_flattening end
-
-# parse overloads
-for fun in (:body_gm, :body_equatorial_radius, :body_flattening, 
-    :body_polar_radius, :body_mean_radius)
-    @eval begin
-        @inline $fun(id::Integer) = $fun(NAIFId(id))
-        @inline $fun(naifid::NAIFId) = $fun(naifid.valId)
-        @inline $fun(body::T) where {T<:CelestialBody} = $fun(T)
-    end
-end

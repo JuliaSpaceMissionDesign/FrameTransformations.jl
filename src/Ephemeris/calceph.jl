@@ -1,23 +1,29 @@
-using Calceph: Ephem as CalcephEphemHandler, 
-               unsafe_compute!, useNaifId, unitKM, unitSec,
-               getpositionrecords, gettimespan, gettimescale
-
-using NodeGraphs: NodeGraph
-import Basic: register!, connect!
-using Basic.Bodies: NAIFId
-
 export CalcephProvider, 
-       ephem_timespan, ephem_timescale, ephem_position_records
+       ephem_timespan, 
+       ephem_timescale, 
+       ephem_position_records,
+       ephem_orient_records
+
+using CALCEPH: Ephem as CalcephEphemHandler, 
+               prefetch, 
+               timespan, 
+               timeScale,
+               positionRecords,
+               orientationRecords
+
+using Basic: AstronautGenericError
 
 """
     CalcephProvider
 
-Calceph-based ephemeris reading.
+Calceph-based ephemeris handler.
 """
 struct CalcephProvider <: AbstractEphemerisProvider
     ptr::CalcephEphemHandler
     function CalcephProvider(files::Vector{<:AbstractString})
-        new(CalcephEphemHandler(files))
+        ptr = CalcephEphemHandler(files)
+        prefetch(ptr)
+        new(ptr)
     end
 end
 CalcephProvider(file::AbstractString) = CalcephProvider([file])
@@ -25,10 +31,19 @@ CalcephProvider(file::AbstractString) = CalcephProvider([file])
 """
     ephem_position_records(eph::CalcephProvider)
 
-Get ephemeris an array of `Calceph.PositionRecord`s, providing detailed 
+Get ephemeris an array of `CALCEPH.PositionRecord`s, providing detailed 
 informations on the content of the ephemeris file.
 """
-ephem_position_records(eph::CalcephProvider) = getpositionrecords(eph.ptr)
+ephem_position_records(eph::CalcephProvider) = positionRecords(eph.ptr)
+
+
+"""
+    ephem_orient_records(eph::CalcephProvider)
+
+Get ephemeris an array of `CALCEPH.OrientationRecord`s, providing detailed 
+informations on the content of the ephemeris file.
+"""
+ephem_orient_records(eph::CalcephProvider) = orientationRecords(eph.ptr)
 
 """
     ephem_timespan(eph::CalcephProvider)
@@ -60,7 +75,7 @@ Returns a tuple containing:
             time between the first and last time.
 
 """
-ephem_timespan(eph::CalcephProvider) = gettimespan(eph.ptr)
+ephem_timespan(eph::CalcephProvider) = timespan(eph.ptr)
 
 """
     ephem_timescale(eph::CalcephProvider) 
@@ -68,26 +83,17 @@ ephem_timespan(eph::CalcephProvider) = gettimespan(eph.ptr)
 Retrieve `Basic` timescale associated with ephemeris handler `eph`.
 """
 function ephem_timescale(eph::CalcephProvider) 
-    tsid = gettimescale(eph.ptr)
+    tsid = timeScale(eph.ptr)
     if tsid == 1
         return TDB
     elseif tsid == 2
         return TCB
     else
-        throw(error("[Ephemeris] unknown time scale identifier: $tsid"))
+        throw(
+            AstronautGenericError(
+                String(Symbol(@__MODULE__)),
+                "unknown time scale identifier: $tsid"
+            )
+        )
     end
 end
-
-"""
-    register!(g::NodeGraph, eph::CalcephProvider) 
-
-Register and connect the bodies present in the ephemeris file in a body graph.
-"""
-function register!(g::NodeGraph{NAIFId, N, G, N}, 
-    eph::CalcephProvider) where {N<:Integer, G}
-    pos_records = ephem_position_records(eph)
-    for p in pos_records
-        connect!(g, NAIFId(p.center), NAIFId(p.target))
-    end
-end
-
