@@ -16,15 +16,13 @@ module Basic
     include(joinpath("Bodies", "Bodies.jl"))
     @reexport using .Bodies
 
-    module Frames end
-
     include(joinpath("Ephemeris", "Ephemeris.jl"))
     @reexport using .Ephemeris
 
     include(joinpath("Orient", "Orient.jl"))
     @reexport using .Orient
 
-    # include(joinpath("Frames", "Frames.jl"))
-    # @reexport using .Frames
+    include(joinpath("Frames", "Frames.jl"))
+    @reexport using .Frames
 
 end

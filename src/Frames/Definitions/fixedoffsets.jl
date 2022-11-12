@@ -15,7 +15,7 @@ Create a fixed offset rotation reference frame.
 """
 macro frame_fixed_rotation_euler(graph, parent, axis, angles)
     s = randstring(20)
-    R = Symbol(:FIXROTEULER, s)
+    R = Symbol("ROTMAT", "_", "FIXROTEULER", s)
     uniquename = Symbol(:FixedRotationEulerFrame, s)
     return quote 
         # type 
@@ -24,10 +24,10 @@ macro frame_fixed_rotation_euler(graph, parent, axis, angles)
         const $R = angle_to_dcm($angles..., $axis)
         # rotations
         function Rotation(origin::$parent, target::$uniquename, e::Epoch)
-            new(origin, target, $s)
+            new(origin, target, $R)
         end
         function Rotation(origin::$uniquename, target::$parent, e::Epoch)
-            new(origin, target, transpose($(s)))
+            new(origin, target, transpose($(R)))
         end
         # connect to graph
         connect!($graph, $(parent)(), $(uniquename)())
@@ -46,7 +46,7 @@ Create a fixed offset rotation reference frame.
 """
 macro frame_fixed_rotation_quaternion(graph, parent, quat)
     s = randstring(20)
-    R = Symbol(:FIXROTQUAT, s)
+    R = Symbol("ROTMAT", "_", "FIXROTQUAT", s)
     uniquename = Symbol(:FixedRotationQuaterionFrame, s)
     return quote 
         # type 
@@ -55,10 +55,10 @@ macro frame_fixed_rotation_quaternion(graph, parent, quat)
         const $R = quat_to_angle($angles..., $axis)
         # rotations
         function Rotation(origin::$parent, target::$uniquename, e::Epoch)
-            new(origin, target, $s)
+            new(origin, target, $R)
         end
         function Rotation(origin::$uniquename, target::$parent, e::Epoch)
-            new(origin, target, transpose($(s)))
+            new(origin, target, transpose($(R)))
         end
         # connect to graph
         connect!($graph, $(parent)(), $(uniquename)())

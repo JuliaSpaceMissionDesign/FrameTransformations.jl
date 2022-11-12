@@ -3,7 +3,6 @@ export @frame_bci_tod_iau
 macro frame_bci_tod_iau(body)
     tname = Symbol(body, :BodyCentricInertialFrame)
     sname = Symbol("BCI_TOD", "_", uppercase(String(body)))
-
     return quote 
         # Frame type
         struct $tname  <: BodyCentricInertialTrueOfDateFrame end
@@ -37,13 +36,12 @@ macro frame_bci_tod_iau(body)
     end
 end
 
-
 macro frame_bci_2000_iau(body)
     tname = Symbol(body, :BodyCentricInertial2000Frame)
     sname = Symbol("BCI_2000", "_", uppercase(String(body)))
-    rname = Symbol("_ROTMAT_", "ICRF2",uppercase(String(name)),"_", "BCI2000")
-    α = π/2 + orient_right_ascension($body, 0.0)  
-    δ = π/2 - orient_declination($body, 0.0)
+    rname = Symbol("ROTMAT", "_", "ICRF2",uppercase(String(name)), "_", "BCI2000")
+    α = π/2 + orient_right_ascension(body, 0.0)  
+    δ = π/2 - orient_declination(body, 0.0)
     R = angle_to_dcm(-α, -δ, :ZX)
 
     return quote
