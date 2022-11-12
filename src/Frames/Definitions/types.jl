@@ -71,11 +71,41 @@ A type representing the Mean Ecliptic and Equinox of Date.
 struct MeanEquatorMeanEquinoxOfDate <: AbstractInertialFrame end
 
 """
-    MEMEOD
+    MEMEMOD
 
 Singleton instance of the [`MeanEquatorMeanEquinoxOfDate`](@ref).
+
+### References 
+- [SOFA C](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
 """
-const MEMEOD = MeanEquatorMeanEquinoxOfDate()
+const MEMEMOD = MeanEquatorMeanEquinoxOfDate()
+
+#
+#   Planets IAU
+#
+
+"""
+    BodyCentricInertialTrueOfDateFrame
+
+An abstract type representing a True of Date body-centric inertial frame.
+This is the parent type for the concrete implementations of the frames.
+"""
+abstract type BodyCentricInertialTrueOfDateFrame <: AbstractBodyCentricInertialFrame end
+
+
+"""
+    BodyCentricInertial2000Frame
+
+An abstract type representing a True of Date body-centric inertial frame.
+This is the parent type for the concrete implementations of the frames.
+"""
+abstract type BodyCentricInertial2000Frame <: AbstractBodyCentricInertialFrame end
+
+#
+#   Fixed Rotation
+# 
+
+abstract type FixedRotationFrame <: AbstractFixedOffsetFrame end
 
 # ------------------------------------------------------------------------------
 #                                 ROTATING

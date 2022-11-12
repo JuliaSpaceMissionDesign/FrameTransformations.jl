@@ -81,3 +81,10 @@ A type representing an inertial frame associated to a celestial body.
 This frame has the fundamental plane coincident with the body equator. 
 """
 abstract type AbstractBodyCentricInertialFrame <: AbstractInertialFrame end
+
+"""
+    AbstractBodyCentricRoratingFrame
+
+A type representing a rotating frame associated to a celestial body.
+"""
+abstract type AbstractBodyCentricRotatingFrame <: AbstractRotatingFrame end

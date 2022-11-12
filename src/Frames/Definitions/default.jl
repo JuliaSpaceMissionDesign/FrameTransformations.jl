@@ -35,7 +35,7 @@ end
 connect!(MEME2000, ECLIPJ2000)
 
 # ------------------------------------------------------------------------------
-#                               ICRF <-> MEMEOD
+#                               ICRF <-> MEMEMOD
 # ------------------------------------------------------------------------------
 
 function Rotation(
@@ -59,4 +59,4 @@ function Rotation(
     inv(Rotation(target, origin, e; model=model))
 end
 
-connect!(ICRF, MEMEOD)
+connect!(ICRF, MEMEMOD)

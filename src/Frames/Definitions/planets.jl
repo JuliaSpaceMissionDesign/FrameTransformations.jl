@@ -1,107 +1,76 @@
-using Basic.Bodies: NAIFId
+export @frame_bci_tod_iau
 
-abstract type BodyCentricInertialTrueOfDate <: AbstractBodyCentricInertialFrame end
+macro frame_bci_tod_iau(body)
+    tname = Symbol(body, :BodyCentricInertialFrame)
+    sname = Symbol("BCI_TOD", "_", uppercase(String(body)))
 
-abstract type BodyCentricInertial2000 <: AbstractBodyCentricInertialFrame end
+    return quote 
+        # Frame type
+        struct $tname  <: BodyCentricInertialTrueOfDateFrame end
 
-function BodyCentricInertialTrueOfDate(id::NAIFId, name::Symbol) 
-    valId = id.valId
-    tname = Symbol("BodyCentricInertial", "_", name)
-    sname = Symbol("BCI", "_", uppercase(String(name)))
-    return """
-        # ------------------------------------------------------------------------------
-        # Frame definition: $tname
-        # ------------------------------------------------------------------------------
-
-        # Type
-        struct $tname <: BodyCentricInertialTrueOfDate
-            vid::Val{Int}
-            function $tname()
-                new($valId)
-            end
+        function Frames.build(::Type{$tname}, args...)
+            return $tname()
         end
 
-        # Singleton
-        $sname = $tname()
+        const $sname = $tname()  # Singleton
 
-        # Transformations
-        function Frames.Rotation(
-            origin::InternationalCelestialReferenceFrame,
-            target::$(tname), 
+        # Transformation
+        function Rotation(
+            origin::InternationalCelestialReferenceFrame, target::$tname,
             e::Epoch
         )
             t = j2000c(convert(TT, e))
-            α = π/2 + orient_right_ascension(vid, t)  
-            δ = π/2 - orient_declination(vid, t)
-            Rmat = angle_to_dcm(α, δ, :ZX)
-
-            Frames.Rotation(origin, target, Rmat)
+            α = π/2 + orient_right_ascension($body, t)  
+            δ = π/2 - orient_declination($body, t)
+            R = angle_to_dcm(-α, -δ, :ZX)
+            Rotation(origin, target, R)
         end
-        function Frames.Rotation(
-            origin::$(tname),
-            target::InternationalCelestialReferenceFrame,
+        function Rotation(
+            origin::$tname, target::InternationalCelestialReferenceFrame, 
             e::Epoch
         )
-            inv(Frames.Rotation(target, origin, e))
+            inv(Rotation(target, origin, e))
         end
 
-        # Connect to frame graph
-        connect!(ICRF, $sname)
-
-        # Export type and singleton
-        export $tname, $sname
-    """
+        connect!(FRAMES, $sname) # Connect to frame graph
+        export $tname, $sname # Export type and singleton
+    end
 end
 
-function BodyCentricInertial2000(id::NAIFId, name::Symbol)
-    valId = id.valId
-    tname = Symbol("BodyCentricInertial2000", "_", name)
-    sname = Symbol("BCI2000", "_", uppercase(String(name)))
-    rname = Symbol("ICRF2",uppercase(String(name)),"_", "BCI2000")
-    return """
-        # ------------------------------------------------------------------------------
-        # Frame definition: $tname
-        # ------------------------------------------------------------------------------
 
-        # Type
-        struct $tname <: BodyCentricInertial2000
-            vid::Val{Int}
-            function $tname()
-                new($valId)
-            end
+macro frame_bci_2000_iau(body)
+    tname = Symbol(body, :BodyCentricInertial2000Frame)
+    sname = Symbol("BCI_2000", "_", uppercase(String(body)))
+    rname = Symbol("_ROTMAT_", "ICRF2",uppercase(String(name)),"_", "BCI2000")
+    α = π/2 + orient_right_ascension($body, 0.0)  
+    δ = π/2 - orient_declination($body, 0.0)
+    R = angle_to_dcm(-α, -δ, :ZX)
+
+    return quote
+        struct $tname <: BodyCentricInertial2000Frame end 
+
+        function Frames.build(::Type{$tname}, args...)
+            return $tname()
         end
 
-        # Singleton
-        $sname = $tname()
+        const $sname = $tname()  # Singleton
+        const $rname = $R
 
-        # Declare function to build the BCI2000
-        function __build_bci2000rot(::$(valId))
-            α = π/2 + orient_right_ascension(vid, 0.0)  
-            δ = π/2 - orient_declination(vid, 0.0)
-            angle_to_dcm(α, δ, :ZX)
-        end
-        const $rname = __build_bci2000rot(valId)
-
-        # Transformations
-        function Frames.Rotation(
-            origin::InternationalCelestialReferenceFrame,
-            target::$(tname), 
-            e::Epoch
-        )   
-            Frames.Rotation(origin, target, $rname)
-        end
-        function Frames.Rotation(
-            origin::$(tname),
-            target::InternationalCelestialReferenceFrame,
+        # Transformation
+        function Rotation(
+            origin::InternationalCelestialReferenceFrame, target::$tname,
             e::Epoch
         )
-            inv(Frames.Rotation(target, origin, e))
+            Rotation(origin, target, R)
+        end
+        function Rotation(
+            origin::$tname, target::InternationalCelestialReferenceFrame, 
+            e::Epoch
+        )
+            inv(Rotation(target, origin, e))
         end
 
-        # Connect to frame graph
-        connect!(ICRF, $sname)
-
-        # Export type and singleton
-        export $tname, $sname
-    """
+        connect!(FRAMES, $sname) # Connect to frame graph
+        export $tname, $sname # Export type and singleton
+    end
 end
