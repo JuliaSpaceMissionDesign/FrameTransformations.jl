@@ -89,49 +89,6 @@ const MEMEMOD = MeanEquatorMeanEquinoxOfDate()
 
 An abstract type representing a True of Date body-centric inertial frame.
 This is the parent type for the concrete implementations of the frames.
-
-### Example
-To define the concrete implementation, of a body-centric frame a type and a 
-sigleton shall be defined:
-
-```julia
-struct EarthBodyCentricInertialFrame <: BodyCentricInertialTrueOfDateFrame
-    vid::Val{Int}
-    function EarthBodyCentricInertialFrame()
-        new(Val(399))
-    end
-end
-
-const BCI_EARTH = EarthBodyCentricInertialFrame()
-```
-
-Then transformations to another frame of the graph shall be defined. 
-Typically, these transformations are given which respect to the 
-[`InternationalCelestialReferenceFrame`](@ref), therefore:
-
-```julia
-function Rotation(
-    origin::InternationalCelestialReferenceFrame,
-    target::EarthBodyCentricInertialFrame,
-    e::Epoch
-)
-    ...
-    Rotation(origin, target, R)
-end
-function Rotation(
-    origin:::EarthBodyCentricInertialFrame, 
-    target::InternationalCelestialReferenceFrame,
-    e::Epoch
-)
-    inv(Rotation(target, origin, e))
-end
-```
-
-Finally, the transformation has to be added to the frame graph.
-
-```julia
-connect!(ICRF, BCI_EARTH)
-```
 """
 abstract type BodyCentricInertialTrueOfDateFrame <: AbstractBodyCentricInertialFrame end
 
@@ -141,51 +98,14 @@ abstract type BodyCentricInertialTrueOfDateFrame <: AbstractBodyCentricInertialF
 
 An abstract type representing a True of Date body-centric inertial frame.
 This is the parent type for the concrete implementations of the frames.
-
-### Example
-To define the concrete implementation, of a body-centric frame a type and a 
-sigleton shall be defined:
-
-```julia
-struct EarthBodyCentricInertial2000Frame <: BodyCentricInertial2000Frame
-    vid::Val{Int}
-    function EarthBodyCentricInertial2000Frame()
-        new(Val(399))
-    end
-end
-
-const BCI2000_EARTH = EarthBodyCentricInertial2000Frame()
-```
-
-Then transformations to another frame of the graph shall be defined. 
-Typically, these transformations are given which respect to the 
-[`InternationalCelestialReferenceFrame`](@ref), therefore:
-
-```julia
-function Rotation(
-    origin::InternationalCelestialReferenceFrame,
-    target::EarthBodyCentricInertial2000Frame,
-    e::Epoch
-)
-    ...
-    Rotation(origin, target, R)
-end
-function Rotation(
-    origin:::EarthBodyCentricInertial2000Frame, 
-    target::InternationalCelestialReferenceFrame,
-    e::Epoch
-)
-    inv(Rotation(target, origin, e))
-end
-```
-
-Finally, the transformation has to be added to the frame graph.
-
-```julia
-connect!(ICRF, BCI2000_EARTH)
-```
 """
 abstract type BodyCentricInertial2000Frame <: AbstractBodyCentricInertialFrame end
+
+#
+#   Fixed Rotation
+# 
+
+abstract type FixedRotationFrame <: AbstractFixedOffsetFrame end
 
 # ------------------------------------------------------------------------------
 #                                 ROTATING

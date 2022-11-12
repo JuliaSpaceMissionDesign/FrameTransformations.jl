@@ -14,6 +14,8 @@ module Frames
     export Rotation
 
     include("Definitions/types.jl")
+    include("Definitions/fixedoffsets.jl")
     include("Definitions/default.jl")
     include("Definitions/planets.jl")
+    include("Definitions/moon.jl")
 end
