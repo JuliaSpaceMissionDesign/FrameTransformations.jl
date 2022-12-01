@@ -6,7 +6,7 @@ include("constants/nut2000b.jl");
 # Arcseconds in a full circle
 const ARCSECTURN = 1296000.0
 
-nutation00(::IAU2006Model, ::Number, ::FundamentalArguments) = () 
+# nutation00(::IAU2006Model, ::Number, ::FundamentalArguments) = () 
 build_nutation_series(:nutation00, :IAU2006A,  NUTATION_2000Aψ, NUTATION_2000Aϵ)
 build_nutation_series(:nutation00, :IAU2006B,  NUTATION_2000Bψ, NUTATION_2000Bϵ)
 

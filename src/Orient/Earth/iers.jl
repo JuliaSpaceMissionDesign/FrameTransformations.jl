@@ -162,7 +162,7 @@ end
 
 include("constants/cio_locator.jl")
 
-cio_locator(::IAU2006Model, ::Number, ::FundamentalArguments) = ()
+# cio_locator(::IAU2006Model, ::Number, ::FundamentalArguments) = ()
 build_cio_series(:cio_locator, :IAU2006Model, COEFFS_CIO2006_SP, COEFFS_CIO2006_S)
 
 """
