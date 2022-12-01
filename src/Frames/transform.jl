@@ -32,7 +32,6 @@ struct Rotation{F1, F2, T<:AbstractFloat} <: AbstractFrameRotation{F1, F2}
     end
 end
 
-
 function Rotation(origin::F1, target::F2, m::DCM{T}, 
     ω::AbstractVector{T}) where {F1<:AbstractFrame, F2<:AbstractFrame, T<:AbstractFloat}
     dm = ddcm(m, SVector(ω))

@@ -31,7 +31,7 @@ macro frame_bci_tod_iau(body)
             inv(Rotation(target, origin, e))
         end
 
-        connect!(FRAMES, $sname) # Connect to frame graph
+        connect!(FRAMES, ICRF, $sname) # Connect to frame graph
         export $tname, $sname # Export type and singleton
     end
 end
@@ -68,7 +68,7 @@ macro frame_bci_2000_iau(body)
             inv(Rotation(target, origin, e))
         end
 
-        connect!(FRAMES, $sname) # Connect to frame graph
+        connect!(FRAMES, ICRF, $sname) # Connect to frame graph
         export $tname, $sname # Export type and singleton
     end
 end
