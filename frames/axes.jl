@@ -171,14 +171,6 @@ macro build_axes(frame, name::Symbol, id::Int, suptype::Symbol,
     # Parent expression 
     parent_expr = :(parent_axes(::$typ) = $parent)
 
-    # Display string 
-    show_expr = :(function Base.show(io::IO, ::$typ)
-                    # println(io, "$suptype")
-                    println(io, "  name: ", $name)
-                    println(io, "  id: ", $id)
-                    println(io, "  class: ", $class)
-                end)
-
     # Create and add AstroAxes instance to AxesGraph
     reg = :(add_vertex!($(axes_graph(frmsys)), 
             AstroAxes{$T}($(QuoteNode(name)), $class, $id, $parent_id, 
@@ -209,7 +201,6 @@ macro build_axes(frame, name::Symbol, id::Int, suptype::Symbol,
         $(esc(inertial_expr))
         $(esc(reg))
         $(esc(connect))
-        $(esc(show_expr))
 
         nothing 
     end
