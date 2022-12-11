@@ -164,7 +164,7 @@ function _vector3(point::AstroPoint, ep::Number)
                  point.stv[1][2], 
                  point.stv[1][3]]
     else 
-        tid = Threads.nthreads()
+        tid = Threads.threadid()
         if point.epochs[tid] != ep 
             if 0 < point.class < 3 # 1 or 2
                 point.epochs[tid] = ep 
