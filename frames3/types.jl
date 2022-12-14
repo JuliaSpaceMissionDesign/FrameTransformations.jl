@@ -56,8 +56,8 @@ struct FrameAxesNode{T} <: AbstractGraphNode
     epochs::Vector{T}
     nzo::Vector{Int} # last updated order
     fun::FunctionWrapper{Rotation{1, T}, Tuple{T, SVector{3, T}, SVector{3, T}}} 
-    dfun::FunctionWrapper{Rotation{2, T}, Tuple{T, SVector{3, T}, SVector{3, T}}}
-    ddfun::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{3, T}, SVector{3, T}}}
+    dfun::FunctionWrapper{Rotation{2, T}, Tuple{T, SVector{6, T}, SVector{6, T}}}
+    ddfun::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{9, T}, SVector{9, T}}}
 end
 
 get_node_id(axes::FrameAxesNode) = axes.id
@@ -138,6 +138,8 @@ axes_graph(f::FrameSystem) = f.axes_graph;
 has_point(f::FrameSystem, NAIFId::Int) = has_vertex(points_graph(f), NAIFId)
 has_axes(f::FrameSystem, axesid::Int) = has_vertex(axes_graph(f), axesid)
 
+add_axes!(f::FrameSystem, a::FrameAxesNode) = add_vertex!(axes_graph(f), a)
+
 available_ephemeris_bodies(frame::FrameSystem) = frame.ephBodyIDs
 
 @inline get_axes(frame::FrameSystem) = _graph_tree(axes_graph(frame))
@@ -152,7 +154,7 @@ end
 
 function _graph_tree(g::GraphSystem, pid::Int, idx::Int, del::Int=1)
     @inbounds for i = idx:length(g.nodes)
-        if g.nodes[i].parent == pid 
+        if g.nodes[i].parentid == pid 
             println(" "^(3del), g.nodes[i].name)
             _graph_tree(g, get_node_id(g.nodes[i]), i, del+1)
         end 

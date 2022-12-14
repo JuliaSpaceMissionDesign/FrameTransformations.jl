@@ -2,21 +2,21 @@
 #                               ICRF <-> MEME2000
 # ------------------------------------------------------------------------------
 
+
 function Rotation(
     origin::InternationalCelestialReferenceFrame, 
     target::MeanEquatorMeanEquinoxJ2000, e::Epoch)
-    return Rotation(origin, target, Orient.ROTMAT_ICRF2J2000_BIAS)
+    return Rotation(origin, target, ROTMAT_ICRF2J2000_BIAS)
 end
 
 function Rotation(
     origin::MeanEquatorMeanEquinoxJ2000, 
     target::InternationalCelestialReferenceFrame, e::Epoch)
-    Rotation(origin, target, Orient.ROTMAT_ICRF2J2000_BIAS')
+    Rotation(origin, target, ROTMAT_ICRF2J2000_BIAS')
 end
 
 connect!(ICRF, MEME2000)
 
-const ROTMAT_ICRF2J2000_BIAS = Orient.orient_precession_bias(Orient.iau2006a, 0.0)
 
 """
     ROTMAT_ICRF2J2000_BIAS
@@ -30,7 +30,7 @@ Rotation matrix for the rotation from the International Celestial Reference Fram
     413.2 (2004): 765-770. DOI: [10.1051/0004-6361:20031552](https://www.aanda.org/articles/aa/pdf/2004/02/aa3851.pdf)
 - [SOFA docs](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
 """
-ROTMAT_ICRF2J2000_BIAS
+const ROTMAT_ICRF2J2000_BIAS = Orient.orient_precession_bias(Orient.iau2006a, 0.0)
 
 # ------------------------------------------------------------------------------
 #                               MEME2000 <-> ECLIPJ2000
@@ -38,19 +38,16 @@ ROTMAT_ICRF2J2000_BIAS
 
 function Rotation(
     origin::MeanEquatorMeanEquinoxJ2000, target::EclipticEquinoxJ2000, e::Epoch)
-    return Rotation(origin, target, Orient.ROTMAT_J20002ECLIPJ2000)
+    return Rotation(origin, target, ROTMAT_J20002ECLIPJ2000)
 end
 
 function Rotation(
     origin::EclipticEquinoxJ2000, target::MeanEquatorMeanEquinoxJ2000, e::Epoch)
-    return Rotation(origin, target, Orient.ROTMAT_J20002ECLIPJ2000')
+    return Rotation(origin, target, ROTMAT_J20002ECLIPJ2000')
 end
 
 connect!(MEME2000, ECLIPJ2000)
 
-const ROTMAT_J20002ECLIPJ2000 = angle_to_dcm(
-    Orient.orient_obliquity(Orient.iau2006a, 0.0), :X
-)
 
 """
     ROTMAT_J20002ECLIPJ2000
@@ -60,7 +57,10 @@ Rotation matrix for the rotation from the Mean Dynamical Equator of J2000
 This corresponds to the transformation `J2000 -> ECLIPJ2000` in the SPICE 
 toolkit.
 """
-ROTMAT_J20002ECLIPJ2000
+const ROTMAT_J20002ECLIPJ2000 = angle_to_dcm(
+    Orient.orient_obliquity(Orient.iau2006a, 0.0), :X
+)
+
 
 # ------------------------------------------------------------------------------
 #                               ICRF <-> MEMEMOD

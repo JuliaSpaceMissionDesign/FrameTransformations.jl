@@ -5,7 +5,7 @@ include("frames/Frames.jl")
 path = "/home/michele/spice/kernels/"; 
 f1 = path*"spk/de440.bsp";
 
-eph = EphemerisKernels([f1, f2])
+eph = EphemerisKernels([f1])
 ep = get_timespan(eph)[1] + 1000;
 
 FRAMES = FrameSystem{Float64}(eph);
@@ -42,6 +42,15 @@ unsafe_compute_order!(ys, eph, ep, 0., 399, 0, cph_use_naifid+cph_km+cph_sec, 0)
 ys[1:3] - get_vector3(FRAMES, ssb, earth, ICRF, ep)
 
 
+nruns = 100
+y = Vector{SVector{3, Float64}}(undef, nruns);
+tid = Vector{Int}(undef, nruns)
+Threads.@threads for i = 1:nruns 
+    y[i] = get_vector3(FRAMES, emb, earth, ECLIPJ2000, ep)
+    tid[i] = Threads.threadid()
+    get_vector3(FRAMES, sc, ssb, ICRF, ep+2)
+end
+
 # ys[1:3]
 # get_vector3(FRAMES, ssb, moon, ICRF, ep)
 
@@ -50,3 +59,31 @@ ys[1:3] - get_vector3(FRAMES, ssb, earth, ICRF, ep)
 
 # @benchmark unsafe_compute_order!($ys, $eph, $ep, $0., $301, $0, $cph_use_naifid+$cph_km+$cph_sec, $0)
 # @benchmark unsafe_compute_order!($ys, $eph, $ep, $0., $301, $0, $cph_use_naifid+$cph_km+$cph_sec, $1)
+
+tid = Vector{Int}(undef, nruns);
+y = Vector{MVector{3, Float64}}(undef, nruns);
+Threads.@threads for i = 1:nruns 
+    y[i] = MVector{3, Float64}(zeros(3)...)
+    unsafe_compute_order!(y[i], eph, ep, 0., 399, 0, cph_use_naifid+cph_km+cph_sec, 0);
+    tid[i] = Threads.threadid()
+end
+
+yex = zeros(3);
+unsafe_compute_order!(yex, eph, ep, 0., 399, 3, cph_use_naifid+cph_km+cph_sec, 0);
+err = zeros(nruns)
+for i = 1:nruns 
+    err[i] = norm(yex - y[i])
+end
+
+maximum(err)
+
+
+nruns = 100
+y = Vector{SVector{3, Float64}}(undef, nruns);
+tid = Vector{Int}(undef, nruns);
+eph = Ephem(f1);
+CALCEPH.prefetch(eph)
+Threads.@threads for i = 1:nruns 
+    CALCEPH.compute(eph, ep, 0., 399, 0, cph_km+cph_sec+cph_use_naifid)
+    tid[i] = Threads.threadid()
+end

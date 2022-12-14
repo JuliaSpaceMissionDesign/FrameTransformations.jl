@@ -2,20 +2,24 @@ import ForwardDiff.derivative
 
 abstract type AbstractAxes end 
 
-_get_fixrot_1(::T, x, y) where T = Rotation{T}(DCM(T(1)I)) 
-_get_fixrot_2(::T, x, y) where T = Rotation{T}(DCM(T(1)I), DCM(T(0)I)) 
-_get_fixrot_3(::T, x, y) where T = Rotation{T}(DCM(T(1)I), DCM(T(0)I), DCM(T(0)I)) 
+get_alias(x::AbstractAxes) = axesid(x)
+get_alias(x::Int) = x 
+
+_get_fixrot_1(::T, x, y) where T = Rotation(DCM(T(1)I)) 
+_get_fixrot_2(::T, x, y) where T = Rotation(DCM(T(1)I), DCM(T(0)I)) 
+_get_fixrot_3(::T, x, y) where T = Rotation(DCM(T(1)I), DCM(T(0)I), DCM(T(0)I)) 
 
 macro axes(name::Symbol, id::Int, type=nothing)
 
-    if isnothing(nothing)
-        type = Symbol(:Abstract, name)
+    if isnothing(type)
+        type = Symbol(:Abstract, name, :Axes)
     end        
 
     typ_str = String(type)
     name_str = String(name)
 
     axesid_expr = :(axesid(::$type) = $id)
+    name_expr = :(axes_name(::$type) = Symbol($name_str))
 
     return quote 
         """
@@ -31,349 +35,163 @@ macro axes(name::Symbol, id::Int, type=nothing)
         const $(esc(name)) = $(esc(type))()
 
         $(esc(axesid_expr))
+        $(esc(name_expr))
 
         nothing
     end
 
 end
 
-function build_axes(frame::FrameSystem, id::Int, class::Symbol, 
+
+function build_axes(frame::FrameSystem{T}, 
+                    name::Symbol, id::Int, class::Symbol, 
                     fun::Function, dfun::Function, ddfun::Function; 
-                    name=nothing,
-                    parent=nothing, 
+                    parentid=nothing, # oppure Int  
                     dcm=nothing, 
-                    cprop::ComputableAxesProperties=ComputableAxesProperties()) where {T}
+                    caprop=ComputableAxesProperties()) where {T}
     
-                    
+    # Check that a set of axes with the same ID is not already registered 
+    # within the given frame system 
+    has_axes(frame, id) && throw(ErrorException(
+            "Axes with ID=$id are already registered in the given frame system."))
+    
+    # Check that a similar name also does not already exists
+    name in map(x->x.name, axes_graph(frame).nodes) && throw(ErrorException(
+        "Axes with name=$name are already registered in the given frame system."))
+
+    if !isnothing(parentid)
+        # Check that a set of root axes is present 
+        isempty(axes_graph(frame)) && throw(ErrorException(
+            "Missing root axes."))
+
+        # Check that the parent axes are registered in frame 
+        !has_axes(frame, parentid) && throw(ErrorException(
+            "The parent axes $id are not registered in this frame system"))
+
+    elseif class == :InertialAxes 
+        parentid = id 
+    end
+
+
+    # Check that the given functions have the correct signature 
+    for (i, fcn) in enumerate([fun, dfun, ddfun])
+        otype = fcn(T(1), SVector{3}(zeros(T, 3)), SVector{3}(zeros(T, 3)))
+
+        !(otype isa Rotation{i, T}) && throw(ArgumentError(
+            "$fcn return type is $(typeof(otype)) but should be Rotation{$i, $T}."))
+    end 
+
+    # Initializations of epoch\rotation vectors 
+    @inbounds if class in (:InertialAxes, :FixedAxes) 
+        nzo = -ones(Int, 1)
+        epochs = Vector{T}(undef, 0)
+
+        R = Vector{Rotation{3, T}}(undef, 1)
+        R[1] = !isnothing(dcm) ? Rotation(dcm, DCM(T(0)I), DCM(T(0)I)) : R[1]
+
+    else 
+        nth = Threads.nthreads() 
+        nzo = -ones(Int, nth)
+        epochs = Vector{T}(undef, nth)
+        R = Vector{Rotation{3, T}}(undef, nth)
+    end
+
+    # IT = Tuple{T, SVector{3, T}, SVector{3, T}}
+
+    # Creates axes object
+    axesnode = FrameAxesNode{T}(name, class, id, parentid, caprop, R, 
+                         epochs, nzo, fun, dfun, ddfun)
+
+    # Adds the new axes inside the graph 
+    add_axes!(frame, axesnode)
+
+    # Connects axes to their parent axes in the graph 
+    !isnothing(parentid) && connect!(axes_graph(frame), parentid, id) 
 
 end
 
 
-# """
-#     @build_axes(frame, name, id, class, fun, dfun, ddfun, args...)
-# """
-# macro build_axes(frm, name::Symbol, id::Int, class, 
-#                  fun, dfun, ddfun, args...)
+"""
+    add_inertial_axes!(frame, id, parent, dcm, name)
+"""
+function add_inertial_axes!(frame::FrameSystem, name::Symbol, id::Int;
+                            parent=nothing, dcm=nothing)
 
-#     frame = eval(frm) 
-#     if !(frame isa FrameSystem)
-#         throw(ArgumentError("$frm must be a FrameSystem."))
-#     end
+    # Checks for root-axes existence 
+    if isnothing(parent)
+        
+        !isempty(axes_graph(frame)) && throw(ErrorException(
+            "A set of parent axes is required because the root axes "*
+            "have already been specified."))
 
-#     # Retrieves inner type of FrameAxesNode  
-#     T = get_datatype(frame)
+        !isnothing(dcm) && throw(ArgumentError(
+            "Providing a DCM for root axes is meaningless."))
 
-#     # Check that a set of axes with the same ID has not been already 
-#     # registered within the given FrameSystem 
-#     if has_axes(frame, id)
-#         throw(ErrorException("$frm already contains a set of axes with ID $id."))
-#     end
-
-#     # Creates a default type name 
-#     name_str = String(name) 
-#     suptyp_str = String(class)
-
-#     typ_str = name_str*suptyp_str 
-#     typ = Symbol(typ_str)
-
-#     parent_id = id    # Only the root frame can have parent_id = id 
-#     parent = nothing 
-#     dcm = nothing 
-
-#     # ref_point = 0;
-
-#     for a in args 
-#         a isa Expr || continue 
-#         a.head == :(=) || continue 
-
-#         if a.args[1] == :type 
-#             if !(a.args[2] isa Symbol) 
-#                 throw(ArgumentError("Invalid type argument: $a."))
-#             end 
-
-#             typ = a.args[2] 
-#             typ_str = String(typ)
-            
-#         elseif a.args[1] == :parent 
-#             if !(a.args[2] isa Symbol) 
-#                 throw(ArgumentError("Invalid type argument: $a."))
-#             end
-            
-#             parent = eval(a.args[2])         
-#             parent_id = axesid(parent) 
-
-#             # Check that a set of root-axes is present 
-#             if isempty(axes_graph(frame))
-#                 throw(ErrorException("$frm requires a set of root axes."))
-#             end
-
-#             # Check that the parent axes belong to the given frame system 
-#             if !has_axes(frame, parent_id)
-#                 throw(ErrorException("The axes $(a.args[2]) are not registered in $frm."))
-#             end 
-
-#         elseif a.args[1] == :dcm 
-
-#             # Check correct dcm type 
-#             dcm = eval(a.args[2])
-#             if !(dcm isa DCM)
-#                 throw(ArgumentError("Invalid type argument: $dcm. Expected DCM{$T}."))
-#             end
-
-#         # elseif a.args[1] == :refpoint 
-#         #     if !(a.args[2] isa Union{Int, Symbol})
-#         #         throw(ArgumentError("Invalid type argument: $a."))
-#         #     end
-
-#         #     ref_point = a.args[2] isa Int ? a.args[2] : naifid(eval(a.args[2]))
-            
-#         #     # Check that the point is known within the frame system 
-#         #     if !haskey(points_graph(frmsys).ids, ref_point)
-#         #         throw(ErrorException("Point $ref_point is not registered in $frame."))
-#         #     end
-
-#         #     # Check that the point has as axes the same parent axes used here 
-#         #     ref_axes = get_node_from_id(points_graph(frmsys), ref_point).axes
-#         #     if ref_axes != parent_id 
-#         #         throw(ErrorException(
-#         #             "Point $ref_point must be defined in the same axes that "*
-#         #             "have been specified as parent for the current set. Found "*
-#         #             "$ref_axes, expected $parent_id."))
-#         #     end
-
-#         else
-#             throw(ArgumentError("Unsupported keyword: $(a.args[1])."))
-#         end
-
-#     end
-
-#     # Check that the top frame does not already exist 
-#     if isnothing(parent) && !isempty(axes_graph(frame))
-#         throw(ErrorException("A set of parent axes is required because the root axes "*
-#                              "have already been specified."))
-#     end
-
-#     # Parents\DCM checks 
-#     if isnothing(parent) 
-#         if !isnothing(dcm) # qui c'è anche la funzione da aggiungere TODO! 
-#             throw(ArgumentError("DCM for Root Axis is meaningless.")) 
-#         end 
-
-#     elseif isnothing(dcm) && class in (:InertialAxes, :FixedAxes)
-#         # For non-root constant orientation axes the DCM is mandatory 
-#         throw(ArgumentError("The DCM from $parent to $name must be specified.")) 
-#     end
-
-#     # Check that the given functions have the correct signature
-#     for (i, fcn) in enumerate([fun, dfun, ddfun])
-#         otype = eval(fcn)(T(1), SVector{3}(zeros(T, 3)), 
-#                                 SVector{3}(zeros(T, 3)))
-
-#         if !(otype isa Rotation{i, T})
-#             throw(ArgumentError("$fcn return type is $(typeof(otype)) "*
-#                                 "but should be Rotation{$i, $T}."))
-#         end
-#     end
-
-#     # Rotation\epoch vector settings 
-#     @inbounds if class in (:InertialAxes, :FixedAxes)
-#         epochs = Vector{T}(undef, 0)
-
-#         R = Vector{Rotation{3, T}}(undef, 1)
-#         R[1] = !isnothing(dcm) ? Rotation{T}(dcm, DCM(T(0)I), DCM(T(0)I)) : R[1]
-#         nzo = -ones(Int, 1)
-
-#         inertial = class == :InertialAxes || isinertial(parent)
-
-#     else 
-#         nth = Threads.nthreads()
-#         epochs = Vector{T}(undef, nth)
-#         R = Vector{Rotation{3, T}}(undef, nth)
-#         nzo = -ones(Int, nth)
-
-#         inertial = false 
-#     end 
-
-#     # Sets default computable axes 
-#     if class != :ComputableAxes 
-#         comp_axes_prop = ComputableAxesProperties()
-#     end
-
-#     # Is inertial expression
-#     inertial_expr = :(isinertial(::$typ) = $inertial)
-
-#     # Axes-ID Function definition 
-#     axesid_expr = :(axesid(::$typ) = $id)
-
-#     # Parent expression 
-#     parent_expr = :(parent_axes(::$typ) = $parent)
-
-#     # Create and add AstroAxes instance to AxesGraph
-#     reg = :(add_vertex!($(axes_graph(frame)), 
-#             FrameAxesNode{$T}($(QuoteNode(name)), Symbol($class), $id, 
-#                         $parent_id, $comp_axes_prop, $R, $epochs, $nzo, 
-#                           $fun, $dfun, $ddfun)))
-
-#     # Eventually connect the axes to their parent 
-#     connect = !isnothing(parent) ? 
-#                 :(connect!($(axes_graph(frame)), $parent_id, $id)) : :()
-
-#     doc_str = isnothing(parent) ? "root axes" : 
-#                 "axes defined with respect to the `$(typeof(parent))`"
-
-#     return quote 
-#         """
-#             $($typ_str) <: $($class)
-#         A type representing a set of $($doc_str). 
-#         """
-#         struct $(esc(typ)) <: $(esc(class)) end 
-
-#         """
-#             $($name_str)
-#         The singleton instance of the [`$($typ_str)`](@ref) type.
-#         """
-#         const $(esc(name)) = $(esc(typ))()
-
-#         $(esc(axesid_expr))
-#         $(esc(parent_expr))
-#         $(esc(inertial_expr))
-#         $(esc(reg))
-#         $(esc(connect))
-
-#         nothing 
-#     end
-
-# end
-
-# """
-#     @inertial_axes(frame, name, id, args...)
-# """
-# macro inertial_axes(frame, name::Symbol, id::Int, args...)
-
-#     build_expr = :(@build_axes($frame, $name, $id, InertialAxes, 
-#                     _get_fixrot_1, _get_fixrot_2, _get_fixrot_3))
-
-#     for a in args 
-#         a isa Expr || continue 
-#         a.head == :(=) || continue 
-
-#         # Check for admissible parent-child relationship
-#         if a.args[1] == :parent 
-#             a.args[2] isa Symbol || throw(ArgumentError("Invalid type argument: $a"))
-            
-#             parent = eval(a.args[2])
-#             if !isinertial(parent)
-#                 # Note: if the axes have been defined as FixedAxes but are inertial, 
-#                 # they are accepted as parents of other inertial axes! 
-#                 throw(ErrorException("Inertial axes can only have inertial parent axes."))
-#             end
-#         end
-#         push!(build_expr.args, a)
-#     end
-
-#     return quote 
-#         $(esc(build_expr))
-#     end
-
-# end
-
-# """
-#     @fixed_axes(frame, name, id, parent, dcm, args..)
-# """
-# macro fixed_axes(frame, name::Symbol, id::Int, parent::Symbol, 
-#                  dcm::Union{Expr, Symbol}, args...)
+    else 
+        isnothing(dcm) && throw(ArgumentError(
+            "Missing rotation DCM from axes $parent."))
     
-#     build_expr = :(
-#         @build_axes($frame, $name, $id, FixedAxes, _get_fixrot_1, 
-#                 _get_fixrot_2, _get_fixrot_3, parent=$parent, dcm=$dcm))
+    end
 
-#     for a in args 
-#         a isa Expr || continue 
-#         a.head == :(=) || continue 
+    pid = isnothing(parent) ? nothing : get_alias(parent)
 
-#         push!(build_expr.args, a)
-#     end
+    build_axes(frame, name, id, :InertialAxes, _get_fixrot_1, 
+        _get_fixrot_2, _get_fixrot_3; parentid=pid, dcm=dcm)
 
-#     return quote 
-#         $(esc(build_expr))
-#     end
-# end
+end 
 
-# """ 
-#     @rotating_axes(frame, name, id, parent, fun, args...)
-# """
-# macro rotating_axes(frame, name::Symbol, id::Int, parent::Symbol, 
-#                     fn::Symbol, dfun=nothing, ddfun=nothing, args...)
 
-#     fun = eval(fn)
+"""
+    add_fixed_axes!(frame, name, id, parent, dcm)
+"""
+function add_fixed_axes!(frame::FrameSystem{T}, name::Symbol, id::Int, 
+                         parent, dcm::DCM{T}) where T 
 
-#     if isnothing(dfun) 
-#         dfun = t -> Rotation(fun(t), derivative(fun, t)) 
-#     end 
+    build_axes(frame, name, id, :FixedAxes, _get_fixrot_1, 
+            _get_fixrot_2, _get_fixrot_3; dcm=dcm, 
+            parentid=get_alias(parent))
 
-#     if isnothing(ddfun) 
-#         ddfun = t -> Rotation(fun(t), df(t), derivative(fun, t))
-#     end 
+end
 
-#     f = (t, x, y) -> fun(t)
-#     df = (t, x, y) -> dfun(t)
-#     ddf = (t, x, y) -> ddfun(t)
 
-#     build_expr = :(@build_axes($frame, $name, $id, RotatingAxes, $f, 
-#                                $df, $ddf, parent=$parent))
+"""
+    add_rotating_axes!(frame, name, id, parent, fun[, dfun[, ddfun]])
+"""
+function add_rotating_axes!(frame::FrameSystem{T}, name::Symbol, id::Int, 
+                            parent, fun, dfun=nothing, ddfun=nothing) where T
+
+    build_axes(frame, name, id, :RotatingAxes, 
+                (t, x, y) -> Rotation(fun(t)), 
+                isnothing(dfun) ? 
+                    (t, x, y) -> Rotation(fun(t), derivative(fun, t)) : 
+                    (t, x, y) -> Rotation(dfun(t)),
+
+                isnothing(ddfun) ?
+                    (isnothing(dfun) ? 
+                        (t, x, y) -> Rotation(fun(t), derivative(fun, t), derivative(τ->derivative(fun, τ), t)) : 
+                        (t, x, y) -> Rotation(dfun(t)..., derivative(τ->derivative(fun, τ), t))) : 
+                    (t, x, y) -> Rotation(ddfun),
+
+                parentid=get_alias(parent))
+
+end
+
+"""
+    add_computable_axes!(frame, name, id, parent, ???)
+"""
+function add_computable_axes!(frame::FrameSystem, name::Symbol, id::Int, 
+                              parent)
+
     
-#     for a in args 
-#         a isa Expr || continue 
-#         a.head == :(=) || continue 
+    
 
-#         ## controlla fun e dfun 
+end
 
-#         push!(build_expr.args, a)
-#     end
+add_rotating_axes!(frame, axes::AbstractAxes, parent, fun, args...) = 
+    add_rotating_axes(frame, axes_name(axes), axesid(axes), parent, fun, args...)
 
-#     return quote 
-#         $(esc(build_expr))
-#     end
-# end
-
-# """
-#     @computable_axes(frame, name, id, parent::Symbol, refpoint, fun, dfun, )
-# """
-# macro computable_axes(frame, name::Symbol, id::Int, parent::Symbol, 
-#                       refpoint, fun::Symbol, dfun::Symbol, args...)
-
-#     # expand in the future to allow pre-defined set of functions! 
-#     build_expr = :(@build_axes($frame, $name, $id, ComputableAxes, $fun, 
-#                             $dfun, parent=$parent, refpoint=$refpoint))
-
-#     for a in args 
-#         a isa Expr || continue 
-#         a.head == :(=) || continue 
-
-#         push!(build_expr.args, a)
-#     end
-
-#     return quote 
-#         $(esc(build_expr))
-#     end         
-
-# end
-
-#         """
-#             $($typ_str) <: $($class)
-#         A type representing a set of $($doc_str). 
-#         """
-#         struct $(esc(typ)) <: $(esc(class)) end 
-
-#         """
-#             $($name_str)
-#         The singleton instance of the [`$($typ_str)`](@ref) type.
-#         """
-#         const $(esc(name)) = $(esc(typ))()
-
-#         $(esc(axesid_expr))
-#         $(esc(parent_expr))
-#         $(esc(inertial_expr))
-#         $(esc(reg))
-#         $(esc(connect))
-7
+add_fixed_axes!(frame, axes::AbstractAxes, parent, dcm) = 
+    add_fixed_axes!(frame, axes_name(axes), axesid(axes), parent, dcm)
+    
+add_inertial_axes!(frame, axes::AbstractAxes; args...) =
+    add_inertial_axes!(frame, axes_name(axes), axesid(axes); args...)

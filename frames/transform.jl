@@ -182,4 +182,4 @@ function _vector3(point::AstroPoint, ep::Number)
     end
 
     return pos 
-end
+end 
