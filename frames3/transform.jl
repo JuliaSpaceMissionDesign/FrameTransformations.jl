@@ -28,10 +28,12 @@ function _vectors_to_dcm(x::AbstractVector, y::AbstractVector, z::AbstractVector
     @inbounds DCM((x[1], y[1], z[1], x[2], y[2], z[2], x[3], y[3], z[3]))
 end
 
-@fastmath @inbounds function δunit_vector(v::AbstractVector{T}) where T
+unit_vector(v::AbstractVector) = v/norm(v)
+
+@inbounds function δunit_vector(v::AbstractVector{T}) where T
 
     r2 = v[1]^2 + v[2]^2 + v[3]^2 
-    r = sqrt(r2)
+    @fastmath r = sqrt(r2)
     r3 = r2*r
 
     δ = -(v[1]*v[4] + v[2]*v[5] + v[3]*v[6])/r3
@@ -41,12 +43,12 @@ end
           v[6]/r + δ*v[3]]
 end
 
-@fastmath @inbounds function δ²unit_vector(v::AbstractVector{T}) where T
+@inbounds function δ²unit_vector(v::AbstractVector{T}) where T
 
     δ = v[1]*v[4] + v[2]*v[5] + v[3]*v[6]
 
     r2 = v[1]^2+v[2]^2+v[3]^2
-    r  = sqrt(r2)
+    @fastmath r  = sqrt(r2)
     r3 = r2*r
     r5 = r3*r2
 
@@ -90,29 +92,38 @@ end
     SA[u, v, w, δu, δv, δw, δ²u, δ²v, δ²w]
 end
 
-function vectors_to_xy_dcm(x::AbstractVector, y::AbstractVector)
+function _vec_xy_dcm(x::AbstractVector, y::AbstractVector, 
+                           fc::Function, uv::Function)
 
-    w = cross(x, y)
-    v = cross(w, x)
-    
-    uᵤ = x/norm(x)
-    vᵤ = v/norm(v) 
-    wᵤ = w/norm(w)
+    w = fc(x, y)
+    v = fc(w, x)
 
-    _vectors_to_dcm(uᵤ, vᵤ, wᵤ)
+    _vectors_to_dcm(uv(x), uv(v), uv(w))
+
 end
 
-function vectors_to_xz_dcm(x::AbstractVector, z::AbstractVector)
+function _vec_xz_dcm(x::AbstractVector, z::AbstractVector, 
+                     fc::Function, uv::Function)
 
-    v = cross(z, x)
-    w = cross(x, v)
+    v = fc(z, x)
+    w = fc(x, v)
 
-    uᵤ = x/norm(x)
-    vᵤ = v/norm(v) 
-    wᵤ = w/norm(w)
+    _vectors_to_dcm(uv(x), uv(v), uv(w))
 
-    _vectors_to_dcm(uᵤ, vᵤ, wᵤ)
 end
+
+function _vec_yz_dcm(y::AbstractVector, z::AbstractVector, 
+                     fc::Function, uv::Function)
+
+    u = fc(y, z)
+    w = fc(u, y)
+
+    _vectors_to_dcm(uv(u), uv(y), uv(w))
+
+end
+
+
+
 
 function vectors_to_yz_dcm(y::AbstractVector, z::AbstractVector)
 
@@ -218,9 +229,6 @@ function test(t::Number)
     x = SA[t^2*c, s, 1]
     y = SA[-t*s, c, t^2+3]
 
-    # x = SA[c, s, 0]
-    # y = SA[-s, c, 0]
-
     vectors_to_xy_dcm(x, y)
 end
 
@@ -236,11 +244,8 @@ end
 function dd_test(t::Number)
     s, c = sincos(t)
 
-    x = SA[t^2*c, s, 1, 2t*c-t^2*s, c, 0, 2c-2t*s - 2t*s - 2t*c, -s, 0]
+    x = SA[t^2*c, s, 1, 2t*c-t^2*s, c, 0, 2c - 4t*s - t^2*c, -s, 0]
     y = SA[-t*s, c, t^2+3, -s-t*c, -s, 2t, -2c+t*s, -c, 2]
-
-    # x = SA[c, s, 0, -s, c, 0, -c, -s, 0]
-    # y = SA[-s, c, 0, -c, -s, 0, s, -c, 0]
 
     dd_vectors_to_xy_dcm(x, y)
 end
@@ -252,8 +257,8 @@ R2 = d_test(t);
 maximum(abs.(R1-R2))
 
 # Second order derivative test 
-R1 = ForwardDiff.derivative(τ->ForwardDiff.derivative(test, τ), t)
-R2 = dd_test(t)
+R1 = ForwardDiff.derivative(τ->ForwardDiff.derivative(test, τ), t);
+R2 = dd_test(t);
 maximum(abs.(R1-R2))
 
 # Zero, First and Second order time derivatives of cross product test 
@@ -291,7 +296,7 @@ end
 t = rand()
 s, c = sincos(t)
 
-x1 = [t^2*c, s, 1, 2t*c-t^2*s, c, 0, 2c-2t*s-t^2*c-2t*s, -s, 0];
+x1 = [t^2*c, s, 1, 2t*c-t^2*s, c, 0, 2c - 4t*s - t^2*c, -s, 0];
 x2 = vcat(testvx(t), ForwardDiff.derivative(testvx, t),
          ForwardDiff.derivative(τ->ForwardDiff.derivative(testvx, τ), t));
 
