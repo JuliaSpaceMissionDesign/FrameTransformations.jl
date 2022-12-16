@@ -18,6 +18,10 @@ struct ComputableAxesVector
 end
 
 ComputableAxesVector() = ComputableAxesVector(0, 0, 0)
+function ComputableAxesVector(to::T, from::T,  order::Int) where {T <: Union{Int, <:AbstractPoint}}
+    order > 3 && throw(ArgumentError("Order must be <= 3."))
+    ComputableAxesVector(get_alias(to), get_alias(from), order)
+end
 
 """ 
     ComputableAxesProperties 

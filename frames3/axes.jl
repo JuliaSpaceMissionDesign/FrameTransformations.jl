@@ -177,14 +177,30 @@ function add_rotating_axes!(frame::FrameSystem{T}, name::Symbol, id::Int,
 end
 
 """
-    add_computable_axes!(frame, name, id, parent, ???)
+    add_computable_axes!(frame, name, id, parent, v1, v2, seq)
 """
 function add_computable_axes!(frame::FrameSystem, name::Symbol, id::Int, 
-                              parent)
+                              parent, 
+                              v1::ComputableAxesVector, 
+                              v2::ComputableAxesVector, seq::Symbol) 
 
-    
-    
+    !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) && throw(ArgumentError(
+        "$seq is not a valid rotation sequence for two vectors frames."))
 
+    for v in (v1, v2)
+        for id in (v.from, v.to)
+            !has_point(frame, id) && throw(ArgumentError(
+                "Point with NAIFId=$id is unknown in the given frame system."))
+        end
+    end
+
+    build_axes(frame, name, id, :ComputableAxes, 
+                (t, x, y) -> Rotation(twovectors_to_dcm(x, y, seq)), 
+                (t, x, y) -> Rotation(_two_vectors_to_rot6(x, y, seq)), 
+                (t, x, y) -> Rotation(_two_vectors_to_rot9(x, y, seq));
+                parentid=get_alias(parent), 
+                caprop=ComputableAxesProperties(v1, v2))
+    
 end
 
 add_rotating_axes!(frame, axes::AbstractAxes, parent, fun, args...) = 
