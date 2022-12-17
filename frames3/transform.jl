@@ -34,11 +34,12 @@ end
 
 
 @inline Base.:*(A::Rotation, b::AbstractVector) = _mul_rot(A, b)
-@inline Base.:*(A::Rotation, B::Rotation) = _multiply_rot(A, B)
+@inline Base.:*(A::Rotation{S, <:Any}, B::Rotation{S, <:Any}) where S = _multiply_rot(A, B)
 
-function Base.:*(::Rotation{S1, N}, ::Rotation{S2, N}) where {S1, S2, N}
+function Base.:*(::Rotation{S1, <:Any}, ::Rotation{S2, <:Any}) where {S1, S2}
     throw(ArgumentError("Cannot multiply two `Rotation` of different order!"))
 end
+
 
 @generated function _multiply_rot(A::Rotation{S, N}, B::Rotation{S, N}) where {S, N}
 
@@ -60,7 +61,6 @@ end
         @inbounds $(expr)
     end
 end
-
 
 # Function to compute product between Rotation and a generic vector
 @generated function _mul_rot(A::Rotation{S, Ta}, b::AbstractVector{Tb}) where {S, Ta, Tb}
