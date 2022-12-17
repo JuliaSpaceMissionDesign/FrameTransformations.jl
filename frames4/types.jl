@@ -1,5 +1,6 @@
 import FunctionWrappers: FunctionWrapper
 
+using Basic.Ephemeris: AbstractEphemerisProvider, ephem_position_records
 
 abstract type AbstractFramePoint end # TODO: move to proper location
 abstract type AbstractFrameAxes end # TODO: move to proper location
@@ -106,14 +107,6 @@ end
 # -------------------------------------
 # FRAMES
 # -------------------------------------
-
-# FIXME: substitute ephemeris provider with Basic one and remove following code 
-#------------------------------------------------------------------------------
-using Bodies.Ephemeris: AbstractEphemerisProvider, ephem_position_records
-#------------------------------------------------------------------------------
-
-# TODO: there is the need of an interface to load a generic ephemeris provider in the FrameSystem 
-#       something like `load_ephemeris(::T, filenames)` where T is the ephemeris provider used
 
 struct FrameSystemProperties{T}
     ebid::Vector{Int}  # ephemeris body ids
