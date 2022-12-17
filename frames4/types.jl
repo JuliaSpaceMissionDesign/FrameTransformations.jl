@@ -1,9 +1,12 @@
-using StaticArrays, LinearAlgebra 
-using ReferenceFrameRotations
 import FunctionWrappers: FunctionWrapper
 
-# AXES SECTION 
 
+abstract type AbstractFramePoint end # TODO: move to proper location
+abstract type AbstractFrameAxes end # TODO: move to proper location
+
+# -------------------------------------
+# AXES
+# -------------------------------------
 
 """
     ComputableAxesVector 
@@ -18,7 +21,7 @@ struct ComputableAxesVector
 end
 
 ComputableAxesVector() = ComputableAxesVector(0, 0, 0)
-function ComputableAxesVector(to::T, from::T,  order::Int) where {T <: Union{Int, <:AbstractPoint}}
+function ComputableAxesVector(to::T, from::T, order::Int) where {T <: Union{Int, <:AbstractFramePoint}}
     order > 3 && throw(ArgumentError("Order must be <= 3."))
     ComputableAxesVector(get_alias(to), get_alias(from), order)
 end
@@ -37,9 +40,8 @@ end
 ComputableAxesProperties() = ComputableAxesProperties(ComputableAxesVector(),
                                                       ComputableAxesVector())
 
-
 """
-    FrameAxes{T} <: AbstractGraphNode
+    FrameAxesNode{T} <: AbstractGraphNode
 
 Define a set of axes.
 
@@ -48,9 +50,9 @@ Define a set of axes.
 - `class` -- `Symbol` representing the class of the axes 
 - `id` -- axes id (equivalent of NAIFId for axes)
 - `parentid` -- id of the parent axes 
-- ``
+- `comp` -- properties for computable axes 
 """
-struct FrameAxesNode{T} <: AbstractGraphNode
+struct FrameAxesNode{T} <: AbstractPointAxesNode{T}
     name::Symbol            
     class::Symbol          
     id::Int                
@@ -64,27 +66,26 @@ struct FrameAxesNode{T} <: AbstractGraphNode
     ddfun::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{9, T}, SVector{9, T}}}
 end
 
-get_node_id(axes::FrameAxesNode) = axes.id
+get_node_id(ax::FrameAxesNode) = ax.id
 
 function Base.show(io::IO, ax::FrameAxesNode{T}) where T
-    println(io, "FrameAxesNode{$T}")
-    println(io, "  name: $(ax.name)")
-    println(io, "  class: $(ax.class)")
-    println(io, "  id: $(ax.id)")
-
-    ax.parentid == ax.id || println(io, "  parent: $(ax.parentid)")
+    pstr = "FrameAxesNode{$T}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
+    ax.parentid == ax.id || pstr *= ", parent=$(ax.parentid)"
+    pstr *= ")"
+    println(io, pstr)
 end
 
+# -------------------------------------
+# POINTS
+# -------------------------------------
 
-# POINTS SECTION
-
-struct FramePointNode{T} <: AbstractGraphNode
+struct FramePointNode{T} <: AbstractPointAxesNode{T}
     name::Symbol
     class::Symbol
     axes::Int      
-    parent::Int
+    parentid::Int
     NAIFId::Int 
-    heph::Bool      # if ephemerides are available for this point
+    iseph::Bool      # TODO: se possibile, togliere
     stv::Vector{MVector{9, T}}
     epochs::Vector{T}
     nzo::Vector{Int}
@@ -95,68 +96,77 @@ end
 
 get_node_id(p::FramePointNode) = p.NAIFId
 
-function Base.show(io::IO, p::FramePointNode{T}) where T 
-    println(io, "FramePointNode{$T}")
-    println(io, "  name: $(p.name)")
-    println(io, "  class: $(p.class)")
-    println(io, "  id: $(p.NAIFId)")
-    println(io, "  axes: $(p.axes)")
-
-    p.parent == p.NAIFId && println(io, "  parent: $(p.parent)")
+function Base.show(io::IO, p::FramePointNode{T}) where T
+    pstr = "FramePointNode{$T}(name=$(p.name), class=$(p.class), id=$(p.id), axes=$(p.axes)"
+    p.parentid == p.id || pstr *= ", parent=$(p.parentid)"
+    pstr *= ")"
+    println(io, pstr)
 end
 
+# -------------------------------------
+# FRAMES
+# -------------------------------------
 
-# FRAMES SYSTEM SECTION
+# FIXME: substitute ephemeris provider with Basic one and remove following code 
+#------------------------------------------------------------------------------
+using Bodies.Ephemeris: AbstractEphemerisProvider, ephem_position_records
+#------------------------------------------------------------------------------
 
-struct FrameSystem{T}
-    eph::EphemerisKernels
-    ephBodyIDs::Vector{Int}
-    pnts_graph::GraphSystem{FramePointNode{T}, SimpleGraph{Int}}
-    axes_graph::GraphSystem{FrameAxesNode{T}, SimpleGraph{Int}}
+# TODO: there is the need of an interface to load a generic ephemeris provider in the FrameSystem 
+#       something like `load_ephemeris(::T, filenames)` where T is the ephemeris provider used
+
+struct FrameSystemProperties{T}
+    ebid::Vector{Int}  # ephemeris body ids
+end
+FrameSystemProperties() = FrameSystemProperties([])
+
+@inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
+
+struct FrameSystem{T, E<:AbstractEphemerisProvider}
+    eph::E
+    prop::FrameSystemProperties{T}
+    points::MappedNodeGraph{FramePointNode{T}, SimpleGraph{Int}}
+    axes::MappedNodeGraph{FrameAxesNode{T}, SimpleGraph{Int}}
 end
 
-FrameSystem{T}() where T = FrameSystem{T}(EphemerisKernels(), Int[])
-
-  
-# Mettendo i centri abbiamo a disposizione anche il SSB
-# Funziona sempre sta roba? (può capitare che non ci siano dati per ricostruire 
-# # quel centro?)
-function FrameSystem{T}(eph::EphemerisKernels) where T
-    precords = get_position_records(eph)
-    tids = map(x->x.target, precords)
-    cids = map(x->x.center, precords)
-    FrameSystem{T}(eph, unique([tids..., cids...]));
+function FrameSystem(eph::E, points::Vector{Int}) where {T, E<:AbstractEphemerisProvider} 
+    return FrameSystem{T, E}(
+        eph, FrameSystemProperties{T}(points),
+        MappedGraph(FramePointNode{T}),
+        MappedGraph(FrameAxesNode{T})
+    )
 end
 
-function FrameSystem{T}(eph::EphemerisKernels, ids::Vector{Int}) where T
-    FrameSystem{T}(eph, ids, 
-                   GraphSystem{FramePointNode{T}}(), 
-                   GraphSystem{FrameAxesNode{T}}())
+function FrameSystem{T}(eph::E) where {T, E}
+    prec = ephem_position_records(eph)
+    tids = map(x->x.target, prec)
+    cids = map(x->x.center, prec)
+    return FrameSystem{T, E}(eph, unique([tids..., cids...]))
 end
 
-get_datatype(::FrameSystem{T}) where {T} = T
+frames_points(fs::FrameSystem) = fs.points 
+frames_axes(fs::FrameSystem) = fs.axes
 
-points_graph(f::FrameSystem) = f.pnts_graph; 
-axes_graph(f::FrameSystem) = f.axes_graph;
+add_point!(fs::FrameSystem{T}, p::FramePointNode{T}) where {T} = add_vertex!(fs.points, p)
+add_axes!(fs::FrameSystem{T}, ax::FrameAxesNode{T}) where {T} = add_vertex!(fs.axes, ax)
 
-has_point(f::FrameSystem, NAIFId::Int) = has_vertex(points_graph(f), NAIFId)
-has_axes(f::FrameSystem, axesid::Int) = has_vertex(axes_graph(f), axesid)
+@inline has_point(f::FrameSystem, NAIFId::Int) = has_vertex(frames_points(f), NAIFId)
+@inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(frames_axes(f), axesid)
+@inline ephemeris_points(fs::FrameSystem) = ephemeris_points(fs.prop)
 
-add_axes!(f::FrameSystem, a::FrameAxesNode) = add_vertex!(axes_graph(f), a)
+show_points(frame::FrameSystem) = _graph_tree(frames_points(frame))
+show_axes(frame::FrameSystem) = _graph_tree(frames_axes(frame))
 
-available_ephemeris_bodies(frame::FrameSystem) = frame.ephBodyIDs
-
-@inline get_axes(frame::FrameSystem) = _graph_tree(axes_graph(frame))
-@inline get_points(frame::FrameSystem) = _graph_tree(points_graph(frame))
-
-function _graph_tree(g::GraphSystem)
+# TODO: da fare piu' carino
+function _graph_tree(g::MappedNodeGraph)
     if !isempty(g.nodes)
         println("\n", g.nodes[1].name)
         _graph_tree(g, get_node_id(g.nodes[1]), 2, 1)
     end
 end
 
-function _graph_tree(g::GraphSystem, pid::Int, idx::Int, del::Int=1)
+# TODO: da fare piu' carino
+function _graph_tree(g::MappedNodeGraph, pid::Int, idx::Int, del::Int=1)
     @inbounds for i = idx:length(g.nodes)
         if g.nodes[i].parentid == pid 
             println(" "^(3del), g.nodes[i].name)
