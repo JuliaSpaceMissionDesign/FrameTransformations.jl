@@ -53,7 +53,7 @@ Define a set of axes.
 - `parentid` -- id of the parent axes 
 - `comp` -- properties for computable axes 
 """
-struct FrameAxesNode{T} <: AbstractPointAxesNode{T}
+struct FrameAxesNode{T} <: AbstractGraphNode
     name::Symbol            
     class::Symbol          
     id::Int                
@@ -71,7 +71,9 @@ get_node_id(ax::FrameAxesNode) = ax.id
 
 function Base.show(io::IO, ax::FrameAxesNode{T}) where T
     pstr = "FrameAxesNode{$T}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
-    ax.parentid == ax.id || pstr *= ", parent=$(ax.parentid)"
+    if !(ax.parentid == ax.id) 
+        pstr *= ", parent=$(ax.parentid)"
+    end
     pstr *= ")"
     println(io, pstr)
 end
@@ -80,7 +82,7 @@ end
 # POINTS
 # -------------------------------------
 
-struct FramePointNode{T} <: AbstractPointAxesNode{T}
+struct FramePointNode{T} <: AbstractGraphNode
     name::Symbol
     class::Symbol
     axes::Int      
@@ -99,7 +101,9 @@ get_node_id(p::FramePointNode) = p.NAIFId
 
 function Base.show(io::IO, p::FramePointNode{T}) where T
     pstr = "FramePointNode{$T}(name=$(p.name), class=$(p.class), id=$(p.id), axes=$(p.axes)"
-    p.parentid == p.id || pstr *= ", parent=$(p.parentid)"
+    if !(p.parentid == p.id)
+        pstr *= ", parent=$(p.parentid)"
+    end
     pstr *= ")"
     println(io, pstr)
 end
@@ -122,7 +126,7 @@ struct FrameSystem{T, E<:AbstractEphemerisProvider}
     axes::MappedNodeGraph{FrameAxesNode{T}, SimpleGraph{Int}}
 end
 
-function FrameSystem(eph::E, points::Vector{Int}) where {T, E<:AbstractEphemerisProvider} 
+function FrameSystem{T}(eph::E, points::Vector{Int}) where {T, E<:AbstractEphemerisProvider} 
     return FrameSystem{T, E}(
         eph, FrameSystemProperties{T}(points),
         MappedGraph(FramePointNode{T}),

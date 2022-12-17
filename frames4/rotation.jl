@@ -5,7 +5,7 @@ using StaticArrays
 # TYPES
 # -------------------------------------
 
-struct Rotation{S<:Integer, N}
+struct Rotation{S, N}
     m::NTuple{S, DCM{N}}
 end
 
