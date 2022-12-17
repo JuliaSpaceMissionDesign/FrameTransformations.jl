@@ -2,14 +2,17 @@ export CalcephProvider,
        ephem_timespan, 
        ephem_timescale, 
        ephem_position_records,
-       ephem_orient_records
+       ephem_orient_records,
+       ephem_compute_order!
 
 using CALCEPH: Ephem as CalcephEphemHandler, 
                prefetch, 
                timespan, 
                timeScale,
                positionRecords,
-               orientationRecords
+               orientationRecords,
+               unsafe_compute!, 
+               useNaifId, unitKM, unitSec
 
 using Basic: AstronautGenericError
 
@@ -20,13 +23,17 @@ Calceph-based ephemeris handler.
 """
 struct CalcephProvider <: AbstractEphemerisProvider
     ptr::CalcephEphemHandler
-    function CalcephProvider(files::Vector{<:AbstractString})
+    function CalcephProvider(files::AbstractVector{<:AbstractString})
         ptr = CalcephEphemHandler(files)
         prefetch(ptr)
         new(ptr)
     end
 end
 CalcephProvider(file::AbstractString) = CalcephProvider([file])
+
+function ephem_load(::Type{CalcephProvider}, files::AbstractVector{<:AbstractString})
+    return CalcephProvider(files)
+end
 
 """
     ephem_position_records(eph::CalcephProvider)
@@ -96,4 +103,10 @@ function ephem_timescale(eph::CalcephProvider)
             )
         )
     end
+end
+
+function ephem_compute_order!(res, eph::CalcephProvider, jd0::Float64, time::Float64, 
+    target::Int, center::Int, order::Int)
+    unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
+    nothing
 end
