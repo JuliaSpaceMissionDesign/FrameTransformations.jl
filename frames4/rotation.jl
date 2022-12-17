@@ -62,3 +62,6 @@ end
         @inbounds $(expr)
     end
 end
+
+# ---
+# TODO: matrix * vector product 
