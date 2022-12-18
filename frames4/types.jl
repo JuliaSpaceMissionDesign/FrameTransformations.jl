@@ -151,23 +151,52 @@ add_axes!(fs::FrameSystem{T}, ax::FrameAxesNode{T}) where {T} = add_vertex!(fs.a
 @inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(frames_axes(f), axesid)
 @inline ephemeris_points(fs::FrameSystem) = ephemeris_points(fs.prop)
 
-show_points(frame::FrameSystem) = _graph_tree(frames_points(frame))
-show_axes(frame::FrameSystem) = _graph_tree(frames_axes(frame))
+show_points(frame::FrameSystem) = mappedgraph_tree(frames_points(frame))
+show_axes(frame::FrameSystem) = mappedgraph_tree(frames_axes(frame))
 
-# TODO: da fare piu' carino
-function _graph_tree(g::MappedNodeGraph)
-    if !isempty(g.nodes)
-        println("\n", g.nodes[1].name)
-        _graph_tree(g, get_node_id(g.nodes[1]), 2, 1)
-    end
+function mappedgraph_tree(g::MappedNodeGraph)
+    s = ""
+    s = _mappedgraph_tree!(s, g)
+    println(s)
+    nothing
 end
 
-# TODO: da fare piu' carino
-function _graph_tree(g::MappedNodeGraph, pid::Int, idx::Int, del::Int=1)
+function _mappedgraph_tree!(s::String, g::MappedNodeGraph)
+    if !isempty(g.nodes)
+        s *= "\n$(g.nodes[1].name)\n"
+        s = _mappedgraph_tree!(s, g, get_node_id(g.nodes[1]), 2, 1)
+    end
+    s
+end
+
+function _mappedgraph_tree!(s::String, g::MappedNodeGraph, pid::Int, idx::Int, del::Int=1)
     @inbounds for i = idx:length(g.nodes)
         if g.nodes[i].parentid == pid 
-            println(" "^(3del), g.nodes[i].name)
-            _graph_tree(g, get_node_id(g.nodes[i]), i, del+1)
-        end 
+            s *= "$(" "^(del))├── $(g.nodes[i].name) \n"
+            s = _mappedgraph_tree!(s, g, get_node_id(g.nodes[i]), i, del+1)
+        end
     end
+    s
+end
+
+function Base.show(io::IO, fs::FrameSystem{T, E}) where {T, E}
+    println(io, "FrameSystem{$T, $E}(")
+    println(io, "  eph: $(fs.eph),")
+
+    spoints = ""
+    spoints = _mappedgraph_tree!(spoints, frames_points(fs))
+    if spoints != ""
+        println(io, "  points: $(join(["\t "*si for si in split(spoints, "\n")], "\n"))")
+    else
+        println(io, "  points: NONE")
+    end
+
+    saxes = ""
+    saxes = _mappedgraph_tree!(saxes, frames_axes(fs))
+    if saxes != ""
+        println(io, "  axes: $(join(["\t"*si for si in split(saxes, "\n")], "\n"))")
+    else 
+        println(io, "  axes: NONE")
+    end
+    println(io, ")")
 end
