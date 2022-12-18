@@ -2,8 +2,8 @@ import FunctionWrappers: FunctionWrapper
 
 using Basic.Ephemeris: AbstractEphemerisProvider, ephem_position_records
 
-abstract type AbstractFramePoint end # TODO: move to proper location
-abstract type AbstractFrameAxes end # TODO: move to proper location
+abstract type AbstractFramePoint end 
+abstract type AbstractFrameAxes end 
 
 # -------------------------------------
 # AXES

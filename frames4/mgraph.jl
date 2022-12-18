@@ -77,7 +77,7 @@ function add_vertex!(g::MappedNodeGraph{T}, node::T) where {T<:AbstractGraphNode
     mid = nv(g.graph) 
     
     # updates graph
-    push!(g.ids, nodeid => mid)
+    push!(g.mid, nodeid => mid)
     push!(g.nodes, node)
     nothing
 end
