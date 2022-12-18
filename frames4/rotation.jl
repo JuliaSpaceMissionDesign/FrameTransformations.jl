@@ -1,6 +1,8 @@
 using ReferenceFrameRotations
 using StaticArrays
-using LinearAlgebra: matprod
+using LinearAlgebra: matprod, UniformScaling
+
+import StaticArrays: similar_type, Size
 
 # -------------------------------------
 # TYPES
@@ -8,22 +10,70 @@ using LinearAlgebra: matprod
 
 struct Rotation{S, N}
     m::NTuple{S, DCM{N}}
-end
-
-@generated function Rotation(dcms::DCM{N}...) where N
-    S = length(dcms)
-    expr = :(tuple($([Expr(:ref, :dcms, i) for i in 1:S]...)))
-    return quote 
-        @inbounds Rotation{$S, $N}($(expr))
+    
+    function Rotation(x::NTuple{S, Any}) where S 
+        T = promote_dcm_eltype(x)
+        return new{S, T}(x)
     end
 end
 
+order(::Rotation{S, <:Any}) where S = S
+
+Base.size(::Rotation{S, <:Any}) where S = (3S, 3S)
+Base.Tuple(rot::Rotation) = rot.m
 Base.getindex(R::Rotation, i) = R.m[i]
+
+# ---
+# Constructors 
+
+# Generic rotation constructor 
+@generated function Rotation(dcms::DCM...)
+    S = length(dcms)
+    expr = :(tuple($([Expr(:ref, :dcms, i) for i in 1:S]...)))
+    return quote 
+        @inbounds Rotation($(expr))
+    end
+end
+
+# Constructor for S-order identity rotations! 
+@generated function Rotation{S}(::UniformScaling{N}) where {S, N}
+    expr = :(tuple($([i == 1 ? DCM(N(1)I) : DCM(N(0)I) for i in 1:S]...)))
+    return quote 
+        @inbounds Rotation($(expr))
+    end
+end
 
 function Rotation(m::DCM{N}, ω::AbstractVector) where N
     dm = ddcm(m, SVector(ω))
-    return Rotation{2, N}((m, dm))
+    return Rotation((m, dm))
 end
+
+# ---
+# Type Operations and Promotions 
+
+# Static Arrays API 
+Size(::Rotation{S, N}) where {S, N} = Size((3*S, 3*S))
+
+similar_type(::Rotation{S, N}) where {S, N} = Rotation{S, N}
+similar_type(::Rotation{S, <:Any}, ::Type{N}) where {S, N} = Rotation{S, N}
+
+# Returns the inner datatype of a given DCM 
+_dcm_type(::Union{DCM{T}, Type{DCM{T}}}) where T = T 
+
+# Returns a promoted type for a given tuple of DCMs 
+@generated function promote_dcm_eltype(::Union{T, Type{T}}) where T <: Tuple 
+    t = Union{}
+    for i = 1:length(T.parameters)
+        tmp = _dcm_type(Base.unwrapva(T.parameters[i]))
+        t = :(promote_type($t, $tmp))
+    end 
+
+    return quote 
+        Base.Base.@_inline_meta
+        $t
+    end
+end
+
 
 # -------------------------------------
 # OPERATIONS 
@@ -40,15 +90,15 @@ end
 
 # ---
 # Compose rotations 
-@inline Base.:*(A::Rotation{S, N}, B::Rotation{S, N}) where {S, N} = _compose_rot(A, B)
+@inline Base.:*(A::Rotation{S, <:Any}, B::Rotation{S, <:Any}) where S = _compose_rot(A, B)
 
-function Base.:*(A::Rotation{S1, N}, B::Rotation{S2, N}) where {S1, S2, N}
+function Base.:*(::Rotation{S1, <:Any}, ::Rotation{S2, <:Any}) where {S1, S2}
     throw(
         ArgumentError("Cannot multiply two `Rotation` of different order!")
     )
 end
 
-@generated function _compose_rot(A::Rotation{S, N}, B::Rotation{S, N}) where {S, N}
+@generated function _compose_rot(A::Rotation{S, <:Any}, B::Rotation{S, <:Any}) where S
     expr = Expr(:call, :Rotation)
 
     for i in 1:S
@@ -104,7 +154,7 @@ end
 @generated function _apply_rot(A::Rotation{S, Na}, b::StaticVector{sb, Nb}) where {S, sb, Na, Nb}
     sa = 3*S 
     sa != sb && throw(
-        DimensionMismatch("Cannot multiply `Rotation` of size ($sa, $sa) and a $sb vector"))
+        DimensionMismatch("Cannot multiply `Rotation` of size ($sa, $sa) and a ($sb,) length vector"))
 
     exprs = [[Expr(:call, :+) for _ = 1:3] for _ = 1:S]
     for i = 1:S 
