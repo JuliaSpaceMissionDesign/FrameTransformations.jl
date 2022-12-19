@@ -165,7 +165,7 @@ function _vector3(point::AstroPoint, ep::Number)
                  point.stv[1][3]]
     else 
         tid = Threads.threadid()
-        if point.epochs[tid] != ep 
+        # if point.epochs[tid] != ep 
             if 0 < point.class < 3 # 1 or 2
                 point.epochs[tid] = ep 
                 point.fun!(point.stv[tid], ep)
@@ -174,7 +174,7 @@ function _vector3(point::AstroPoint, ep::Number)
                 throw(ErrorException("Updatable Point $(point.name) has not been"*
                     " updatated for epoch $ep."))
             end
-        end 
+        # end 
 
         pos = SA[point.stv[tid][1], 
                  point.stv[tid][2], 

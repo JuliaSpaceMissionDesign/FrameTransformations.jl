@@ -17,6 +17,7 @@ macro axes(name::Symbol, id::Int, type::Symbol)
 
     axesid_expr = :(@inline axes_id(::$type) = $id)
     name_expr = :(axes_name(::$type) = Symbol($name_str))
+
     return quote 
         """
             $($typ_str) <: AbstractFrameAxes
@@ -36,28 +37,23 @@ macro axes(name::Symbol, id::Int, type::Symbol)
         $(esc(name_expr))
         nothing
     end
-
 end
 
-function build_axes(
-    frames::FrameSystem{T, E}, name::Symbol, id::Int, class::Symbol, 
-    f::Function, δf::Function, δ²f::Function; 
-    parentid=nothing, dcm=nothing, cax_prop=ComputableAxesProperties()
-) where {T, E}
+function build_axes(frames::FrameSystem{T, E}, name::Symbol, id::Int, class::Symbol, 
+    f::Function, δf::Function, δ²f::Function; parentid=nothing, dcm=nothing, 
+    cax_prop=ComputableAxesProperties()) where {T, E}
 
     if has_axes(frames, id)
         # Check if a set of axes with the same ID is already registered within 
         # the given frame system 
         throw(ErrorException(
-            "Axes with ID = $id are already registered in the FrameSystem.")
-        )
+            "Axes with ID = $id are already registered in the given FrameSystem."))
     end
 
     if name in map(x->x.name, frames_axes(frames).nodes) 
-        # Check if axes with the same name also does not already exists
+        # Check if axes with the same name also does not already exist
         throw(ErrorException(
-        "Axes with name=$name are already registered in the FrameSystem.")
-    )
+            "Axes with name = $name are already registered in the given FrameSystem."))
     end    
 
     # if the frame has a parent
@@ -65,93 +61,89 @@ function build_axes(
         # Check if the root axes is not present
         isempty(frames_axes(frames)) && throw(ErrorException("Missing root axes."))
         
-        # Check if the parent axes are not registered in frame 
+        # Check if the parent axes are registered in frame 
         if !has_axes(frames, parentid)
-            throw(ErrorException("Parent axes with ID=$id are not registered in the FrameSystem."))
+            throw(ErrorException("The specified parent axes with ID = $parentid are not "*
+                "registered in the given FrameSystem."))
         end
+
     elseif class == :InertialAxes 
-        # TODO: why?
         parentid = id 
     end
 
     # Check that the given functions have the correct signature 
-    for (i, fun) in enumerate((f, δf, δ²f))
+    for fun in (f, δf, δ²f)
         otype = fun(T(1), SVector{3}(zeros(T, 3)), SVector{3}(zeros(T, 3)))
 
-        !(otype isa Rotation{i, T}) && throw(ArgumentError(
-            "$fun return type is $(typeof(otype)) but should be Rotation{$i, $T}."))
+        !(otype isa Rotation{3, T}) && throw(ArgumentError(
+            "$fun return type is $(typeof(otype)) but should be Rotation{3, $T}."))
     end
 
     # Initialize struct caches
     @inbounds if class in (:InertialAxes, :FixedOffsetAxes)
-        nzo = -ones(Int, 1)
-        epochs = Vector{T}(undef, 0)
-        R = Vector{Rotation{3, T}}(undef, 1)
-        R[1] = !isnothing(dcm) ? Rotation(dcm, DCM(T(0)I), DCM(T(0)I)) : R[1]
+        nzo = Int[]
+        epochs = T[]
+        R = [!isnothing(dcm) ? Rotation(dcm, DCM(T(0)I), DCM(T(0)I)) : Rotation{3}(T(1)I)]
     else
-        # this is to handle generic frames in a multi-threading architecture without 
-        # having to copy the FrameSystem
+        # This is to handle generic frames in a multi-threading architecture 
+        # without having to copy the FrameSystem
         nth = Threads.nthreads() 
         nzo = -ones(Int, nth)
-        epochs = Vector{T}(undef, nth)
-        R = Vector{Rotation{3, T}}(undef, nth)
+        
+        epochs = zeros(T, nth)
+        R = [Rotation{3}(T(1)I) for _ = 1:nth]
     end
     
     # Creates axes node
-    axnode = FrameAxesNode{T}(
-        name, class, id, parentid, cax_prop, 
-        R, epochs, nzo,
-        f, δf, δ²f
-    )
+    axnode = FrameAxesNode{T}(name, class, id, parentid, cax_prop, 
+                R, epochs, nzo, f, δf, δ²f)
 
     # Insert the new axes in the graph
     add_axes!(frames, axnode)
 
     # Connect the new axes to the parent axes in the graph 
-    if !isnothing(parentid)
-        add_edge!(frames_axes(frames), parentid, id)
-    end
+    !isnothing(parentid) && add_edge!(frames_axes(frames), parentid, id)
 
     nothing
 end
+    
+_get_fixedrot9(::T, x, y) where T = Rotation{3}(T(1)I)       
 
-_get_fixedrot3(::T, x, y) where T = Rotation(DCM(T(1)I)) 
-_get_fixedrot6(::T, x, y) where T = Rotation(DCM(T(1)I), DCM(T(0)I)) 
-_get_fixedrot9(::T, x, y) where T = Rotation(DCM(T(1)I), DCM(T(0)I), DCM(T(0)I)) 
-
-function axes_register_inertial!(frames::FrameSystem, name::Symbol, id::Int; 
+function add_axes_inertial!(frames::FrameSystem, name::Symbol, id::Int; 
     parent=nothing, dcm=nothing)
 
     # Checks for root-axes existence 
     if isnothing(parent)
         !isempty(frames_axes(frames)) && throw(ErrorException(
             "A set of parent axes for $name is required because the root axes "*
-            "have already been specified."))
+            "have already been specified in the given FrameSystem."))
 
-        !isnothing(dcm) && throw(ArgumentError("Providing a DCM for root axes is meaningless."))
+        !isnothing(dcm) && throw(ArgumentError(
+            "Providing a DCM for root axes is meaningless."))
     else 
-        isnothing(dcm) && throw(ArgumentError("Missing DCM from axes $parent."))
+        isnothing(dcm) && throw(ArgumentError(
+            "Missing DCM from axes $parent."))
     end
 
     pid = isnothing(parent) ? nothing : axes_alias(parent)
 
     # construct the axes and insert in the FrameSystem
     build_axes(frames, name, id, :InertialAxes, 
-        _get_fixedrot3, _get_fixedrot6, _get_fixedrot9; parentid=pid, dcm=dcm)
+        _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=pid, dcm=dcm)
 
 end
 
-function axes_register_inertial!(frames, axes::A; args...) where {A<:AbstractFrameAxes}
-    axes_register_inertial!(frames, axes_name(axes), axes_id(axes); args...)
+function add_axes_inertial!(frames, axes::A; args...) where {A<:AbstractFrameAxes}
+    add_axes_inertial!(frames, axes_name(axes), axes_id(axes); args...)
 end
 
-function axes_register_fixedoffset!(frames::FrameSystem, name::Symbol, id::Int, parent, 
+function add_axes_fixedoffset!(frames::FrameSystem, name::Symbol, id::Int, parent, 
     dcm::DCM{T}) where {T}
     # construct the axes 
     build_axes(frames, name, id, :FixedOffsetAxes, 
-        _get_fixedrot3, _get_fixedrot6, _get_fixedrot9; parentid=axes_alias(parent), dcm=dcm)
+        _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=axes_alias(parent), dcm=dcm)
 end
 
-function axes_register_fixedoffset!(frames, axes::A, parent, dcm) where {A<:AbstractFrameAxes}
-    axes_register_fixedoffset!(frames, axes_name(axes), axes_id(axes), parent, dcm)
+function add_axes_fixedoffset!(frames, axes::A, parent, dcm) where {A<:AbstractFrameAxes}
+    add_axes_fixedoffset!(frames, axes_name(axes), axes_id(axes), parent, dcm)
 end

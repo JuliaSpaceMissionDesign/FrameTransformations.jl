@@ -12,15 +12,9 @@ function din2syn(t::T, y) where T
     DCM{T}(-s, -c, 0, c, -s, 0, 0, 0, 0)
 end
 
-@axes IRF 1 InertialReferenceFrame
-@axes MEME2000 2 
-@axes ECLIPJ2000 4 EclipticJ2000
-
-add_inertial_axes!(FRAMES, :IRF, 1)
-add_inertial_axes!(FRAMES, MEME2000; parent=1, dcm=DCM(1.0I))
-add_inertial_axes!(FRAMES, ECLIPJ2000; parent=MEME2000, dcm=DCM(1.0I))
-
+icrf2meme = angle_to_dcm(π/3, :Z)
 @inertial_axes FRAMES IRF 1 type=InertialReferenceFrame
+@inertial_axes FRAMES MEME2000 3 dcm = icrf2meme parent=IRF type=MeanEarthMeanEquinoxJ2000 
 @rotating_axes FRAMES SRF 2 IRF in2syn din2syn type=SynodicReferenceFrame
 
 μ = 0.0153 
@@ -30,6 +24,8 @@ add_inertial_axes!(FRAMES, ECLIPJ2000; parent=MEME2000, dcm=DCM(1.0I))
 @fixed_point FRAMES earth 399 emb SRF SA[-μ, 0., 0.] type=EarthPoint
 
 @benchmark Rotation($FRAMES, $IRF, $SRF, $(0.1))
+
+@benchmark Rotation($FRAMES, $IRF, $MEME2000, $(0.1))
 
 get_vector3(FRAMES, moon, earth, IRF, 0.1)
 @benchmark get_vector3($FRAMES, $earth, $moon, $IRF, $(0.1))

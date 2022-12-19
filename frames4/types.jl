@@ -62,18 +62,16 @@ struct FrameAxesNode{T} <: AbstractGraphNode
     R::Vector{Rotation{3, T}}
     epochs::Vector{T}
     nzo::Vector{Int} # last updated order
-    fun::FunctionWrapper{Rotation{1, T}, Tuple{T, SVector{3, T}, SVector{3, T}}} 
-    dfun::FunctionWrapper{Rotation{2, T}, Tuple{T, SVector{6, T}, SVector{6, T}}}
-    ddfun::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{9, T}, SVector{9, T}}}
+    f::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{3, T}, SVector{3, T}}} 
+    δf::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{6, T}, SVector{6, T}}}
+    δ²f::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{9, T}, SVector{9, T}}}
 end
 
 get_node_id(ax::FrameAxesNode) = ax.id
 
 function Base.show(io::IO, ax::FrameAxesNode{T}) where T
     pstr = "FrameAxesNode{$T}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
-    if !(ax.parentid == ax.id) 
-        pstr *= ", parent=$(ax.parentid)"
-    end
+    ax.parentid == ax.id || (pstr *= ", parent=$(ax.parentid)")
     pstr *= ")"
     println(io, pstr)
 end
@@ -85,25 +83,22 @@ end
 struct FramePointNode{T} <: AbstractGraphNode
     name::Symbol
     class::Symbol
-    axes::Int      
+    axesid::Int      
     parentid::Int
     NAIFId::Int 
-    iseph::Bool      # TODO: se possibile, togliere
     stv::Vector{MVector{9, T}}
     epochs::Vector{T}
     nzo::Vector{Int}
-    fun!::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}} 
-    dfun!::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}}
-    ddfun!::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}}
+    f::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}} 
+    δf::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}}
+    δ²f::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}}
 end 
 
 get_node_id(p::FramePointNode) = p.NAIFId
 
 function Base.show(io::IO, p::FramePointNode{T}) where T
-    pstr = "FramePointNode{$T}(name=$(p.name), class=$(p.class), id=$(p.id), axes=$(p.axes)"
-    if !(p.parentid == p.id)
-        pstr *= ", parent=$(p.parentid)"
-    end
+    pstr = "FramePointNode{$T}(name=$(p.name), class=$(p.class), NAIFId=$(p.NAIFId), axes=$(p.axesid)"
+    p.parentid == p.NAIFId || (pstr *= ", parent=$(p.parentid)")
     pstr *= ")"
     println(io, pstr)
 end
@@ -138,7 +133,7 @@ function FrameSystem{T}(eph::E) where {T, E}
     prec = ephem_position_records(eph)
     tids = map(x->x.target, prec)
     cids = map(x->x.center, prec)
-    return FrameSystem{T, E}(eph, unique([tids..., cids...]))
+    return FrameSystem{T}(eph, unique([tids..., cids...]))
 end
 
 frames_points(fs::FrameSystem) = fs.points 

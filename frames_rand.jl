@@ -27,10 +27,9 @@ offset = SA[1., 2., 3.]
 @ephemeris_point FRAMES sun 10 ssb type=SunPoint
 @ephemeris_point FRAMES emb 3 ssb type=EarthMoonBarycenterPoint
 @ephemeris_point FRAMES earth 399 emb type=EarthPoint
-@ephemeris_point FRAMES moon 301 emb type=MoonPoint
+@ephemeris_point FRAMES moon 301 earth type=MoonPoint
 @ephemeris_point FRAMES venus 299 ssb type=VenusPoint
 @fixed_point FRAMES sc 302 earth ECLIPJ2000 offset type=EarthSpacecraftPoint
-
 
 ys = MVector{6, Float64}(undef);
 
@@ -50,6 +49,8 @@ Threads.@threads for i = 1:nruns
     tid[i] = Threads.threadid()
     get_vector3(FRAMES, sc, ssb, ICRF, ep+2)
 end
+
+@benchmark get_vector3($FRAMES, $ssb, $earth, $ICRF, $ep+2)
 
 # ys[1:3]
 # get_vector3(FRAMES, ssb, moon, ICRF, ep)

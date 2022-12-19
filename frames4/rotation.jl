@@ -2,7 +2,7 @@ using ReferenceFrameRotations
 using StaticArrays
 using LinearAlgebra: matprod, UniformScaling
 
-import StaticArrays: similar_type, Size
+import StaticArrays: similar_type, Size, MMatrix, SMatrix
 
 # -------------------------------------
 # TYPES
@@ -19,9 +19,13 @@ end
 
 order(::Rotation{S, <:Any}) where S = S
 
+# Julia APIs 
 Base.size(::Rotation{S, <:Any}) where S = (3S, 3S)
-Base.Tuple(rot::Rotation) = rot.m
 Base.getindex(R::Rotation, i) = R.m[i]
+
+function Base.summary(io::IO, ::Rotation{S, N}) where {S, N}
+    print(io, "Rotation{$S, $N}")
+end
 
 # ---
 # Constructors 
@@ -43,19 +47,59 @@ end
     end
 end
 
+# Convert a Rotation to one with a smaller order! 
+function Rotation{S1}(rot::Rotation{S2, N}) where {S1, S2, N}
+    S1 > S2 && throw(DimensionMismatch(
+        "Cannot convert a `Rotation` of order $S2 to order $S1"))
+    Rotation(rot.m[1:S1])
+end
+
 function Rotation(m::DCM{N}, ω::AbstractVector) where N
     dm = ddcm(m, SVector(ω))
     return Rotation((m, dm))
 end
 
 # ---
-# Type Operations and Promotions 
+# Type Conversions and Promotions 
 
 # Static Arrays API 
 Size(::Rotation{S, N}) where {S, N} = Size((3*S, 3*S))
 
 similar_type(::Rotation{S, N}) where {S, N} = Rotation{S, N}
 similar_type(::Rotation{S, <:Any}, ::Type{N}) where {S, N} = Rotation{S, N}
+
+# Convert a Rotation to a tuple 
+@generated function Base.Tuple(rot::Rotation{S, N}) where {S, N} 
+
+    args = []
+    for j = 1:3S 
+        Oⱼ = (j-1) ÷ 3 + 1
+        for i = 1:3S
+            Oᵢ = (i-1) ÷ 3 + 1
+            if Oⱼ > Oᵢ
+                push!(args, N(0))
+            else 
+                row = i - 3*(Oᵢ - 1)
+                col = j - 3*(Oⱼ - 1)
+
+                push!(args, :(rot[$Oᵢ-$Oⱼ+1][$row, $col]))
+            end
+        end
+    end
+
+    return quote 
+        Base.@_inline_meta
+        @inbounds tuple($(args...))
+    end
+end
+
+# Generic Rotation-to-StaticArrays conversions
+@inline function (::Type{SA})(rot::Rotation) where {SA <: StaticArray}
+    SA(Tuple(rot))
+end
+
+@inline MMatrix(rot::Rotation{S, N}) where {S, N} = MMatrix{3*S, 3*S}(rot)
+@inline SMatrix(rot::Rotation{S, N}) where {S, N} = SMatrix{3*S, 3*S}(rot)
 
 # Returns the inner datatype of a given DCM 
 _dcm_type(::Union{DCM{T}, Type{DCM{T}}}) where T = T 
@@ -69,7 +113,7 @@ _dcm_type(::Union{DCM{T}, Type{DCM{T}}}) where T = T
     end 
 
     return quote 
-        Base.Base.@_inline_meta
+        Base.@_inline_meta
         $t
     end
 end
@@ -93,9 +137,7 @@ end
 @inline Base.:*(A::Rotation{S, <:Any}, B::Rotation{S, <:Any}) where S = _compose_rot(A, B)
 
 function Base.:*(::Rotation{S1, <:Any}, ::Rotation{S2, <:Any}) where {S1, S2}
-    throw(
-        ArgumentError("Cannot multiply two `Rotation` of different order!")
-    )
+    throw(DimensionMismatch("Cannot multiply two `Rotation` types of order $S1 and $S2"))
 end
 
 @generated function _compose_rot(A::Rotation{S, <:Any}, B::Rotation{S, <:Any}) where S
