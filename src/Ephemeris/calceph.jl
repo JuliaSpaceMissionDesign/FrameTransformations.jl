@@ -122,11 +122,11 @@ function ephem_compute_order!(res, eph::CalcephProvider, jd0::Float64, time::Flo
     nothing
 end
 
-function ephem_compute_order!(res, eph::SpiceProvider, jd0::Float64, time::Float64, 
-    target::Int, center::Int, order::Int)
+# function ephem_compute_order!(res, eph::SpiceProvider, jd0::Float64, time::Float64, 
+#     target::Int, center::Int, order::Int)
 
-    et = ((jd0 + time) - DJ2000) * 86400
+#     et = ((jd0 + time) - DJ2000) * 86400
 
-    unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
-    nothing
-end
+#     unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
+#     nothing
+# end
