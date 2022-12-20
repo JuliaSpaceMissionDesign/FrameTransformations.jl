@@ -105,8 +105,28 @@ function ephem_timescale(eph::CalcephProvider)
     end
 end
 
+"""
+    ephem_compute_order!(res, eph, jd0, time, target, center, order)
+
+### Inputs
+- `res` -- results
+- `eph` -- ephemeris provider
+- `jd0` and `time` -- Two-parts Julian date
+"""
+function ephem_compute_order!(res, eph::AbstractEphemerisProvider, jd0, time, target, 
+    center, order) end
+
 function ephem_compute_order!(res, eph::CalcephProvider, jd0::Float64, time::Float64, 
     target::Int, center::Int, order::Int)
+    unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
+    nothing
+end
+
+function ephem_compute_order!(res, eph::SpiceProvider, jd0::Float64, time::Float64, 
+    target::Int, center::Int, order::Int)
+
+    et = ((jd0 + time) - DJ2000) * 86400
+
     unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
     nothing
 end
