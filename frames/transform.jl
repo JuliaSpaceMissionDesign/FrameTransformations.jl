@@ -1,185 +1,208 @@
 # AXES 
 
-function Rotation(frame::FrameSystem, from::Union{Int, AbstractAxes}, 
-    to::Union{Int, AbstractAxes}, ep::Number)
+for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
+        (1, 2, 3), (:f, :δf, :δ²f),  
+        (:get_rotation3, :get_rotation6, :get_rotation9), 
+        (:_compute_rot3, :_compute_rot6, :_compute_rot9),
+        (:get_vector3, :get_vector6, :get_vector9), 
+        (:_compute_vector3, :_compute_vector6, :_compute_vector9),
+        (:_get_comp_axes_vector3, :_get_comp_axes_vector6, :_get_comp_axes_vector9),
+        (:_get_vector3_forward, :_get_vector6_forward, :_get_vector9_forward),
+        (:_get_vector3_backwards, :_get_vector6_backwards, :_get_vector9_backwards)
+    )
 
-    if from == to 
-        return DCM(1.0I)
-    else 
-        fid = from isa Int ? from : frameid(from)
-        tid = to isa Int ? to : frameid(to)
-    
-        return _Rotation(frame, ep, get_path(axes_graph(frame), fid, tid))
-    end
+    @eval begin 
+        function ($axfun1)(frame::FrameSystem{T, <:Any}, from, to, ep::Number) where T
+            from == to && return Rotation{$order}(T(1)I)
+            $(axfun2)(frame, ep, get_path(frames_axes(frame), axes_alias(from), axes_alias(to)))
+        end
 
-end
+        function ($axfun2)(frame::FrameSystem, ep::Number, path::Vector{Int})
+            @inbounds f1 = get_mappednode(frames_axes(frame), path[1])
+            @inbounds f2 = get_mappednode(frames_axes(frame), path[2])
 
+            rot = $(axfun2)(frame, f1, f2, ep)
 
-@inbounds function _Rotation(frame::FrameSystem, ep::Number, path::Vector{Int})
+            @inbounds for i = 2:length(path)-1
+                f1 = f2
+                f2 = get_mappednode(frames_axes(frame), path[i+1])
 
-    f1 = get_node(axes_graph(frame), path[1])
-    f2 = get_node(axes_graph(frame), path[2]) 
-
-    rot = _rotate(frame, f1, f2, ep)
-
-    for i = 2:length(path)-1
-        f1 = f2
-        f2 = get_node(axes_graph(frame), path[i+1])
-
-        rot = _rotate(frame, f1, f2, ep)*rot
-    end
-
-    return rot 
-end
-
-function _rotate(frame::FrameSystem, from::AstroAxes, to::AstroAxes, ep::Number)
-    from.id == to.parent ? _rotate(frame, to, ep) : _rotate(frame, from, ep)'
-end
-
-function _rotate(frame::FrameSystem, axes::AstroAxes{T}, ep::Number) where T
-    @inbounds if axes.class in (0, 1)
-        return axes.R[1]
-    else
-        tid = Threads.threadid()
-        if axes.epochs[tid] != ep 
-            if axes.class == 2 
-                stv = SA{T}[0, 0, 0, 0, 0, 0]
-            else
-                # uncomment when _vector6 is implemented!
-                # stv = _vector6(
-                #     get_node_from_id(points_graph(frame), axes.point), ep)
-
-                stv = SA{T}[0, 0, 0, 0, 0, 0]
+                rot = $(axfun2)(frame, f1, f2, ep)*rot
             end
 
-            axes.R[tid] = axes.fun(ep, stv)
-            axes.epochs[tid] = ep 
-        end
-        return axes.R[tid]
-    end
-end
-
-
-# POINTS 
-
-function get_vector3(frame::FrameSystem{T}, from::Union{Int, AbstractPoint}, 
-                     to::Union{Int, AbstractPoint}, 
-                     axes::Union{Int, AbstractAxes}, 
-                     ep::Number) where T
-    if from == to 
-        return SVector{3, T}(0., 0., 0.)
-    else 
-        fid = from isa Int ? from : naifid(from)
-        tid = to isa Int ? to : naifid(to)
-        aid = axes isa Int ? axes : frameid(axes)
-
-        return _get_vector3(frame, ep, aid, 
-                    get_path(points_graph(frame), fid, tid))
-    end
-end 
-
-function _get_vector3(frame::FrameSystem{T}, ep::Number, axes::Int, 
-                      path::Vector{Int}) where T
-
-    ps_axes = get_node(points_graph(frame), path[1]).axes
-    pe_axes = get_node(points_graph(frame), path[end]).axes
-
-    if axes == ps_axes
-        return _get_vector3_backward(frame, ep, path)
-    elseif axes == pe_axes
-        return _get_vector3_forward(frame, ep, path)
-    else 
-        # TO BE OPTIMIZED (but probably does not lead to any performance gains)
-        return Rotation(frame, pe_axes, axes, ep)*_get_vector3_forward(frame, ep, path)
-    end
-
-end
-
-function _get_vector3_forward(frame::FrameSystem, ep::Number, path::Vector{Int})
-
-    p1 = get_node(points_graph(frame), path[1])
-    p2 = get_node(points_graph(frame), path[2])
-
-    ax, pos = _vector3(p1, p2, ep)
-    for i = 2:length(path)-1
-        p1 = p2 
-        p2 = get_node(points_graph(frame), path[i+1])
-
-        ax2, pos2 = _vector3(p1, p2, ep)
-
-        # Rotates previous vector to p2's axes
-        if ax2 != ax    
-            pos = Rotation(frame, ax, ax2, ep)*pos
+            return rot 
         end
 
-        # Updates axes and position
-        ax = ax2 
-        pos += pos2
-    end
+        @inline function ($axfun2)(frame::FrameSystem, from::FrameAxesNode, 
+                            to::FrameAxesNode, ep::Number)
+            from.id == to.parentid ? $(axfun2)(frame, to, ep) : inv($(axfun2)(frame, from, ep))
+        end
 
-    return pos 
-end
-
-function _get_vector3_backward(frame::FrameSystem, ep::Number, path::Vector{Int})
-
-    p1 = get_node(points_graph(frame), path[end])
-    p2 = get_node(points_graph(frame), path[end-1])
-
-    ax, pos = _vector3(p1, p2, ep)
-    for i = 2:length(path)-1
-        p1 = p2 
-        p2 = get_node(points_graph(frame), path[end-i])
-
-        ax2, pos2 = _vector3(p1, p2, ep)
-
-        # Rotates previous vector to p2's axes
-        if ax2 != ax 
-            pos = Rotation(frame, ax, ax2, ep)*pos
-        end 
-
-        # Updates axes and position 
-        ax = ax2 
-        pos += pos2 
-
-    end 
-
-    return -pos
-end
-
-function _vector3(from::AstroPoint, to::AstroPoint, ep::Number)
-    if from.NAIFId == to.parent 
-        return to.axes, _vector3(to, ep)
-    else 
-        return from.axes, -_vector3(from, ep)
-    end
-end
-
-# Missing check on available ephemeris timespan!
-# Check is done by CALCEPH which promts to terminal the error, but 
-# does not interrupt the flow of the program nor return exit flags
-function _vector3(point::AstroPoint, ep::Number)
-
-    @inbounds if point.class == 0 || point.class == 3
-        pos = SA[point.stv[1][1], 
-                 point.stv[1][2], 
-                 point.stv[1][3]]
-    else 
-        tid = Threads.threadid()
-        # if point.epochs[tid] != ep 
-            if 0 < point.class < 3 # 1 or 2
-                point.epochs[tid] = ep 
-                point.fun!(point.stv[tid], ep)
+        function ($axfun2)(frame::FrameSystem, axes::FrameAxesNode{T}, ep::Number) where T 
+            @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
+                return $order < 3 ? Rotation{$order}(axes.R[1]) : axes.R[1]
             else 
-                # Updatable point has not been updated!
-                throw(ErrorException("Updatable Point $(point.name) has not been"*
-                    " updatated for epoch $ep."))
-            end
-        # end 
+                tid = Threads.threadid()
+                if axes.epochs[tid] != ep || axes.nzo[tid] < $order
+                    if axes.class == :RotatingAxes 
+                        stv = @SVector zeros(T, 3*$order)
+                        axes.R[tid] = axes.$(f)(ep, stv, stv)
+                    else 
+                        axes.R[tid] = axes.$(f)(ep, 
+                            $(compfun)(frame, axes.comp.v1, axes.parentid, ep), 
+                            $(compfun)(frame, axes.comp.v2, axes.parentid, ep))
+                    end 
+                    axes.epochs[tid] = ep 
+                    axes.nzo[tid] = $order
 
-        pos = SA[point.stv[tid][1], 
-                 point.stv[tid][2], 
-                 point.stv[tid][3]]
+                end
+
+                return $order < 3 ? Rotation{$order}(axes.R[tid]) : axes.R[tid]
+            end
+        end
+
+        # Point 
+
+        function ($pfun1)(frame::FrameSystem{T, <:Any}, from, to, axes, ep::Number) where T
+            from == to && return @SVector zeros(T, 3*$order)
+            $(pfun2)(frame, ep, axes_alias(axes), get_path(frames_points(frame), point_alias(from), point_alias(to)))
+        end
+
+
+        function ($pfun2)(frame::FrameSystem, ep::Number, axesid::Int, path::Vector{Int})
+
+            @inbounds ps_axes = get_mappednode(frames_points(frame), path[1]).axesid
+            @inbounds pe_axes = get_mappednode(frames_points(frame), path[end]).axesid
+
+            if axesid == ps_axes
+                return $(vbwd)(frame, ep, path)
+            elseif axesid == pe_axes
+                return $(vfwd)(frame, ep, path)
+            else 
+                # TO BE OPTIMIZED (but probably does not lead to any performance gains)
+                return $(axfun1)(frame, pe_axes, axesid, ep)*$(vfwd)(frame, ep, path)
+            end
+        end
+
+        function ($vfwd)(frame::FrameSystem, ep::Number, path::Vector{Int}) 
+            p1 = get_mappednode(frames_points(frame), path[1])
+            p2 = get_mappednode(frames_points(frame), path[2])
+        
+            axid, stv = ($pfun2)(p1, p2, ep)
+            for i = 2:length(path)-1
+                p1 = p2 
+                p2 = get_mappednode(frames_points(frame), path[i+1])
+        
+                ax2id, stv2 = ($pfun2)(p1, p2, ep)
+        
+                # Rotates previous vector to p2's axes
+                if ax2id != axid    
+                    stv = ($axfun1)(frame, axid, ax2id, ep)*stv
+                end
+        
+                # Updates axes and position
+                axid = ax2id 
+                stv += stv2
+            end
+        
+            return stv 
+        end
+
+        function ($vbwd)(frame::FrameSystem, ep::Number, path::Vector{Int}) 
+            p1 = get_mappednode(frames_points(frame), path[end])
+            p2 = get_mappednode(frames_points(frame), path[end-1])
+        
+            axid, stv = ($pfun2)(p1, p2, ep)
+            for i = 2:length(path)-1
+                p1 = p2 
+                p2 = get_mappednode(frames_points(frame), path[end-i])
+        
+                ax2id, stv2 = ($pfun2)(p1, p2, ep)
+        
+                # Rotates previous vector to p2's axes
+                if ax2id != axid    
+                    stv = ($axfun1)(frame, axid, ax2id, ep)*stv
+                end
+        
+                # Updates axes and position
+                axid = ax2id 
+                stv += stv2
+            end
+        
+            return -stv 
+        end
+
+        function ($pfun2)(from::FramePointNode, to::FramePointNode, ep::Number)
+            if from.NAIFId == to.parentid 
+                return to.axesid, $(pfun2)(to, ep)
+            else 
+                return from.axesid, -$(pfun2)(from, ep)
+            end
+        end
+
+        function ($pfun2)(point::FramePointNode{T}, ep::Number) where T 
+            @inbounds if point.class in (:RootPoint, :FixedPoint)
+                return SA[point.stv[1].data[1:3*$order]...]
+            else
+                tid = Threads.threadid()
+                # if point.epochs[tid] != ep || point.nzo[tid] < $order 
+                    if point.class == :UpdatablePoint
+                        # Updatable point has not been updated! 
+                        throw(ErrorException(
+                            "UpdatablePoint with NAIFId = $(point.NAIFId) has not been "*
+                            "updated for epoch $ep at order $($order)"))
+                    else 
+                        point.$(f)(point.stv[tid], ep)
+                    end
+
+                    point.epochs[tid] = ep 
+                    point.nzo[tid] = $order 
+                # end
+
+                return SA[point.stv[tid].data[1:3*$order]...]
+            end
+        end
+
+    end
+end
+
+
+function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, axesid::Int, ep::Number)
+    
+    if v.order == 1 
+        return get_vector_3(frame, v.to, v.from, axesid, ep)        
+    elseif v.order == 2 
+        stv = get_vector_6(frame, v.to, v.from, axesid, ep)
+        return SA[stv[4], stv[5], stv[6]]
+    else 
+        stv = get_vector_9(frame, v.to, v.from, axesid, ep)
+        return SA[stv[7], stv[8], stv[9]]
     end
 
-    return pos 
-end 
+end
+
+
+function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, axesid::Int, ep::Number)
+    
+    if v.order == 1 
+        return get_vector_6(frame, v.to, v.from, axesid, ep)        
+    elseif v.order == 2 
+        stv = get_vector_9(frame, v.to, v.from, axesid, ep)
+        return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9]]
+    end
+
+    throw(ErrorException(
+        "Unable to compute a vector of order 4 (jerk). The maximum available order is 3."))
+end
+
+function _get_comp_axes_vector9(frame::FrameSystem, v::ComputableAxesVector, axesid::Int, ep::Number)
+    
+    if v.order == 1 
+        return get_vector_9(frame, v.to, v.from, axesid, ep)        
+    end
+
+    throw(ErrorException(
+        "Unable to compute a vector of order $(2+v.order). The maximum available order is 3."))
+end
+
+
