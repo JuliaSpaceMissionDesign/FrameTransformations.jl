@@ -44,13 +44,13 @@ function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol
         # Check if a set of axes with the same ID is already registered within 
         # the given frame system 
         throw(ErrorException(
-            "Axes with ID = $id are already registered in the given FrameSystem."))
+            "Axes with ID $id are already registered in the given FrameSystem."))
     end
 
     if name in map(x->x.name, frames_axes(frames).nodes) 
         # Check if axes with the same name also does not already exist
         throw(ErrorException(
-            "Axes with name = $name are already registered in the given FrameSystem."))
+            "Axes with name=$name are already registered in the given FrameSystem."))
     end    
 
     # if the frame has a parent
@@ -60,7 +60,7 @@ function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol
         
         # Check if the parent axes are registered in frame 
         if !has_axes(frames, parentid)
-            throw(ErrorException("The specified parent axes with ID = $parentid are not "*
+            throw(ErrorException("The specified parent axes with ID $parentid are not "*
                 "registered in the given FrameSystem."))
         end
 
@@ -140,6 +140,55 @@ function add_axes_fixedoffset!(frames::FrameSystem{T}, axes::AbstractFrameAxes,
         _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=axes_alias(parent), dcm=dcm)
 end
 
-# TODO: add computable axes 
-# TODO: add rotating axes 
+
+"""
+    add_rotating_axes!(frame, axes, parent, fun[, dfun[, ddfun]])
+"""
+function add_rotating_axes!(frame::FrameSystem{T}, axes::AbstractFrameAxes,
+            parent, fun, dfun=nothing, ddfun=nothing) where T
+
+    build_axes(frame, axes_name(axes), axes_id(axes), :RotatingAxes, 
+                (t, x, y) -> Rotation(fun(t)), 
+                isnothing(dfun) ? 
+                    (t, x, y) -> Rotation(fun(t), derivative(fun, t)) : 
+                    (t, x, y) -> Rotation(dfun(t)),
+
+                isnothing(ddfun) ?
+                    (isnothing(dfun) ? 
+                        (t, x, y) -> Rotation(fun(t), derivative(fun, t), 
+                                              derivative(τ->derivative(fun, τ), t)) : 
+
+                        (t, x, y) -> Rotation(dfun(t)..., derivative(τ->derivative(fun, τ), t))) : 
+                    (t, x, y) -> Rotation(ddfun),
+
+                parentid=get_alias(parent))
+
+end
+
+
+"""
+    add_computable_axes!(frame, axes, parent, v1, v2, seq)
+"""
+function add_computable_axes!(frame::FrameSystem, axes::AbstractFrameAxes, parent, 
+            v1::ComputableAxesVector, v2::ComputableAxesVector, seq::Symbol) 
+
+    !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) && throw(ArgumentError(
+        "$seq is not a valid rotation sequence for two vectors frames."))
+
+    for v in (v1, v2)
+        for id in (v.from, v.to)
+            !has_point(frame, id) && throw(ArgumentError(
+                "Point with NAIFId $id is unknown in the given frame system."))
+        end
+    end
+
+    build_axes(frame, axes_name(axes), axes_id(axes), :ComputableAxes, 
+                (t, x, y) -> Rotation(twovectors_to_dcm(x, y, seq)), 
+                (t, x, y) -> Rotation(_two_vectors_to_rot6(x, y, seq)), 
+                (t, x, y) -> Rotation(_two_vectors_to_rot9(x, y, seq));
+                parentid=get_alias(parent), 
+                cax_prop=ComputableAxesProperties(v1, v2))
+    
+end
+
 # TODO: add iau_axes 

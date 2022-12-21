@@ -43,18 +43,18 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
         # Check if a point with the same NAIFId is already registered 
         # within the given FrameSystem 
         throw(ErrorException(
-            "A point with NAIFId = $NAIFId is already registered in the given FrameSystem."))
+            "A point with NAIFID $NAIFId is already registered in the given FrameSystem."))
     end
 
     # Check if a point with the same name does not already exist 
     if name in map(x->x.name, frames_points(frames).nodes)
         throw(ErrorException(
-            "A point with name = $name is already registed in the given FrameSystem"))
+            "A point with name=$name is already registed in the given FrameSystem"))
     end 
 
     # Check if the given axes are known in the FrameSystem
     !has_axes(frames, axesid) && throw(ErrorException(
-            "Axes with ID = $axesid are not registered in the given FrameSystem"))
+            "Axes with ID $axesid are not registered in the given FrameSystem"))
             
     if isnothing(parentid) 
         # If a root-point exists, check that a parent has been specified 
@@ -68,7 +68,7 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
     else 
         # Check that the parent point is registered in frames 
         if !has_point(frames, parentid)
-            throw(ErrorException("The specified parent point with NAIFId = $parentid is not "*
+            throw(ErrorException("The specified parent point with NAIFID $parentid is not "*
                 "registered in the given FrameSystem"))
         end
     end
@@ -141,7 +141,7 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
 
     # Check that the kernels contain the ephemeris data for the given NAIFId
     if !(NAIFId in ephemeris_points(frames))
-        throw(ErrorException("Ephemeris data for NAIFId = $NAIFId is not available "*
+        throw(ErrorException("Ephemeris data for NAIFID $NAIFId is not available "*
             "in the kernels loaded in the given FrameSystem."))
     end
 
@@ -156,15 +156,15 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
                     parentid = pr.center
                 elseif parentid != pr.center 
                     throw(ErrorException("UnambiguityError: at least two set of data "*
-                        "with different centers are available for point with NAIFId = $NAIFId.")) 
+                        "with different centers are available for point with NAIFID $NAIFId.")) 
                 end
             end
         end
         
         # Check that the default parent is available in the FrameSystem
         if !has_point(frames, parentid)
-            throw(ErrorException("Ephemeris data for point with NAIFId $NAIFId is available "*
-                "with respect to point with NAIFId $parentid, which has not yet been defined "*
+            throw(ErrorException("Ephemeris data for point with NAIFID $NAIFId is available "*
+                "with respect to point with NAIFID $parentid, which has not yet been defined "*
                 "in the given FrameSystem."))
         end
         
@@ -173,7 +173,7 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
         parentid = point_alias(parent) 
         parentclass = get_node(frames_points(frames), parentid).class
         if !(parentclass in (:RootPoint, :EphemerisPoint))
-            throw(ErrorException("The specified parent point with NAIFId = $parentid is a "*
+            throw(ErrorException("The specified parent point with NAIFID $parentid is a "*
                 "$parentclass in the given FrameSystem, but only RootPoints and "*
                 "EphemerisPoints are accepted as parents of EphemerisPoints."))
         end
@@ -182,8 +182,8 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
     # Check that the parent point has available ephemeris data 
     if !(parentid in ephemeris_points(frames)) 
         throw(ErrorException("Insufficient ephemeris data has been loaded to compute "*
-            "the point with NAIFId $NAIFId with respect to the parent point with "*
-            "NAIFId $parentid"))
+            "the point with NAIFID $NAIFId with respect to the parent point with "*
+            "NAIFID $parentid"))
     end
 
     # Retrieves the axes stored in the ephemeris kernels for the given point
@@ -194,7 +194,7 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
                 axesid = pr.frame 
             elseif axesid != pr.frame 
                 throw(ErrorException("UnambiguityError: at least two set of data "*
-                    "with different axes are available for point with NAIFId $NAIFId."))
+                    "with different axes are available for point with NAIFID $NAIFId."))
             end
         end
     end
@@ -203,7 +203,7 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
     # This check is also performed by build_point, but it is reported here because 
     # it provides more specific information for ephemeris points 
     if !has_axes(frames, axesid)
-        throw(ErrorException("Ephemeris data for point with NAIFId $NAIFId is expressed "*
+        throw(ErrorException("Ephemeris data for point with NAIFID $NAIFId is expressed "*
             "in a set of axes with ID $axesid, which are yet to be defined in the "*
             "given FrameSystem."))
     end
