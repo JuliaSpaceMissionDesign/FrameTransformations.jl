@@ -1,10 +1,3 @@
-# AXES 
-
-"""
-    δnormalize(v::AbstractVector)
-
-Compute the time derivative of a unit vector `v`.
-"""
 
 for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         (1, 2, 3), (:f, :δf, :δ²f),  
@@ -106,6 +99,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
 
         # Point transformations
+        
         """
             $($pfun1)(frame, from, to, axes, ep) 
 
@@ -136,7 +130,8 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             $($pfun1)(frame, from, to, axes, t) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
-        an observing point, in a given set of axes, at the desired time.
+        an observing point, in a given set of axes, at the desired time expressed in 
+        days since [`J2000`](@ref)
         """
         function ($pfun1)(frame::FrameSystem{T}, from, to, axes, t::Number) where T
 
@@ -257,9 +252,10 @@ between two points of the frame system
 
 The returned vector depends on the order in `v` as follows: 
 
--**1**: position.
--**2**: velocity.
--**3**: acceleration 
+- **1**: position
+- **2**: velocity
+- **3**: acceleration 
+
 """
 function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, 
             axesid::Int, t::Number)
@@ -289,7 +285,7 @@ The returned vector depends on the order in `v` as follows:
 - **3**: acceleration, jerk
 
 ### Notes 
-This function only returns vectors of order lower than 3, because the 
+This function only returns vectors up to order 2, because the 
 frame system currently is uncapable of computing the jerk.
 """
 function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, 
@@ -319,7 +315,7 @@ The returned vector depends on the order in `v` as follows:
 - **3**: acceleration, jerk, jounce
 
 ### Notes 
-This function only returns vectors of order 1, because the 
+This function only works for vectors of order 1, because the 
 frame system currently is uncapable of computing the jerk and jounce.
 """
 function _get_comp_axes_vector9(frame::FrameSystem, v::ComputableAxesVector, 
