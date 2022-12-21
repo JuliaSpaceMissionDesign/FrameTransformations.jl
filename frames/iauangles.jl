@@ -4,10 +4,11 @@ using OrderedCollections
 using ReferenceFrameRotations
 using BenchmarkTools 
 
-# using Basic.Utils: TPC, load
-# data = load(TPC("temp/pck00010.tpc"));
-# ids = 399
-# p = PlanetsPrecessionNutation(ids, data)
+using Basic.Utils: TPC, load
+using Basic.Tempo
+data = load(TPC("temp/pck00010.tpc"));
+ids = 599
+p = PlanetsPrecessionNutation(ids, data)
 
 
 struct PrecessionNutationComponent{T, DA, DB}
@@ -271,9 +272,9 @@ macro orient_iau_angles(bfname, p)
         end
         function $(dnameddcm)(T::Number)   
             ra, rad, dec, decd, w, wd = $dnamedfun(T)
-            ω = SA[rad, decd, wd]
+            ω = SA[rad, decd, wd] / (86400.0)
             R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
-            return R, DCM(ddcm(R, ω))
+            return R, ddcm(R, ω)
         end
         function $(ddnameddcm)(T::Number)   
             ra, rad, radd, dec, decd,decdd, w, wd, wdd = $ddnamedfun(T)

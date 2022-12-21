@@ -1,6 +1,7 @@
 import FunctionWrappers: FunctionWrapper
 
-using Basic.Ephemeris: AbstractEphemerisProvider, ephem_position_records
+using Basic.Ephemeris: AbstractEphemerisProvider, NullEphemerisProvider, 
+                       ephem_position_records
 
 abstract type AbstractFramePoint end 
 abstract type AbstractFrameAxes end 
@@ -110,7 +111,7 @@ end
 struct FrameSystemProperties{T}
     ebid::Vector{Int}  # ephemeris body ids
 end
-FrameSystemProperties() = FrameSystemProperties([])
+FrameSystemProperties() = FrameSystemProperties(Int64[])
 
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
 
@@ -135,6 +136,8 @@ function FrameSystem{T}(eph::E) where {T, E}
     cids = map(x->x.center, prec)
     return FrameSystem{T}(eph, unique([tids..., cids...]))
 end
+
+FrameSystem{T}() where {T} = FrameSystem{T}(NullEphemerisProvider(), Int64[])
 
 frames_points(fs::FrameSystem) = fs.points 
 frames_axes(fs::FrameSystem) = fs.axes
