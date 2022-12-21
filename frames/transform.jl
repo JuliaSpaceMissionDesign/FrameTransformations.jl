@@ -218,8 +218,8 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         # Low-level function to compute the translation of a given point
-        function ($pfun2)(point::FramePointNode{T}, t::Number) where T 
-            @inbounds if point.class in (:RootPoint, :FixedPoint)
+        @inbounds function ($pfun2)(point::FramePointNode{T}, t::Number) where T 
+            if point.class in (:RootPoint, :FixedPoint)
                 return SA[point.stv[1].data[1:3*$order]...]
             else
                 tid = Threads.threadid()
@@ -257,8 +257,8 @@ The returned vector depends on the order in `v` as follows:
 - **3**: acceleration 
 
 """
-function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, 
-            axesid::Int, t::Number)
+@inbounds function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, 
+                        axesid::Int, t::Number)
     
     if v.order == 1 
         return get_vector_3(frame, v.to, v.from, axesid, t)        
@@ -288,8 +288,8 @@ The returned vector depends on the order in `v` as follows:
 This function only returns vectors up to order 2, because the 
 frame system currently is uncapable of computing the jerk.
 """
-function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, 
-            axesid::Int, t::Number)
+@inbounds function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, 
+                        axesid::Int, t::Number)
     
     if v.order == 1 
         return get_vector_6(frame, v.to, v.from, axesid, t)        
