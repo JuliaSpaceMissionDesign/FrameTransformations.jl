@@ -4,15 +4,11 @@ using Basic
 
 # CR3BP scheme 
 include("frames/Frames.jl")
-include("frames4/Frames.jl")
-include("frames6/Frames.jl")
 
-eph = CalcephProvider("/home/michele/spice/kernels/spk/de440.bsp")
-ephA = EphemerisKernels("/home/michele/spice/kernels/spk/de440.bsp")
+eph = CalcephProvider(["/home/michele/spice/kernels/spk/de440.bsp"])
 
-F1 = FrameSystem{Float64}(eph);
-FA = FrameSystemA{Float64}(ephA);
-FC = FrameSystemC{Float64}(eph);
+F = FrameSystem{Float64}(eph);
+
 
 icrf2meme = angle_to_dcm(pi*2, :X)
 meme2eclip = angle_to_dcm(pi*2, pi/3, :XY)
@@ -28,17 +24,25 @@ add_axes_inertial!(F1, MEME2000; parent=1, dcm=icrf2meme)
 add_axes_inertial!(F1, ECLIPJ2000; parent=MEME2000, dcm=meme2eclip)
 add_axes_inertial!(F1, IAU_EARTH; parent=MEME2000, dcm=meme2eclip)
 
-# OLD frames set-up 
-@inertial_axes FA  ICRFA       1 type=InternationalCelestialReferenceFrameA
-@inertial_axes FA  MEME2000A   2 type=MeanEquatorMeanEquinoxJ2000A parent=ICRFA dcm=icrf2meme
-@inertial_axes FA  ECLIPJ2000A 3 type=EclipticEquinoxJ2000A parent=MEME2000A dcm=meme2eclip 
-@inertial_axes FA  IAU_EARTHA  4 type=IauEarthA parent=ECLIPJ2000A dcm=meme2eclip 
+using Logging
+function test_log(x)
+    @debug "debugger"
+    @info "diologger"
+    @warn "mado"
+    @error "stoppa"
+end
 
-# new test with integer classes 
-add_axes_inertial!(FC, ICRF)
-add_axes_inertial!(FC, MEME2000; parent=1, dcm=icrf2meme)
-add_axes_inertial!(FC, ECLIPJ2000; parent=MEME2000, dcm=meme2eclip)
-add_axes_inertial!(FC, IAU_EARTH; parent=ECLIPJ2000, dcm=meme2eclip)
+# OLD frames set-up 
+# @inertial_axes FA  ICRFA       1 type=InternationalCelestialReferenceFrameA
+# @inertial_axes FA  MEME2000A   2 type=MeanEquatorMeanEquinoxJ2000A parent=ICRFA dcm=icrf2meme
+# @inertial_axes FA  ECLIPJ2000A 3 type=EclipticEquinoxJ2000A parent=MEME2000A dcm=meme2eclip 
+# @inertial_axes FA  IAU_EARTHA  4 type=IauEarthA parent=ECLIPJ2000A dcm=meme2eclip 
+
+# # new test with integer classes 
+# add_axes_inertial!(FC, ICRF)
+# add_axes_inertial!(FC, MEME2000; parent=1, dcm=icrf2meme)
+# add_axes_inertial!(FC, ECLIPJ2000; parent=MEME2000, dcm=meme2eclip)
+# add_axes_inertial!(FC, IAU_EARTH; parent=ECLIPJ2000, dcm=meme2eclip)
 
 # # NEW vs OLD performance comparisons 
 # @benchmark get_rotation3($F1, $ICRF, $MEME2000, 0.)
@@ -66,3 +70,16 @@ path2 = [1, 2, 3]
 @benchmark _compute_rot3($F1, 0., $path2)
 @benchmark _compute_rot3($FC, 0., $path2)
 
+@point Earth 399 EarthPoint 
+
+@orient_iau_angles Earth 
+
+
+struct EarthPoint 
+    NAIFId::Val{399}
+end
+
+
+struct MarsPoint 
+    NAIFId::Val{299}
+end

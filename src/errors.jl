@@ -37,3 +37,4 @@ end
 
 @create_module_error AstronautGenericError AstronautGenericException "generic errors"
 @create_module_error NotImplementedError AstronautGenericException "not implemented errors"
+@create_module_error EphemerisError AstronautGenericException "ephemeris errors"

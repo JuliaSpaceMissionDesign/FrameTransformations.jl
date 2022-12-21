@@ -3,9 +3,10 @@
 point_alias(x::AbstractFramePoint) = point_id(x)
 point_alias(x::Int) = x 
 
-macro point(name::Symbol, id::Int, type::Symbol)
+macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
 
+    type = isnothing(type) ? name : type 
     type = Symbol(format_camelcase(Symbol, String(type)), :Point)
     typ_str = String(type)
     name_str = String(name)
@@ -34,9 +35,9 @@ macro point(name::Symbol, id::Int, type::Symbol)
     end
 end
 
-function build_point(frames::FrameSystem{T, E}, name::Symbol, NAIFId::Int, class::Symbol, 
+function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::Symbol, 
                 axesid::Int, f::Function, δf::Function, δ²f::Function; 
-                parentid=nothing, offset=nothing) where {T, E}
+                parentid=nothing, offset=nothing) where {T}
 
     if has_point(frames, NAIFId) 
         # Check if a point with the same NAIFId is already registered 
@@ -72,13 +73,15 @@ function build_point(frames::FrameSystem{T, E}, name::Symbol, NAIFId::Int, class
         end
     end
 
+    # Error check temporarily removed to avoid possible issues with unavailable point 
+    # data at the programmatic start time. 
+    
     # Check that the given functions have the correct signature 
-    for (i, fun) in enumerate((f, δf, δ²f))
-        # TO DO: da cambiare con l'epooca minima per le effemeridi! 
-        otype = typeof(fun(MVector{9}(zeros(T, 9)), T(1)))
-        !(otype <: Nothing) && throw(ArgumentError(
-            "$fun return type is $(typeof(otype)) but should be Nothing."))
-    end
+    # for (i, fun) in enumerate((f, δf, δ²f))
+    #     otype = typeof(fun(MVector{9}(zeros(T, 9)), T(1)))
+    #     !(otype <: Nothing) && throw(ArgumentError(
+    #         "$fun return type is $(typeof(otype)) but should be Nothing."))
+    # end
 
     # Initialize struct caches 
     @inbounds if class in (:RootPoint, :FixedPoint)
@@ -118,7 +121,7 @@ end
 _empty_stv_update!(::AbstractVector{T}, ::T) where {T} = nothing
 
 
-function add_point_root!(frames::FrameSystem, name::Symbol, NAIFId::Int, axes)
+function add_point_root!(frames::FrameSystem, point::AbstractFramePoint, axes)
 
     # Check for root-point existence 
     if !isempty(frames_points(frames)) 
@@ -126,17 +129,15 @@ function add_point_root!(frames::FrameSystem, name::Symbol, NAIFId::Int, axes)
             "A root-point is already registed in the given FrameSystem."))
     end
 
-    build_point(frames, name, NAIFId, :RootPoint, axes_alias(axes), 
+    build_point(frames, point_name(point), point_id(point), :RootPoint, axes_alias(axes), 
                 _empty_stv_update!, _empty_stv_update!, _empty_stv_update!)
 
 end
 
-@inline function add_point_root!(frames::FrameSystem, point::AbstractFramePoint, axes) 
-    add_point_root!(frames, point_name(point), point_id(point), axes)    
-end
 
+function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, parent=nothing)
 
-function add_point_ephemeris!(frames::FrameSystem, name::Symbol, NAIFId::Int, parent=nothing)
+    NAIFId = point_id(point)
 
     # Check that the kernels contain the ephemeris data for the given NAIFId
     if !(NAIFId in ephemeris_points(frames))
@@ -162,8 +163,8 @@ function add_point_ephemeris!(frames::FrameSystem, name::Symbol, NAIFId::Int, pa
         
         # Check that the default parent is available in the FrameSystem
         if !has_point(frames, parentid)
-            throw(ErrorException("Ephemeris data for point with NAIFId = $NAIFId is available "*
-                "with respect to point with NAIFId = $parentid, which has not yet been defined "*
+            throw(ErrorException("Ephemeris data for point with NAIFId $NAIFId is available "*
+                "with respect to point with NAIFId $parentid, which has not yet been defined "*
                 "in the given FrameSystem."))
         end
         
@@ -181,8 +182,8 @@ function add_point_ephemeris!(frames::FrameSystem, name::Symbol, NAIFId::Int, pa
     # Check that the parent point has available ephemeris data 
     if !(parentid in ephemeris_points(frames)) 
         throw(ErrorException("Insufficient ephemeris data has been loaded to compute "*
-            "the point with NAIFId = $NAIFId with respect to the parent point with "*
-            "NAIFId = $parentid"))
+            "the point with NAIFId $NAIFId with respect to the parent point with "*
+            "NAIFId $parentid"))
     end
 
     # Retrieves the axes stored in the ephemeris kernels for the given point
@@ -193,7 +194,7 @@ function add_point_ephemeris!(frames::FrameSystem, name::Symbol, NAIFId::Int, pa
                 axesid = pr.frame 
             elseif axesid != pr.frame 
                 throw(ErrorException("UnambiguityError: at least two set of data "*
-                    "with different axes are available for point with NAIFId = $NAIFId."))
+                    "with different axes are available for point with NAIFId $NAIFId."))
             end
         end
     end
@@ -202,27 +203,21 @@ function add_point_ephemeris!(frames::FrameSystem, name::Symbol, NAIFId::Int, pa
     # This check is also performed by build_point, but it is reported here because 
     # it provides more specific information for ephemeris points 
     if !has_axes(frames, axesid)
-        throw(ErrorException("Ephemeris data for point with NAIFId = $NAIFId is expressed "*
-            "in a set of axes with ID = $axesid, which are yet to be defined in the "*
+        throw(ErrorException("Ephemeris data for point with NAIFId $NAIFId is expressed "*
+            "in a set of axes with ID $axesid, which are yet to be defined in the "*
             "given FrameSystem."))
     end
 
-    build_point(frames, name, NAIFId, :EphemerisPoint, axesid, 
-                (y, t) -> ephem_compute_order!(y, frames.eph, t, 0., NAIFId, parentid, 0),
-                (y, t) -> ephem_compute_order!(y, frames.eph, t, 0., NAIFId, parentid, 1),
-                (y, t) -> ephem_compute_order!(y, frames.eph, t, 0., NAIFId, parentid, 2),; 
+    build_point(frames, point_name(point), NAIFId, :EphemerisPoint, axesid, 
+                (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 0),
+                (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 1),
+                (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 2),; 
                 parentid=parentid)
 
 end 
 
-@inline function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, 
-    parent=nothing)
-add_point_ephemeris!(frames, point_name(point), point_id(point), parent)
-end
-
-
-function add_point_fixed!(frames::FrameSystem{T, E}, name::Symbol, NAIFId::Int, parent, 
-            axes, offset::AbstractVector{T}) where {T, E}
+function add_point_fixed!(frames::FrameSystem{T}, point::AbstractFramePoint, parent, 
+            axes, offset::AbstractVector{T}) where {T}
 
     
     if length(offset) != 3
@@ -230,30 +225,19 @@ function add_point_fixed!(frames::FrameSystem{T, E}, name::Symbol, NAIFId::Int, 
             "The offset vector has length 3, but has $(length(offset))."))
     end
 
-    build_point(frames, name, NAIFId, :FixedPoint, axes_alias(axes), 
+    build_point(frames, point_name(point), point_id(point), :FixedPoint, axes_alias(axes), 
                 _empty_stv_update!, _empty_stv_update!, _empty_stv_update!; 
                 parentid=point_alias(parent), offset=offset)
         
 end
 
-@inline function add_point_fixed!(frames::FrameSystem, point::AbstractFramePoint, 
-    parent, axes, offset) 
-add_point_fixed!(frames, point_name(point), point_id(point), parent, axes, offset)    
-end
+function add_point_updatable!(frames::FrameSystem, point::AbstractFramePoint, 
+                              parent, axes)
 
-
-function add_point_updatable!(frames::FrameSystem{T, E}, name::Symbol, NAIFId::Int, 
-                              parent, axes) where {T, E}
-
-    build_point(frames, name, NAIFId, :UpdatablePoint, axes_alias(axes), 
+    build_point(frames, point_name(point), point_id(point), :UpdatablePoint, axes_alias(axes), 
                 _empty_stv_update!, _empty_stv_update!, _empty_stv_update!; 
                 parentid=point_alias(parent))
 end
-
-@inline function add_point_updatable!(frames, point::AbstractFramePoint, parent, axes) 
-    add_point_updatable!(frames, point_name(point), point_id(point), parent, axes)    
-end
-
 
 
 

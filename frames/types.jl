@@ -3,6 +3,8 @@ import FunctionWrappers: FunctionWrapper
 using Basic.Ephemeris: AbstractEphemerisProvider, NullEphemerisProvider, 
                        ephem_position_records
 
+using Basic.Tempo: TimeScale, BarycentricDynamicalTime
+
 abstract type AbstractFramePoint end 
 abstract type AbstractFrameAxes end 
 
@@ -115,15 +117,17 @@ FrameSystemProperties() = FrameSystemProperties(Int64[])
 
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
 
-struct FrameSystem{T, E<:AbstractEphemerisProvider}
+struct FrameSystem{T <: Number, S <: TimeScale, E <: AbstractEphemerisProvider}
     eph::E
     prop::FrameSystemProperties{T}
     points::MappedNodeGraph{FramePointNode{T}, SimpleGraph{Int}}
     axes::MappedNodeGraph{FrameAxesNode{T}, SimpleGraph{Int}}
 end
 
-function FrameSystem{T}(eph::E, points::Vector{Int}) where {T, E<:AbstractEphemerisProvider} 
-    return FrameSystem{T, E}(
+function FrameSystem{T, S}(eph::E, points::Vector{Int}) where {T <: Number, 
+            S <: TimeScale, E <:AbstractEphemerisProvider} 
+    
+    return FrameSystem{T, S, E}(
         eph, FrameSystemProperties{T}(points),
         MappedGraph(FramePointNode{T}),
         MappedGraph(FrameAxesNode{T})
@@ -134,16 +138,18 @@ function FrameSystem{T}(eph::E) where {T, E}
     prec = ephem_position_records(eph)
     tids = map(x->x.target, prec)
     cids = map(x->x.center, prec)
-    return FrameSystem{T}(eph, unique([tids..., cids...]))
+    S = typeof(ephem_timescale(eph))
+    return FrameSystem{T, S}(eph, unique([tids..., cids...]))
 end
 
-FrameSystem{T}() where {T} = FrameSystem{T}(NullEphemerisProvider(), Int64[])
+FrameSystem{T, S}() where {T, S} = FrameSystem{T, S}(NullEphemerisProvider(), Int64[])
+FrameSystem{T}() where {T <: Number} = FrameSystem{T, BarycentricDynamicalTime}()
 
 frames_points(fs::FrameSystem) = fs.points 
 frames_axes(fs::FrameSystem) = fs.axes
 
-add_point!(fs::FrameSystem{T}, p::FramePointNode{T}) where {T} = add_vertex!(fs.points, p)
-add_axes!(fs::FrameSystem{T}, ax::FrameAxesNode{T}) where {T} = add_vertex!(fs.axes, ax)
+add_point!(fs::FrameSystem{T}, p::FramePointNode{T}) where T = add_vertex!(fs.points, p)
+add_axes!(fs::FrameSystem{T}, ax::FrameAxesNode{T}) where T = add_vertex!(fs.axes, ax)
 
 @inline has_point(f::FrameSystem, NAIFId::Int) = has_vertex(frames_points(f), NAIFId)
 @inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(frames_axes(f), axesid)
@@ -176,9 +182,13 @@ function _mappedgraph_tree!(s::String, g::MappedNodeGraph, pid::Int, idx::Int, d
     end
     s
 end
+9
+function Base.summary(io::IO, ::FrameSystem{T, S, E}) where {T, S, E}
+    println(io, "FrameSystem{$T, $S, $E}")
+end
 
-function Base.show(io::IO, fs::FrameSystem{T, E}) where {T, E}
-    println(io, "FrameSystem{$T, $E}(")
+function Base.show(io::IO, fs::FrameSystem{T, S, E}) where {T, S, E}
+    println(io, "FrameSystem{$T, $S, $E}(")
     println(io, "  eph: $(fs.eph),")
 
     spoints = ""

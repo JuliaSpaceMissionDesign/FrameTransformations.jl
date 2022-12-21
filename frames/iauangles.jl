@@ -47,7 +47,7 @@ function PrecessionNutationComponent{T}(A, B, Θ₁, Θ₂, fun) where T
 end
 
 function PrecessionNutationComponent{T}(hasnuts::Bool, dbid, nuts, prop, fun, 
-    factor=T(pi/180)) where T
+            factor=T(pi/180)) where T
     
     # stick to NASA/NAIF PCK naming conventions
     pole = prop != :pm ? Symbol("pole_$prop") : :pm
@@ -66,18 +66,18 @@ function PrecessionNutationComponent{T}(hasnuts::Bool, dbid, nuts, prop, fun,
     )
 end
 
-function PlanetsPrecessionNutation(bid::N, 
+function PlanetsPrecessionNutation(NAIFId::N, 
     data::OrderedDict{N, Dict{Symbol, Union{T, Vector{T}}}}) where {N<:Integer, T}
     
     # Find nutation coefficients
-    sid = "$(bid)"
-    nutsid = bid
-    if bid < 1000 && bid > 100
+    sid = "$(NAIFId)"
+    nutsid = NAIFId
+    if NAIFId < 1000 && NAIFId > 100
         nutsid = parse(N, sid[1])
     end
 
-    if bid < 9
-        Logging.@warn "[Universe/Orient] Cannot orient IAU frames for $bid - IGNORED."
+    if NAIFId < 9
+        Logging.@warn "[Basic/Orient] Cannot orient IAU frames for $NAIFId - IGNORED."
     else 
         # Get nutation-precession angles
         nut::Vector{T} = haskey(data[nutsid], :nut_prec_angles) ? 
@@ -93,11 +93,11 @@ function PlanetsPrecessionNutation(bid::N,
         # Build planet precession/nutation
         return PlanetsPrecessionNutation(
             # Right ascension
-            PrecessionNutationComponent{T}(hasnuts, data[bid], nuts, :ra, :sin),
+            PrecessionNutationComponent{T}(hasnuts, data[NAIFId], nuts, :ra, :sin),
             # Declination 
-            PrecessionNutationComponent{T}(hasnuts, data[bid], nuts, :dec, :cos),
+            PrecessionNutationComponent{T}(hasnuts, data[NAIFId], nuts, :dec, :cos),
             # Polar motion
-            PrecessionNutationComponent{T}(hasnuts, data[bid], nuts, :pm, :sin),
+            PrecessionNutationComponent{T}(hasnuts, data[NAIFId], nuts, :pm, :sin),
         )
     end
     

@@ -1,0 +1,130 @@
+using BenchmarkTools
+using ForwardDiff
+using Basic 
+using Test
+
+import Basic.Tempo: InternationalAtomicTime
+
+# CR3BP scheme 
+include("frames/Frames.jl")
+
+eph = CalcephProvider(["/home/michele/spice/kernels/spk/de440.bsp"])
+
+# Empty Frame 
+empty_frame = FrameSystem{Float64}()
+
+# Empty Frame with desired time scale 
+empty_ts_frame = FrameSystem{Float64, InternationalAtomicTime}()
+
+# Frame with ephemeris loading 
+FRAMES = FrameSystem{Float64}(eph);
+
+icrf2meme = angle_to_dcm(pi/7, :X)
+meme2eclip = angle_to_dcm(pi/4, pi/3, :ZY)
+
+# Register axes! 
+@axes ICRF 1 InternationalCelestialReferenceFrame
+@axes MEME2000 2 MeanEarthMeanEquinoxJ2000
+@axes ECLIPJ2000 3 EclipticEquinoxJ2000
+
+add_axes_inertial!(FRAMES, ICRF)
+add_axes_inertial!(FRAMES, MEME2000; parent=ICRF, dcm=icrf2meme)
+add_axes_inertial!(FRAMES, ECLIPJ2000; parent=MEME2000, dcm=meme2eclip)
+
+# Register points! 
+@point SSB 0 SolarSystemBarycenter
+@point EMB 3 EarthMoonBarycenter 
+@point Sun 10
+@point Earth 399
+@point VB 2 VenusBarycenter
+@point Venus 299 Venus 
+
+add_point_root!(FRAMES, SSB, ICRF)
+add_point_ephemeris!(FRAMES, EMB)
+add_point_ephemeris!(FRAMES, Earth)
+add_point_ephemeris!(FRAMES, Sun)
+add_point_ephemeris!(FRAMES, VB)
+add_point_ephemeris!(FRAMES, Venus)
+
+@testset "Point Transformations" verbose=true begin 
+    fcns = (get_vector3, get_vector6, get_vector9)
+
+    @testset "Identity Translations" verbose=true begin 
+        for (i, fcn) in enumerate(fcns)
+            stv = fcn(FRAMES, Sun, Sun, ECLIPJ2000, 0.)
+            @test stv == zeros(3*i)
+        end
+    end
+
+    jd0 = ephem_timespan(eph)[1] + 100
+    t = 0.
+
+    @testset "Ephemeris Translation" verbose=true begin 
+        for (i, fcn) in enumerate(fcns)
+            stv = fcn(FRAMES, Venus, SSB, ICRF, t)
+
+            y = zeros(3i)
+            ephem_compute_order!(y, eph, DJ2000, t, 0, 299, i-1)
+            
+            @test stv ≈ y atol=1e-10
+
+        end
+    end
+
+    @testset "Rotated Translation" verbose=true begin 
+        for (i, fcn) in enumerate(fcns)
+            stv = fcn(FRAMES, Venus, SSB, ECLIPJ2000, t)
+
+            y = zeros(3i)
+            ephem_compute_order!(y, eph, DJ2000, t, 0, 299, i-1)
+            
+            R = Rotation(meme2eclip*icrf2meme, [DCM(0.0I) for i = 2:i]...)
+            y = R*y 
+            @test stv ≈ y atol=1e-10
+
+        end
+    end
+end;
+
+@testset "Rotation Transformations" verbose=true begin 
+    fcns = (get_rotation3, get_rotation6, get_rotation9)
+
+    @testset "Identity Rotation" verbose=true begin 
+        for (i, fcn) in enumerate(fcns)
+            R = fcn(FRAMES, ICRF, ICRF, 0.)
+
+            @test R[1] == DCM(1.0I)
+            for k = 2:i 
+                @test R[k] ≈ DCM(0.0I) atol=1e-11
+            end
+        end
+    end
+
+    @testset "1 Step Inertial Rotation" verbose=true begin
+        for (i, fcn) in enumerate(fcns)    
+            R1 = fcn(FRAMES, ICRF, MEME2000, 0.)
+            R2 = fcn(FRAMES, MEME2000, ECLIPJ2000, 0.)
+
+            for (j, R) in enumerate([R1, R2])
+                Rₑ = j == 1 ? icrf2meme : meme2eclip
+                @test R[1] ≈ Rₑ atol=1e-11
+                for k = 2:i 
+                    @test R[k] == DCM(0.0I) 
+                end
+            end
+        end
+    end;
+
+    @testset "2 Step Inertial Rotation" verbose=true begin
+        for (i, fcn) in enumerate(fcns)    
+            R = fcn(FRAMES, ICRF, ECLIPJ2000, 0.)
+
+            @test R[1] ≈ meme2eclip*icrf2meme atol=1e-11
+            for k = 2:i 
+                @test R[k] == DCM(0.0I)
+            end
+
+        end
+    end;
+
+end;

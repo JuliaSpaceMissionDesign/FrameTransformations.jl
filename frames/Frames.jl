@@ -1,3 +1,4 @@
+using Logging
 
 # TODO: refactor mgraph to a proper library and use it here 
 include("mgraph.jl")

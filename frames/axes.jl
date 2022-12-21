@@ -1,16 +1,13 @@
 using Basic.Utils: format_camelcase
 
-const AXES_CLASSES = (
-    :InertialAxes,
-    :FixedOffsetAxes
-)
 
 axes_alias(x::AbstractFrameAxes) = axes_id(x)
 axes_alias(x::Int) = x
 
-macro axes(name::Symbol, id::Int, type::Symbol)
+macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
 
+    type = isnothing(type) ? name : type     
     type = Symbol(format_camelcase(Symbol, String(type)), :Axes)
     typ_str = String(type)
     name_str = String(name)
@@ -39,9 +36,9 @@ macro axes(name::Symbol, id::Int, type::Symbol)
     end
 end
 
-function build_axes(frames::FrameSystem{T, E}, name::Symbol, id::Int, class::Symbol, 
-    f::Function, δf::Function, δ²f::Function; parentid=nothing, dcm=nothing, 
-    cax_prop=ComputableAxesProperties()) where {T, E}
+function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol, 
+            f::Function, δf::Function, δ²f::Function; parentid=nothing, dcm=nothing, 
+            cax_prop=ComputableAxesProperties()) where {T}
 
     if has_axes(frames, id)
         # Check if a set of axes with the same ID is already registered within 
@@ -78,7 +75,7 @@ function build_axes(frames::FrameSystem{T, E}, name::Symbol, id::Int, class::Sym
         !(otype isa Rotation{3, T}) && throw(ArgumentError(
             "$fun return type is $(typeof(otype)) but should be Rotation{3, $T}."))
     end
-
+    
     # Initialize struct caches
     @inbounds if class in (:InertialAxes, :FixedOffsetAxes)
         nzo = Int[]
@@ -109,8 +106,10 @@ end
     
 _get_fixedrot9(::T, x, y) where T = Rotation{3}(T(1)I)       
 
-function add_axes_inertial!(frames::FrameSystem, name::Symbol, id::Int; 
-    parent=nothing, dcm=nothing)
+function add_axes_inertial!(frames::FrameSystem{T}, axes::AbstractFrameAxes; 
+            parent=nothing, dcm::Union{Nothing, DCM{T}}=nothing) where T
+
+    name = axes_name(axes)
 
     # Checks for root-axes existence 
     if isnothing(parent)
@@ -128,22 +127,19 @@ function add_axes_inertial!(frames::FrameSystem, name::Symbol, id::Int;
     pid = isnothing(parent) ? nothing : axes_alias(parent)
 
     # construct the axes and insert in the FrameSystem
-    build_axes(frames, name, id, :InertialAxes, 
+    build_axes(frames, name, axes_id(axes), :InertialAxes, 
         _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=pid, dcm=dcm)
 
 end
 
-function add_axes_inertial!(frames, axes::A; args...) where {A<:AbstractFrameAxes}
-    add_axes_inertial!(frames, axes_name(axes), axes_id(axes); args...)
-end
 
-function add_axes_fixedoffset!(frames::FrameSystem, name::Symbol, id::Int, parent, 
-    dcm::DCM{T}) where {T}
-    # construct the axes 
-    build_axes(frames, name, id, :FixedOffsetAxes, 
+function add_axes_fixedoffset!(frames::FrameSystem{T}, axes::AbstractFrameAxes, 
+            parent, dcm::DCM{T}) where T
+
+    build_axes(frames, axes_name(axes), axes_id(axes), :FixedOffsetAxes, 
         _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=axes_alias(parent), dcm=dcm)
 end
 
-function add_axes_fixedoffset!(frames, axes::A, parent, dcm) where {A<:AbstractFrameAxes}
-    add_axes_fixedoffset!(frames, axes_name(axes), axes_id(axes), parent, dcm)
-end
+# TODO: add computable axes 
+# TODO: add rotating axes 
+# TODO: add iau_axes 
