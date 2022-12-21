@@ -23,15 +23,15 @@ Calceph-based ephemeris handler.
 """
 struct CalcephProvider <: AbstractEphemerisProvider
     ptr::CalcephEphemHandler
-    function CalcephProvider(files::AbstractVector{<:AbstractString})
-        ptr = CalcephEphemHandler(files)
+    function CalcephProvider(files::Vector{<:AbstractString})
+        ptr = CalcephEphemHandler(unique(files))
         prefetch(ptr)
         new(ptr)
     end
 end
 CalcephProvider(file::AbstractString) = CalcephProvider([file])
 
-function ephem_load(::Type{CalcephProvider}, files::AbstractVector{<:AbstractString})
+function ephem_load(::Type{CalcephProvider}, files::Vector{<:AbstractString})
     return CalcephProvider(files)
 end
 
