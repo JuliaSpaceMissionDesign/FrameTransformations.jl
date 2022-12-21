@@ -19,7 +19,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         """
-            $($axfun1)(frame, from, to, ep) 
+            $($axfun1)(frame::FrameSystem, from, to, ep::Epoch) 
 
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
         specified set of axes to another at a given epoch. 
@@ -39,7 +39,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         """
-            $($axfun1)(frame, from, to, t)
+            $($axfun1)(frame::FrameSystem, from, to, t::Number)
         
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
         specified set of axes to another at a given time, expressed in days since [`J2000`](@ref). 
@@ -101,7 +101,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         # Point transformations
         
         """
-            $($pfun1)(frame, from, to, axes, ep) 
+            $($pfun1)(frame::FrameSystem, from, to, axes, ep::Epoch) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired epoch.
@@ -127,7 +127,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         """
-            $($pfun1)(frame, from, to, axes, t) 
+            $($pfun1)(frame::FrameSystem, from, to, axes, t::Number) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time expressed in 

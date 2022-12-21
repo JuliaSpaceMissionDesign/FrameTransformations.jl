@@ -1,9 +1,18 @@
 using Basic.Utils: format_camelcase
 
+"""
+    axes_alias(ax::AbstractFrameAxes)
 
+Return the axes ID. 
+"""
 axes_alias(x::AbstractFrameAxes) = axes_id(x)
 axes_alias(x::Int) = x
 
+"""
+    axes(name, id, type)
+
+Create an `AbstractFrameAxes` instance to alias the given ID. 
+"""
 macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
 
@@ -178,7 +187,7 @@ function add_computable_axes!(frame::FrameSystem, axes::AbstractFrameAxes, paren
     for v in (v1, v2)
         for id in (v.from, v.to)
             !has_point(frame, id) && throw(ArgumentError(
-                "Point with NAIFId $id is unknown in the given frame system."))
+                "Point with NAIFID $id is unknown in the given frame system."))
         end
     end
 
