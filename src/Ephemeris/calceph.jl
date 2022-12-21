@@ -120,7 +120,7 @@ function ephem_compute_order!(res, eph::AbstractEphemerisProvider, jd0, time, ta
 function ephem_compute_order!(res, eph::CalcephProvider, jd0::Float64, time::Float64, 
     target::Int, center::Int, order::Int)
     stat = unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
-    stat == 1 && throw(EphemerisError(String(Symbol(@__MODULE__)), "ephemeris data for "*
+    stat == 0 && throw(EphemerisError(String(Symbol(@__MODULE__)), "ephemeris data for "*
                     "point with NAIFId $target with respect to point $center is not available "*
                     "at JD $(jd0+time)"))
     nothing

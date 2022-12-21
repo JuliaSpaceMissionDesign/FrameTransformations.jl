@@ -257,10 +257,10 @@ The returned vector depends on the order in `v` as follows:
 - **3**: acceleration 
 
 """
-@inbounds function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, 
+function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, 
                         axesid::Int, t::Number)
     
-    if v.order == 1 
+    @inbounds if v.order == 1 
         return get_vector_3(frame, v.to, v.from, axesid, t)        
     elseif v.order == 2 
         stv = get_vector_6(frame, v.to, v.from, axesid, t)
@@ -288,10 +288,10 @@ The returned vector depends on the order in `v` as follows:
 This function only returns vectors up to order 2, because the 
 frame system currently is uncapable of computing the jerk.
 """
-@inbounds function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, 
+ function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, 
                         axesid::Int, t::Number)
     
-    if v.order == 1 
+    @inbounds if v.order == 1 
         return get_vector_6(frame, v.to, v.from, axesid, t)        
     elseif v.order == 2 
         stv = get_vector_9(frame, v.to, v.from, axesid, t)
