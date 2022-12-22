@@ -42,7 +42,8 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             $($axfun1)(frame::FrameSystem, from, to, t::Number)
         
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
-        specified set of axes to another at a given time, expressed in days since [`J2000`](@ref). 
+        specified set of axes to another at a given time, expressed in days since [`J2000`](@ref) 
+        if ephemerides are used. 
         """
         function ($axfun1)(frame::FrameSystem{T}, from, to, t::Number) where T
             from == to && return Rotation{$order}(T(1)I)
@@ -113,8 +114,6 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         - `axes` -- ID or instance of the output state vector axes 
         - `ep` -- `Epoch` of the observer. Its timescale must match that of the frame system. 
 
-        ### Output
-        $(3*$order)-elements state vector of the target 
         """
         @inline function ($pfun1)(::FrameSystem{<:Any, S1}, from, 
                             to, axes, ::Epoch{S2}) where {S1, S2}
@@ -131,7 +130,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time expressed in 
-        days since [`J2000`](@ref)
+        days since [`J2000`](@ref) if ephemerides are used. 
         """
         function ($pfun1)(frame::FrameSystem{T}, from, to, axes, t::Number) where T
 
@@ -228,7 +227,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                         # Updatable point has not been updated! 
                         throw(ErrorException(
                             "UpdatablePoint with NAIFId = $(point.NAIFId) has not been "*
-                            "updated for epoch $ep at order $($order)"))
+                            "updated at time $t for order $($order)"))
                     else 
                         point.$(f)(point.stv[tid], t)
                     end
@@ -243,6 +242,83 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
     end
 end
+
+
+""" 
+    update_point!(frames, point, stv::AbstractVector, epoch::Epoch)
+"""
+function update_point!(frames::FrameSystem{T, S}, point, stv::AbstractVector{T}, 
+            epoch::Epoch{S}) where {T, S}
+    update_point!(frames, point, stv, j2000(epoch))
+end
+
+""" 
+    update_point!(frames::FrameSystem{T}, point, stv::AbstractVector{T}, time::T) where T
+
+Update the state vector of `point` at the input `time` in `frames`. The only 
+accepted length for the input vector `stv` are 3, 6 or 9. The order is automatically inferred 
+from the vector length.
+
+### Examples 
+```jldoctest
+julia> FRAMES = FrameSystem{Float64}();
+  
+julia> @axes ICRF 1  
+
+julia> add_axes_inertial!(FRAMES, ICRF)
+
+julia> @point Origin 0
+
+julia> @point Satellite 1 
+
+julia> add_point_root!(FRAMES, Origin, ICRF)
+
+julia> add_point_updatable!(FRAMES, Satellite, Origin, ICRF)
+
+julia> y = [10000., 200., 300.]
+
+julia> update_point!(FRAMES, Satellite, y, 0.1)
+
+julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
+3-element SVector{3, Float64} with indices SOneTo(3):
+ 10000.0
+   200.0
+   300.0
+
+julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
+
+julia> get_vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 2
+```
+### See also 
+See also [`add_point_updatable!`](@ref)
+"""
+function update_point!(frames::FrameSystem{T}, point, stv::AbstractVector{T}, 
+            time::T) where T
+
+    NAIFId = point_alias(point) 
+
+    !has_point(frames, NAIFId) && throw(ErrorException(
+        "Point with NAIF ID $NAIFId is not contained in the frame system."))
+
+    ne = length(stv) 
+
+    if !(ne in (3, 6, 9)) 
+        throw(ArgumentError(
+            "wrong state vector length: expected either 3, 6 or 9, found $ne"))
+    end 
+
+    pnt = get_node(frames_points(frames), point_alias(point))
+
+    id = Threads.threadid()
+    @inbounds pnt.epochs[id] = time
+    @inbounds pnt.nzo[id] = ne ÷ 3 
+    @inbounds @views pnt.stv[id][1:ne] .= stv[1:ne]
+    nothing 
+
+end
+
 
 """ 
     _get_comp_axes_vector3(frame, v, axesid, t)

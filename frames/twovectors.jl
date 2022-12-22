@@ -60,8 +60,8 @@ end
 Compute the cross product between `x` and `y` and its time derivative. 
 
 ### Notes 
-`x` and `y` must be 6-elements state vectors, with the last elements of 
-each vector representing the time derivatives of the first three.
+`x` and `y` must be 6-elements state vectors, with the last elements of each vector 
+representing the time derivatives of the first three.
 """
 function cross6(x::AbstractVector, y::AbstractVector)
 
@@ -82,8 +82,7 @@ end
 """
     cross9(x::AbstractVector, y::AbstractVector)
 
-Compute the cross product between `x` and `y` and its 1st and 
-2nd-order time derivatives. 
+Compute the cross product between `x` and `y` and its 1st and 2nd-order time derivatives. 
 
 ### Notes 
 `x` and `y` must be 9-elements state vectors (position, velocity and acceleration)
@@ -111,15 +110,15 @@ end
 """
     _two_vectors_basis(a, b, seq::Symbol, fc::Function)
 
-Generate a 3D right-handed orthogonal vector basis and/or its time derivatives 
-from the vectors `a` and `b`, according to the directions specified in `seq` 
-and the input cross function `fc`.
+Generate a 3D right-handed orthogonal vector basis and/or its time derivatives from the 
+vectors `a` and `b`, according to the directions specified in `seq` and the input cross 
+function `fc`.
 
 The accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 
-The standard basis, its 1st and 2nd-order time derivatives can be computed 
-by passing `cross`, `cross6` or `cross9` to `fc`. The returned vectors will
-have a length of 3, 6, or 9, respectively.
+The standard basis, its 1st and 2nd-order time derivatives can be computed by passing 
+`cross`, `cross6` or `cross9` to `fc`. The returned vectors will have a length of 3, 6 or 9, 
+respectively.
 
 """
 function _two_vectors_basis(a::AbstractVector, b::AbstractVector, 
@@ -165,8 +164,8 @@ end
 """
     _twovectors_to_dcm(a, b, seq::Symbol, fc::Function, fn::Function)
 
-Generate a direction cosine matrix and/or its time derivatives from the 
-vectors `a` and `b`, according to the directions specifeid in `seq`. 
+Generate a direction cosine matrix and/or its time derivatives from the vectors `a` and `b`, 
+according to the directions specifeid in `seq`. 
 
 ### Notes
 `fc` and `fn` can be used to control the derivative order. 
@@ -192,22 +191,20 @@ Generate a direction cosine matrix from two time-dependent vectors `a` and `b`,
 following the directions specified in `seq`. 
 
 ### Inputs 
-- `a` -- The primary vector that will be aligned with the first directions 
-     specified in `seq`. 
+- `a` -- The primary vector that will be aligned with the first directions specified in `seq`. 
 
-- `b` -- The secondary vector. The component of this vector that is orthogonal 
-     to the primary vector is aligned with the second direction specified 
-     in the sequence `seq`.
+- `b` -- The secondary vector. The component of this vector that is orthogonal to the 
+         primary vector is aligned with the second direction specified in the sequence `seq`.
 
 - `seq` -- Accepted sequence directions are: 
        `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 
 
 ### Notes 
-The primary and secondary vectors do not have to be orthogonal. However, a great 
-loss of precision happens when the two vectors are almost aligned. This function 
-does not perform any check on the angular separation of the two vectors. The user 
-should ensure that the primary and secondary vector differ of at least 1 milliradian.
+The primary and secondary vectors do not have to be orthogonal. However, a great loss of
+precision happens when the two vectors are almost aligned. This function does not perform 
+any check on the angular separation of the two vectors. The user should ensure that the 
+primary and secondary vector differ of at least 1 milliradian.
 """
 twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross, normalize)
 
@@ -215,9 +212,8 @@ twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross, normalize)
 """
     twovectors_to_ddcm(a, b, seq)
 
-Compute the time derivative of a direction cosine matrix generated from two 
-time-dependent state vectors `a` and `b`, following the directions 
-specified in `seq`. 
+Compute the time derivative of a direction cosine matrix generated from two time-dependent 
+state vectors `a` and `b`, following the directions specified in `seq`. 
 
 ### Inputs 
 - `a` and `b` -- 6-elements state vectors (position and velocity).
@@ -229,9 +225,8 @@ twovectors_to_ddcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross6, δnormaliz
 """
     twovectors_to_ddcm(a, b, seq)
 
-Compute the 2nd-order time derivative of a direction cosine matrix generated 
-from two time-dependent state vectors `a` and `b`, following the directions 
-specified in `seq`. 
+Compute the 2nd-order time derivative of a direction cosine matrix generated from two 
+time-dependent state vectors `a` and `b`, following the directions specified in `seq`. 
 
 ### Inputs 
 - `a` and `b` -- 9-elements state vectors (position and velocity).
@@ -243,8 +238,8 @@ twovectors_to_dddcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²norma
 """
     _two_vectors_to_rot6(a, b, seq::Symbol)
 
-Generate a direction cosine matrix and its time-derivative, minimising the 
-number of repeated computations. 
+Generate a direction cosine matrix and its time-derivative, minimising the number of 
+repeated computations. 
 
 ### See also 
 See `twovectors_to_dcm` and `twovectors_to_ddcm` for more information. 
@@ -281,14 +276,13 @@ end
 """
     _two_vectors_to_rot9(a, b, seq::Symbol)
 
-Generate a direction cosine matrix and its 1st and 2nd-order time-derivatives, 
-minimising the number of repeated computations. 
+Generate a direction cosine matrix and its 1st and 2nd-order time-derivatives, minimising 
+the number of repeated computations. 
 
 ### See also 
 See `twovectors_to_dcm` and `twovectors_to_ddcm` for more information. 
 """
-function _two_vectors_to_rot9(a::AbstractVector, 
-    b::AbstractVector, seq::Symbol)
+function _two_vectors_to_rot9(a::AbstractVector, b::AbstractVector, seq::Symbol)
 
     u, v, w = _two_vectors_basis(a, b, seq, cross9)
 

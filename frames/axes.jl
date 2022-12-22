@@ -153,11 +153,12 @@ end
 """
     add_rotating_axes!(frame, axes, parent, fun[, dfun[, ddfun]])
 """
-function add_rotating_axes!(frame::FrameSystem{T}, axes::AbstractFrameAxes,
-            parent, fun, dfun=nothing, ddfun=nothing) where T
+function add_rotating_axes!(frame::FrameSystem, axes::AbstractFrameAxes,
+            parent, fun, dfun=nothing, ddfun=nothing)
 
     build_axes(frame, axes_name(axes), axes_id(axes), :RotatingAxes, 
                 (t, x, y) -> Rotation(fun(t)), 
+                
                 isnothing(dfun) ? 
                     (t, x, y) -> Rotation(fun(t), derivative(fun, t)) : 
                     (t, x, y) -> Rotation(dfun(t)),

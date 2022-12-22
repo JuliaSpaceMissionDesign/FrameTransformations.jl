@@ -1,3 +1,4 @@
+
 # Points
 
 """
@@ -11,7 +12,7 @@ point_alias(x::Int) = x
 
 
 """ 
-    @point(name, id[, type])
+    @point(name, id, type=nothing)
 
 Define a new point as an alias for the given NAIFID `id`. This macro creates an 
 [`AbstractFramePoint`](@ref) subtype and its singleton instance called `name`. Its type name is 
@@ -69,6 +70,7 @@ macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     end
 end
 
+
 """ 
     build_point(frames, name, NAIFId, class, axesid, f, δf, δ²f; parentid, offset)
 
@@ -92,7 +94,7 @@ and :UpdatablePoint.
 
 ### Notes 
 This is a low-level function and should NOT be directly used. Instead, to add a point 
-to the frame system, see `add_point_ephemeris!`, `add_point_fixed!`, etc...
+to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
 function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::Symbol, 
                 axesid::Int, f::Function, δf::Function, δ²f::Function; 
@@ -150,7 +152,7 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
 
         if class == :FixedPoint
             for i = 1:3 
-                stvs[i] = offset[i]
+                stvs[1][i] = offset[i]
             end
         end
     else 
@@ -176,10 +178,45 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
     nothing 
 end
 
-
+# Default state-vector update function for points that do not require updates
 _empty_stv_update!(::AbstractVector{T}, ::T) where {T} = nothing
 
 
+""" 
+    add_point_root!(frames, point, axes)
+
+Add `point` as a root point to `frames` to initialize the points graph. Only after the 
+addition of a root point, other points may be added aswell. This point is intended as the
+origin, i.e., its position will equal (0., 0., 0.).
+
+### Inputs 
+- `frames` -- [`FrameSystem`](@ref) object 
+- `point` -- Target point instance
+- `axes` -- ID or instance of the axes where the point state-vector is expressed. 
+
+### Notes 
+This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
+points in the same graph are both inadmissible and meaningless.
+
+### Examples 
+```jldoctest
+julia> FRAMES = FrameSystem{Float64}() 
+
+julia> @axes ICRF 1 InternationalCelestialReferenceFrame
+
+julia> @point SSB 0 SolarSystemBarycenter 
+
+julia> add_point_root!(FRAMES, SSB, ICRF)
+
+julia> add_point_root!(FRAMES, SSB, ICRF)
+ERROR: A root-point is already registed in the given FrameSystem.
+[...]
+```
+
+### See also 
+See also [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), [`add_point_time!`](@ref)
+and [`add_point_updatable!`](@ref)
+"""
 function add_point_root!(frames::FrameSystem, point::AbstractFramePoint, axes)
 
     # Check for root-point existence 
@@ -194,6 +231,55 @@ function add_point_root!(frames::FrameSystem, point::AbstractFramePoint, axes)
 end
 
 
+""" 
+    add_point_ephemeris!(frames, point, parent=nothing)
+
+Add `point` as an ephemeris point to `frames`. This function is intended for points whose 
+state-vector is read from ephemeris kernels (i.e., de440.bsp). If a parent point is not
+specified, it will automatically be assigned to the point with respect to which the ephemeris 
+data is written in the kernels.
+
+Ephemeris points only accept as parent points root-points or other ephemeris points.
+
+### Notes 
+This operation is only possible if the ephemeris kernels loaded within `frames` contain 
+data for the NAIF ID associated to `point` and to its `parent`. 
+    
+The axes in which the state-vector is expressed are taken from the ephemeris data: an error 
+is returned if the axes ID is yet to be added to `frames`.
+
+!!! warning 
+    It is expected that the NAIF ID and the axes ID assigned by the user are aligned with 
+    those used to generate the ephemeris kernels. No check are performed on whether these IDs
+    represent the same physical bodies and axes that are intended in the kernels.
+
+
+### Examples 
+```jldoctest
+julia> eph = CalcephProvider(".../de440.bsp")
+
+julia> FRAMES = FrameSystem{Float64}(eph) 
+
+julia> @axes ICRF 1 InternationalCelestialReferenceFrame
+
+julia> @point SSB 0 SolarSystemBarycenter
+
+julia> @point Sun 10 
+
+julia> add_point_root!(FRAMES, SSB, ICRF)
+
+julia> add_point_ephemeris!(FRAMES, Sun)
+
+julia> @point Jupiter 599
+
+julia> add_point_ephemeris!(FRAMES, Jupiter)
+ERROR: Ephemeris data for NAIFID 599 is not available in the kernels loaded [...]
+```
+
+### See also 
+See also [`add_root_point!`](@ref), [`add_point_fixed!`](@ref), [`add_point_time!`](@ref)
+and [`add_point_updatable!`](@ref)
+"""
 function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, parent=nothing)
 
     NAIFId = point_id(point)
@@ -275,6 +361,37 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
 
 end 
 
+
+"""
+    add_point_fixed!(frames, point, parent, axes, offset::AbstractVector)
+
+Add `point` as a fixed point to `frames`. Fixed points are those whose positions have a 
+constant `offset` with respect their `parent` points in the given set of `axes`. Thus, points 
+eligible for this class must have null velocity and acceleration. 
+
+### Examples 
+```jldoctest
+julia> FRAMES = FrameSystem{Float64}() 
+
+julia> @axes SF -3000 SatelliteFrame
+
+julia> @point SC -10000 Spacecraft
+
+julia> @point SolarArrayCenter -10001
+
+julia> add_axes_inertial!(FRAMES, SF)
+
+julia> add_point_root!(FRAMES, SC, SF)
+
+julia> sa_offset = [0.10, 0.15, 0.30]
+
+julia> add_point_fixed!(FRAMES, SolarArrayCenter, SC, SF, sa_offset)
+```
+
+### See also 
+See also [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref), 
+[`add_point_time!`](@ref) and [`add_point_updatable!`](@ref)
+"""
 function add_point_fixed!(frames::FrameSystem{T}, point::AbstractFramePoint, parent, 
             axes, offset::AbstractVector{T}) where {T}
 
@@ -290,6 +407,55 @@ function add_point_fixed!(frames::FrameSystem{T}, point::AbstractFramePoint, par
         
 end
 
+
+"""
+    add_point_updatable!(frames, point, parent, axes)
+
+Add `point` as an updatable point to `frames`. Differently from all the other classes, the 
+state vector for updatable points (expressed in the set of input `axes`) must be manually 
+updated before being used for other computations.  
+
+### Notes 
+This class of points becomes particularly useful if the state vector is not known a-priori, 
+e.g., when it is the output of an optimisation process which exploits the frame system.
+
+### Examples 
+```jldoctest
+julia> FRAMES = FrameSystem{Float64}();
+
+julia> @axes ICRF 1  
+
+julia> add_axes_inertial!(FRAMES, ICRF)
+
+julia> @point Origin 0
+
+julia> @point Satellite 1 
+
+julia> add_point_root!(FRAMES, Origin, ICRF)
+
+julia> add_point_updatable!(FRAMES, Satellite, Origin, ICRF)
+
+julia> y = [10000., 200., 300.]
+
+julia> update_point!(FRAMES, Satellite, y, 0.1)
+
+julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
+3-element SVector{3, Float64} with indices SOneTo(3):
+ 10000.0
+   200.0
+   300.0
+
+julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
+
+julia> get_vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 2
+```
+
+### See also 
+See also [`update_point!`](@ref), [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref), 
+[`add_point_time!`](@ref) and [`add_point_fixed!`](@ref)
+"""
 function add_point_updatable!(frames::FrameSystem, point::AbstractFramePoint, 
                               parent, axes)
 
@@ -298,5 +464,105 @@ function add_point_updatable!(frames::FrameSystem, point::AbstractFramePoint,
                 parentid=point_alias(parent))
 end
 
-# TODO: add TimePoint
-# TODO: update updatable point con epoch\time?
+
+""" 
+    add_point_time!(frames, point, parent, axes, fun, dfun=nothing, ddfun=nothing)
+
+Add `point` as a time point to `frames`. The state vector for these points depends only on 
+time and is computed through the custom functions provided by the user. 
+
+The input functions must accept only time as argument and their outputs must be as follows: 
+
+- **fun**: return a 3-elements vector: position
+- **dfun**: return a 6-elements vector: position and velocity
+- **ddfun**: return a 9-elements vector: position, velocity and acceleration
+
+If `dfun` and/or `ddfun` are not provided, they are computed with automatic differentiation. 
+
+!!! warning 
+    It is expected that the input functions and their ouputs have the correct signature. This 
+    function does not perform any checks on whether the returned vectors have the appropriate 
+    dimensions. 
+
+### Examples 
+```jldoctest
+julia> FRAMES = FrameSystem{Float64}()
+
+julia> @axes ICRF 1 
+
+julia> add_axes_inertial!(FRAMES, ICRF)
+
+julia> @point Origin 0 
+
+julia> add_point_root!(FRAMES, Origin, ICRF)
+
+julia> @point Satellite 1 
+
+julia> satellite_pos(t::T) where T = [cos(t), sin(t), 0]
+
+julia> add_point_time!(FRAMES, Satellite, Origin, ICRF, satellite_pos)
+
+julia> get_vector6(FRAMES, Origin, Satellite, ICRF, π/6)
+6-element SVector{6, Float64} with indices SOneTo(6):
+  0.8660254037844387
+  0.49999999999999994
+  0.0
+ -0.49999999999999994
+  0.8660254037844387
+  0.0
+```
+### See also 
+See also [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
+and [`add_point_updatable!`](@ref)
+"""
+function add_point_time!(frames::FrameSystem, point::AbstractFramePoint, parent, axes,
+                        fun, dfun=nothing, ddfun=nothing)
+
+    
+    build_point(frames, point_name(point), point_id(point), :TimePoint, axes_alias(axes), 
+                (y, t) -> _tpoint_fun(y, t, fun), 
+
+                isnothing(dfun) ? 
+                    (y, t) -> _tpoint_δfun_ad(y, t, fun) : 
+                    (y, t) -> _tpoint_δfun(y, t, dfun),
+
+                isnothing(ddfun) ? 
+                    (isnothing(dfun) ?  
+                        (y, t) -> _tpoint_δ²fun_ad(y, t, fun) : 
+                        (y, t) -> _tpoint_δ²fun_ad(y, t, fun, dfun)) : 
+                    (y, t) -> _tpoint_δ²fun(y, t, ddfun); 
+                
+                parentid=point_alias(parent))
+end
+
+
+# Default function wrappers for time point functions! 
+for (i, fun) in enumerate([:_tpoint_fun, :_tpoint_δfun, :_tpoint_δ²fun])
+    @eval begin 
+        function ($fun)(y, t, fn)
+            @inbounds y[1:3*$i] .= fn(t) 
+            nothing 
+        end
+    end 
+end
+
+# Function wrapper for time-point function derivative! 
+@inbounds function _tpoint_δfun_ad(y, t, fun) 
+    y[1:3] .= fun(t)
+    y[4:6] .= derivative(fun, t)
+    nothing 
+end
+
+# Function wrappers for time-point second order derivative! 
+@inbounds function _tpoint_δ²fun_ad(y, t, fun)
+    y[1:3] .= fun(t) 
+    y[4:6] .= derivative(fun, t)
+    y[7:9] .= derivative(τ->derivative(fun, τ), t)
+    nothing
+end
+
+@inbounds function _tpoint_δ²fun_ad(y, t, fun, δfun)
+    y[1:6] = δfun(t) 
+    y[7:9] = derivative(τ->derivative(fun, τ), t)
+    nothing
+end
