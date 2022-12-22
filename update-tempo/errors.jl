@@ -1,0 +1,3 @@
+using Basic: AstronautGenericException, @create_module_error
+
+@create_module_error EpochConversionError AstronautGenericException "ephemeris conversion errors"
