@@ -1,8 +1,42 @@
 # Points
 
-point_alias(x::AbstractFramePoint) = point_id(x)
+"""
+    point_alias(ax::AbstractFramePoint)
+
+Return the NAIF ID associated to the input point. 
+
+"""
+@inline point_alias(x::AbstractFramePoint) = point_id(x)
 point_alias(x::Int) = x 
 
+
+""" 
+    @point(name, id[, type])
+
+Define a new point as an alias for the given NAIFID `id`. This macro creates an 
+[`AbstractFramePoint`](@ref) subtype and its singleton instance called `name`. Its type name is 
+obtained by appending 'Point' to either `name` or `type` (if provided).
+
+### Examples
+
+```jldoctest
+julia> @point(Venus, 299)
+
+julia> typeof(Venus)
+VenusPoint 
+
+julia> point_alias(Venus)
+299
+
+julia> @point(EMB, 3, EarthMoonBarycenter)
+
+julia> typeof(EMB) 
+EarthMoonBarycenterPoint
+
+julia> point_alias(EMB) 
+3 
+```
+"""
 macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
 
@@ -18,7 +52,7 @@ macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
         """
             $($typ_str) <: AbstractFramePoint
 
-        A type representing a point with ID $($id). 
+        A type representing a point with NAIF ID $($id). 
         """
         struct $(esc(type)) <: AbstractFramePoint end
 
@@ -35,6 +69,31 @@ macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     end
 end
 
+""" 
+    build_point(frames, name, NAIFId, class, axesid, f, δf, δ²f; parentid, offset)
+
+Create and add a [`FramePointNode`](@ref) to `frames`, based on the input parameters. 
+Current supported point classes are: :RootPoint, :TimePoint, :EphemerisPoint, :FixedPoint 
+and :UpdatablePoint.
+
+### Inputs 
+- `frames` -- Target frame system 
+- `name` -- Point name, must be unique within `frames` 
+- `NAIFId` -- Point NAIF ID, must be unique within `frames`
+- `class` -- Point class. 
+- `axesid` -- ID of the axes in which the state vector of the point is expressed. 
+- `f` -- f!(y, t) to update the point position. 
+- `δf` -- f!(y, t) to update the point position and velocity. 
+- `δ²f` -- f!(y, t) to update the point position, velocity and acceleration. 
+
+### Keywords  
+- `parentid` -- NAIF ID of the parent point 
+- `offset` -- Position offset with respect to a parent point. Required only for FixedPoints.
+
+### Notes 
+This is a low-level function and should NOT be directly used. Instead, to add a point 
+to the frame system, see `add_point_ephemeris!`, `add_point_fixed!`, etc...
+"""
 function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::Symbol, 
                 axesid::Int, f::Function, δf::Function, δ²f::Function; 
                 parentid=nothing, offset=nothing) where {T}
@@ -239,8 +298,5 @@ function add_point_updatable!(frames::FrameSystem, point::AbstractFramePoint,
                 parentid=point_alias(parent))
 end
 
-
-
-
-
-
+# TODO: add TimePoint
+# TODO: update updatable point con epoch\time?
