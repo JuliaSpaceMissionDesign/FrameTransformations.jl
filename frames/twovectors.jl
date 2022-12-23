@@ -1,3 +1,4 @@
+import LinearAlgebra: cross 
 
 """
     normalize(v::AbstractVector)
