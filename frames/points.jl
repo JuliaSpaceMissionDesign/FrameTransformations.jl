@@ -520,24 +520,24 @@ function add_point_time!(frames::FrameSystem, point::AbstractFramePoint, parent,
 
     
     build_point(frames, point_name(point), point_id(point), :TimePoint, axes_alias(axes), 
-                (y, t) -> _tpoint_fun(y, t, fun), 
+                (y, t) -> _tpoint_fun!(y, t, fun), 
 
                 isnothing(dfun) ? 
-                    (y, t) -> _tpoint_δfun_ad(y, t, fun) : 
-                    (y, t) -> _tpoint_δfun(y, t, dfun),
+                    (y, t) -> _tpoint_δfun_ad!(y, t, fun) : 
+                    (y, t) -> _tpoint_δfun!(y, t, dfun),
 
                 isnothing(ddfun) ? 
                     (isnothing(dfun) ?  
-                        (y, t) -> _tpoint_δ²fun_ad(y, t, fun) : 
-                        (y, t) -> _tpoint_δ²fun_ad(y, t, fun, dfun)) : 
-                    (y, t) -> _tpoint_δ²fun(y, t, ddfun); 
+                        (y, t) -> _tpoint_δ²fun_ad!(y, t, fun) : 
+                        (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, dfun)) : 
+                    (y, t) -> _tpoint_δ²fun!(y, t, ddfun); 
                 
                 parentid=point_alias(parent))
 end
 
 
 # Default function wrappers for time point functions! 
-for (i, fun) in enumerate([:_tpoint_fun, :_tpoint_δfun, :_tpoint_δ²fun])
+for (i, fun) in enumerate([:_tpoint_fun!, :_tpoint_δfun!, :_tpoint_δ²fun!])
     @eval begin 
         function ($fun)(y, t, fn)
             @inbounds y[1:3*$i] .= fn(t) 
@@ -547,21 +547,21 @@ for (i, fun) in enumerate([:_tpoint_fun, :_tpoint_δfun, :_tpoint_δ²fun])
 end
 
 # Function wrapper for time-point function derivative! 
-@inbounds function _tpoint_δfun_ad(y, t, fun) 
+@inbounds function _tpoint_δfun_ad!(y, t, fun) 
     y[1:3] .= fun(t)
     y[4:6] .= derivative(fun, t)
     nothing 
 end
 
 # Function wrappers for time-point second order derivative! 
-@inbounds function _tpoint_δ²fun_ad(y, t, fun)
+@inbounds function _tpoint_δ²fun_ad!(y, t, fun)
     y[1:3] .= fun(t) 
     y[4:6] .= derivative(fun, t)
     y[7:9] .= derivative(τ->derivative(fun, τ), t)
     nothing
 end
 
-@inbounds function _tpoint_δ²fun_ad(y, t, fun, δfun)
+@inbounds function _tpoint_δ²fun_ad!(y, t, fun, δfun)
     y[1:6] = δfun(t) 
     y[7:9] = derivative(τ->derivative(fun, τ), t)
     nothing
