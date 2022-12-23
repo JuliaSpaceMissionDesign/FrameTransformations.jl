@@ -3,7 +3,7 @@ using Test
 
 @testset "Basic" verbose=true begin
     @eval begin
-        modules = [:Utils, :Bodies, :Tempo, :Orient]
+        modules = [:Tempo]
         for m in modules
             @testset "$m" verbose=true begin 
                 include("$m/$m.jl")
