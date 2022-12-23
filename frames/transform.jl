@@ -337,12 +337,12 @@ function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector,
                         axesid::Int, t::Number)
     
     @inbounds if v.order == 1 
-        return get_vector_3(frame, v.to, v.from, axesid, t)        
+        return get_vector3(frame, v.from, v.to, axesid, t)        
     elseif v.order == 2 
-        stv = get_vector_6(frame, v.to, v.from, axesid, t)
+        stv = get_vector6(frame, v.from, v.to, axesid, t)
         return SA[stv[4], stv[5], stv[6]]
     else 
-        stv = get_vector_9(frame, v.to, v.from, axesid, t)
+        stv = get_vector9(frame, v.from, v.to, axesid, t)
         return SA[stv[7], stv[8], stv[9]]
     end
 
@@ -368,9 +368,9 @@ frame system currently is uncapable of computing the jerk.
                         axesid::Int, t::Number)
     
     @inbounds if v.order == 1 
-        return get_vector_6(frame, v.to, v.from, axesid, t)        
+        return get_vector6(frame, v.from, v.to, axesid, t)        
     elseif v.order == 2 
-        stv = get_vector_9(frame, v.to, v.from, axesid, t)
+        stv = get_vector9(frame, v.from, v.to, axesid, t)
         return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9]]
     end
 
@@ -398,7 +398,7 @@ function _get_comp_axes_vector9(frame::FrameSystem, v::ComputableAxesVector,
             axesid::Int, t::Number)
     
     if v.order == 1 
-        return get_vector_9(frame, v.to, v.from, axesid, t)        
+        return get_vector9(frame, v.from, v.to, axesid, t)        
     end
 
     throw(ErrorException("Unable to compute a vector of order $(2+v.order). "*

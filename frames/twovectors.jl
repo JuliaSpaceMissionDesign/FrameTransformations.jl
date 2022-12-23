@@ -235,17 +235,13 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 """
 twovectors_to_dddcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²normalize)
 
+# Generate a dcm and two identity rotations 
+function _two_vectors_to_rot3(a::AbstractVector{T}, b::AbstractVector{T}, seq::Symbol) where T 
+    return twovectors_to_dcm(a, b, seq), DCM(T(1)I), DCM(T(1)I)
+end 
 
-"""
-    _two_vectors_to_rot6(a, b, seq::Symbol)
-
-Generate a direction cosine matrix and its time-derivative, minimising the number of 
-repeated computations. 
-
-### See also 
-See `twovectors_to_dcm` and `twovectors_to_ddcm` for more information. 
-"""
-function _two_vectors_to_rot6(a::AbstractVector, b::AbstractVector, seq::Symbol)
+# Generate a dcm, its derivative and a null rotation
+function _two_vectors_to_rot6(a::AbstractVector{T}, b::AbstractVector{T}, seq::Symbol) where T
 
     u, v, w = _two_vectors_basis(a, b, seq, cross6)
 
@@ -270,7 +266,7 @@ function _two_vectors_to_rot6(a::AbstractVector, b::AbstractVector, seq::Symbol)
 
     end
 
-    return dcm, δdcm
+    return dcm, δdcm, DCM(T(1)I)
 end
 
 
