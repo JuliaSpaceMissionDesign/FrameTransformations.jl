@@ -1,2 +1,5 @@
 include("errors.jl")
 include("convert.jl")
+include("parse.jl")
+include("offset.jl")
+include("scales.jl")

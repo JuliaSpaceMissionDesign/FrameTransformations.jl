@@ -44,7 +44,7 @@ function hms2fd(h::N, m::N, s::T) where {N <: Integer, T <: AbstractFloat}
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid seconds provided, must be between 0.0 and 59.99"
+                "invalid seconds provided, must be between 0.0 and 59.99999999999999"
          ))
     end 
     return T(((60.0*(60.0*h + m))+s)/86400.0)
@@ -172,11 +172,9 @@ end
 Julian Date to Gregorian year, month, day, and fraction of a day.
 
 ### Inputs
-
 -  `dj1,dj2` -- Julian Date (Notes 1, 2)
 
 ### Outputs 
-
 - `Y::Integer` -- year
 - `M::Integer` -- month 
 - `D::Integer` -- day 
