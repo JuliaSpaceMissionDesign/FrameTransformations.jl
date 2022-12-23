@@ -1,4 +1,3 @@
-using Basic.Utils: format_camelcase
 
 """
     axes_alias(ax::AbstractFrameAxes)
@@ -153,7 +152,7 @@ end
 """
     add_rotating_axes!(frame, axes, parent, fun[, dfun[, ddfun]])
 """
-function add_rotating_axes!(frame::FrameSystem, axes::AbstractFrameAxes,
+function add_axes_rotating!(frame::FrameSystem, axes::AbstractFrameAxes,
             parent, fun, dfun=nothing, ddfun=nothing)
 
     build_axes(frame, axes_name(axes), axes_id(axes), :RotatingAxes, 
@@ -169,7 +168,7 @@ function add_rotating_axes!(frame::FrameSystem, axes::AbstractFrameAxes,
                                               derivative(τ->derivative(fun, τ), t)) : 
 
                         (t, x, y) -> Rotation(dfun(t)..., derivative(τ->derivative(fun, τ), t))) : 
-                    (t, x, y) -> Rotation(ddfun),
+                    (t, x, y) -> Rotation(ddfun(t)),
 
                 parentid=get_alias(parent))
 
@@ -179,7 +178,7 @@ end
 """
     add_computable_axes!(frame, axes, parent, v1, v2, seq)
 """
-function add_computable_axes!(frame::FrameSystem, axes::AbstractFrameAxes, parent, 
+function add_axes_computable!(frame::FrameSystem, axes::AbstractFrameAxes, parent, 
             v1::ComputableAxesVector, v2::ComputableAxesVector, seq::Symbol) 
 
     !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) && throw(ArgumentError(
