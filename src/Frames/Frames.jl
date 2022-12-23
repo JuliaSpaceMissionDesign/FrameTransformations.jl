@@ -1,21 +1,9 @@
 module Frames 
+    using Logging
+    import ForwardDiff.derivative
+    using Basic.Utils: format_camelcase
+    using Basic.MappedGraphs
 
-    using StaticArrays
-    using LinearAlgebra
-    using ReferenceFrameRotations
-    
-    using Basic.Tempo
-    using Basic.Orient
+    include("rotation.jl")
 
-    include("abstract.jl")
-    include("graph.jl")
-    include("transform.jl")
-
-    export Rotation
-
-    include("Definitions/types.jl")
-    include("Definitions/fixedoffsets.jl")
-    include("Definitions/default.jl")
-    include("Definitions/planets.jl")
-    include("Definitions/moon.jl")
 end
