@@ -5,6 +5,8 @@ version = "0.1.2"
 
 [deps]
 CALCEPH = "1537fe66-4725-5aba-80f4-3a74792cecc1"
+FunctionWrappers = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 JSONSchema = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"

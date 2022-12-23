@@ -3,6 +3,9 @@ module Basic
     using Reexport
     using Logging
     
+    include(joinpath("MappedGraphs.jl"))
+    @reexport using.MappedGraphs
+
     # Common 
     include("errors.jl")
     include("graph.jl")

@@ -5,111 +5,17 @@ export Date, Time,
        hour, minute, second, fraction_of_second,
        fraction_of_day, second_in_day, DateTime
 
-########
-# DATE #
-########
-
-"""
-    Date{N<:Integer}
-
-Type to represent a calendar date.
-
-### Fields
-
-- `year` -- year
-- `month` -- month 
-- `day` -- day
-
-### Constructors 
-
-- `Date(year::N, month::N, day::N)` -- is the default constructor.
-
-- `Date(offset::N) where {N<:Integer}` -- initialize from **integer** day 
-   offset from `2000-01-01`.
-
-- `Date(d::Date, offset::N) where {N<:Integer}` -- day offset from `d`.
-
-- `Date(year::N, dayinyear::N) where {N<:Integer}` -- initialize giving the 
-   year and the day of the year.
-
-- `Date(dt::DateTime)` -- extract date from [`DateTime`](@ref) objects.
-"""
-struct Date{N<:Integer}
-    year::N 
-    month::N 
-    day::N 
-    function Date(year::N, month::N, day::N) where {N<:Integer}
-        cal2jd(year, month, day)  # check
-        return new{N}(year, month, day)
-    end
-end 
-
-"""
-    year(d::Date)
-
-Get year associated to `Date` type.
-"""
-year(d::Date) = d.year
-
-"""
-    month(d::Date)
-
-Get month associated to `Date` type.
-"""
-month(d::Date) = d.month
-
-"""
-    day(d::Date)
-
-Get day associated to `Date` type.
-"""
-day(d::Date) = d.day
-
-"""
-    isleapyear(d::Date)::Bool
-
-Find if `Date` has a leap year.
-"""
-isleapyear(d::Date) = isleapyear(year(d))
-
-
-"""
-    find_dayinyear(d::Date)
-
-Find day in the year.
-"""
-find_dayinyear(d::Date) = find_dayinyear(month(d), day(d), isleapyear(d))
-
-
-"""
-    cal2jd(d::Date)
-
-Convert Gregorian calendar date to Julian Date.
-
-### Outputs
-- `j2000` -- J2000 zero point: always 2451545
-- `d` -- J2000 Date for 12 hrs
-"""
-cal2jd(d::Date) = cal2jd(year(d), month(d), day(d))
-
-"""
-    j2000(d::Date)
-
-Convert Gregorian calendar date Julian Date past J2000
-"""
-j2000(d::Date) = j2000(cal2jd(d)...)
-
 function lastj2000dayofyear(year::N) where {N<:Integer}
     return 365 * year + year ÷ 4 - year ÷ 100 + year ÷ 400 - 730120
 end
 
 """
-    find_year(j2000d::N) where {N<:Integer}
+    find_year(d::N) where {N<:Integer}
 
 Find year from j2000 day
 """
-function find_year(j2000d::N) where {N<:Integer}
-    j2d = ifelse(j2000d isa Int32, widen(j2000d), j2000d)
+function find_year(d::N) where {N<:Integer}
+    j2d = ifelse(d isa Int32, widen(d), d)
     year = (400 * j2d + 292194288) ÷ 146097
     # The previous estimate is one unit too high in some rare cases
     # (240 days in the 400 years gregorian cycle, about 0.16%)
@@ -141,9 +47,98 @@ function find_day(dayinyear::N, month::N, isleap::Bool) where {N<:Integer}
     return dayinyear - previous_days[month]
 end
 
-function Date(j2000offset::N) where {N<:Integer}
-    year = find_year(j2000offset)
-    dayinyear = j2000offset - lastj2000dayofyear(year - 1)
+
+########
+# DATE #
+########
+
+"""
+    Date{N<:Integer}
+
+Type to represent a calendar date.
+
+### Fields
+
+- `year` -- year
+- `month` -- month 
+- `day` -- day
+
+### Constructors 
+
+- `Date(year::N, month::N, day::N)` -- is the default constructor.
+
+- `Date(offset::N) where {N<:Integer}` -- initialize from **integer** day 
+    offset from `2000-01-01`.
+
+- `Date(d::Date, offset::N) where {N<:Integer}` -- day offset from `d`.
+
+- `Date(year::N, dayinyear::N) where {N<:Integer}` -- initialize giving the 
+    year and the day of the year.
+
+- `Date(dt::DateTime)` -- extract date from [`DateTime`](@ref) objects.
+"""
+struct Date 
+    year::Int
+    month::Int 
+    day::Int
+end
+
+"""
+    year(d::Date)
+
+Get year associated to `Date` type.
+"""
+year(d::Date) = d.year
+
+"""
+    month(d::Date)
+
+Get month associated to `Date` type.
+"""
+month(d::Date) = d.month
+
+"""
+    day(d::Date)
+
+Get day associated to `Date` type.
+"""
+day(d::Date) = d.day
+
+"""
+    isleapyear(d::Date)::Bool
+
+Find if `Date` has a leap year.
+"""
+isleapyear(d::Date) = isleapyear(year(d))
+
+"""
+    find_dayinyear(d::Date)
+
+Find day in the year.
+"""
+find_dayinyear(d::Date) = find_dayinyear(month(d), day(d), isleapyear(d))
+
+"""
+    cal2jd(d::Date)
+
+Convert Gregorian calendar date to Julian Date.
+
+### Outputs
+- `j2000` -- J2000 zero point: always 2451545
+- `d` -- J2000 Date for 12 hrs
+"""
+cal2jd(d::Date) = cal2jd(year(d), month(d), day(d))
+
+"""
+    j2000(d::Date)
+
+Convert Gregorian calendar date Julian Date past J2000
+"""
+j2000(d::Date) = j2000(cal2jd(d)...)
+
+function Date(offset::N) where {N<:Integer}
+    year = find_year(offset)
+    dayinyear = offset - lastj2000dayofyear(year - 1)
     ly = isleapyear(year)
     month = find_month(dayinyear, ly)
     day = find_day(dayinyear, month, ly)
@@ -161,26 +156,26 @@ function Date(year::N, dayinyear::N) where {N<:Integer}
 end
 
 Date(d::Date, offset::N) where {N<:Integer} = Date(convert(N, j2000(d)) + offset)
+
 function Base.show(io::IO, d::Date)
     return print(io, year(d), "-", lpad(month(d), 2, '0'), "-", lpad(day(d), 2, '0'))
 end
 
+# Operations 
 function Base.isapprox(a::Date, b::Date; kwargs...)
     return a.year == b.year &&
-           a.month == b.month &&
-           a.day == b.day
+            a.month == b.month &&
+            a.day == b.day
 end
-
 Base.:+(d::Date, x::N) where {N<:Integer} = Date(d, x)
 Base.:-(d::Date, x::N) where {N<:Integer} = Date(d, -x)
-
 
 ########
 # TIME #
 ########
 
 """
-    Time{N<:Integer, T<:AbstractFloat}
+    Time{T<:AbstractFloat}
 
 A type representing a time of the day.
 
@@ -193,7 +188,7 @@ A type representing a time of the day.
 
 ### Constructors
 
-- `Time(hour::N, minute::N, second::N, 
+- `Time{T}(hour::N, minute::N, second::N, 
     fraction::T) where {N<:Integer, T<:AbstractFloat}` -- default constructor. 
 
 - `Time(hour::N, minute::N, second::T) where {N<:Integer, T<:AbstractFloat}` -- 
@@ -204,10 +199,10 @@ A type representing a time of the day.
 
 - `Time(dt::DateTime)` -- extract time from [`DateTime`](@ref) objects.
 """
-struct Time{N, T}
-    hour::N
-    minute::N
-    second::N 
+struct Time{T}
+    hour::Int
+    minute::Int
+    second::Int
     fraction::T 
     function Time(hour::N, minute::N, 
         second::N, fraction::T) where {N<:Integer, T<:AbstractFloat}
@@ -220,7 +215,7 @@ struct Time{N, T}
         elseif fraction < 0 || fraction > 1
             throw(ArgumentError("`fraction` must be a number between 0 and 1."))
         end
-        return new{N, T}(hour, minute, second, fraction)
+        return new{T}(hour, minute, second, fraction)
     end
 end
 
@@ -355,7 +350,7 @@ function Base.show(io::IO, t::Time)
     h = lpad(hour(t), 2, '0')
     m = lpad(minute(t), 2, '0')
     s = lpad(second(t), 2, '0')
-    f = rpad(millisecond(t), 3, '0')
+    f = lpad(millisecond(t), 3, '0')
     return print(io, h, ":", m, ":", s, ".", f)
 end
 
@@ -375,7 +370,7 @@ A type wrapping a date and a time since a reference date.
 
 ### Constructors 
 
-- `DateTime{N, T}(date::Date{N}, time::Time{N, T})` -- default constructor.
+- `DateTime{T}(date::Date{N}, time::Time{N, T})` -- default constructor.
 
 - `DateTime(year::N, month::N, day::N, hour::N, min::N, 
     sec::N, frac::T=0.0) where {N<:Integer, T<:AbstractFloat}` -- full constructor
@@ -385,16 +380,15 @@ A type wrapping a date and a time since a reference date.
 
 - `DateTime(seconds::T) where {T<:AbstractFloat}` -- parse from seconds since J2000.
 
-- `DateTime(d::Date{N}, sec::T) where {T<:AbstractFloat, N<:Integer}` -- parse 
-    as seconds since `d`.
+- `DateTime(d::Date, sec::T) where {T<:AbstractFloat}` -- parse as seconds since `d`.
 
 - `DateTime{N, T}(dt::DateTime) where {N, T}` -- ghost constructor
 
 - `DateTime(e::Epoch)` -- construct from `Epoch`
 """
-struct DateTime{N<:Integer, T<:AbstractFloat} <: AbstractDateTimeEpoch
-    date::Date{N}
-    time::Time{N, T}
+struct DateTime{T<:AbstractFloat}
+    date::Date
+    time::Time{T}
 end
 
 function DateTime(year::N, month::N, day::N, hour::N, min::N, 
@@ -414,7 +408,7 @@ function DateTime(seconds::T) where {T<:AbstractFloat}
     DateTime(y, m, d, H, M, s, Sf-s)
 end 
 
-function DateTime(d::Date{N}, sec::T) where {T<:AbstractFloat, N<:Integer}
+function DateTime(d::Date, sec::T) where {T<:AbstractFloat}
     jd1 = j2000(d) + sec/DAY2SEC
     y, m, d, H, M, Sf = jd2calhms(DJ2000, jd1)
     s = floor(Int64, Sf)
@@ -423,7 +417,7 @@ end
 
 Date(dt::DateTime) = dt.date
 Time(dt::DateTime) = dt.time
-DateTime{N, T}(dt::DateTime) where {N, T} = dt
+DateTime{T}(dt::DateTime{T}) where {T} = dt
 
 """
     year(d::DateTime)
@@ -472,7 +466,7 @@ Base.show(io::IO, dt::DateTime) = print(io, Date(dt), "T", Time(dt))
 """
     j2000(dt::DateTime)
 
-Convert `DateTime` in Julian Date since J2000 (days)
+Convert `DateTime` in Julian days since J2000
 """
 function j2000(dt::DateTime)
     jd1, jd2 = calhms2jd(
@@ -484,7 +478,7 @@ end
 """
     j2000s(dt::DateTime)
 
-Convert `DateTime` in Julian Date since J2000 (seconds)
+Convert `DateTime` to seconds since J2000
 """
 function j2000s(dt::DateTime)
     return j2000(dt::DateTime)*DAY2SEC

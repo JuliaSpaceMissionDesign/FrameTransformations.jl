@@ -1,5 +1,9 @@
+using Basic.Tempo
+
 include("convert.jl")
-include("parse_epoch.jl")
+include("parse.jl")
+include("offset.jl")
+include("scales.jl")
 include("datetime.jl")
 include("origin.jl")
-include("scales.jl")
+include("epoch.jl")
