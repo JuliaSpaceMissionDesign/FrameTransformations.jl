@@ -14,14 +14,14 @@ point_alias(x::Int) = x
 """ 
     @point(name, id, type=nothing)
 
-Define a new point as an alias for the given NAIFID `id`. This macro creates an 
-[`AbstractFramePoint`](@ref) subtype and its singleton instance called `name`. Its type name is 
-obtained by appending 'Point' to either `name` or `type` (if provided).
+Define a new point instance to alias the given NAIFID `id`. This macro creates an 
+[`AbstractFramePoint`](@ref) subtype and its singleton instance called `name`. Its type name 
+is obtained by appending 'Point' to either `name` or `type` (if provided).
 
 ### Examples
 
 ```jldoctest
-julia> @point(Venus, 299)
+julia> @point Venus 299
 
 julia> typeof(Venus)
 VenusPoint 
@@ -29,7 +29,7 @@ VenusPoint
 julia> point_alias(Venus)
 299
 
-julia> @point(EMB, 3, EarthMoonBarycenter)
+julia> @point EMB 3 EarthMoonBarycenter
 
 julia> typeof(EMB) 
 EarthMoonBarycenterPoint
@@ -37,6 +37,9 @@ EarthMoonBarycenterPoint
 julia> point_alias(EMB) 
 3 
 ```
+
+### See also 
+See also [`axes`](@ref) and [`point_alias`](@ref).
 """
 macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
@@ -74,9 +77,9 @@ end
 """ 
     build_point(frames, name, NAIFId, class, axesid, f, δf, δ²f; parentid, offset)
 
-Create and add a [`FramePointNode`](@ref) to `frames`, based on the input parameters. 
-Current supported point classes are: :RootPoint, :TimePoint, :EphemerisPoint, :FixedPoint 
-and :UpdatablePoint.
+Create and add a [`FramePointNode`](@ref) to `frames` based on the input parameters. 
+Current supported point classes are: `:RootPoint`, `:TimePoint`, `:EphemerisPoint`, `:FixedPoint`
+and `:UpdatablePoint`.
 
 ### Inputs 
 - `frames` -- Target frame system 
@@ -84,16 +87,16 @@ and :UpdatablePoint.
 - `NAIFId` -- Point NAIF ID, must be unique within `frames`
 - `class` -- Point class. 
 - `axesid` -- ID of the axes in which the state vector of the point is expressed. 
-- `f` -- f!(y, t) to update the point position. 
-- `δf` -- f!(y, t) to update the point position and velocity. 
-- `δ²f` -- f!(y, t) to update the point position, velocity and acceleration. 
+- `f` -- fun!(y, t) to update the point position. 
+- `δf` -- fun!(y, t) to update the point position and velocity. 
+- `δ²f` -- fun!(y, t) to update the point position, velocity and acceleration. 
 
 ### Keywords  
-- `parentid` -- NAIF ID of the parent point 
+- `parentid` -- NAIF ID of the parent point. Not required only for the root point.
 - `offset` -- Position offset with respect to a parent point. Required only for FixedPoints.
 
 ### Notes 
-This is a low-level function and should NOT be directly used. Instead, to add a point 
+This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
 to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
 function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::Symbol, 
@@ -204,11 +207,15 @@ julia> FRAMES = FrameSystem{Float64}()
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
+julia> add_axes_inertial!(FRAMES, ICRF)
+
 julia> @point SSB 0 SolarSystemBarycenter 
 
 julia> add_point_root!(FRAMES, SSB, ICRF)
 
-julia> add_point_root!(FRAMES, SSB, ICRF)
+julia> @point Sun 10
+
+julia> add_point_root!(FRAMES, Sun, ICRF)
 ERROR: A root-point is already registed in the given FrameSystem.
 [...]
 ```
@@ -261,6 +268,8 @@ julia> eph = CalcephProvider(".../de440.bsp")
 julia> FRAMES = FrameSystem{Float64}(eph) 
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
+
+julia> add_axes_inertial!(FRAMES, ICRF)
 
 julia> @point SSB 0 SolarSystemBarycenter
 
@@ -375,11 +384,11 @@ julia> FRAMES = FrameSystem{Float64}()
 
 julia> @axes SF -3000 SatelliteFrame
 
+julia> add_axes_inertial!(FRAMES, SF)
+
 julia> @point SC -10000 Spacecraft
 
 julia> @point SolarArrayCenter -10001
-
-julia> add_axes_inertial!(FRAMES, SF)
 
 julia> add_point_root!(FRAMES, SC, SF)
 
