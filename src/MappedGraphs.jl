@@ -19,13 +19,40 @@ module MappedGraphs
         has_vertex, 
         has_path   
 
-
+    """
+        AbstractGraphNode
+    
+    Abstract type for all graph nodes types.
+    """
     abstract type AbstractGraphNode end 
 
+    """
+        get_node_id(b::AbstractGraphNode)   
+    
+    Get the mapped-id of an `AbstractGraphNode`.
+
+    !!! warning
+        This method is abstract! A concrete implementation for the desired body shall be defined.
+    """
     function get_node_id(b::AbstractGraphNode)
         throw(ErrorException("`get_node_id` shall be implemented for $b"))
     end
 
+    """
+        MappedNodeGraph{N, G}
+    
+    Create a graph with mapped nodes. 
+
+    ### Fields 
+    - `graph` -- Graph
+    - `mid` -- Mapped id to nodes dictionary
+    - `nodes` -- Mapped nodes 
+    - `edges` -- List of the edges between the nodes 
+    - `paths` -- List of the available paths in the graph
+
+    ### Constructors
+    - `MappedNodeGraph{N}(g::G) where {G <: AbstractGraph, N <: AbstractGraphNode}`
+    """
     struct MappedNodeGraph{N, G}
         graph::G             
         mid::Dict{Int, Int} # mapped ids 
@@ -44,11 +71,40 @@ module MappedGraphs
     end
 
     MappedNodeGraph{N}(g=SimpleGraph()) where {N} = MappedNodeGraph{N}(g)
+    
+    """
+        MappedGraph(::Type{N}) where {N}
+    
+    Construct a [`MappedNodeGraph`](@ref) from node type `N`.
+    """
     MappedGraph(::Type{N}) where {N} = MappedNodeGraph{N}(SimpleGraph{Int}())
+    
+    """
+        MappedDiGraph(::Type{N}) where {N}
+    
+    Construct a directed [`MappedNodeGraph`](@ref) from node type `N`.
+    """
     MappedDiGraph(::Type{N}) where {N} = MappedNodeGraph{N}(SimpleDiGraph{Int}())
 
+    """
+        get_mappedid(g::MappedNodeGraph, node::Int)
+
+    Get the mappeid associated with a node.
+    """
     @inline get_mappedid(g::MappedNodeGraph, node::Int) = g.mid[node]
+
+    """
+        get_mappednode(g::MappedNodeGraph, mid::Int)
+
+    Get the node associated to the given mapped id.
+    """
     @inline get_mappednode(g::MappedNodeGraph, mid::Int) = @inbounds g.nodes[mid]
+
+    """
+        get_node(g::MappedNodeGraph, node::Int)
+
+    Get the node associated with a node index.
+    """
     @inline get_node(g::MappedNodeGraph, node::Int) = get_mappednode(g, get_mappedid(g, node))
 
     Base.isempty(g::MappedNodeGraph) = Base.isempty(g.nodes)
