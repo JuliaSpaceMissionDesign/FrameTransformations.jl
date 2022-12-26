@@ -20,8 +20,7 @@ function get_leapseconds(;
         _leapseconds,
         url,
         file="leapseconds_latest.tls",
-        # dir=joinpath(@__DIR__, "..", "..", "ext"),
-        dir="ext",
+        dir=joinpath(@__DIR__, "..", "..", "ext"),
         updates=:monthly
     )
 
@@ -30,7 +29,7 @@ function get_leapseconds(;
     t = Vector{Float64}()
     leap = Vector{Float64}()
     re = r"(?<dat>[0-9]{2}),\s+@(?<date>[0-9]{4}-[A-Z]{3}-[0-9])"
-    lines = readlines(joinpath("ext", "leapseconds_latest.tls"))
+    lines = readlines(joinpath(@__DIR__, "..", "..", "ext", "leapseconds_latest.tls"))
     for line in lines
         s = string(line)
         if occursin(re, s)

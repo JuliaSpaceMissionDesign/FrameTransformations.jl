@@ -22,12 +22,13 @@ makedocs(;
         #     "Overview" => "manual.md"
         # ],
         "Modules" => [
-            "Bodies" => "Modules/bodies.md",
+            # "Bodies" => "Modules/bodies.md",
             "Tempo" => "Modules/time.md",
             "Ephemeris" => "Modules/ephem.md",
             "Orient" => "Modules/orient.md",
-            # "Frames" => "Modules/frames.md",
-            "Utils" => "Modules/utils.md"
+            "Frames" => "Modules/frames.md",
+            "Utils" => "Modules/utils.md",
+            "Graphs" => "Modules/graph.md"
         ]
     ],
     strict = !("strict=false" in ARGS),
