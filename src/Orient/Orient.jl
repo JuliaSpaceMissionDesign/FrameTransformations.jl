@@ -7,8 +7,6 @@ module Orient
     using Basic.Tempo 
     using Basic.Utils: arcsec2rad
 
-    include("Planets/abstract.jl")
-    include("Planets/angles.jl")
-
     include("Earth/Earth.jl")
+    include("Earth/eopdata.jl")
 end
