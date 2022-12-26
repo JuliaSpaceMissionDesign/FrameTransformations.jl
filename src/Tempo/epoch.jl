@@ -84,36 +84,27 @@ function Base.show(io::IO, ep::Epoch)
 end
 
 function DateTime(ep::Epoch) 
-    days = ep.seconds ÷ DAY2SEC 
-    frac = ep.seconds - DAY2SEC*(days - 0.5)
-
-    y, m, d = jd2cal(DJ2000, days)
-    H, M, S, f = fd2hmsf(frac/DAY2SEC)
-    fint = floor(Int64, f)
-    S += fint 
-    f -= fint
-    return DateTime(y, m, d, H, M, S, f)
+    y, m, d, H, M, S = jd2calhms(DJ2000, ep.seconds / DAY2SEC)
+    fint = floor(Int64, S)
+    f = S-fint
+    return DateTime(y, m, d, H, M, fint, f)
 end
 
 Epoch(e::Epoch) = e 
 Epoch{S, T}(e::Epoch{S, T}) where {S, T} = e
 
 """
-    Epoch(s::AbstractString, scale::S) where {S<:TimeScale}
+    Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
 
-Construct an `Epoch` from a `str` in the [`TimeScale`](@ref) (`scale`). 
+Construct an `Epoch` from a `str` in the [`AbstractTimeScale`](@ref) (`scale`). 
 
 !!! note 
     This constructor requires that the `str` is in the format `yyyy-mm-ddTHH:MM:SS.sss`.
 """
 function Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
-    y, m, d, H, M, s, sf = parse_iso(s)
-    _, jd2 = calhms2jd(y, m, d, H, M, s+sf)
-    days = floor(Int64, jd2)
-    fd = jd2 - days 
-    h, m, s, frac = fd2hmsf(fd)
-    sec = s + 60 * (m + 60*(h + 24*days))
-    return Epoch(sec+frac, scale)
+    y, m, d, H, M, sec, sf = parse_iso(s)
+    _, jd2 = calhms2jd(y, m, d, H, M, sec+sf)
+    return Epoch(jd2*86400, scale)
 end
 
 """

@@ -111,7 +111,13 @@ function parse_iso(s::S) where {S<: AbstractString}
     end
 
     @label done
-    return (dy, dm, dd, th, tm, ts, Float64(tms))
+    return (
+        dy, 
+        dm, 
+        dd, 
+        th, 
+        tm, 
+        ts, Float64(tms))
 
     @label error
     throw(
