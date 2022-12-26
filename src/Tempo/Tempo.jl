@@ -1,5 +1,7 @@
 module Tempo
 
+    using Basic.MappedGraphs
+
     const DAY2SEC = 86400.0
     const YEAR2SEC = 60.0 * 60.0 * 24.0 * 365.25
     const CENTURY2SEC = 60.0 * 60.0 * 24.0 * 365.25 * 100.0
@@ -28,7 +30,7 @@ module Tempo
     """
     const DJM0 = 2400000.5
 
-    using Basic.MappedGraphs
+    include("leapseconds.jl")
 
     include("errors.jl")
     include("convert.jl")

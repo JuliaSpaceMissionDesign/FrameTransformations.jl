@@ -154,3 +154,13 @@ Return the offset between [`UTC`](@ref) and [`TAI`](@ref) in seconds.
     return (tai - utc) * 86400.0
 end
 
+#######
+# UT1 #
+#######
+
+# using Basic.Orient: IERS_EOP
+
+@inline function offset_utc2ut1(seconds)
+    utc = seconds/86400.0
+    return IERS_EOP.UT1_UTC[utc]
+end

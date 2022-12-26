@@ -254,7 +254,7 @@ Julian Date to Gregorian year, month, day, hour, minute, seconds.
 
 ### Inputs
 
--  `dj1,dj2` -- Twp-part Julian Date
+-  `dj1,dj2` -- Two part Julian Date
 
 ### Outputs 
 
@@ -271,85 +271,6 @@ function jd2calhms(dj1::Number, dj2::Number)
     y, m, d, fd = jd2cal(dj1, dj2)
     h, min, sec = fd2hms(fd)
     return y, m, d, h, min, sec 
-end
-
-const LEAP_TABLE = (
-    ( 1972,  1, 10.0       ),
-    ( 1972,  7, 11.0       ),
-    ( 1973,  1, 12.0       ),
-    ( 1974,  1, 13.0       ),
-    ( 1975,  1, 14.0       ),
-    ( 1976,  1, 15.0       ),
-    ( 1977,  1, 16.0       ),
-    ( 1978,  1, 17.0       ),
-    ( 1979,  1, 18.0       ),
-    ( 1980,  1, 19.0       ),
-    ( 1981,  7, 20.0       ),
-    ( 1982,  7, 21.0       ),
-    ( 1983,  7, 22.0       ),
-    ( 1985,  7, 23.0       ),
-    ( 1988,  1, 24.0       ),
-    ( 1990,  1, 25.0       ),
-    ( 1991,  1, 26.0       ),
-    ( 1992,  7, 27.0       ),
-    ( 1993,  7, 28.0       ),
-    ( 1994,  7, 29.0       ),
-    ( 1996,  1, 30.0       ),
-    ( 1997,  7, 31.0       ),
-    ( 1999,  1, 32.0       ),
-    ( 2006,  1, 33.0       ),
-    ( 2009,  1, 34.0       ),
-    ( 2012,  7, 35.0       ),
-    ( 2015,  7, 36.0       ),
-    ( 2017,  1, 37.0       )
-)
-const LEAP_RELEASE = 2021;
-
-
-"""
-    leapseconds(iyear::N, imonth::N) where {N<:Integer}
-
-For a given UTC date, calculate Delta(AT) = TAI-UTC.
-
-!!!! warning 
-    A new version of the tables called in this function must be produced 
-    whenever a new leap second is announced. 
-
-### Inputs 
-
-- `iyear` -- UTC year 
-- `imonth` -- UTC month
-
-### Output 
-
-- `Δt` -- TAI - UTC in seconds
-
-### References 
-
-- [ERFA software library](https://github.com/liberfa/erfa/blob/master/src/dat.c)
-"""
-function leapseconds(iyear::N, imonth::N) where {N<:Integer}
-
-    # If pre-UTC year, set warning status and return 0.0
-    @inbounds if iyear < LEAP_TABLE[1][1] 
-        @info "[Tempo] UTC not available for year $iyear, 0 is returned"
-        return 0.0
-    end
-
-    # If suspiciously late year, proceed
-    if iyear > LEAP_RELEASE + 5
-        @warn "[Tempo] current year is 5 years ahead of the latest leapsecond " *
-        "release: results could be inaccurate"
-    end
-
-    # Combine year and month to form a date-ordered integer
-    m = 12*iyear + imonth
-    # ...and use it to find the preceding table entry.
-    @inbounds for i in length(LEAP_TABLE):-1:1
-        if m >= 12*LEAP_TABLE[i][1] + LEAP_TABLE[i][2]
-            return LEAP_TABLE[i][3]
-        end
-    end
 end
 
 
@@ -405,13 +326,13 @@ function utc2tai(utc1, utc2)
     
     # Get TAI-UTC at 0h today
     iy, im, _, fd = jd2cal(u1, u2)
-    Δt0 = leapseconds(iy, im)
+    Δt0 = leapseconds((utc1-DJ2000)+utc2)
 
     z2 = u2 - fd
     
     # Get TAI-UTC at 0h tomorrow (to detect jumps)
     iyt, imt, _, _ = jd2cal(u1+1.5, z2)
-    Δt24 = leapseconds(iyt, imt)
+    Δt24 = leapseconds((utc1-DJ2000)+utc2)
 
     # Detect any jump
     # Spread leap into preceding day
