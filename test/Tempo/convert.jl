@@ -65,14 +65,6 @@ end
 
 end
 
-@testset "Function leapseconds" begin 
-    for (y, m, l) in Tempo.LEAP_TABLE[1:end]
-        @test Tempo.leapseconds(y, m) == l 
-        @test Tempo.leapseconds(y, m+1) == l 
-        @test Tempo.leapseconds(y, m-1) != l 
-    end
-end
-
 @testset "Function utc2tai" begin
     for _ in 1:10
         Y, M, D = rand(1975:2015), rand(1:12), rand(1:28)
@@ -80,13 +72,12 @@ end
         utc1, utc2 = Tempo.calhms2jd(Y, M, D, h, m, s)
         tai1, tai2 = Tempo.utc2tai(utc1, utc2)
         @test any(
-            ((tai2 - utc2) * 86400 ≈ Tempo.leapseconds(Y, M),
-            (tai2 - utc2) * 86400 ≈ Tempo.leapseconds(Y, M)+1))
+            ((tai2 - utc2) * 86400 ≈ Tempo.leapseconds(utc1-Tempo.DJ2000+utc2),
+            (tai2 - utc2) * 86400 ≈ Tempo.leapseconds(utc1-Tempo.DJ2000+utc2)+1))
     end
 end
 
 @testset "Function tai2utc" begin 
-
     for _ in 1:10
         Y, M, D = rand(1975:2015), rand(1:12), rand(1:28)
         h, m, s = rand(0:23), rand(0:59), rand(0.0:0.0001:59.999)

@@ -31,13 +31,13 @@ Tempo.add_timescale(S, CTS, _one_offset, parent=BTS, ftp=_mone_offset)
 
         utc1, utc2 = Tempo.calhms2jd(2022, 1, 1, 12, 0, 0.0) 
         tai1, tai2 = Tempo.utc2tai(utc1, utc2)
-        @test (tai2 - utc2) * D2S ≈ Tempo.leapseconds(2022, 1)
+        @test (tai2 - utc2) * D2S ≈ Tempo.leapseconds(utc2)
         
         # Seconds since j2000
         j2000s_utc = utc2 * D2S
 
         # TAI
-        @test Tempo.apply_offsets(TIMESCALES, j2000s_utc, UTC, TAI)-j2000s_utc ≈ Tempo.leapseconds(2022, 1)
+        @test Tempo.apply_offsets(TIMESCALES, j2000s_utc, UTC, TAI)-j2000s_utc ≈ Tempo.leapseconds(utc2)
         @test Tempo.apply_offsets(TIMESCALES, j2000s_utc, UTC, TAI)-j2000s_utc ≈ 37.0
 
         # Same scale (no offset applied)

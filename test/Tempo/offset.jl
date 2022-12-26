@@ -1,9 +1,8 @@
 @testset "Offset functions" verbose=true begin
 
     @testset "UTC/TAI" begin 
-
         iytai = 2009; imtai = 1; idtai = 1;
-        ihtai = 0; imintai = 0; sectai = 33.70
+        ihtai = 0; imintai = 0; sectai = 34.0
         tai1, tai2 = Tempo.calhms2jd(iytai, imtai, idtai, ihtai, imintai, sectai)
         utc1, utc2 = Tempo.tai2utc(tai1, tai2)
         @test sum(Tempo.utc2tai(utc1, utc2)) == sum((tai1, tai2)) 
