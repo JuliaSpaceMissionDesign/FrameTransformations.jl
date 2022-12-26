@@ -8,5 +8,5 @@ module Orient
     using Basic.Utils: arcsec2rad
 
     include("Earth/Earth.jl")
-    include("Earth/eopdata.jl")
+    include("Earth/eop.jl")
 end

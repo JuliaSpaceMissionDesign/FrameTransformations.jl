@@ -2,6 +2,9 @@ using DelimitedFiles,
       RemoteFiles, 
       Interpolations
 
+export get_iers_eop, IERS_EOP
+using Basic.Tempo: DJ2000, DateTime
+
 """
     get_iers_eop(; force_download = false)
 
@@ -13,19 +16,17 @@ to `true`.
 
 !!! note
     The files will be downloaded from the default URL. If the user want to use
-    another one, then use the specialized functions
-    [`get_iers_eop_iau_1980`](@ref), [`get_iers_eop_iau_2000A`](@ref)
+    another one, then use the specialized function [`get_iers_eop_IAU2000A`](@ref)
 
     See also: [`get_iers_eop_IAU2000A`](@ref)
 
 ### Returns
-A structure ([`EOPData_IAU1980`](@ref) or [`EOPData_IAU2000A`](@ref), depending
-on `data_type`) with the interpolations of the EOP parameters. Notice that the
-interpolation indexing is set to the Julian Day.
+A structure [`EOPData`](@ref) with the interpolations of the EOP parameters. Notice that the
+interpolation indexing is set to Julian days since J2000.
 
 """
 function get_iers_eop(; force_download = false)
-    return get_iers_eop_iau_2000A(force_download = force_download)
+    return get_iers_eop_IAU2000A(force_download = force_download)
 end
 
 """
@@ -39,7 +40,7 @@ The file is downloaded using the `RemoteFile` package with weekly updates. Hence
 to force a download before the scheduled time, then set the keyword `force_download` to `true`.
 
 !!! note
-    The interpolation of every field in [`EOPData_IAU2000A`](@ref) between two
+    The interpolation of every field in [`EOPData`](@ref) between two
     points in the grid is linear. If extrapolation is needed, then if will use
     the nearest value (flat extrapolation).
 
@@ -47,7 +48,7 @@ See also: [`get_iers_eop`](@ref)
 
 ### Returns
 The structure `EOPData` with the interpolations of the EOP parameters. Notice that the 
-interpolation indexing is set to the Julian Day.
+interpolation indexing is set to Julian days since J2000.
 """
 function get_iers_eop_IAU2000A(
     url::String = "https://datacenter.iers.org/data/csv/finals2000A.all.csv";
@@ -56,8 +57,8 @@ function get_iers_eop_IAU2000A(
     @RemoteFile(
         _eop_iau2000A,
         url,
-        file="EOP_IAU2000A.txt",
-        dir="ext/eop",
+        file="eop_iau2000a.txt",
+        dir=joinpath(@__DIR__, "..", "..", "..", "ext"),
         updates=:fridays
     )
 
@@ -70,8 +71,8 @@ function get_iers_eop_IAU2000A(
     # Create the EOP Data structure by creating the interpolations:
     # - The interpolation will be linear between two points in the grid.
     # - The extrapolation will be flat, considering the nearest point.
-    
-    knots::Vector{Float64} = Vector{Float64}(eop[:, 1] .+ 2400000.5)
+
+    knots::Vector{Float64} = Vector{Float64}(eop[:, 1] .+ 2400000.5 .- DJ2000)
 
     return EOPData(
         _create_iers_eop_interpolation(knots, eop[:, 6]),
@@ -91,7 +92,7 @@ EOP Data for IAU 2000A.
 !!! note
     Each field will be an `AbstractInterpolation` indexed by the Julian Day.
 
-# Fields
+### Fields
 - `x, y`: Polar motion with respect to the crust [arcsec].
 - `UT1_UTC`: Irregularities of the rotation angle [s].
 - `LOD`: Length of day offset [ms].
@@ -110,7 +111,7 @@ function Base.show(io::IO, eop::EOPData{T}) where T
     # Check if IO has support for colors.
     println(io, " ")
     println(io, "  EOPData ", "│ ", "Timespan")
-    println(io, " ─────────┼──────────────────────────────────────────────")
+    println(io, " ─────────┼──────────────────────────────────────────────────")
     println(io, "        x ", "│ ", _get_iers_eop_timespan(eop.x))
     println(io, "        y ", "│ ", _get_iers_eop_timespan(eop.y))
     println(io, "  UT1-UTC ", "│ ", _get_iers_eop_timespan(eop.UT1_UTC))
@@ -123,8 +124,8 @@ end
 
 # Get timespan
 function _get_iers_eop_timespan(itp::AbstractInterpolation)
-    str = string(first(first(itp.itp.knots))) * " - " *
-          string(last(first(itp.itp.knots)))
+    str = string(DateTime(first(first(itp.itp.knots))*86400)) * " - " *
+          string(DateTime(last(first(itp.itp.knots))*86400))
     return str
 end
 
@@ -150,3 +151,17 @@ function _create_iers_eop_interpolation(
 
     return interp
 end
+
+"""
+    IERS_EOP 
+
+Earth orientation parameters: x/y pole, UT1-UTC, LOD, dX, dY (smoothed values at 1-day intervals) 
+with respect to IAU 2006/2000A precession-nutation model and consistent with ITRF2014.
+
+EOP 14 C04 is updated two times per week.
+
+Here the files are downloaded using the `RemoteFile` package with weekly updates.
+
+See also: [`get_iers_eop`](@ref)
+"""
+const IERS_EOP = get_iers_eop()
