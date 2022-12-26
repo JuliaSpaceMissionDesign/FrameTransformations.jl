@@ -16,7 +16,7 @@ Open a JSON file and parse its data in a dictionary.
 function load(file::JSON)
     open(filepath(file), "r") do f 
         data = JSON3.read(f)
-        return OrderedDict(data)
+        return Dict(data)
     end
 end
 
@@ -35,7 +35,7 @@ end
 Open a YAML file and parse its data in a dictionary.
 """
 function load(file::YAML)
-    YAMLLib.load_file(filepath(file); dicttype=OrderedDict{Symbol, Any})
+    YAMLLib.load_file(filepath(file); dicttype=Dict{Symbol, Any})
 end
 
 """
