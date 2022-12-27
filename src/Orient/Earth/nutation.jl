@@ -54,7 +54,7 @@ method, where frame bias, precession and nutation are applied separately and in 
 (see SOFA's documentation for further insights).
 
 - A simplified version of the Fundamental Arguments, taken from Simon et al (1994) 
-is exploited for IAU2006B as the erorr introduced is below the model accuracy ( ~0.1 mas).
+is exploited for IAU2006B as the error introduced is below the model accuracy ( ~0.1 mas).
 
 ### References 
 - Luzum, B. and Petit G. (2012), _The IERS Conventions (2010)_, 
