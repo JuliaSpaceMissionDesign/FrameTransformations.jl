@@ -134,7 +134,7 @@ Create a 2nd order `Rotation` object of type `N` to rotate between two set of ax
 respect to `a`, expressed in `b`
 
 ### See also 
-See also [`get_rotation3`](@ref), [`get_rotation6`](@ref) and [`get_rotation9`](@ref).
+See also [`rotation3`](@ref), [`rotation6`](@ref) and [`rotation9`](@ref).
 """
 struct Rotation{S, N}
     m::NTuple{S, DCM{N}}

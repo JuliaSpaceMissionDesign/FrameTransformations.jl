@@ -44,7 +44,7 @@ julia> point_alias(EMB)
 ```
 
 ### See also 
-See also [`axes`](@ref) and [`point_alias`](@ref).
+See also [`@axes`](@ref) and [`point_alias`](@ref).
 """
 macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
@@ -290,7 +290,7 @@ ERROR: Ephemeris data for NAIFID 599 is not available in the kernels loaded [...
 ```
 
 ### See also 
-See also [`add_root_point!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
+See also [`add_point_root!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
 function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, parent=nothing)
@@ -402,7 +402,7 @@ julia> add_point_fixed!(FRAMES, SolarArrayCenter, SC, SF, sa_offset)
 ```
 
 ### See also 
-See also [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref), 
+See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_updatable!`](@ref)
 """
 function add_point_fixed!(frames::FrameSystem{T}, point::AbstractFramePoint, parent, 
@@ -465,7 +465,7 @@ ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order
 ```
 
 ### See also 
-See also [`update_point!`](@ref), [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref), 
+See also [`update_point!`](@ref), [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_fixed!`](@ref)
 """
 function add_point_updatable!(frames::FrameSystem, point::AbstractFramePoint, 
@@ -524,7 +524,7 @@ julia> get_vector6(FRAMES, Origin, Satellite, ICRF, π/6)
 0.0
 ```
 ### See also 
-See also [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
+See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
 function add_point_dynamical!(frames::FrameSystem, point::AbstractFramePoint, parent, axes,

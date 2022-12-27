@@ -5,21 +5,21 @@ export FrameAxesNode, FramePointNode, FrameSystem,
        has_axes, has_point, 
        ephemeris_points
 
-# Others
-import FunctionWrappers: FunctionWrapper
-
-# Basic
-using Basic.Ephemeris: AbstractEphemerisProvider, 
-                       NullEphemerisProvider, 
-                       ephem_position_records
-using Basic.Tempo: AbstractTimeScale, 
-                   BarycentricDynamicalTime
-
 # -------------------------------------
 # ABSTRACT 
 # -------------------------------------
+"""
+    AbstractFramePoint
 
+Abstract type for all reference frames points.
+"""
 abstract type AbstractFramePoint end 
+
+"""
+    AbstractFrameAxes
+
+Abstract type for all reference frames axes.
+"""
 abstract type AbstractFrameAxes end 
 
 # -------------------------------------
@@ -96,7 +96,9 @@ end
 # -------------------------------------
 # POINTS
 # -------------------------------------
-
+"""
+    FramePointNode
+"""
 struct FramePointNode{T} <: AbstractGraphNode
     name::Symbol
     class::Symbol
@@ -131,6 +133,9 @@ FrameSystemProperties() = FrameSystemProperties(Int64[])
 
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
 
+"""
+    FrameSystem
+"""
 struct FrameSystem{T <: Number, S <: AbstractTimeScale, E <: AbstractEphemerisProvider}
     eph::E
     prop::FrameSystemProperties{T}

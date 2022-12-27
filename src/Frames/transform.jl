@@ -47,8 +47,8 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             $($axfun1)(frame::FrameSystem, from, to, t::Number)
         
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
-        specified set of axes to another at a given time, expressed in days since [`J2000`](@ref) 
-        if ephemerides are used. 
+        specified set of axes to another at a given time, expressed in days since 
+        [`J2000`](@ref) if ephemerides are used. 
         """
         function ($axfun1)(frame::FrameSystem{T}, from, to, t::Number) where T
             from == to && return Rotation{$order}(T(1)I)
@@ -275,7 +275,7 @@ julia> add_axes_inertial!(FRAMES, ICRF)
 
 julia> @point Origin 0
 
-julia> @point Satellite 1 
+julia> @point Satellite 1 Basic.Frames.
 
 julia> add_point_root!(FRAMES, Origin, ICRF)
 
