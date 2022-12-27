@@ -3,7 +3,7 @@ module MappedGraphs
     export AbstractGraphNode, 
            MappedNodeGraph, MappedGraph, MappedDiGraph,
            SimpleGraph, SimpleDiGraph,
-           get_mappedid, get_mappednode, get_node_id, get_path,
+           get_mappedid, get_mappednode, get_node_id, get_node, get_path, 
            has_vertex, has_path, add_edge!, add_vertex!, get_edgecosts
 
     import Graphs: 
@@ -32,10 +32,10 @@ module MappedGraphs
     Get the mapped-id of an `AbstractGraphNode`.
 
     !!! warning
-        This method is abstract! A concrete implementation for the desired body shall be defined.
+        This method is abstract! A concrete implementation for each concrete node shall be defined.
     """
-    function get_node_id(b::AbstractGraphNode)
-        throw(ErrorException("`get_node_id` shall be implemented for $b"))
+    function get_node_id(b::T) where {T <: AbstractGraphNode}
+        throw(ErrorException("`get_node_id` shall be implemented for $T"))
     end
 
     """
@@ -89,7 +89,7 @@ module MappedGraphs
     """
         get_mappedid(g::MappedNodeGraph, node::Int)
 
-    Get the mappeid associated with a node.
+    Get the mappedid associated with a node.
     """
     @inline get_mappedid(g::MappedNodeGraph, node::Int) = g.mid[node]
 
