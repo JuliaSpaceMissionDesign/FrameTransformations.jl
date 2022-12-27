@@ -1,24 +1,31 @@
-export vector3, vector6, vector9, 
-       rotation3, rotation6, rotation9
+export vector3, vector6, vector9, vector12,
+       rotation3, rotation6, rotation9, rotation12
 
+for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
+        (1, 2, 3, 4), 
 
-for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
-    (1, 2, 3), (:f, :δf, :δ²f),  
-    (:rotation3, :rotation6, :rotation9), 
-    (:_compute_rot3, :_compute_rot6, :_compute_rot9),
-    (:vector3, :vector6, :vector9), 
-    (:_compute_vector3, :_compute_vector6, :_compute_vector9),
-    (:_get_comp_axes_vector3, :_get_comp_axes_vector6, :_get_comp_axes_vector9),
-    (:_get_vector3_forward, :_get_vector6_forward, :_get_vector9_forward),
-    (:_get_vector3_backwards, :_get_vector6_backwards, :_get_vector9_backwards)
-)
+        (:rotation3, :rotation6, :rotation9, :rotation12), 
+        (:_compute_rot3, :_compute_rot6, :_compute_rot9, :_compute_rot12),
+        
+        (:vector3, :vector6, :vector9, :vector12), 
+        (:_compute_vector3, :_compute_vector6, :_compute_vector9, :_compute_vector12),
+
+        (:_get_comp_axes_vector3, :_get_comp_axes_vector6, 
+         :_get_comp_axes_vector9, :_get_comp_axes_vector12),
+
+        (:_get_vector3_forward, :_get_vector6_forward, 
+         :_get_vector9_forward, :_get_vector12_forward),
+
+        (:_get_vector3_backwards, :_get_vector6_backwards, 
+         :_get_vector9_backwards, :_get_vector12_backwards)
+    )
 
     @eval begin 
 
         # ----------------------------------
         # AXES TRANSFORMATIONS 
         # ----------------------------------
-        @inline function ($axfun1)(::FrameSystem{<:Any, S1}, from, 
+        @inline function ($axfun1)(::FrameSystem{<:Any, <:Any, S1}, from, 
                     to, ::Epoch{S2}) where {S1, S2}
             throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
         end
@@ -29,6 +36,8 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
         specified set of axes to another at a given epoch. 
 
+        Requires a frame system of order ≥ $($order).
+
         ### Inputs 
         - `frame` -- The `FrameSystem` container object 
         - `from` -- ID or instance of the axes to transform from 
@@ -38,7 +47,7 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         ### Output
         A `Rotation` object of order $($order).
         """
-        @inline function ($axfun1)(frame::FrameSystem{<:Any, S}, from, to, 
+        @inline function ($axfun1)(frame::FrameSystem{<:Any, <:Any, S}, from, to, 
                             ep::Epoch{S}) where S
             $(axfun1)(frame, from, to, j2000(ep))
         end
@@ -50,10 +59,16 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         specified set of axes to another at a given time, expressed in days since 
         [`J2000`](@ref) if ephemerides are used. 
         """
-        function ($axfun1)(frame::FrameSystem{T}, from, to, t::Number) where T
+        function ($axfun1)(frame::FrameSystem{O, T}, from, to, t::Number) where {O, T}
+            
+            if O < $order 
+                throw(ErrorException("Insufficient frame system order:"*
+                    "transformation requires at least order $($order)."))
+            end
+
             from == to && return Rotation{$order}(T(1)I)
             $(axfun2)(frame, t, get_path(frames_axes(frame), 
-                                        axes_alias(from), axes_alias(to)))
+                                          axes_alias(from), axes_alias(to)))
         end
 
         # Low-level function to parse a path of axes and chain their rotations 
@@ -80,26 +95,29 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         # Low-level function to compute the rotation matrix of a specific set of axes 
-        function ($axfun2)(frame::FrameSystem, axes::FrameAxesNode{T}, t::Number) where T 
+        function ($axfun2)(frame::FrameSystem{O, T}, axes::FrameAxesNode{O, T}, 
+                    t::Number) where {O, T} 
+                    
             @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
-                return $order < 3 ? Rotation{$order}(axes.R[1]) : axes.R[1]
+                return $order < O ? Rotation{$order}(axes.R[1]) : axes.R[1]
             else 
                 tid = Threads.threadid()
                 if axes.epochs[tid] != t || axes.nzo[tid] < $order
+
                     if axes.class == :RotatingAxes 
-                        stv = @SVector zeros(T, 3*$order)
-                        axes.R[tid] = axes.$(f)(t, stv, stv)
+                        stv = @SVector zeros(T, 3O)
+                        axes.R[tid] = axes.f[$order](t, stv, stv)
                     else 
-                        axes.R[tid] = axes.$(f)(t, 
+                        axes.R[tid] = axes.f[$order](t, 
                             $(compfun)(frame, axes.comp.v1, axes.parentid, t), 
                             $(compfun)(frame, axes.comp.v2, axes.parentid, t))
                     end 
+
                     axes.epochs[tid] = t 
                     axes.nzo[tid] = $order
-
                 end
 
-                return $order < 3 ? Rotation{$order}(axes.R[tid]) : axes.R[tid]
+                return $order < O ? Rotation{$order}(axes.R[tid]) : axes.R[tid]
             end
         end
 
@@ -113,6 +131,8 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired epoch.
 
+        Requires a frame system of order ≥ $($order).
+
         ### Inputs 
         - `frame` -- The `FrameSystem` container object 
         - `from` -- ID or instance of the observing point
@@ -121,13 +141,13 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         - `ep` -- `Epoch` of the observer. Its timescale must match that of the frame system. 
 
         """
-        @inline function ($pfun1)(::FrameSystem{<:Any, S1}, from, 
-                            to, axes, ::Epoch{S2}) where {S1, S2}
+        @inline function ($pfun1)(::FrameSystem{<:Any, <:Any, S1}, from, 
+            to, axes, ::Epoch{S2}) where {S1, S2}
             throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
         end
 
-        @inline function ($pfun1)(frame::FrameSystem{<:Any, S}, from, 
-                            to, axes, ep::Epoch{S}) where S
+        @inline function ($pfun1)(frame::FrameSystem{<:Any, <:Any, S}, from, 
+                    to, axes, ep::Epoch{S}) where S
             $(pfun1)(frame, from, to, axes, j2000(ep))
         end
 
@@ -137,12 +157,18 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time expressed in 
         days since [`J2000`](@ref) if ephemerides are used. 
+
         """
-        function ($pfun1)(frame::FrameSystem{T}, from, to, axes, t::Number) where T
+        function ($pfun1)(frame::FrameSystem{O, T}, from, to, axes, t::Number) where {O, T}
+
+            if O < $order 
+                throw(ErrorException("Insufficient frame system order: "*
+                    "transformation requires at least order $($order)."))
+            end
 
             from == to && return @SVector zeros(T, 3*$order)
             $(pfun2)(frame, t, axes_alias(axes), get_path(frames_points(frame), 
-                    point_alias(from), point_alias(to)))
+                     point_alias(from), point_alias(to)))
 
         end
 
@@ -223,19 +249,20 @@ for (order, f, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         # Low-level function to compute the translation of a given point
-        @inbounds function ($pfun2)(point::FramePointNode{T}, t::Number) where T 
+        @inbounds function ($pfun2)(point::FramePointNode{O, T}, t::Number) where {O, T}  
             if point.class in (:RootPoint, :FixedPoint)
                 return SA[point.stv[1].data[1:3*$order]...]
             else
                 tid = Threads.threadid()
+
                 if point.epochs[tid] != t || point.nzo[tid] < $order 
                     if point.class == :UpdatablePoint
                         # Updatable point has not been updated! 
                         throw(ErrorException(
-                            "UpdatablePoint with NAIFId = $(point.NAIFId) has not been "*
+                            "UpdatablePoint with NAIFId $(point.NAIFId) has not been "*
                             "updated at time $t for order $($order)"))
                     else 
-                        point.$(f)(point.stv[tid], t)
+                        point.f[$order](point.stv[tid], t)
                     end
 
                     point.epochs[tid] = t 
@@ -251,31 +278,32 @@ end
 
 
 """ 
-update_point!(frames, point, stv::AbstractVector, epoch::Epoch)
+    update_point!(frames, point, stv::AbstractVector, epoch::Epoch)
 """
-function update_point!(frames::FrameSystem{T, S}, point, stv::AbstractVector{T}, 
-        epoch::Epoch{S}) where {T, S}
+function update_point!(frames::FrameSystem{O, T, S}, point, stv::AbstractVector{T}, 
+            epoch::Epoch{S}) where {O, T, S}
     update_point!(frames, point, stv, j2000(epoch))
 end
 
+
 """ 
-    update_point!(frames::FrameSystem{T}, point, stv::AbstractVector{T}, time::T) where T
+    update_point!(frames::FrameSystem, point, stv::AbstractVector, time)
 
 Update the state vector of `point` at the input `time` in `frames`. The only 
-accepted length for the input vector `stv` are 3, 6 or 9. The order is automatically inferred 
-from the vector length.
+accepted length for the input vector `stv` are 3, 6, 9 or 12. The order is automatically 
+inferred from the vector length.
 
 ### Examples 
 ```jldoctest
-julia> FRAMES = FrameSystem{Float64}();
-
+julia> FRAMES = FrameSystem{2, Float64}();
+  
 julia> @axes ICRF 1  
 
 julia> add_axes_inertial!(FRAMES, ICRF)
 
 julia> @point Origin 0
 
-julia> @point Satellite 1 Basic.Frames.
+julia> @point Satellite 1 
 
 julia> add_point_root!(FRAMES, Origin, ICRF)
 
@@ -285,32 +313,33 @@ julia> y = [10000., 200., 300.]
 
 julia> update_point!(FRAMES, Satellite, y, 0.1)
 
-julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
+julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
 3-element SVector{3, Float64} with indices SOneTo(3):
-10000.0
-200.0
-300.0
+ 10000.0
+   200.0
+   300.0
 
-julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
+julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
 ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
 
-julia> get_vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
+julia> vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
 ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 2
 ```
 ### See also 
 See also [`add_point_updatable!`](@ref)
 """
-function update_point!(frames::FrameSystem{T}, point, stv::AbstractVector{T}, 
-        time::T) where T
+function update_point!(frames::FrameSystem{O, T}, point, stv::AbstractVector{T}, 
+            time::T) where {O, T}
 
     NAIFId = point_alias(point) 
 
     !has_point(frames, NAIFId) && throw(ErrorException(
-        "Point with NAIF ID $NAIFId is not contained in the frame system."))
+        "point with NAIF ID $NAIFId is not contained in the frame system."))
 
     ne = length(stv) 
-
-    if !(ne in (3, 6, 9)) 
+    ne > O && throw(ArgumentError("state vector order greater than frame system order."))
+  
+    if !(ne in (3, 6, 9, 12)) 
         throw(ArgumentError(
             "wrong state vector length: expected either 3, 6 or 9, found $ne"))
     end 
@@ -326,6 +355,7 @@ function update_point!(frames::FrameSystem{T}, point, stv::AbstractVector{T},
 end
 
 
+
 """ 
     _get_comp_axes_vector3(frame, v, axesid, t)
 
@@ -339,75 +369,88 @@ The returned vector depends on the order in `v` as follows:
 - **3**: acceleration 
 
 """
-function _get_comp_axes_vector3(frame::FrameSystem, v::ComputableAxesVector, 
-                    axesid::Int, t::Number)
+@generated function _get_comp_axes_vector3(frame::FrameSystem{O, T}, v::ComputableAxesVector, 
+                        axesid::Int, t::Number) where {O, T}
 
-    @inbounds if v.order == 1 
-        return get_vector3(frame, v.from, v.to, axesid, t)        
-    elseif v.order == 2 
-        stv = get_vector6(frame, v.from, v.to, axesid, t)
-        return SA[stv[4], stv[5], stv[6]]
-    else 
-        stv = get_vector9(frame, v.from, v.to, axesid, t)
-        return SA[stv[7], stv[8], stv[9]]
-    end
+    expr = :(tuple($([0 for i in 1:3(O-1)]...)))
 
+    return quote 
+        @inbounds begin 
+            if v.order == 1 
+                stv = get_vector3(frame, v.from, v.to, axesid, t)        
+                return SA[stv..., $(expr)...]
+            elseif v.order == 2 
+                stv = get_vector6(frame, v.from, v.to, axesid, t)
+                return SA[stv[4], stv[5], stv[6], $(expr)...]
+            else 
+                stv = get_vector9(frame, v.from, v.to, axesid, t)
+                return SA[stv[7], stv[8], stv[9], $(expr)...]
+            end
+        end
+    end 
 end
 
-""" 
-    _get_comp_axes_vector6(frame, v, axesid, t)
 
-Compute a 6-elements vector in the desired axes at the given time 
-between two points of the frame system 
+@generated function _get_comp_axes_vector6(frame::FrameSystem{O, T}, v::ComputableAxesVector, 
+                        axesid::Int, t::Number) where {O, T}
 
-The returned vector depends on the order in `v` as follows: 
+    expr = :(tuple($([0 for i in 1:3(O-2)]...)))
 
-- **1**: position, velocity
-- **2**: velocity, acceleration 
-- **3**: acceleration, jerk
-
-### Notes 
-This function only returns vectors up to order 2, because the 
-frame system currently is uncapable of computing the jerk.
-"""
-function _get_comp_axes_vector6(frame::FrameSystem, v::ComputableAxesVector, 
-                    axesid::Int, t::Number)
-
-    @inbounds if v.order == 1 
-        return get_vector6(frame, v.from, v.to, axesid, t)        
-    elseif v.order == 2 
-        stv = get_vector9(frame, v.from, v.to, axesid, t)
-        return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9]]
-    end
-
-    throw(ErrorException(
-        "Unable to compute a vector of order 4 (jerk). The maximum available order is 3."))
+    return quote 
+        @inbounds begin 
+            if v.order == 1 
+                stv = get_vector6(frame, v.from, v.to, axesid, t)        
+                return SA[stv..., $(expr)...]
+            elseif v.order == 2 
+                stv = get_vector9(frame, v.from, v.to, axesid, t)
+                return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9], $(expr)...]
+            else 
+                stv = get_vector12(frame, v.from, v.to, axesid, t)
+                return SA[stv[7], stv[8], stv[9], stv[10], stv[11], stv[12], $(expr)...]
+            end
+        end
+    end 
 end
 
-""" 
-    _get_comp_axes_vector9(frame, v, axesid, t)
 
-Compute a 9-elements vector in the desired axes at the given time 
-between two points of the frame system 
+@generated function _get_comp_axes_vector9(frame::FrameSystem{O, T}, v::ComputableAxesVector, 
+                        axesid::Int, t::Number) where {O, T}
 
-The returned vector depends on the order in `v` as follows: 
+    expr = :(tuple($([0 for i in 1:3(O-3)]...)))
 
-- **1**: position, velocity, acceleration
-- **2**: velocity, acceleration, jerk
-- **3**: acceleration, jerk, jounce
+    return quote 
+        @inbounds begin 
+            if v.order == 1 
+                stv = get_vector9(frame, v.from, v.to, axesid, t)        
+                return SA[stv..., $(expr)...]
 
-### Notes 
-This function only works for vectors of order 1, because the 
-frame system currently is uncapable of computing the jerk and jounce.
-"""
-function _get_comp_axes_vector9(frame::FrameSystem, v::ComputableAxesVector, 
-        axesid::Int, t::Number)
+            elseif v.order == 2 # v.order = 2
+                stv = get_vector12(frame, v.from, v.to, axesid, t)
+                return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9], 
+                         stv[10], stv[11], stv[12], $(expr)...]
+            else 
+                throw(ErrorException("unable to compute a vector of order 5 (jounce)."))
+            end
+        end
+    end 
+end
 
-    if v.order == 1 
-        return get_vector9(frame, v.from, v.to, axesid, t)        
-    end
 
-    throw(ErrorException("Unable to compute a vector of order $(2+v.order). "*
-        "The maximum available order is 3."))
+@generated function _get_comp_axes_vector12(frame::FrameSystem{O, T}, v::ComputableAxesVector, 
+                        axesid::Int, t::Number) where {O, T}
+
+    return quote 
+        @inbounds begin 
+            if v.order == 1 
+                return get_vector12(frame, v.from, v.to, axesid, t)        
+            elseif v.order == 2 # v.order = 2
+                throw(ErrorException("unable to compute a vector of order 5 (snap)."))
+
+            else 
+                throw(ErrorException("unable to compute a vector of order 6 (crackle)."))
+            end
+        end
+    end 
+
 end
 

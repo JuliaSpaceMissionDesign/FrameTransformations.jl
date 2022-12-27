@@ -1,12 +1,22 @@
 module Frames 
 
     using Logging
+    using ReferenceFrameRotations
+    using StaticArrays
+    
     import ForwardDiff.derivative
     import FunctionWrappers: FunctionWrapper
 
-    using Basic.Ephemeris: AbstractEphemerisProvider, NullEphemerisProvider, 
-                           ephem_position_records
-    using Basic.Tempo: AbstractTimeScale, BarycentricDynamicalTime, Epoch, J2000
+    using Basic.Ephemeris: AbstractEphemerisProvider, 
+                           NullEphemerisProvider, 
+                           ephem_position_records,
+                           ephem_timescale,
+                           ephem_compute_order!
+                           
+    using Basic.Tempo: AbstractTimeScale, 
+                       BarycentricDynamicalTime, 
+                       Epoch, J2000, DJ2000
+
     using Basic.Utils: format_camelcase
     using Basic.Orient
     using Basic.MappedGraphs

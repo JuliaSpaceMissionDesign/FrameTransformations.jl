@@ -2,7 +2,24 @@ export @axes,
        add_axes_inertial!, 
        add_axes_rotating!,
        add_axes_fixedoffset!, 
-       add_axes_computable!
+       add_axes_computable!,
+       is_inertial, axes_alias
+
+
+"""
+    axes_name(axes::AbstractFrameAxes)
+
+Return the name of `axes`.
+"""
+function axes_name end
+
+""" 
+    axes_id(axes::AbstractFrameAxes)
+
+Return the ID associated to `axes`.
+"""
+function axes_id end 
+
 
 """ 
     is_inertial(frame::FrameSystem, axes::AbstractFrameAxes)
@@ -12,12 +29,13 @@ Return true if the given axes are inertial, i.e., non rotating with respect to t
 axes.
 
 !!! note 
-FixedOffsetAxes with respect to an inertial set of axes, are also consired inertial.
+    FixedOffsetAxes with respect to an inertial set of axes, are also consired inertial.
 """
 is_inertial(frame::FrameSystem, axes::AbstractFrameAxes) = is_inertial(frame, axes_alias(axes))
 is_inertial(frame::FrameSystem, axesid::Int) = is_inertial(frames_axes(frame), axesid)
 
 function is_inertial(axframe::MappedNodeGraph, axesid::Int)
+
     node = get_node(axframe, axesid) 
     if node.class in (:InertialAxes, :FixedOffsetAxes)
         if node.id != node.parentid 
@@ -37,6 +55,7 @@ Return the axes ID.
 """
 axes_alias(x::AbstractFrameAxes) = axes_id(x)
 axes_alias(x::Int) = x
+
 
 """
     @axes(name, id, type=nothing)
@@ -63,17 +82,18 @@ IauEarthAxes
 ```
 
 ### See also 
-See also [`@point`](@ref) and [`axes_alias`](@ref).
+See also [`point`](@ref) and [`axes_alias`](@ref).
 """
 macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
+
     type = isnothing(type) ? name : type     
     type = Symbol(format_camelcase(Symbol, String(type)), :Axes)
     typ_str = String(type)
     name_str = String(name)
 
-    axesid_expr = :(@inline axes_id(::$type) = $id)
-    name_expr = :(axes_name(::$type) = Symbol($name_str))
+    axesid_expr = :(@inline Frames.axes_id(::$type) = $id)
+    name_expr = :(Frames.axes_name(::$type) = Symbol($name_str))
 
     return quote 
         """
@@ -98,7 +118,7 @@ end
 
 
 """
-    build_axes(frames, name, id, class, f, δf, δ²f; parentid, dcm, cax_prop)
+    build_axes(frames, name, id, class, funs; parentid, dcm, cax_prop)
 
 Create and add a [`FrameAxesNode`](@ref) to `frames` based on the input parameters. Current 
 supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes` and `:ComputableAxes`
@@ -108,9 +128,8 @@ supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes` and 
 - `name` -- Axes name, must be unique within `frames` 
 - `id` -- Axes ID, must be unique within `frames`
 - `class` -- Axes class.  
-- `f` -- fun(t, x, y) to return the Direction Cosine Matrix (DCM)
-- `δf` -- fun(t, x, y) to return the DCM and its time derivative
-- `δ²f` -- fun(t, x, y) to return the DCM and its first and second order time derivatives
+- `funs` -- `FrameAxesFunctions` object storing the functions to compute the DCM and, 
+            eventually, its time derivatives. It must match the type and order of `frames`.
 
 ### Keywords 
 - `parentid` -- Axes ID of the parent axes. Not required only for the root axes.
@@ -122,9 +141,9 @@ This is a low-level function and is NOT meant to be directly used. Instead, to a
 axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), etc...
 
 """
-function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol, 
-        f::Function, δf::Function, δ²f::Function; parentid=nothing, dcm=nothing, 
-        cax_prop=ComputableAxesProperties()) where {T}
+function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Symbol, 
+            funs::FrameAxesFunctions{T, O}; parentid=nothing, dcm=nothing, 
+            cax_prop=ComputableAxesProperties()) where {O, T}
 
     if has_axes(frames, id)
         # Check if a set of axes with the same ID is already registered within 
@@ -155,18 +174,20 @@ function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol
     end
 
     # Check that the given functions have the correct signature 
-    for (i, fun) in enumerate([f, δf, δ²f])
-        otype = fun(T(1), SVector{3i}(rand(T, 3i)), SVector{3i}(zeros(T, 3i)))
+    for i = 1:O
+        otype = funs[i](T(1), SVector{3O}(zeros(T, 3O)), SVector{3O}(zeros(T, 3O)))
 
-        !(otype isa Rotation{3, T}) && throw(ArgumentError(
-            "$fun return type is $(typeof(otype)) but should be Rotation{3, $T}."))
+        !(otype isa Rotation{O, T}) && throw(ArgumentError(
+            "$(funs[i]) return type is $(typeof(otype)) but should be Rotation{$O, $T}."))
     end
 
     # Initialize struct caches
     @inbounds if class in (:InertialAxes, :FixedOffsetAxes)
         nzo = Int[]
         epochs = T[]
-        R = [!isnothing(dcm) ? Rotation(dcm, DCM(T(0)I), DCM(T(0)I)) : Rotation{3}(T(1)I)]
+        
+        R = [!isnothing(dcm) ? Rotation{O}(dcm) : Rotation{O}(T(1)I)]
+
     else
         # This is to handle generic frames in a multi-threading architecture 
         # without having to copy the FrameSystem
@@ -174,12 +195,12 @@ function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol
         nzo = -ones(Int, nth)
         
         epochs = zeros(T, nth)
-        R = [Rotation{3}(T(1)I) for _ = 1:nth]
+        R = [Rotation{O}(T(1)I) for _ = 1:nth]
     end
-
+    
     # Creates axes node
-    axnode = FrameAxesNode{T}(name, class, id, parentid, cax_prop, 
-                R, epochs, nzo, f, δf, δ²f)
+    axnode = FrameAxesNode{O, T, 3*O}(name, class, id, parentid, cax_prop, 
+                R, epochs, nzo, funs)
 
     # Insert the new axes in the graph
     add_axes!(frames, axnode)
@@ -189,10 +210,7 @@ function build_axes(frames::FrameSystem{T}, name::Symbol, id::Int, class::Symbol
 
     nothing
 end
-
-# Default rotation function for axes that do not require updates
-_get_fixedrot9(::T, x, y) where T = Rotation{3}(T(1)I)       
-
+    
 
 """
     add_axes_inertial!(frames, axes; parent=nothing, dcm=nothing)
@@ -203,11 +221,11 @@ classes may be added aswell. Once a set of root-axes has been added, `parent` an
 become mandatory fields.
 
 !!! note
-The parent of a set of inertial axes must also be inertial.
+    The parent of a set of inertial axes must also be inertial.
 
 ### Examples 
 ```jldoctest 
-julia> FRAMES = FrameSystem{Float64}() 
+julia> FRAMES = FrameSystem{2, Float64}() 
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame 
 
@@ -224,8 +242,8 @@ julia> add_axes_inertial!(FRAMES, ECLIPJ2000; parent=ICRF, dcm=angle_to_dcm(π/3
 ### See also 
 See also [`add_axes_rotating!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-function add_axes_inertial!(frames::FrameSystem{T}, axes::AbstractFrameAxes; 
-        parent=nothing, dcm::Union{Nothing, DCM{T}}=nothing) where T
+function add_axes_inertial!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes; 
+            parent=nothing, dcm::Union{Nothing, DCM{T}}=nothing) where {O, T}
 
     name = axes_name(axes)
 
@@ -250,8 +268,8 @@ function add_axes_inertial!(frames::FrameSystem{T}, axes::AbstractFrameAxes;
     pid = isnothing(parent) ? nothing : axes_alias(parent)
 
     # construct the axes and insert in the FrameSystem
-    build_axes(frames, name, axes_id(axes), :InertialAxes, 
-        _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=pid, dcm=dcm)
+    build_axes(frames, name, axes_id(axes), :InertialAxes, FrameAxesFunctions{T, O}();
+            parentid=pid, dcm=dcm)
 
 end
 
@@ -263,13 +281,13 @@ Add `axes` as a set of fixed offset axes to `frames`. Fixed offset axes have a c
 orientation with respect to their `parent` axes, represented by `dcm`, a Direction Cosine Matrix (DCM).
 
 !!! note 
-While inertial axes do not rotate with respect to the star background, fixed offset axes are only 
-constant with respect to their parent axes, but might be rotating with respect to some other 
-inertial axes.
+    While inertial axes do not rotate with respect to the star background, fixed offset axes are only 
+    constant with respect to their parent axes, but might be rotating with respect to some other 
+    inertial axes.
 
 ### Examples 
 ```jldoctest 
-julia> FRAMES = FrameSystem{Float64}() 
+julia> FRAMES = FrameSystem{1, Float64}() 
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame 
 
@@ -283,17 +301,17 @@ julia> add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, angle_to_dcm(π/3, :Z))
 ### See also 
 See also [`add_axes_rotating!`](@ref), [`add_axes_inertial!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-function add_axes_fixedoffset!(frames::FrameSystem{T}, axes::AbstractFrameAxes, 
-        parent, dcm::DCM{T}) where T
+function add_axes_fixedoffset!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
+            parent, dcm::DCM{T}) where {O, T}
 
     build_axes(frames, axes_name(axes), axes_id(axes), :FixedOffsetAxes, 
-        _get_fixedrot9, _get_fixedrot9, _get_fixedrot9; parentid=axes_alias(parent), dcm=dcm)
-
+            FrameAxesFunctions{T, O}();
+            parentid=axes_alias(parent), dcm=dcm)
 end
 
 
 """
-    add_axes_rotating!(frames, axes, parent, fun, dfun=nothing, ddfun=nothing) where T 
+    add_axes_rotating!(frames, axes, parent, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where T 
 
 Add `axes` as a set of rotating axes to `frames`. The orientation of these axes depends only 
 on time and is computed through the custom functions provided by the user. 
@@ -301,18 +319,20 @@ on time and is computed through the custom functions provided by the user.
 The input functions must accept only time as argument and their outputs must be as follows: 
 
 - **fun**: return a Direction Cosine Matrix (DCM).
-- **dfun**: return the DCM and its time derivative.
-- **ddfun**: retutn the DCM and its first two time derivatives
+- **δfun**: return the DCM and its 1st order time derivative.
+- **δ²fun**: retutn the DCM and its 1st and 2nd order time derivatives
+- **δ³fun**: retutn the DCM and its 1st, 2nd and 3rd order time derivatives
 
-If `dfun` and/or `ddfun` are not provided, they are computed with automatic differentiation.
+
+If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with automatic differentiation.
 
 !!! warning 
-It is expected that the input functions and their outputs have the correct signature. This 
-function does not perform any checks on the output types. 
+    It is expected that the input functions and their outputs have the correct signature. This 
+    function does not perform any checks on the output types. 
 
 ### Examples 
 ```jldoctest 
-julia> FRAMES = FrameSystem{Float64}() 
+julia> FRAMES = FrameSystem{3, Float64}() 
 
 julia> @axes Inertial 1
 
@@ -324,44 +344,76 @@ julia> fun(t) = angle_to_dcm(t, :Z)
 
 julia> add_axes_rotating!(FRAMES, Synodic, Inertial, fun)
 
-julia> R = get_rotation6(FRAMES, Inertial, Synodic, π/6);
+julia> R = rotation6(FRAMES, Inertial, Synodic, π/6);
 
 julia> R[1]
 DCM{Float64}:
-0.866025  0.5       0.0
--0.5       0.866025  0.0
-0.0       0.0       1.0
+  0.866025  0.5       0.0
+ -0.5       0.866025  0.0
+  0.0       0.0       1.0
 
 julia> R[2]
 DCM{Float64}:
--0.5        0.866025  0.0
--0.866025  -0.5       0.0
-0.0        0.0       0.0
+ -0.5        0.866025  0.0
+ -0.866025  -0.5       0.0
+  0.0        0.0       0.0
 ```
 
 ### See also 
 See also [`add_axes_fixedoffset!`](@ref), [`add_axes_inertial!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-function add_axes_rotating!(frame::FrameSystem{T}, axes::AbstractFrameAxes,
-        parent, fun, dfun=nothing, ddfun=nothing) where {T}
+
+function add_axes_rotating!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
+            parent, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
+
+    for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
+        if (O < order+1 && !isnothing(fcn))
+             @warn "ignoring $fcn, frame system order is less than $(order+1)"
+        end
+    end 
+
+    funs = FrameAxesFunctions{T, O}(
+        (t, x, y) -> Rotation{O}(fun(t)),
+
+        # First derivative 
+        isnothing(δfun) ? 
+            (t, x, y) -> Rotation{O}(fun(t), derivative(fun, t)) : 
+            (t, x, y) -> Rotation{O}(δfun(t)),
+
+        # Second derivative 
+        isnothing(δ²fun) ?
+            (isnothing(δfun) ? 
+                (t, x, y) -> Rotation{O}(fun(t), derivative(fun, t), 
+                                derivative(τ->derivative(fun, τ), t)) : 
+                (t, x, y) -> Rotation{O}(δfun(t)..., derivative(τ->derivative(fun, τ), t))) : 
+
+            (t, x, y) -> Rotation{O}(δ²fun(t)),
+
+        # Third derivative 
+        isnothing(δ³fun) ?
+            (isnothing(δ²fun) ? 
+                (isnothing(δfun) ? 
+                    (t, x, y) -> Rotation{O}(
+                                    fun(t), 
+                                    derivative(fun, t), 
+                                    derivative(τ->derivative(fun, τ), t), 
+                                    derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
+                                ) :
+
+                    (t, x, y) -> Rotation{O}(
+                                    δfun(t)..., 
+                                    derivative(τ->derivative(δfun, τ), t)...
+                                )) : 
+
+                (t, x, y) -> Rotation{O}(
+                                δ²fun(t)..., 
+                                derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
+                            )) :
+            (t, x, y) -> Rotation{O}(δ³fun(t))
+    )
 
     build_axes(frame, axes_name(axes), axes_id(axes), :RotatingAxes, 
-                (t, x, y) -> Rotation(fun(t), DCM(T(1)I), DCM(T(1)I)), 
-                
-                isnothing(dfun) ? 
-                    (t, x, y) -> Rotation(fun(t), derivative(fun, t), DCM(T(1)I)) : 
-                    (t, x, y) -> Rotation(dfun(t), DCM(T(1)I)),
-
-                isnothing(ddfun) ?
-                    (isnothing(dfun) ? 
-                        (t, x, y) -> Rotation(fun(t), derivative(fun, t), 
-                                            derivative(τ->derivative(fun, τ), t)) : 
-
-                        (t, x, y) -> Rotation(dfun(t)..., derivative(τ->derivative(fun, τ), t))) : 
-                    (t, x, y) -> Rotation(ddfun(t)),
-
-                parentid=axes_alias(parent))
-
+        funs, parentid=axes_alias(parent))
 end
 
 
@@ -394,18 +446,15 @@ axes is the Local Vertical Local Horizon (LVLH), where the spacecraf's nadir dir
 velocity direction define the axes orientation.  
 
 !!! note 
-Regardless of the original set of axes in which the primary and secondary vectors are 
-defined, the axes orientation is automatically computed by rotating them to `parent`.
+    Regardless of the original set of axes in which the primary and secondary vectors are 
+    defined, the axes orientation is automatically computed by rotating them to `parent`.
 
-!!! warning 
-Currently, the frame system architecture does not support the rotation of accelerations 
-from/to a set of computable axes whose vectors have order greater than 1.
 
 ### Examples 
 ```jldoctest 
 julia> eph = CalcephProvider(".../de440.bsp")
 
-julia> FRAMES = FrameSystem{Float64}(eph) 
+julia> FRAMES = FrameSystem{4, Float64}(eph) 
 
 julia> @point SSB 0 SolarySystemBarycenter 
 
@@ -435,8 +484,8 @@ See also [`ComputableAxesVector`](@ref), [`add_axes_fixedoffset!`](@ref), [`add_
 and [`add_axes_computable!`](@ref), 
 
 """
-function add_axes_computable!(frame::FrameSystem{T}, axes::AbstractFrameAxes, parent, 
-        v1::ComputableAxesVector, v2::ComputableAxesVector, seq::Symbol) where T
+function add_axes_computable!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes, parent, 
+            v1::ComputableAxesVector, v2::ComputableAxesVector, seq::Symbol) where {O, T}
 
     !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) && throw(ArgumentError(
         "$seq is not a valid rotation sequence for two vectors frames."))
@@ -448,13 +497,20 @@ function add_axes_computable!(frame::FrameSystem{T}, axes::AbstractFrameAxes, pa
         end
     end
 
-    build_axes(frame, axes_name(axes), axes_id(axes), :ComputableAxes, 
-                (t, x, y) -> Rotation(_two_vectors_to_rot3(x, y, seq)), 
-                (t, x, y) -> Rotation(_two_vectors_to_rot6(x, y, seq)), 
-                (t, x, y) -> Rotation(_two_vectors_to_rot9(x, y, seq));
+    funs = FrameAxesFunctions{T, O}(
+        (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)...), 
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)...), 
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot9(x, y, seq)...),
+        (t, x, y) -> Rotation{O}(_two_vect.ors_to_rot12(x, y, seq)...),
+    )
+
+    build_axes(frame, axes_name(axes), axes_id(axes), :ComputableAxes, funs;
                 parentid=axes_alias(parent), 
                 cax_prop=ComputableAxesProperties(v1, v2))
-
+    
 end
 
-# TODO: add iau axes 
+
+
+
+# TODO: add iau_axes 

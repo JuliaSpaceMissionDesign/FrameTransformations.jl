@@ -1,8 +1,4 @@
-export Rotation, 
-       order
-
-using ReferenceFrameRotations
-using StaticArrays
+export Rotation, order
 
 import LinearAlgebra: matprod, UniformScaling
 import StaticArrays: similar_type, Size, MMatrix, SMatrix
@@ -125,6 +121,7 @@ julia> R3 = Rotation{3}(R1)
 ERROR: DimensionMismatch: Cannot convert a `Rotation` of order 2 to order 3
 [...]
 ```
+
 ---
 
     Rotation(m::DCM{N}, ω::AbstractVector) where N 
@@ -133,8 +130,20 @@ Create a 2nd order `Rotation` object of type `N` to rotate between two set of ax
 `b` from a Direction Cosine Matrix (DCM) and the angular velocity vector `ω` of `b` with 
 respect to `a`, expressed in `b`
 
+---
+
+    Rotation{S}(dcms::DCM...) where S 
+
+Create a `Rotation` object of order `S`. If the number of `dcms` is smaller than `S`, the 
+remaining slots are filled with null DCMs, otherwise if the number of inputs is greater than 
+`S`, only the first `S` DCMs are used. 
+
+!!! warning 
+    Usage of this constructor is not recommended as it may yield unexpected results to 
+    unexperienced users. 
+
 ### See also 
-See also [`rotation3`](@ref), [`rotation6`](@ref) and [`rotation9`](@ref).
+See also [`get_rotation3`](@ref), [`get_rotation6`](@ref) and [`get_rotation9`](@ref).
 """
 struct Rotation{S, N}
     m::NTuple{S, DCM{N}}
@@ -172,6 +181,16 @@ end
     end
 end
 
+# Constructor with filter and auto-fill of missing DCMS 
+@generated function Rotation{S}(dcms::DCM...) where S 
+    nd = length(dcms)
+    expr = :(tuple($([Expr(:ref, :dcms, i) for i in 1:min(nd, S)]...), 
+                   $([DCM(0I) for i in 1:(S-nd)]...)))
+    return quote 
+        @inbounds Rotation($(expr))
+    end
+end
+
 # Constructor for S-order identity rotations! 
 @generated function Rotation{S}(::UniformScaling{N}) where {S, N}
     expr = :(tuple($([i == 1 ? DCM(N(1)I) : DCM(N(0)I) for i in 1:S]...)))
@@ -188,19 +207,19 @@ end
 end
 
 # Convert a Rotation to one with a smaller order! 
-@inbounds function Rotation{S1}(rot::Rotation{S2, N}) where {S1, S2, N}
+function Rotation{S1}(rot::Rotation{S2, N}) where {S1, S2, N}
     S1 > S2 && throw(DimensionMismatch(
         "Cannot convert a `Rotation` of order $S2 to order $S1"))
     Rotation(rot.m[1:S1])
 end
 
-function Rotation(m::DCM{N}, ω::AbstractArray) where N
+function Rotation(m::DCM{N}, ω::AbstractVector) where N
     dm = DCM(ddcm(m, SVector(ω)))
-    return Rotation(m, dm)
+    return Rotation((m, dm))
 end
 
 # ---
-# Type Conversions and Promotions @test_thro@test_thro@test_thro
+# Type Conversions and Promotions 
 
 # Static Arrays API 
 Size(::Rotation{S, N}) where {S, N} = Size((3*S, 3*S))
@@ -257,6 +276,7 @@ _dcm_type(::Union{DCM{T}, Type{DCM{T}}}) where T = T
         $t
     end
 end
+
 
 # -------------------------------------
 # OPERATIONS 

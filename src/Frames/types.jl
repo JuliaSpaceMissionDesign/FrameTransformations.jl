@@ -1,9 +1,11 @@
-export FrameAxesNode, FramePointNode, FrameSystem, 
+export FrameSystem, ComputableAxesVector,
+       frames_order, frames_timescale,
        frames_axes, frames_points, 
        show_axes, show_points,
        add_axes!, add_point!,
        has_axes, has_point, 
        ephemeris_points
+
 
 # -------------------------------------
 # ABSTRACT 
@@ -22,6 +24,7 @@ Abstract type for all reference frames axes.
 """
 abstract type AbstractFrameAxes end 
 
+
 # -------------------------------------
 # AXES
 # -------------------------------------
@@ -30,18 +33,43 @@ abstract type AbstractFrameAxes end
     ComputableAxesVector 
 
 Store the properties required to retrieve the i-th order components of a 
-desired vector. 
+desired vector.
+
+### Example 
+```jldoctest
+julia> @point SSB 0 SolarSystemBarycenter
+
+julia> @point Sun 10 
+
+julia> ComputableAxesVector(Sun, SSB, 1)
+ComputableAxesVector(10, 0, 1)
+
+julia> ComputableAxesVector(10, 0, 1)
+ComputableAxesVector(10, 0, 1)
+```
 """
 struct ComputableAxesVector 
     to::Int 
     from::Int 
     order::Int 
-end
 
-ComputableAxesVector() = ComputableAxesVector(0, 0, 0)
+    function ComputableAxesVector(to::Int, from::Int, order::Int)
+        if order < 1 || order > 3
+            throw(ArgumentError("order must be between 1 and 3."))
+        end
+
+        if to == from 
+            throw(ArgumentError("vector origin and target must be different."))
+        end
+
+        new(to, from, order)
+    end
+
+end
+ 
+ComputableAxesVector() = ComputableAxesVector(1, 2, 1)
 function ComputableAxesVector(to::T, from::T, order::Int) where {T <: Union{Int, <:AbstractFramePoint}}
-    order > 3 && throw(ArgumentError("Order must be <= 3."))
-    ComputableAxesVector(get_alias(to), get_alias(from), order)
+    ComputableAxesVector(point_alias(to), point_alias(from), order)
 end
 
 """ 
@@ -58,69 +86,171 @@ end
 ComputableAxesProperties() = ComputableAxesProperties(ComputableAxesVector(),
                                                       ComputableAxesVector())
 
+
+# Frame Axes Function signatures 
+_FAxesFunIn{N, T} = Tuple{T, SVector{N, T}, SVector{N, T}}
+_FAxesFunSig{O, T, N} = FunctionWrapper{Rotation{O, T}, _FAxesFunIn{N, T}}
+
+# Container to store frame axes update functions 
+struct FrameAxesFunctions{T, O, N}
+    fun::NTuple{O, _FAxesFunSig{O, T, N}}
+end
+
+Base.getindex(af::FrameAxesFunctions, i) = af.fun[i]
+
+# Default rotation function for axes that do not require updates
+_get_fixedrot(::T, ::SVector{N, T}, ::SVector{N, T}) where {N, T} = Rotation{N/3}(T(1)I)       
+
+# Constructors for FrameAxesFunctions 
+@generated function FrameAxesFunctions{T}(funs::Function...) where T
+    O = length(funs)
+    expr = :(tuple($([Expr(:ref, :funs, i) for i in 1:O]...)))
+
+    return quote 
+        @inbounds FrameAxesFunctions{T, $O, 3*$O}($(expr))
+    end
+end
+
+# Constructor to filter out some of the specified functions!
+@generated function FrameAxesFunctions{T, O}(funs::Function...) where {T, O}
+    O > length(funs) && throw(ArgumentError("required at least $O functions."))
+
+    expr = :(tuple($([Expr(:ref, :funs, i) for i in 1:O]...)))
+    return quote 
+        @inbounds FrameAxesFunctions{T, O, 3*O}($(expr))
+    end
+end
+
+# Default constructors for dummy axes function updates 
+@generated function FrameAxesFunctions{T, O}() where {T, O}
+    expr = :(tuple($([_get_fixedrot for i in 1:O]...)))
+    return quote 
+        FrameAxesFunctions{T, O, 3*O}($(expr))
+    end
+end
+
+
 """
-    FrameAxesNode{T} <: AbstractGraphNode
+    FrameAxesNode{O, T, N} <: AbstractGraphNode
 
 Define a set of axes.
 
 ### Fields
 - `name` -- axes name 
 - `class` -- `Symbol` representing the class of the axes 
-- `id` -- axes id (equivalent of NAIFId for axes)
-- `parentid` -- id of the parent axes 
+- `id` -- axes ID (equivalent of NAIFId for axes)
+- `parentid` -- ID of the parent axes 
 - `comp` -- properties for computable axes 
+- `R` -- vector storing rotation matrices 
+- `epochs` -- vector storing the epochs associated to `R`
+- `nzo` -- last order at which `R` has been computed 
+- `f` -- `FrameAxesFunctions` container 
 """
-struct FrameAxesNode{T} <: AbstractGraphNode
+struct FrameAxesNode{O, T, N} <: AbstractGraphNode
     name::Symbol            
     class::Symbol          
     id::Int                
     parentid::Int         
     comp::ComputableAxesProperties 
-    R::Vector{Rotation{3, T}}
+    R::Vector{Rotation{O, T}}
     epochs::Vector{T}
     nzo::Vector{Int} # last updated order
-    f::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{3, T}, SVector{3, T}}} 
-    δf::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{6, T}, SVector{6, T}}}
-    δ²f::FunctionWrapper{Rotation{3, T}, Tuple{T, SVector{9, T}, SVector{9, T}}}
+    f::FrameAxesFunctions{T, O, N}
 end
 
-get_node_id(ax::FrameAxesNode) = ax.id
+MappedGraphs.get_node_id(ax::FrameAxesNode) = ax.id
 
-function Base.show(io::IO, ax::FrameAxesNode{T}) where T
-    pstr = "FrameAxesNode{$T}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
+function Base.show(io::IO, ax::FrameAxesNode{O, T}) where {O, T}
+    pstr = "FrameAxesNode{$O, $T}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
     ax.parentid == ax.id || (pstr *= ", parent=$(ax.parentid)")
     pstr *= ")"
     println(io, pstr)
 end
 
+
 # -------------------------------------
 # POINTS
 # -------------------------------------
+
+# Frame Point Function signatures 
+_FPointFunIn{N, T} = Tuple{MVector{N, T}, T}
+_FPointFunSig{T, N} = FunctionWrapper{Nothing, _FPointFunIn{N, T}}
+
+# Container to store frame point update functions 
+struct FramePointFunctions{T, O, N}
+    fun::NTuple{O, _FPointFunSig{T, N}}
+end
+
+Base.getindex(pf::FramePointFunctions, i) = pf.fun[i]
+
+# Default state-vector update function for points that do not require updates
+_empty_stv_update!(::AbstractVector{T}, ::T) where {T} = nothing
+
+# Constructors for FramePointFunctions 
+@generated function FramePointFunctions{T}(funs::Function...) where T
+    O = length(funs)
+    expr = :(tuple($([(Expr(:ref, :funs, i)) for i in 1:O]...)))
+
+    return quote 
+        @inbounds FramePointFunctions{T, $O, 3*$O}($(expr))
+    end
+end
+
+# Constructor to filter out some of the specified functions!
+@generated function FramePointFunctions{T, O}(funs::Function...) where {T, O}
+    O > length(funs) && throw(ArgumentError("required at least $O functions."))
+
+    expr = :(tuple($([Expr(:ref, :funs, i) for i in 1:O]...)))
+    return quote 
+        @inbounds FramePointFunctions{T, O, 3*O}($(expr))
+    end
+end
+
+# Default constructors for dummy point function updates 
+@generated function FramePointFunctions{T, O}() where {T, O}
+    expr = :(tuple($([_empty_stv_update! for i in 1:O]...)))
+    return quote 
+        FramePointFunctions{T, O, 3*O}($(expr))
+    end
+end
+
 """
-    FramePointNode
+    FramePointNode{O, T, N} <: AbstractGraphNode
+
+Define a frame system point.
+
+### Fields
+- `name` -- point name 
+- `class` -- `Symbol` representing the class of the point 
+- `axesid` -- ID of the axes in which the point coordinates are expressed 
+- `parentid` -- NAIF ID of the parent point 
+- `NAIFId` -- NAIF ID of the point
+- `stv` -- vector storing the point state vectors
+- `epochs` -- vector storing the epochs associated to `stv`
+- `nzo` -- last order at which `stv` has been computed 
+- `f` -- `FramePointFunctions` container 
 """
-struct FramePointNode{T} <: AbstractGraphNode
+struct FramePointNode{O, T, N} <: AbstractGraphNode
     name::Symbol
     class::Symbol
     axesid::Int      
     parentid::Int
     NAIFId::Int 
-    stv::Vector{MVector{9, T}}
+    stv::Vector{MVector{N, T}}
     epochs::Vector{T}
     nzo::Vector{Int}
-    f::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}} 
-    δf::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}}
-    δ²f::FunctionWrapper{Nothing, Tuple{MVector{9, T}, T}}
+    f::FramePointFunctions{T, O, N}
 end 
 
-get_node_id(p::FramePointNode) = p.NAIFId
+MappedGraphs.get_node_id(p::FramePointNode) = p.NAIFId
 
-function Base.show(io::IO, p::FramePointNode{T}) where T
-    pstr = "FramePointNode{$T}(name=$(p.name), class=$(p.class), NAIFId=$(p.NAIFId), axes=$(p.axesid)"
+function Base.show(io::IO, p::FramePointNode{O, T}) where {O, T}
+    pstr = "FramePointNode{$O, $T}(name=$(p.name), class=$(p.class), NAIFId=$(p.NAIFId), axes=$(p.axesid)"
     p.parentid == p.NAIFId || (pstr *= ", parent=$(p.parentid)")
     pstr *= ")"
     println(io, pstr)
 end
+
 
 # -------------------------------------
 # FRAMES
@@ -136,39 +266,46 @@ FrameSystemProperties() = FrameSystemProperties(Int64[])
 """
     FrameSystem
 """
-struct FrameSystem{T <: Number, S <: AbstractTimeScale, E <: AbstractEphemerisProvider}
+struct FrameSystem{O, T <: Number, S <: AbstractTimeScale, E <: AbstractEphemerisProvider, N}
     eph::E
     prop::FrameSystemProperties{T}
-    points::MappedNodeGraph{FramePointNode{T}, SimpleGraph{Int}}
-    axes::MappedNodeGraph{FrameAxesNode{T}, SimpleGraph{Int}}
+    points::MappedNodeGraph{FramePointNode{O, T, N}, SimpleGraph{Int}}
+    axes::MappedNodeGraph{FrameAxesNode{O, T, N}, SimpleGraph{Int}}
 end
 
-function FrameSystem{T, S}(eph::E, points::Vector{Int}) where {T <: Number, 
+function FrameSystem{O, T, S}(eph::E, points::Vector{Int}) where {O, T <: Number, 
             S <: AbstractTimeScale, E <:AbstractEphemerisProvider} 
     
-    return FrameSystem{T, S, E}(
+    if O < 1 || O > 4
+        throw(ArgumentError("FrameSystem order must be between 1 and 4."))
+    end
+
+    return FrameSystem{O, T, S, E, 3*O}(
         eph, FrameSystemProperties{T}(points),
-        MappedGraph(FramePointNode{T}),
-        MappedGraph(FrameAxesNode{T})
+        MappedGraph(FramePointNode{O, T, 3O}),
+        MappedGraph(FrameAxesNode{O, T, 3O})
     )
 end
 
-function FrameSystem{T}(eph::E) where {T, E}
+function FrameSystem{O, T}(eph::E) where {O, T, E}
     prec = ephem_position_records(eph)
     tids = map(x->x.target, prec)
     cids = map(x->x.center, prec)
     S = typeof(ephem_timescale(eph))
-    return FrameSystem{T, S}(eph, unique([tids..., cids...]))
+    return FrameSystem{O, T, S}(eph, unique([tids..., cids...]))
 end
 
-FrameSystem{T, S}() where {T, S} = FrameSystem{T, S}(NullEphemerisProvider(), Int64[])
-FrameSystem{T}() where {T <: Number} = FrameSystem{T, BarycentricDynamicalTime}()
+FrameSystem{O, T, S}() where {O, T, S} = FrameSystem{O, T, S}(NullEphemerisProvider(), Int64[])
+FrameSystem{O, T}() where {O, T <: Number} = FrameSystem{O, T, BarycentricDynamicalTime}()
+
+frames_order(::FrameSystem{O}) where O = O 
+frames_timescale(::FrameSystem{O, T, S}) where {O, T, S} = S
 
 frames_points(fs::FrameSystem) = fs.points 
 frames_axes(fs::FrameSystem) = fs.axes
 
-add_point!(fs::FrameSystem{T}, p::FramePointNode{T}) where T = add_vertex!(fs.points, p)
-add_axes!(fs::FrameSystem{T}, ax::FrameAxesNode{T}) where T = add_vertex!(fs.axes, ax)
+add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O, T} = add_vertex!(fs.points, p)
+add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O, T} = add_vertex!(fs.axes, ax)
 
 @inline has_point(f::FrameSystem, NAIFId::Int) = has_vertex(frames_points(f), NAIFId)
 @inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(frames_axes(f), axesid)
@@ -176,6 +313,7 @@ add_axes!(fs::FrameSystem{T}, ax::FrameAxesNode{T}) where T = add_vertex!(fs.axe
 
 show_points(frame::FrameSystem) = mappedgraph_tree(frames_points(frame))
 show_axes(frame::FrameSystem) = mappedgraph_tree(frames_axes(frame))
+
 
 # -------------------------------------
 # UTILS
@@ -206,12 +344,12 @@ function _mappedgraph_tree!(s::String, g::MappedNodeGraph, pid::Int, idx::Int, d
     s
 end
 
-function Base.summary(io::IO, ::FrameSystem{T, S, E}) where {T, S, E}
-    println(io, "FrameSystem{$T, $S, $E}")
+function Base.summary(io::IO, ::FrameSystem{O, T, S, E}) where {O, T, S, E}
+    println(io, "FrameSystem{$O, $T, $S, $E}")
 end
 
-function Base.show(io::IO, fs::FrameSystem{T, S, E}) where {T, S, E}
-    println(io, "FrameSystem{$T, $S, $E}(")
+function Base.show(io::IO, fs::FrameSystem{O, T, S, E}) where {O, T, S, E}
+    println(io, "FrameSystem{$O, $T, $S, $E}(")
     println(io, "  eph: $(fs.eph),")
 
     spoints = ""

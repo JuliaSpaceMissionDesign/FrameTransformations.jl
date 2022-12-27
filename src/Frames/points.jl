@@ -3,7 +3,24 @@ export @point,
        add_point_ephemeris!,
        add_point_fixed!, 
        add_point_updatable!, 
-       add_point_dynamical!
+       add_point_dynamical!,
+       point_alias
+
+
+"""
+point_name(point::AbstractFramePoint)
+
+Return the name of `point`.
+"""
+function point_name end
+
+
+""" 
+point_id(point::AbstractFramePoint)
+
+Return the NAIF ID associated to `point`.
+"""
+function point_id end 
 
 
 """
@@ -48,13 +65,14 @@ See also [`@axes`](@ref) and [`point_alias`](@ref).
 """
 macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 
+
     type = isnothing(type) ? name : type 
     type = Symbol(format_camelcase(Symbol, String(type)), :Point)
     typ_str = String(type)
     name_str = String(name)
 
-    pointid_expr = :(@inline point_id(::$type) = $id)
-    name_expr = :(point_name(::$type) = Symbol($name_str))
+    pointid_expr = :(@inline Frames.point_id(::$type) = $id)
+    name_expr = :(Frames.point_name(::$type) = Symbol($name_str))
 
     return quote 
         """
@@ -79,7 +97,7 @@ end
 
 
 """ 
-    build_point(frames, name, NAIFId, class, axesid, f, δf, δ²f; parentid, offset)
+    build_point(frames, name, NAIFId, class, axesid, funs; parentid, offset)
 
 Create and add a [`FramePointNode`](@ref) to `frames` based on the input parameters. 
 Current supported point classes are: `:RootPoint`, `:TimePoint`, `:EphemerisPoint`, `:FixedPoint`
@@ -91,9 +109,8 @@ and `:UpdatablePoint`.
 - `NAIFId` -- Point NAIF ID, must be unique within `frames`
 - `class` -- Point class. 
 - `axesid` -- ID of the axes in which the state vector of the point is expressed. 
-- `f` -- fun!(y, t) to update the point position. 
-- `δf` -- fun!(y, t) to update the point position and velocity. 
-- `δ²f` -- fun!(y, t) to update the point position, velocity and acceleration. 
+- `funs` -- `FramePointFunctions` object storing the functions to update the state 
+            vectors of the point. It must match the type and order of `frames`
 
 ### Keywords  
 - `parentid` -- NAIF ID of the parent point. Not required only for the root point.
@@ -103,9 +120,9 @@ and `:UpdatablePoint`.
 This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
 to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
-function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::Symbol, 
-            axesid::Int, f::Function, δf::Function, δ²f::Function; 
-            parentid=nothing, offset=nothing) where {T}
+function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class::Symbol, 
+                axesid::Int, funs::FramePointFunctions{T, O};
+                parentid=nothing, offset=nothing) where {O, T}
 
     if has_point(frames, NAIFId) 
         # Check if a point with the same NAIFId is already registered 
@@ -143,7 +160,7 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
 
     # Error check temporarily removed to avoid possible issues with unavailable point 
     # data at the programmatic start time. 
-
+    
     # Check that the given functions have the correct signature 
     # for (i, fun) in enumerate((f, δf, δ²f))
     #     otype = typeof(fun(MVector{9}(zeros(T, 9)), T(1)))
@@ -155,7 +172,7 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
     @inbounds if class in (:RootPoint, :FixedPoint)
         nzo = Int[]
         epochs = T[]
-        stvs = [@MVector zeros(T, 9)]
+        stvs = [@MVector zeros(T, 3O)]
 
         if class == :FixedPoint
             for i = 1:3 
@@ -169,12 +186,12 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
         nzo = -ones(Int, nth)
         
         epochs = zeros(T, 9)
-        stvs = [@MVector zeros(T, 9) for _ = 1:nth]
+        stvs = [@MVector zeros(T, 3O) for _ = 1:nth]
     end
 
     # Creates point node 
-    pnode = FramePointNode{T}(name, class, axesid, parentid, NAIFId, 
-                stvs, epochs, nzo, f, δf, δ²f)
+    pnode = FramePointNode{O, T, 3*O}(name, class, axesid, parentid, NAIFId, 
+                stvs, epochs, nzo, funs)
 
     # Insert new point in the graph
     add_point!(frames, pnode)
@@ -184,9 +201,6 @@ function build_point(frames::FrameSystem{T}, name::Symbol, NAIFId::Int, class::S
 
     nothing 
 end
-
-# Default state-vector update function for points that do not require updates
-_empty_stv_update!(::AbstractVector{T}, ::T) where {T} = nothing
 
 
 """ 
@@ -207,7 +221,7 @@ points in the same graph are both inadmissible and meaningless.
 
 ### Examples 
 ```jldoctest
-julia> FRAMES = FrameSystem{Float64}() 
+julia> FRAMES = FrameSystem{2, Float64}() 
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
@@ -228,7 +242,7 @@ ERROR: A root-point is already registed in the given FrameSystem.
 See also [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_root!(frames::FrameSystem, point::AbstractFramePoint, axes)
+function add_point_root!(frames::FrameSystem{O, T}, point::AbstractFramePoint, axes) where {O, T}
 
     # Check for root-point existence 
     if !isempty(frames_points(frames)) 
@@ -236,8 +250,8 @@ function add_point_root!(frames::FrameSystem, point::AbstractFramePoint, axes)
             "A root-point is already registed in the given FrameSystem."))
     end
 
-    build_point(frames, point_name(point), point_id(point), :RootPoint, axes_alias(axes), 
-                _empty_stv_update!, _empty_stv_update!, _empty_stv_update!)
+    build_point(frames, point_name(point), point_id(point), :RootPoint, 
+                axes_alias(axes), FramePointFunctions{T, O}())
 
 end
 
@@ -255,21 +269,21 @@ Ephemeris points only accept as parent points root-points or other ephemeris poi
 ### Notes 
 This operation is only possible if the ephemeris kernels loaded within `frames` contain 
 data for the NAIF ID associated to `point` and to its `parent`. 
-
+    
 The axes in which the state-vector is expressed are taken from the ephemeris data: an error 
 is returned if the axes ID is yet to be added to `frames`.
 
 !!! warning 
-It is expected that the NAIF ID and the axes ID assigned by the user are aligned with 
-those used to generate the ephemeris kernels. No check are performed on whether these IDs
-represent the same physical bodies and axes that are intended in the kernels.
+    It is expected that the NAIF ID and the axes ID assigned by the user are aligned with 
+    those used to generate the ephemeris kernels. No check are performed on whether these IDs
+    represent the same physical bodies and axes that are intended in the kernels.
 
 
 ### Examples 
 ```jldoctest
 julia> eph = CalcephProvider(".../de440.bsp")
 
-julia> FRAMES = FrameSystem{Float64}(eph) 
+julia> FRAMES = FrameSystem{2, Float64}(eph) 
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
@@ -290,10 +304,11 @@ ERROR: Ephemeris data for NAIFID 599 is not available in the kernels loaded [...
 ```
 
 ### See also 
-See also [`add_point_root!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
+See also [`add_root_point!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, parent=nothing)
+function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
+            parent=nothing) where {O, T}
 
     NAIFId = point_id(point)
 
@@ -366,11 +381,15 @@ function add_point_ephemeris!(frames::FrameSystem, point::AbstractFramePoint, pa
             "given FrameSystem."))
     end
 
+    funs = FramePointFunctions{T, O}(
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 0),
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 1),
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 2),
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 3), 
+    )
+
     build_point(frames, point_name(point), NAIFId, :EphemerisPoint, axesid, 
-                (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 0),
-                (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 1),
-                (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 2),; 
-                parentid=parentid)
+                funs; parentid=parentid)
 
 end 
 
@@ -384,7 +403,7 @@ eligible for this class must have null velocity and acceleration.
 
 ### Examples 
 ```jldoctest
-julia> FRAMES = FrameSystem{Float64}() 
+julia> FRAMES = FrameSystem{2, Float64}() 
 
 julia> @axes SF -3000 SatelliteFrame
 
@@ -402,19 +421,20 @@ julia> add_point_fixed!(FRAMES, SolarArrayCenter, SC, SF, sa_offset)
 ```
 
 ### See also 
-See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
+See also [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_updatable!`](@ref)
 """
-function add_point_fixed!(frames::FrameSystem{T}, point::AbstractFramePoint, parent, 
-        axes, offset::AbstractVector{T}) where {T}
+function add_point_fixed!(frames::FrameSystem{O, T}, point::AbstractFramePoint, parent, 
+            axes, offset::AbstractVector{T}) where {O, T}
 
+    
     if length(offset) != 3
         throw(DimensionMismatch(
-            "The offset vector has length 3, but has $(length(offset))."))
+            "The offset vector should have length 3, but has $(length(offset))."))
     end
 
-    build_point(frames, point_name(point), point_id(point), :FixedPoint, axes_alias(axes), 
-                _empty_stv_update!, _empty_stv_update!, _empty_stv_update!; 
+    build_point(frames, point_name(point), point_id(point), :FixedPoint, 
+                axes_alias(axes), FramePointFunctions{T, O}(); 
                 parentid=point_alias(parent), offset=offset)
         
 end
@@ -433,7 +453,7 @@ e.g., when it is the output of an optimisation process which exploits the frame 
 
 ### Examples 
 ```jldoctest
-julia> FRAMES = FrameSystem{Float64}();
+julia> FRAMES = FrameSystem{2, Float64}();
 
 julia> @axes ICRF 1  
 
@@ -451,34 +471,34 @@ julia> y = [10000., 200., 300.]
 
 julia> update_point!(FRAMES, Satellite, y, 0.1)
 
-julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
+julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
 3-element SVector{3, Float64} with indices SOneTo(3):
-10000.0
-200.0
-300.0
+ 10000.0
+   200.0
+   300.0
 
-julia> get_vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
+julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
 ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
 
-julia> get_vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
+julia> vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
 ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 2
 ```
 
 ### See also 
-See also [`update_point!`](@ref), [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
+See also [`update_point!`](@ref), [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_fixed!`](@ref)
 """
-function add_point_updatable!(frames::FrameSystem, point::AbstractFramePoint, 
-                          parent, axes)
+function add_point_updatable!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
+                              parent, axes) where {O, T}
 
-    build_point(frames, point_name(point), point_id(point), :UpdatablePoint, axes_alias(axes), 
-                _empty_stv_update!, _empty_stv_update!, _empty_stv_update!; 
+    build_point(frames, point_name(point), point_id(point), :UpdatablePoint, 
+                axes_alias(axes), FramePointFunctions{T, O}(); 
                 parentid=point_alias(parent))
 end
 
 
 """ 
-    add_point_dynamical!(frames, point, parent, axes, fun, dfun=nothing, ddfun=nothing)
+    add_point_dynamical!(frames, point, parent, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing)
 
 Add `point` as a time point to `frames`. The state vector for these points depends only on 
 time and is computed through the custom functions provided by the user. 
@@ -486,19 +506,20 @@ time and is computed through the custom functions provided by the user.
 The input functions must accept only time as argument and their outputs must be as follows: 
 
 - **fun**: return a 3-elements vector: position
-- **dfun**: return a 6-elements vector: position and velocity
-- **ddfun**: return a 9-elements vector: position, velocity and acceleration
+- **δfun**: return a 6-elements vector: position and velocity
+- **δ²fun**: return a 9-elements vector: position, velocity and acceleration
+- **δ³fun**: return a 12-elements vector: position, velocity, acceleration and jerk
 
-If `dfun` and/or `ddfun` are not provided, they are computed with automatic differentiation. 
+If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with automatic differentiation. 
 
 !!! warning 
-It is expected that the input functions and their ouputs have the correct signature. This 
-function does not perform any checks on whether the returned vectors have the appropriate 
-dimensions. 
+    It is expected that the input functions and their ouputs have the correct signature. This 
+    function does not perform any checks on whether the returned vectors have the appropriate 
+    dimensions. 
 
 ### Examples 
 ```jldoctest
-julia> FRAMES = FrameSystem{Float64}()
+julia> FRAMES = FrameSystem{2, Float64}()
 
 julia> @axes ICRF 1 
 
@@ -512,44 +533,63 @@ julia> @point Satellite 1
 
 julia> satellite_pos(t::T) where T = [cos(t), sin(t), 0]
 
-julia> add_point_dynamical!(FRAMES, Satellite, Origin, ICRF, satellite_pos)
+julia> add_point_time!(FRAMES, Satellite, Origin, ICRF, satellite_pos)
 
-julia> get_vector6(FRAMES, Origin, Satellite, ICRF, π/6)
+julia> vector6(FRAMES, Origin, Satellite, ICRF, π/6)
 6-element SVector{6, Float64} with indices SOneTo(6):
-0.8660254037844387
-0.49999999999999994
-0.0
--0.49999999999999994
-0.8660254037844387
-0.0
+  0.8660254037844387
+  0.49999999999999994
+  0.0
+ -0.49999999999999994
+  0.8660254037844387
+  0.0
 ```
 ### See also 
-See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
+See also [`add_root_point!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_dynamical!(frames::FrameSystem, point::AbstractFramePoint, parent, axes,
-                    fun, dfun=nothing, ddfun=nothing)
+function add_point_dynamical!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
+            parent, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
 
+    for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
+        if (O < order+1 && !isnothing(fcn))
+                @warn "ignoring $fcn, frame system order is less than $(order+1)"
+        end
+    end 
+
+    funs = FramePointFunctions{T, O}(
+        (y, t) -> _tpoint_fun!(y, t, fun), 
+
+        # First derivative
+        isnothing(δfun) ? 
+            (y, t) -> _tpoint_δfun_ad!(y, t, fun) : 
+            (y, t) -> _tpoint_δfun!(y, t, δfun),
+
+        # Second derivative
+        isnothing(δ²fun) ? 
+            (isnothing(δfun) ?  
+                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun) : 
+                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, δfun)) : 
+            (y, t) -> _tpoint_δ²fun!(y, t, δ²fun),
+
+        # Third derivative 
+        isnothing(δ³fun) ? 
+            (isnothing(δ²fun) ? 
+                (isnothing(δfun) ?  
+                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun) : 
+                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun)) : 
+                (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)) :
+            (y, t) -> _tpoint_δ³fun!(y, t, δ³fun)
+    ) 
 
     build_point(frames, point_name(point), point_id(point), :TimePoint, axes_alias(axes), 
-                (y, t) -> _tpoint_fun!(y, t, fun), 
-
-                isnothing(dfun) ? 
-                    (y, t) -> _tpoint_δfun_ad!(y, t, fun) : 
-                    (y, t) -> _tpoint_δfun!(y, t, dfun),
-
-                isnothing(ddfun) ? 
-                    (isnothing(dfun) ?  
-                        (y, t) -> _tpoint_δ²fun_ad!(y, t, fun) : 
-                        (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, dfun)) : 
-                    (y, t) -> _tpoint_δ²fun!(y, t, ddfun); 
-                
-                parentid=point_alias(parent))
+                funs; parentid=point_alias(parent))
 end
 
 
 # Default function wrappers for time point functions! 
-for (i, fun) in enumerate([:_tpoint_fun!, :_tpoint_δfun!, :_tpoint_δ²fun!])
+for (i, fun) in enumerate([:_tpoint_fun!, :_tpoint_δfun!, 
+                           :_tpoint_δ²fun!, :_tpoint_δ³fun!])
     @eval begin 
         function ($fun)(y, t, fn)
             @inbounds y[1:3*$i] .= fn(t) 
@@ -574,7 +614,28 @@ end
 end
 
 @inbounds function _tpoint_δ²fun_ad!(y, t, fun, δfun)
-    y[1:6] = δfun(t) 
-    y[7:9] = derivative(τ->derivative(fun, τ), t)
+    y[1:6] .= δfun(t) 
+    y[7:9] .= derivative(τ->derivative(fun, τ), t)
+    nothing
+end
+
+# Function wrappers for time-point third order derivative! 
+@inbounds function _tpoint_δ³fun_ad!(y, t, fun)
+    y[1:3] .= fun(t) 
+    y[4:6] .= derivative(fun, t)
+    y[7:9] .= derivative(τ->derivative(fun, τ), t)
+    y[10:12] .= derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
+    nothing
+end
+
+@inbounds function _tpoint_δ³fun_ad!(y, t, fun, δfun)
+    y[1:6] .= δfun(t) 
+    y[7:12] .= derivative(τ->derivative(δfun, τ), t)
+    nothing
+end
+
+@inbounds function _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)
+    y[1:9] .= δ²fun(t) 
+    y[10:12] .= derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
     nothing
 end
