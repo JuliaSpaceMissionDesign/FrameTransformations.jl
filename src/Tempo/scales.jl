@@ -1,15 +1,4 @@
-import FunctionWrappers: FunctionWrapper
-using Basic.Utils: format_camelcase
-using Basic
-
 export TIMESCALES, @timescale, add_timescale, TimeSystem
-
-"""
-    AbstractTimeScale
-
-All timescales are subtypes of the abstract type `AbstractTimeScale`.
-"""
-abstract type AbstractTimeScale end
 
 struct TimeScaleNode{T} <: AbstractGraphNode
     name::Symbol 
@@ -242,7 +231,9 @@ offset_ftp(seconds) = -1.0
 add_timescale(TIMESCALES, NTS, offset_ffp, parent=TDB, ftp=offset_ftp)
 ```
 """
+TIMESCALES
 
+# Create time scales graph
 add_timescale(TIMESCALES, TT, _zero_offset)
 add_timescale(TIMESCALES, TDB, offset_tt2tdb, parent=TT, ftp=offset_tdb2tt)
 add_timescale(TIMESCALES, TAI, offset_tt2tai, parent=TT, ftp=offset_tai2tt)

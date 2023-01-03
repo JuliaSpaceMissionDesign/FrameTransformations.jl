@@ -1,3 +1,8 @@
+"""
+    AbstractEpochOrigin
+
+Abstract type for all epoch origins.
+"""
 abstract type AbstractEpochOrigin end
 
 const EPOCH_ORIGIN = (

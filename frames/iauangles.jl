@@ -67,7 +67,7 @@ function PrecessionNutationComponent{T}(hasnuts::Bool, dbid, nuts, prop, fun,
 end
 
 function PlanetsPrecessionNutation(NAIFId::N, 
-    data::OrderedDict{N, Dict{Symbol, Union{T, Vector{T}}}}) where {N<:Integer, T}
+    data::Dict{N, Dict{Symbol, Union{T, Vector{T}}}}) where {N<:Integer, T}
     
     # Find nutation coefficients
     sid = "$(NAIFId)"
@@ -276,14 +276,14 @@ macro orient_iau_angles(bfname, p)
             R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
             return R, ddcm(R, ω)
         end
-        function $(ddnameddcm)(T::Number)   
-            ra, rad, radd, dec, decd,decdd, w, wd, wdd = $ddnamedfun(T)
-            # ω = SA[rad, decd, wd]
-            # ωd = SA[radd, decdd, wdd]
-            # R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
-            # Rd = DCM(ddcm(R, ω))
-            # FIXME: da implementare correttamente
-        end
+        # function $(ddnameddcm)(T::Number)   
+        #     ra, rad, radd, dec, decd,decdd, w, wd, wdd = $ddnamedfun(T)
+        #     # ω = SA[rad, decd, wd]
+        #     # ωd = SA[radd, decdd, wdd]
+        #     # R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
+        #     # Rd = DCM(ddcm(R, ω))
+        #     # FIXME: da implementare correttamente
+        # end
         nothing
     end)
 end

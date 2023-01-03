@@ -162,5 +162,5 @@ end
 
 @inline function offset_utc2ut1(seconds)
     utc = seconds/86400.0
-    return IERS_EOP.UT1_UTC[utc]
+    return interpolate(IERS_EOP.UT1_UTC, utc)
 end

@@ -10,4 +10,6 @@ module Utils
     include("format.jl")
     include("angles.jl")
     
+    # Interpolation 
+    include("Math/akima.jl")
 end
