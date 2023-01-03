@@ -1,6 +1,13 @@
 module Tempo
 
+    import FunctionWrappers: FunctionWrapper
+    using RemoteFiles
+    using Dates: DateTime as DatesDateTime, datetime2julian, now
+
+    using Basic
     using Basic.MappedGraphs
+    using Basic.Utils: format_camelcase, interpolate
+    using Basic: AstronautGenericException, @create_module_error
 
     const DAY2SEC = 86400.0
     const YEAR2SEC = 60.0 * 60.0 * 24.0 * 365.25
@@ -30,16 +37,25 @@ module Tempo
     """
     const DJM0 = 2400000.5
 
-    include("leapseconds.jl")
+    """
+    AbstractTimeScale
+
+    All timescales are subtypes of the abstract type `AbstractTimeScale`.
+    """
+    abstract type AbstractTimeScale end
+
+    export DJ2000, DMJD, DJM0
 
     include("errors.jl")
     include("convert.jl")
     include("parse.jl")
-    include("offset.jl")
-    include("scales.jl")
 
     include("datetime.jl")
     include("origin.jl")
     include("epoch.jl")
+
+    include("leapseconds.jl")
+    include("offset.jl")
+    include("scales.jl")
 
 end

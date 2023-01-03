@@ -35,113 +35,32 @@ Mean Ecliptic Equinox of J2000 (`ECLIPJ2000`).
 """
 const DCM_ICRF2ECLIPJ2000 = DCM_ICRF2J2000_BIAS * DCM_J20002ECLIPJ2000
 
-
-# --------------------------------------------------------
-# ROTATIONs
-# --------------------------------------------------------
-
-"""
-    ROT_ICRF2J2000_BIAS
-
-Rotation from the International Celestial Reference Frame (`ICRF`) and the Mean Dynamical 
-Equator and Equinox of J2000.0 (`MEME2000`).
-"""
-const ROT_ICRF2J2000_BIAS = Rotation(DCM_ICRF2J2000_BIAS)
-
-"""
-    DROT_ICRF2J2000_BIAS
-
-Order 2 rotation from the International Celestial Reference Frame (`ICRF`) and the Mean 
-Dynamical Equator and Equinox of J2000.0 (`MEME2000`).
-"""
-const DROT_ICRF2J2000_BIAS = Rotation(DCM_ICRF2J2000_BIAS, DCM(0.0I))
-
-"""
-    DDROT_ICRF2J2000_BIAS
-
-Order 3 rotation from the International Celestial Reference Frame (`ICRF`) and the Mean 
-Dynamical Equator and Equinox of J2000.0 (`MEME2000`).
-"""
-const DDROT_ICRF2J2000_BIAS = Rotation(DCM_ICRF2J2000_BIAS, DCM(0.0I), DCM(0.0I))
-
-# ---
-
-"""
-    ROT_ICRF2ECLIPJ2000
-
-Rotation for the rotation from the International Celestial Reference Frame (`ICRF`) and 
-the Mean Ecliptic Equinox of J2000 (`ECLIPJ2000`).
-"""
-const ROT_ICRF2ECLIPJ2000 = Rotation(DCM_ICRF2ECLIPJ2000)
-
-"""
-    DROT_ICRF2ECLIPJ2000
-
-Order 2 rotation from the International Celestial Reference Frame (`ICRF`) and the Mean 
-Ecliptic Equinox of J2000 (`ECLIPJ2000`).
-"""
-const DROT_ICRF2ECLIPJ2000 = Rotation(DCM_ICRF2ECLIPJ2000, DCM(0.0I))
-
-"""
-    DDROT_ICRF2ECLIPJ2000
-
-Order 3 rotation from the International Celestial Reference Frame (`ICRF`) and the Mean 
-Ecliptic Equinox of J2000 (`ECLIPJ2000`).
-"""
-const DDROT_ICRF2ECLIPJ2000 = Rotation(DCM_ICRF2ECLIPJ2000, DCM(0.0I), DCM(0.0I))
-
-# --- 
-
-"""
-    ROT_ICRF2ECLIPJ2000
-
-Rotation from the Mean Dynamical Equator of J2000 (`MEME2000`) to the Mean Ecliptic 
-Equinox of J2000 (`ECLIPJ2000`).
-"""
-const ROT_MEME20002ECLIPJ2000 = Rotation(DCM_J20002ECLIPJ2000)
-
-"""
-    DROT_ICRF2ECLIPJ2000
-
-Order 2 rotation from Mean Dynamical Equator of J2000 (`MEME2000`) to the Mean Ecliptic 
-Equinox of J2000 (`ECLIPJ2000`).
-"""
-const DROT_MEME20002ECLIPJ2000 = Rotation(DCM_J20002ECLIPJ2000, DCM(0.0I))
-
-"""
-    DDROT_ICRF2ECLIPJ2000
-
-Order 3 rotation from the International Celestial Reference Frame (`ICRF`) and the Mean 
-Ecliptic Equinox of J2000 (`ECLIPJ2000`).
-"""
-const DDROT_MEME20002ECLIPJ2000 = Rotation(DCM_J20002ECLIPJ2000, DCM(0.0I), DCM(0.0I))
-
 # --------------------------------------------------------
 # TRANSFORMATIONS
 # --------------------------------------------------------
 
 function orient_icrf_to_meme2000(t::Number)
-    ROT_ICRF2J2000_BIAS
+    return DCM_ICRF2J2000_BIAS
 end
 
 function orient_d_icrf_to_meme2000(t::Number)
-    DROT_ICRF2J2000_BIAS
+    return DCM_ICRF2J2000_BIAS, DCM(0.0I)
 end
 
 function orient_dd_icrf_to_meme2000(t::Number)
-    DDROT_ICRF2J2000_BIAS
+    return DCM_ICRF2J2000_BIAS, DCM(0.0I), DCM(0.0I)
 end
 
 function orient_icrf_to_eclipj2000(t::Number)
-    ROT_ICRF2ECLIPJ2000
+    return DCM_ICRF2ECLIPJ2000
 end
 
 function orient_d_icrf_to_eclipj2000(t::Number)
-    DROT_ICRF2ECLIPJ2000
+    return DCM_ICRF2ECLIPJ2000, DCM(0.0I)
 end
 
 function orient_dd_icrf_to_eclipj2000(t::Number)
-    DDROT_ICRF2ECLIPJ2000
+    return DCM_ICRF2ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end
 
 function orient_icrf_to_mememod(t::Number; model::Orient.IAU2006Model=iau2006b)
@@ -151,13 +70,13 @@ function orient_icrf_to_mememod(t::Number; model::Orient.IAU2006Model=iau2006b)
 end
 
 function orient_meme2000_to_eclipj2000(t::Number)
-    ROT_MEME20002ECLIPJ2000
+    return DCM_J20002ECLIPJ2000
 end
 
 function orient_d_meme2000_to_eclipj2000(t::Number)
-    DROT_MEME20002ECLIPJ2000
+    return DCM_J20002ECLIPJ2000, DCM(0.0I)
 end
 
 function orient_dd_meme2000_to_eclipj2000(t::Number)
-    DDROT_MEME20002ECLIPJ2000
+    return DCM_J20002ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end

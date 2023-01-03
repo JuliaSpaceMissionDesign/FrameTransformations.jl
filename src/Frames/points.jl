@@ -533,7 +533,7 @@ julia> @point Satellite 1
 
 julia> satellite_pos(t::T) where T = [cos(t), sin(t), 0]
 
-julia> add_point_time!(FRAMES, Satellite, Origin, ICRF, satellite_pos)
+julia> add_point_dynamical!(FRAMES, Satellite, Origin, ICRF, satellite_pos)
 
 julia> vector6(FRAMES, Origin, Satellite, ICRF, π/6)
 6-element SVector{6, Float64} with indices SOneTo(6):
@@ -582,7 +582,7 @@ function add_point_dynamical!(frames::FrameSystem{O, T}, point::AbstractFramePoi
             (y, t) -> _tpoint_δ³fun!(y, t, δ³fun)
     ) 
 
-    build_point(frames, point_name(point), point_id(point), :TimePoint, axes_alias(axes), 
+    build_point(frames, point_name(point), point_id(point), :DynamicalPoint, axes_alias(axes), 
                 funs; parentid=point_alias(parent))
 end
 

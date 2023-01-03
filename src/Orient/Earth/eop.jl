@@ -1,9 +1,4 @@
-using DelimitedFiles, 
-      RemoteFiles, 
-      Interpolations
-
 export get_iers_eop, IERS_EOP
-using Basic.Tempo: DJ2000, DateTime
 
 """
     get_iers_eop(; force_download = false)
@@ -123,9 +118,9 @@ function Base.show(io::IO, eop::EOPData{T}) where T
 end
 
 # Get timespan
-function _get_iers_eop_timespan(itp::AbstractInterpolation)
-    str = string(DateTime(first(first(itp.itp.knots))*86400)) * " - " *
-          string(DateTime(last(first(itp.itp.knots))*86400))
+function _get_iers_eop_timespan(itp::InterpolationAkima)
+    str = string(DateTime(first(itp.x)*86400)) * " - " *
+          string(DateTime(last(itp.x)*86400))
     return str
 end
 
@@ -142,14 +137,8 @@ function _create_iers_eop_interpolation(
     field_float::Vector{Float64} = Vector{Float64}(field[1:last_id])
 
     # Create the interpolation object.
-    interp = extrapolate(interpolate(
-        (knots[1:last_id],),
-        field_float,
-        Gridded(Linear())),
-        Flat()
-    )
+    return InterpolationAkima(knots[1:last_id], field_float)
 
-    return interp
 end
 
 """

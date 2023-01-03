@@ -1,9 +1,7 @@
-using Basic.Frames 
-
 using ReferenceFrameRotations
 using StaticArrays
 
-using Test
+using Basic.Frames 
 
 include("rotation.jl")
 include("twovectors.jl")
