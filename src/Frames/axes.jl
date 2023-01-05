@@ -386,7 +386,7 @@ function add_axes_rotating!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
                                 derivative(τ->derivative(fun, τ), t)) : 
                 (t, x, y) -> Rotation{O}(δfun(t)..., derivative(τ->derivative(fun, τ), t))) : 
 
-            (t, x, y) -> Rotation{O}(δ²fun(t)),
+            (t, x, y) -> Rotation{O}(δ²fun(t)...),
 
         # Third derivative 
         isnothing(δ³fun) ?
@@ -408,7 +408,7 @@ function add_axes_rotating!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
                                 δ²fun(t)..., 
                                 derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
                             )) :
-            (t, x, y) -> Rotation{O}(δ³fun(t))
+            (t, x, y) -> Rotation{O}(δ³fun(t)...)
     )
 
     build_axes(frame, axes_name(axes), axes_id(axes), :RotatingAxes, 

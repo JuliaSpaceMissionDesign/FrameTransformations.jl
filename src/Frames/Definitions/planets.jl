@@ -68,7 +68,7 @@ function add_axes_bcrtod!(frames::FrameSystem{O, T},
     f1, f2, f3 = _orient_bcrtod(p, String(point_name(center)))
 
     # Insert new axes in the frame system 
-    add_axes_rotating!(frames, axes, parent, f1, f2)
+    add_axes_rotating!(frames, axes, parent, f1, f2, f3)
 end
 
 
