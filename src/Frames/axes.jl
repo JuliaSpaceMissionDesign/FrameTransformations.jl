@@ -320,11 +320,10 @@ The input functions must accept only time as argument and their outputs must be 
 
 - **fun**: return a Direction Cosine Matrix (DCM).
 - **δfun**: return the DCM and its 1st order time derivative.
-- **δ²fun**: retutn the DCM and its 1st and 2nd order time derivatives
-- **δ³fun**: retutn the DCM and its 1st, 2nd and 3rd order time derivatives
+- **δ²fun**: return the DCM and its 1st and 2nd order time derivatives
+- **δ³fun**: return the DCM and its 1st, 2nd and 3rd order time derivatives
 
-
-If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with automatic differentiation.
+If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via automatic differentiation.
 
 !!! warning 
     It is expected that the input functions and their outputs have the correct signature. This 
@@ -378,7 +377,7 @@ function add_axes_rotating!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
         # First derivative 
         isnothing(δfun) ? 
             (t, x, y) -> Rotation{O}(fun(t), derivative(fun, t)) : 
-            (t, x, y) -> Rotation{O}(δfun(t)),
+            (t, x, y) -> Rotation{O}(δfun(t)...),
 
         # Second derivative 
         isnothing(δ²fun) ?
@@ -501,7 +500,7 @@ function add_axes_computable!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
         (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)...), 
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)...), 
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot9(x, y, seq)...),
-        (t, x, y) -> Rotation{O}(_two_vect.ors_to_rot12(x, y, seq)...),
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot12(x, y, seq)...),
     )
 
     build_axes(frame, axes_name(axes), axes_id(axes), :ComputableAxes, funs;
@@ -509,8 +508,5 @@ function add_axes_computable!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
                 cax_prop=ComputableAxesProperties(v1, v2))
     
 end
-
-
-
 
 # TODO: add iau_axes 

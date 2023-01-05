@@ -15,7 +15,9 @@ module Frames
                            
     using Basic.Tempo: AbstractTimeScale, 
                        BarycentricDynamicalTime, 
-                       Epoch, J2000, DJ2000
+                       Epoch, J2000, DJ2000, 
+                       CENTURY2DAY, CENTURY2SEC, 
+                       DAY2SEC
 
     using Basic.Utils: format_camelcase
     using Basic.Orient

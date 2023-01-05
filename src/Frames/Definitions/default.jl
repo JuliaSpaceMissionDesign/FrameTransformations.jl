@@ -39,44 +39,44 @@ const DCM_ICRF2ECLIPJ2000 = DCM_ICRF2J2000_BIAS * DCM_J20002ECLIPJ2000
 # TRANSFORMATIONS
 # --------------------------------------------------------
 
-function orient_icrf_to_meme2000(t::Number)
+function orient_axes_icrf_to_meme2000(t::Number)
     return DCM_ICRF2J2000_BIAS
 end
 
-function orient_d_icrf_to_meme2000(t::Number)
+function orient_axes_d_icrf_to_meme2000(t::Number)
     return DCM_ICRF2J2000_BIAS, DCM(0.0I)
 end
 
-function orient_dd_icrf_to_meme2000(t::Number)
+function orient_axes_dd_icrf_to_meme2000(t::Number)
     return DCM_ICRF2J2000_BIAS, DCM(0.0I), DCM(0.0I)
 end
 
-function orient_icrf_to_eclipj2000(t::Number)
+function orient_axes_icrf_to_eclipj2000(t::Number)
     return DCM_ICRF2ECLIPJ2000
 end
 
-function orient_d_icrf_to_eclipj2000(t::Number)
+function orient_axes_d_icrf_to_eclipj2000(t::Number)
     return DCM_ICRF2ECLIPJ2000, DCM(0.0I)
 end
 
-function orient_dd_icrf_to_eclipj2000(t::Number)
+function orient_axes_dd_icrf_to_eclipj2000(t::Number)
     return DCM_ICRF2ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end
 
-function orient_icrf_to_mememod(t::Number; model::Orient.IAU2006Model=iau2006b)
-    γ, ϕ, ψ, ε = Orient.fw_angles(model, t)
+function orient_axes_icrf_to_mememod(sec::Number; model::Orient.IAU2006Model=iau2006b)
+    γ, ϕ, ψ, ε = Orient.fw_angles(model, sec)
     R = Orient.fw_matrix(γ, ϕ, ψ, ε)
     return Rotation(R)
 end
 
-function orient_meme2000_to_eclipj2000(t::Number)
+function orient_axes_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000
 end
 
-function orient_d_meme2000_to_eclipj2000(t::Number)
+function orient_axes_d_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000, DCM(0.0I)
 end
 
-function orient_dd_meme2000_to_eclipj2000(t::Number)
+function orient_axes_dd_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end

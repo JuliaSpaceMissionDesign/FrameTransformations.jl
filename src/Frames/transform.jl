@@ -62,7 +62,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         function ($axfun1)(frame::FrameSystem{O, T}, from, to, t::Number) where {O, T}
             
             if O < $order 
-                throw(ErrorException("Insufficient frame system order:"*
+                throw(ErrorException("Insufficient frame system order: "*
                     "transformation requires at least order $($order)."))
             end
 

@@ -4,7 +4,9 @@ export @point,
        add_point_fixed!, 
        add_point_updatable!, 
        add_point_dynamical!,
-       point_alias
+       point_alias,
+       point_name, 
+       point_id
 
 
 """

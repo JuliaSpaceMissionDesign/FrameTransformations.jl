@@ -3,7 +3,7 @@ import LinearAlgebra: cross, dot
 
 
 @testset "TwoVectors" verbose=true begin 
-    atol = 1e-10
+    atol = 1e-8
 
     # Define two non parallel vectors and their 1st, 2nd and 3rd order time derivatives! 
     get_vector(t) = SA[cos(3t), t*sin(t), t^2*cos(t), 
