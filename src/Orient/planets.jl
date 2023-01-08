@@ -41,8 +41,8 @@ function PrecessionNutationComponent{T}(hasnuts::Bool, dbid, nuts, prop, fun,
     return PrecessionNutationComponent{T}(
         dbid[pole] .* factor,
         angles,
-        hasnp ? nuts[1] : nothing,
-        hasnp ? nuts[2] : nothing,
+        hasnp ? nuts[1][1:length(angles)] : nothing,
+        hasnp ? nuts[2][1:length(angles)] : nothing,
         fun
     )
 end

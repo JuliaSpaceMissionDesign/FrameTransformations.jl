@@ -56,28 +56,34 @@ function _orient_bci2000(p::Orient.PlanetsPrecessionNutation)
     return dcm
 end
 
-
 function add_axes_bcrtod!(frames::FrameSystem{O, T}, 
-    data::AbstractDict, center::AbstractFramePoint, 
+    data::AbstractDict, cid::Integer, cname::String, 
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
 
     # Get nutation - precession angles 
-    p = Orient.PlanetsPrecessionNutation(point_id(center), data)
+    p = Orient.PlanetsPrecessionNutation(cid, data)
 
     # Build transformations 
-    f1, f2, f3 = _orient_bcrtod(p, String(point_name(center)))
+    f1, f2, f3 = _orient_bcrtod(p, cname)
 
     # Insert new axes in the frame system 
     add_axes_rotating!(frames, axes, parent, f1, f2, f3)
 end
 
 
-function add_axes_bci2000!(frames::FrameSystem{O, T}, 
+function add_axes_bcrtod!(frames::FrameSystem{O, T}, 
     data::AbstractDict, center::AbstractFramePoint, 
+    axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
+    add_axes_bcrtod!(frames, data, point_id(center), String(point_name(center)), axes, parent)
+end
+
+
+function add_axes_bci2000!(frames::FrameSystem{O, T}, 
+    data::AbstractDict, cid::Integer, cname::String, 
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
 
     # Get nutation - precession angles 
-    p = Orient.PlanetsPrecessionNutation(Frames.point_id(center), data)
+    p = Orient.PlanetsPrecessionNutation(cid, data)
 
     # Build transformation
     # In this case the transformation is a static rotation matrix 
@@ -85,4 +91,10 @@ function add_axes_bci2000!(frames::FrameSystem{O, T},
 
     # Insert new axes in the frame system 
     add_axes_fixedoffset!(frames, axes, parent, dcm)
+end
+
+function add_axes_bci2000!(frames::FrameSystem{O, T}, 
+    data::AbstractDict, center::AbstractFramePoint, 
+    axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
+    add_axes_bci2000!(frames, data, point_id(center), "", axes, parent)
 end
