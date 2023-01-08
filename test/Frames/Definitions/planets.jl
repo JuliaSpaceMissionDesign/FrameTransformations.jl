@@ -25,11 +25,10 @@ FRAMES = FrameSystem{3, Float64}()
         add_axes_bcrtod!(FRAMES, constants, i, "test", IAU_TEST, ICRF)
 
         for _ in 1:100
-
             ep = rand(0.0:1e6)
 
-            R = sxform("J2000", "IAU_$(bodc2n(i))", 0.0)
-            R_ = rotation6(FRAMES, ICRF, IAU_TEST, 0.0)
+            R = sxform("J2000", "IAU_$(bodc2n(i))", ep)
+            R_ = rotation6(FRAMES, ICRF, IAU_TEST, ep)
 
             v = rand(3)
             v /= norm(v)

@@ -32,9 +32,9 @@ module Frames
     include("transform.jl")
 
     # Rotations definitions 
-    include("Definitions/default.jl")
-    include("Definitions/twovectors.jl")
-    include("Definitions/fixedoffset.jl")
     include("Definitions/ecliptic.jl")
     include("Definitions/planets.jl")
+    include("Definitions/twovectors.jl")
+    include("Definitions/fixedoffset.jl")
+    
 end
