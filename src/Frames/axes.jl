@@ -37,7 +37,7 @@ is_inertial(frame::FrameSystem, axesid::Int) = is_inertial(frames_axes(frame), a
 function is_inertial(axframe::MappedNodeGraph, axesid::Int)
 
     node = get_node(axframe, axesid) 
-    if node.class in (:InertialAxes, :FixedOffsetAxes)
+    if node.class in (:InertialAxes, :FixedOffsetAxes, :ProjectedAxes)
         if node.id != node.parentid 
             return is_inertial(axframe, node.parentid)
         else 
@@ -121,7 +121,8 @@ end
     build_axes(frames, name, id, class, funs; parentid, dcm, cax_prop)
 
 Create and add a [`FrameAxesNode`](@ref) to `frames` based on the input parameters. Current 
-supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes` and `:ComputableAxes`
+supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes`, `:ProjectedAxes`
+and `:ComputableAxes`.
 
 ### Inputs 
 - `frames` -- Target frame system 
@@ -138,7 +139,8 @@ supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes` and 
 
 ### Notes 
 This is a low-level function and is NOT meant to be directly used. Instead, to add a set of
-axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), etc...
+axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), 
+[`add_axes_computable!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_projected!`](@ref).
 
 """
 function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Symbol, 
@@ -509,4 +511,30 @@ function add_axes_computable!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
     
 end
 
-# TODO: add iau_axes 
+"""
+    add_axes_projected!(frame, axes, parent, fun)
+
+Add `axes` as a set of projected axes to `frames`. The orientation of these axes depends only 
+on time and is computed through the custom functions provided by the user. 
+
+Projected axes are similar to rotating axis, except that all the positions, velocity, etc ... are 
+rotated by the 0-order rotation (i.e. the derivatives of the rotation matrix are null, 
+despite the rotation depends on time).
+
+!!! warning 
+    It is expected that the input function and their outputs have the correct signature. This 
+    function does not perform any checks on the output types. 
+"""
+function add_axes_projected!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes, parent, fun)
+
+    funs = FrameAxesFunctions{T, O}(
+        (t, x, y) -> Rotation{O}(fun(t)),
+        (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I)),
+        (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I)),
+        (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I))
+    )
+
+    build_axes(frame, axes_name(axes), axes_id(axes), :ProjectedAxes, 
+        funs, parentid=axes_alias(parent))
+
+end
