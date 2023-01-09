@@ -86,7 +86,17 @@ end
 """
     cal2jd(Y::N, M::N, D::N) where {N<:Integer}
 
-Convert Gregorian Calendar to Julian Date.
+This function converts a given date in the Gregorian calendar (year, month, day) to the 
+Julian Date (JD).
+
+The input arguments are the Year, Month, and Day in the Gregorian calendar. 
+The year must be greater than 1583, and the month must be between 1 and 12. If the input 
+year or month is invalid, an `EpochConversionError` is thrown. The day must also be valid, 
+taking into account whether the year is a leap year. If the input day is invalid, 
+an `EpochConversionError` is thrown.
+
+The function first converts the year and month to the number of days since January 1, 
+2000 at noon (J2000). It then adds the day of the month to obtain the number of days since J2000.
 
 ### Inputs
 - `Y, M, D` -- year, month and day in Gregorian calendar
@@ -94,6 +104,24 @@ Convert Gregorian Calendar to Julian Date.
 ### Outputs
 - `j2000` -- J2000 zero point: always 2451544.5 (2000-01-01 00:00:00.0).
 - `d` -- Date from J2000 in days
+
+### Examples 
+```julia
+j2000, d = cal2jd(2021, 1, 1)
+# j2000 = 2451544.5
+# d = 730123.0
+```
+
+```julia
+j2000, d = cal2jd(2022, 2, 28)
+# j2000 = 2451544.5
+# d = 730214.0
+```
+
+```julia 
+j2000, d = cal2jd(2020, 2, 29)
+# EpochConversionError: invalid day provided, shall be between 1 and 29
+```
 
 ### References
     
@@ -169,7 +197,15 @@ end
 """ 
     jd2cal(dj1::Number, dj2::Number)
 
-Julian Date to Gregorian year, month, day, and fraction of a day.
+This function converts a given Julian Date (JD) to a Gregorian calendar date 
+(year, month, day, and fraction of a day).
+
+The JD is composed of two input arguments, `dj1` and `dj2`, which can be apportioned in any 
+convenient way. For example, JD 2450123.7 could be expressed as `dj1=2450123.7` and `dj2=0.0`, 
+or as `dj1=2451545.0` and `dj2=-1421.3`, or in any of the other ways listed in the documentation.
+
+The earliest valid date that can be converted is -4713 Jan 1, and the largest value accepted 
+is 1e9. If the input JD is outside this range, an `EpochConversionError` is thrown.
 
 ### Inputs
 -  `dj1,dj2` -- Julian Date (Notes 1, 2)

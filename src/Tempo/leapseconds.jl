@@ -38,6 +38,28 @@ function get_leapseconds(;
     return Leapseconds(now(), t, leap)
 end
 
+"""
+Leapseconds{T}
+
+Stores information about leap seconds that have been added to Coordinated Universal Time (UTC) 
+since the start of the year 2000.
+
+### Fields
+- `lastupdate`: a `DatesDateTime` object representing the date and time when the Leapseconds struct was last updated.
+- `jd2000`: a Vector of type T that stores the Julian Date (JD) of each leap second.
+- `leap`: a Vector of type T that stores the number of leap seconds that have been added at each corresponding JD in the jd2000 field.
+
+### Example
+
+```julia
+jd2000 = [2000.5, 2000.75]
+leap = [1, 2]
+ls = Leapseconds{Float64}(now(), jd2000, leap)
+```
+This code creates a new `Leapseconds` object ls, with the current date and time as the 
+`lastupdate`, and the `jd2000` and `leap` fields set to the given values. This means that 
+1 leap second was added at JD 2000.5 and 2 leap seconds were added at JD 2000.75.
+"""
 struct Leapseconds{T}
     lastupdate::DatesDateTime
     jd2000::Vector{T}

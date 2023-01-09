@@ -83,7 +83,23 @@ function orient_axes_dd_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end
 
-function add_axes_meme2000!(frames, axes, parent)
+"""
+    add_axes_meme2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
+        parent::AbstractFrameAxes) where {T, O}
+
+This function adds a new set of `axes` to the `frames` data structure, with the Mean Equator, 
+Mean Equinox of J2000 orientation defined with respect to the `parent` set of axes. The input 
+`frames` must be a `FrameSystem`, and the input `axes` and `parent` must be of type `AbstractFrameAxes`.
+
+The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
+If the `parent` set of axes is not ICRF, an error is thrown.
+    
+The `add_axes_inertial!` function is called to add the MEME2000 axes to the frames data 
+structure, using a bias matrix called [`DCM_ICRF2J2000_BIAS`](@ref) to define the orientation 
+of the MEME2000 axes with respect to the ICRF axes.
+"""
+function add_axes_meme2000!(frames::FrameSystem{O, T}, 
+    axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
     pname = axes_name(parent)
 
     if pname != :ICRF 
@@ -96,7 +112,26 @@ function add_axes_meme2000!(frames, axes, parent)
     add_axes_inertial!(frames, axes; parent=parent, dcm=DCM_ICRF2J2000_BIAS)
 end
 
-function add_axes_eclipj2000!(frames, axes, parent)
+"""
+    add_axes_eclipj2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
+        parent::AbstractFrameAxes) where {T, O}
+
+This function adds a new set of `axes` to the `frames` data structure, with the Ecliptic Equinox 
+of J2000 (ECLIPJ2000) orientation defined with respect to the `parent` set of axes. The input 
+`frames` must be a `FrameSystem`, and the input `axes` and `parent` must be of type `AbstractFrameAxes`.
+
+The `parent` set of axes can be either the International Celestial Reference Frame (ICRF) 
+or the Mean Earth/Moon Ephemeris of 2000 (MEME2000). If the `parent` set of axes is ICRF, 
+the orientation of the ECLIPJ2000 axes is defined using a rotation matrix called 
+[`DCM_J20002ECLIPJ2000`](@ref) and a bias matrix called [`DCM_ICRF2J2000_BIAS`](@ref). 
+If the parent set of axes is MEME2000, the orientation of the ECLIPJ2000 axes is defined using 
+only the [`DCM_J20002ECLIPJ2000`](@ref) rotation matrix.
+    
+If the parent set of `axes` is neither ICRF nor MEME2000, an error is thrown. 
+The `add_axes_inertial!` function is used to add the ECLIPJ2000 axes to the frames system.
+"""
+function add_axes_eclipj2000!(frames::FrameSystem{O, T}, 
+    axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
     pname = axes_name(parent)
 
     if pname == :ICRF 
