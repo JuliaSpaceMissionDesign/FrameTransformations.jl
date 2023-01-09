@@ -158,9 +158,40 @@ end
 # UT1 #
 #######
 
-# using Basic.Orient: IERS_EOP
+"""
+    offset_utc2ut1(seconds)
 
+Return the offset between [`UTC`](@ref) and [`UT1`](@ref) in seconds.
+"""
 @inline function offset_utc2ut1(seconds)
     utc = seconds/86400.0
     return interpolate(IERS_EOP.UT1_UTC, utc)
+end
+
+########################
+# TDB (high precision) #
+########################
+
+"""
+    offset_tt2tdbh(seconds)
+
+Return the offset between [`TT`](@ref) and [`TDBH`](@ref) in seconds.
+
+The maximum error in using the above formula is about 10 µs from 1600 to 2200.
+For even more precise applications, the series expansion by 
+[Harada & Fukushima (2003)](https://iopscience.iop.org/article/10.1086/378909/pdf) is recommended.
+
+### References
+- The IAU Resolutions on Astronomical Reference Systems, Time Scales, and Earth Rotation Models,
+    United States Naval Observatory, https://arxiv.org/pdf/astro-ph/0602086.pdf
+"""
+@inline function offset_tt2tdbh(seconds)
+    T = seconds / CENTURY2SEC
+    return 0.001657*sin(628.3076*T + 6.2401) 
+         + 0.000022*sin(575.3385*T + 4.2970) 
+         + 0.000014*sin(1256.6152*T + 6.1969) 
+         + 0.000005*sin(606.9777*T + 4.0212)
+         + 0.000005*sin(52.9691*T + 0.4444)
+         + 0.000002*sin(21.3299*T + 5.5431)
+         + 0.000010*T*sin(628.3076*T + 4.2490)
 end
