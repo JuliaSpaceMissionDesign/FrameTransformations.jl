@@ -272,7 +272,7 @@ function add_axes_inertial!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes;
 
     # construct the axes and insert in the FrameSystem
     build_axes(frames, name, axes_id(axes), :InertialAxes, FrameAxesFunctions{T, O}();
-            parentid=pid, dcm=dcm)
+        parentid=pid, dcm=dcm)
 
 end
 
@@ -308,8 +308,7 @@ function add_axes_fixedoffset!(frames::FrameSystem{O, T}, axes::AbstractFrameAxe
             parent, dcm::DCM{T}) where {O, T}
 
     build_axes(frames, axes_name(axes), axes_id(axes), :FixedOffsetAxes, 
-            FrameAxesFunctions{T, O}();
-            parentid=axes_alias(parent), dcm=dcm)
+        FrameAxesFunctions{T, O}(); parentid=axes_alias(parent), dcm=dcm)
 end
 
 
@@ -506,8 +505,7 @@ function add_axes_computable!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
     )
 
     build_axes(frame, axes_name(axes), axes_id(axes), :ComputableAxes, funs;
-                parentid=axes_alias(parent), 
-                cax_prop=ComputableAxesProperties(v1, v2))
+        parentid=axes_alias(parent), cax_prop=ComputableAxesProperties(v1, v2))
     
 end
 
