@@ -3,6 +3,7 @@ export @axes,
        add_axes_rotating!,
        add_axes_fixedoffset!, 
        add_axes_computable!,
+       add_axes_projected!,
        is_inertial, axes_alias
 
 

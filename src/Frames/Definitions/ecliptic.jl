@@ -41,45 +41,45 @@ const DCM_ICRF2ECLIPJ2000 = DCM_ICRF2J2000_BIAS * DCM_J20002ECLIPJ2000
 # TRANSFORMATIONS
 # --------------------------------------------------------
 
-function orient_axes_icrf_to_meme2000(t::Number)
+function orient_icrf_to_meme2000(t::Number)
     return DCM_ICRF2J2000_BIAS
 end
 
-function orient_axes_d_icrf_to_meme2000(t::Number)
+function orient_d_icrf_to_meme2000(t::Number)
     return DCM_ICRF2J2000_BIAS, DCM(0.0I)
 end
 
-function orient_axes_dd_icrf_to_meme2000(t::Number)
+function orient_dd_icrf_to_meme2000(t::Number)
     return DCM_ICRF2J2000_BIAS, DCM(0.0I), DCM(0.0I)
 end
 
-function orient_axes_icrf_to_eclipj2000(t::Number)
+function orient_icrf_to_eclipj2000(t::Number)
     return DCM_ICRF2ECLIPJ2000
 end
 
-function orient_axes_d_icrf_to_eclipj2000(t::Number)
+function orient_d_icrf_to_eclipj2000(t::Number)
     return DCM_ICRF2ECLIPJ2000, DCM(0.0I)
 end
 
-function orient_axes_dd_icrf_to_eclipj2000(t::Number)
+function orient_dd_icrf_to_eclipj2000(t::Number)
     return DCM_ICRF2ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end
 
-function orient_axes_icrf_to_mememod(sec::Number; model::Orient.IAU2006Model=iau2006b)
+function orient_icrf_to_mememod(sec::Number; model::Orient.IAU2006Model=iau2006b)
     γ, ϕ, ψ, ε = Orient.fw_angles(model, sec)
     R = Orient.fw_matrix(γ, ϕ, ψ, ε)
-    return Rotation(R)
+    return R
 end
 
-function orient_axes_meme2000_to_eclipj2000(t::Number)
+function orient_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000
 end
 
-function orient_axes_d_meme2000_to_eclipj2000(t::Number)
+function orient_d_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000, DCM(0.0I)
 end
 
-function orient_axes_dd_meme2000_to_eclipj2000(t::Number)
+function orient_dd_meme2000_to_eclipj2000(t::Number)
     return DCM_J20002ECLIPJ2000, DCM(0.0I), DCM(0.0I)
 end
 
@@ -91,12 +91,9 @@ This function adds a new set of `axes` to the `frames` data structure, with the 
 Mean Equinox of J2000 orientation defined with respect to the `parent` set of axes. The input 
 `frames` must be a `FrameSystem`, and the input `axes` and `parent` must be of type `AbstractFrameAxes`.
 
-The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
-If the `parent` set of axes is not ICRF, an error is thrown.
-    
-The `add_axes_inertial!` function is called to add the MEME2000 axes to the frames data 
-structure, using a bias matrix called [`DCM_ICRF2J2000_BIAS`](@ref) to define the orientation 
-of the MEME2000 axes with respect to the ICRF axes.
+!!! warning 
+    The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
+    If the `parent` set of axes is not ICRF, an error is thrown.
 """
 function add_axes_meme2000!(frames::FrameSystem{O, T}, 
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
@@ -126,9 +123,9 @@ the orientation of the ECLIPJ2000 axes is defined using a rotation matrix called
 [`DCM_J20002ECLIPJ2000`](@ref) and a bias matrix called [`DCM_ICRF2J2000_BIAS`](@ref). 
 If the parent set of axes is MEME2000, the orientation of the ECLIPJ2000 axes is defined using 
 only the [`DCM_J20002ECLIPJ2000`](@ref) rotation matrix.
-    
-If the parent set of `axes` is neither ICRF nor MEME2000, an error is thrown. 
-The `add_axes_inertial!` function is used to add the ECLIPJ2000 axes to the frames system.
+
+!!! warning 
+    If the parent set of `axes` is neither ICRF nor MEME2000, an error is thrown. 
 """
 function add_axes_eclipj2000!(frames::FrameSystem{O, T}, 
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
@@ -145,4 +142,29 @@ function add_axes_eclipj2000!(frames::FrameSystem{O, T},
         )
     end
     add_axes_inertial!(frames, axes; parent=parent, dcm=dcm)
+end
+
+"""
+    add_axes_mememod!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
+        parent::AbstractFrameAxes) where {T, O}
+
+This function adds a new set of `axes` to the `frames` data structure, with the Mean of Date 
+Ecliptic Equinox orientation defined with respect to the `parent` set of axes. The input 
+`frames` must be a `FrameSystem`, and the input `axes` and `parent` must be of type `AbstractFrameAxes`.
+
+!!! warning 
+    The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
+    If the `parent` set of axes is not ICRF, an error is thrown.
+"""
+function add_axes_mememod!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
+    parent::AbstractFrameAxes) where {T, O}
+
+    if pname != :ICRF 
+        throw(
+            ErrorException("Mean Equator, Mean Equinox of date axes could be defined only" * 
+            " w.r.t the International Celestial Reference Frame(ICRF)")
+        )
+    end
+
+    add_axes_projected!(frames, axes, parent, orient_icrf_to_mememod)
 end
