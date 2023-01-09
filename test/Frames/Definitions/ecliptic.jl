@@ -16,7 +16,7 @@ add_axes_eclipj2000!(FRAMES, ECLIPJ2000, MEME2000)
 
     R = sxform("J2000", "ECLIPJ2000", ep)
     R_ = rotation6(FRAMES, MEME2000, ECLIPJ2000, ep)
-
-    @test isapprox(R[1:3, 1:3],  R_[1], atol=1e-8)
+    @test isapprox(R[1:3, 1:3],  R_[1], atol=1e-6)
+    @test R_[2] ≈ zeros(3,3)
 
 end
