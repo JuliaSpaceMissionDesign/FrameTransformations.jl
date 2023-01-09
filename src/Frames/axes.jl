@@ -364,7 +364,6 @@ DCM{Float64}:
 ### See also 
 See also [`add_axes_fixedoffset!`](@ref), [`add_axes_inertial!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-
 function add_axes_rotating!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes,
             parent, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
 
