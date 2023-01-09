@@ -5,7 +5,7 @@
 
 Download and parse leapseconds data and return a `Leapseconds` type. 
 
-The files are downloaded using the `RemoteFile` package with weekly updates. Hence, if one 
+The files are downloaded using the `RemoteFile` package with monthly updates. Hence, if one 
 desires to force a download before the scheduled time, then set the keyword `force_download`  
 to `true`. Updates scheduled every month.
 """
