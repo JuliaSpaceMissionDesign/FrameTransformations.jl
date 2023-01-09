@@ -70,16 +70,47 @@ function add_axes_bcrtod!(frames::FrameSystem{O, T},
     add_axes_rotating!(frames, axes, parent, f1, f2, f3)
 end
 
+"""
+    add_axes_bcrtod!(frames::FrameSystem{O, T}, 
+        data::AbstractDict, center::AbstractFramePoint, 
+        axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
 
+Insert a Body-Centered Rotating (BCR), True-of-Date (TOD) axes to the `frames` system.
+
+### Input/s
+
+- `frames` - The frame system to which the new frame will be added.
+- `data` - A dictionary containing a parsed `TPC` file. The dictionary as has keys the NAIFId 
+    of the bodies contained in the file, and as values a dictionary containing the keywords 
+    and the values of the file's data.
+- `center`: The center point of the new axes.
+- `axes`: The new axes to be added to the frame system.
+- `parent`: The parent axes of the new ones.
+
+!!! note 
+    The axes constructed here corresponds to the SPICE `IAU_<BODY_NAME>` frames. 
+
+!!! warning 
+    The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
+    If the `parent` set of axes is not ICRF, an error is thrown.
+"""
 function add_axes_bcrtod!(frames::FrameSystem{O, T}, 
     data::AbstractDict, center::AbstractFramePoint, 
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
+
+    pname = axes_name(parent)
+    if pname != :ICRF 
+        throw(
+            ErrorException("Body-Centered Rotating (TOD) axes could be defined only" * 
+            " w.r.t the International Celestial Reference Frame (ICRF)")
+        )
+    end
+
     add_axes_bcrtod!(frames, data, point_id(center), String(point_name(center)), axes, parent)
 end
 
-
 function add_axes_bci2000!(frames::FrameSystem{O, T}, 
-    data::AbstractDict, cid::Integer, cname::String, 
+    data::AbstractDict, cid::Integer,
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
 
     # Get nutation - precession angles 
@@ -93,8 +124,39 @@ function add_axes_bci2000!(frames::FrameSystem{O, T},
     add_axes_fixedoffset!(frames, axes, parent, dcm)
 end
 
+"""
+    add_axes_bci2000!(frames::FrameSystem{O, T}, 
+        data::AbstractDict, center::AbstractFramePoint, 
+        axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
+
+Insert Body-Centered Inertial (BCI) axes at J2000 relative to the body `center` to the 
+`frames` system.
+
+### Input/s
+
+- `frames` - The frame system to which the new frame will be added.
+- `data` - A dictionary containing a parsed `TPC` file. The dictionary as has keys the NAIFId 
+    of the bodies contained in the file, and as values a dictionary containing the keywords 
+    and the values of the file's data.
+- `center`: The center point of the new axes.
+- `axes`: The new axes to be added to the frame system.
+- `parent`: The parent axes of the new ones.
+
+!!! warning 
+    The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
+    If the `parent` set of axes is not ICRF, an error is thrown.
+"""
 function add_axes_bci2000!(frames::FrameSystem{O, T}, 
     data::AbstractDict, center::AbstractFramePoint, 
     axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {T, O}
-    add_axes_bci2000!(frames, data, point_id(center), "", axes, parent)
+
+    pname = axes_name(parent)
+    if pname != :ICRF 
+        throw(
+            ErrorException("Body-Centered Inertial axes could be defined only" * 
+            " w.r.t the International Celestial Reference Frame (ICRF)")
+        )
+    end
+
+    add_axes_bci2000!(frames, data, point_id(center), axes, parent)
 end

@@ -159,10 +159,11 @@ Ecliptic Equinox orientation defined with respect to the `parent` set of axes. T
 function add_axes_mememod!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
     parent::AbstractFrameAxes) where {T, O}
 
+    pname = axes_name(parent)
     if pname != :ICRF 
         throw(
             ErrorException("Mean Equator, Mean Equinox of date axes could be defined only" * 
-            " w.r.t the International Celestial Reference Frame(ICRF)")
+            " w.r.t the International Celestial Reference Frame (ICRF)")
         )
     end
 
