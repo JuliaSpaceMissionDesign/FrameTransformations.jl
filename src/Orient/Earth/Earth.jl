@@ -1,5 +1,6 @@
 include("types.jl")
 include("fundamentals.jl")
+include("eop.jl")
 
 function build_cio_series(fname::Symbol, iau_model::Symbol, 
                           cpoly::AbstractVector{<:Number}, 

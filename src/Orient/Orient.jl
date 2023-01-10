@@ -9,11 +9,11 @@ module Orient
     using Basic.Tempo 
     using Basic.Utils: arcsec2rad
     using Basic.Utils: InterpolationAkima, interpolate
+    using Basic.Utils: skew
 
     # Earth
     include("Earth/Earth.jl")
-    include("Earth/eop.jl")
-
+    
     # Planets
     include("planets.jl")
 end

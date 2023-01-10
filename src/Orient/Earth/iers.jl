@@ -1,4 +1,25 @@
 
+# Nominal Earth angular velocity  
+const ωₑ = 7.292_115_146_706_979e-5
+
+"""
+    earth_rotation_rate()
+    
+Compute the nominal Earth angular velocity. 
+"""
+earth_rotation_rate() = earth_rotation_rate(0.0)
+
+""" 
+    earth_rotation_rate(LOD::Number)
+
+Compute the true angular velocity of the Earth accounting for the 
+Length of the Day, i.e., the instantaneous rate of change of UT1 
+with respect to a uniform time scale. 
+"""
+function earth_rotation_rate(LOD::Number)
+    return ωₑ*(1-LOD/86400)
+end
+
 """ 
     polar_motion(xₚ::N, yₚ::N, t::N, sp::Number)
 
@@ -227,3 +248,68 @@ function cip_motion(m::IAU2006Model, t::Number, dx::Number=0.0, dy::Number=0.0)
     angle_to_dcm(E+s, -d, -E, :ZYZ)
     
 end
+
+
+"""
+    orient_itrf_to_gcrf(t, m::IAU2006Model, xₚ, yₚ, δx=0.0, δy=0.0)
+
+Compute the rotation matrix from ITRF to GCRF at time `t`, according to the IAU 2010 
+conventions. 
+"""
+function orient_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
+            δx::Number=0.0, δy::Number=0.0)
+
+    tt_cent = Tempo.j2000c(t)
+    t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
+    # t_ut1 = Tempo.tt_to_ut1(t) 
+
+    W = polar_motion(xₚ, yₚ, tt_cent)
+    R = era_rotm(t_ut1)
+    Q = cip_motion(m, tt_cent, δx, δy)
+
+    return Q*R*W 
+
+end
+
+function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
+    δx::Number=0.0, δy::Number=0.0)
+
+    tt_cent = Tempo.j2000c(t)
+    t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
+    # t_ut1 = Tempo.tt_to_ut1(t) 
+
+    W = polar_motion(xₚ, yₚ, tt_cent)
+    R = era_rotm(t_ut1)
+    Q = cip_motion(m, tt_cent, δx, δy)
+
+    ωe = SVector(0.0, 0.0, earth_rotation_rate()) # FIXME: sistema con quella del LOD
+    Ω = skew(ωe)
+
+    D = Q*R*W
+    δD = Q*R*Ω*W
+
+    return D, δD
+end
+
+
+function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
+            δx::Number=0.0, δy::Number=0.0)
+
+    tt_cent = Tempo.j2000c(t)
+    t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
+    # t_ut1 = Tempo.tt_to_ut1(t) 
+
+    W = polar_motion(xₚ, yₚ, tt_cent)
+    R = era_rotm(t_ut1)
+    Q = cip_motion(m, tt_cent, δx, δy)
+
+    ωe = SVector(0.0, 0.0, earth_rotation_rate()) # FIXME: sistema con quella del LOD
+    Ω = skew(ωe)
+
+    D = Q*R*W
+    δD = Q*R*Ω*W
+    δ²D = Q*R*Ω*Ω*W
+
+    return D, δD, δ²D
+end
+
