@@ -80,28 +80,6 @@ function get_iers_eop_IAU2000A(
 
 end
 
-"""
-    EOPData{T}
-EOP Data for IAU 2000A.
-
-!!! note
-    Each field will be an `AbstractInterpolation` indexed by the Julian Day.
-
-### Fields
-- `x, y`: Polar motion with respect to the crust [arcsec].
-- `UT1_UTC`: Irregularities of the rotation angle [s].
-- `LOD`: Length of day offset [ms].
-- `dX, dY`: Celestial pole offsets referred to the model IAU2000A [milliarcsec].
-"""
-struct EOPData{T}
-    x::T
-    y::T
-    UT1_UTC::T
-    LOD::T
-    dX::T
-    dY::T
-end
-
 function Base.show(io::IO, eop::EOPData{T}) where T
     # Check if IO has support for colors.
     println(io, " ")

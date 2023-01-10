@@ -523,7 +523,8 @@ despite the rotation depends on time).
     It is expected that the input function and their outputs have the correct signature. This 
     function does not perform any checks on the output types. 
 """
-function add_axes_projected!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes, parent, fun)
+function add_axes_projected!(frame::FrameSystem{O, T}, axes::AbstractFrameAxes, 
+            parent, fun) where {O, T}
 
     funs = FrameAxesFunctions{T, O}(
         (t, x, y) -> Rotation{O}(fun(t)),
