@@ -1,36 +1,27 @@
 using BenchmarkTools
+using ReferenceFrameRotations
+using StaticArrays
 using ForwardDiff
 using Basic 
 using Test
 
-import Basic.Tempo: InternationalAtomicTime
+import Basic.Tempo: DJ2000
 
-# CR3BP scheme 
-include("frames5/Frames.jl")
 
 eph = CalcephProvider(["/home/michele/spice/kernels/spk/de440.bsp"])
 
-# Empty Frame 
-empty_frame = FrameSystem{3, Float64}()
-
-# Empty Frame with desired time scale 
-empty_ts_frame = FrameSystem{3, Float64, InternationalAtomicTime}()
-
 # Frame with ephemeris loading 
-FRAMES = FrameSystem{1, Float64}(eph);
+FRAMES = FrameSystem{4, Float64}(eph);
 
 icrf2meme = angle_to_dcm(pi/7, :X)
 meme2eclip = angle_to_dcm(pi/4, pi/3, :ZY)
+fun_itrf(t) = angle_to_dcm(t, :Z)
 
 # Register axes! 
 @axes ICRF 1 InternationalCelestialReferenceFrame
 @axes MEME2000 2 MeanEarthMeanEquinoxJ2000
 @axes ECLIPJ2000 3 EclipticEquinoxJ2000
 @axes IAU_EARTH 4 
-
-function fun_itrf(t::T) where T 
-    angle_to_dcm(t, :Z)
-end
 
 add_axes_inertial!(FRAMES, ICRF)
 add_axes_inertial!(FRAMES, MEME2000; parent=ICRF, dcm=icrf2meme)
@@ -52,11 +43,13 @@ add_point_ephemeris!(FRAMES, Sun)
 add_point_ephemeris!(FRAMES, VB)
 add_point_ephemeris!(FRAMES, Venus)
 
-@benchmark get_vector3($FRAMES, $Venus, $SSB, $ICRF, 0.)
+@benchmark vector3($FRAMES, $Venus, $SSB, $ICRF, 0.)
+@benchmark vector6($FRAMES, $Venus, $EMB, $ICRF, 0.)
+@benchmark rotation3($FRAMES, $IAU_EARTH, $ECLIPJ2000, 0.)
 
 
 @testset "Point Transformations" verbose=true begin 
-    fcns = (get_vector3, get_vector6, get_vector9, get_vector12)
+    fcns = (vector3, vector6, vector9, vector12)
 
     @testset "Identity Translations" verbose=true begin 
         for (i, fcn) in enumerate(fcns)
@@ -97,7 +90,7 @@ end;
 
 
 @testset "Rotation Transformations" verbose=true begin 
-    fcns = (get_rotation3, get_rotation6, get_rotation9, get_rotation12)
+    fcns = (rotation3, rotation6, rotation9, rotation12)
 
     @testset "Identity Rotation" verbose=true begin 
         for (i, fcn) in enumerate(fcns)
