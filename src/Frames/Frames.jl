@@ -35,6 +35,5 @@ module Frames
     include("Definitions/ecliptic.jl")
     include("Definitions/planets.jl")
     include("Definitions/twovectors.jl")
-    include("Definitions/fixedoffset.jl")
     
 end

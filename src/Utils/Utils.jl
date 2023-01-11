@@ -12,4 +12,6 @@ module Utils
     
     # Interpolation 
     include("Math/akima.jl")
+    include("Math/matrix.jl")
+    
 end

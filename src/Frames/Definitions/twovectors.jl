@@ -50,11 +50,12 @@ function δ²normalize(v::AbstractVector)
         
         dr² = v[4]^2 + v[5]^2 + v[6]^2
 
-        A = (dr² + Δ - 3δ^2/r2)/r3
+        A = 2*δ/r3
+        B = (dr² + Δ - 3δ^2/r2)/r3
 
-        a = v[7]/r - 2v[4]*δ/r3 - v[1]*A
-        b = v[8]/r - 2v[5]*δ/r3 - v[2]*A
-        c = v[9]/r - 2v[6]*δ/r3 - v[3]*A
+        a = v[7]/r - v[4]*A - v[1]*B
+        b = v[8]/r - v[5]*A - v[2]*B
+        c = v[9]/r - v[6]*A - v[3]*B
     end
 
     SA[a, b, c]
