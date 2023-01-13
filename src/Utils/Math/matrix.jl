@@ -50,6 +50,7 @@ function angle_to_δ²dcm(θ, rot_seq::Symbol)
 
 end
 
+
 function angle_to_δdcm(θ, rot_seq::Symbol)
     
     s, c = sincos(θ[1]).*θ[2]
@@ -165,4 +166,174 @@ function angle_to_δdcm(θ, ϕ, rot_seq::Symbol)
         ))
     end
 
+end
+
+function angle_to_δdcm(θ, ϕ, γ, rot_seq::Symbol)
+
+    s, c = sincos(θ[1])
+    b, a = sincos(ϕ[1])
+    e, d = sincos(γ[1])
+
+    δγ, δϕ, δθ = γ[2], ϕ[2], θ[2]
+
+    if rot_seq == :ZYX
+        return DCM(
+            -δθ*a*s         - δϕ*b*c, 
+            -δθ*(d*c+e*b*s) + δϕ*e*a*c  + δγ*(e*s+d*b*c),
+             δθ*(e*c-d*b*s) + δϕ*d*a*c  + δγ*(d*s-e*b*c),
+             δθ*a*c         - δϕ*b*s,
+             δθ*(e*b*c-d*s) + δϕ*e*a*s  + δγ*(d*b*s-e*c),
+             δθ*(e*s+d*b*c) + δϕ*a*d*s  - δγ*(d*c+e*b*s),
+                            - δϕ*a, 
+                            - δϕ*e*b    + δγ*d*a, 
+                            - δϕ*d*b    - δγ*e*a
+         )
+
+    elseif rot_seq == :XYX
+        return DCM(
+                              -δϕ*b, 
+                              δϕ*e*a    + δγ*d*b, 
+                              δϕ*d*a    - δγ*e*b, 
+             δθ*b*c         + δϕ*a*s, 
+            -δθ*(d*s+e*a*c) + δϕ*e*b*s  - δγ*(e*c+d*a*s),
+             δθ*(e*s-d*a*c) + δϕ*d*b*s  + δγ*(e*a*s-d*c),
+             δθ*b*s         - δϕ*a*c, 
+             δθ*(d*c-e*a*s) - δϕ*e*b*c  + δγ*(d*a*c-e*s),
+            -δθ*(e*c+d*a*s) - δϕ*d*b*c  - δγ*(d*s+e*a*c)
+        )
+
+    elseif rot_seq == :XYZ
+        return DCM(
+                            - δϕ*d*b    - δγ*e*a, 
+                              δϕ*e*b    - δγ*d*a, 
+                              δϕ*a, 
+             δθ*(d*b*c-e*s) + δϕ*d*a*s  + δγ*(d*c-e*b*s),
+            -δθ*(e*b*c+d*s) - δϕ*e*a*s  - δγ*(d*b*s+e*c),
+            -δθ*a*c         + δϕ*b*s,
+             δθ*(d*b*s+e*c) - δϕ*d*a*c  + δγ*(e*b*c+d*s),
+             δθ*(d*c-e*b*s) + δϕ*e*a*c  + δγ*(d*b*c-e*s),
+            -δθ*a*s         - δϕ*b*c
+        )
+
+    elseif rot_seq == :XZX
+        return DCM(
+                            - δϕ*b, 
+                            - δϕ*d*a    + δγ*e*b, 
+                              δϕ*e*a    + δγ*d*b, 
+            -δθ*b*s         + δϕ*a*c,
+            -δθ*(d*a*s+e*c) - δϕ*d*b*c  - δγ*(e*a*c+d*s),
+             δθ*(e*a*s-d*c) + δϕ*e*b*c  + δγ*(e*s-d*a*c),
+             δθ*b*c         + δϕ*a*s, 
+             δθ*(d*a*c-e*s) - δϕ*d*b*s  + δγ*(d*c-e*a*s),
+            -δθ*(e*a*c+d*s) + δϕ*e*b*s  - δγ*(d*a*s+e*c)
+        )
+
+    elseif rot_seq == :XZY
+        return DCM(
+                            - δϕ*d*b      - δγ*e*a, 
+                            - δϕ*a,  
+                            - δϕ*e*b    + δγ*d*a, 
+             δθ*(e*c-d*b*s) + δϕ*d*a*c    + δγ*(d*s-e*b*c), 
+            -δθ*a*s         - δϕ*b*c,  
+            -δθ*(d*c+e*b*s) + δϕ*e*a*c  + δγ*(d*b*c+e*s),
+             δθ*(d*b*c+e*s) + δϕ*d*a*s    - δγ*(e*b*s+d*c),
+             δθ*a*c         - δϕ*b*s, 
+             δθ*(e*b*c-d*s) + δϕ*e*a*s  + δγ*(d*b*s-e*c)
+        )
+
+    elseif rot_seq == :YXY
+        return DCM(
+            -δθ*(d*s+e*a*c) + δϕ*e*b*s  - δγ*(e*c+d*a*s),
+             δθ*b*c         + δϕ*a*s,
+             δθ*(d*a*c-e*s) - δϕ*d*b*s  + δγ*(d*c-e*a*s),
+                              δϕ*e*a    + δγ*d*b,
+                            - δϕ*b,
+                            - δϕ*d*a    + δγ*e*b,
+             δθ*(e*a*s-d*c) + δϕ*e*b*c  + δγ*(e*s-d*a*c),
+            -δθ*b*s         + δϕ*a*c,
+            -δθ*(e*c+d*a*s) - δϕ*d*b*c  - δγ*(d*s+e*a*c)
+
+        )
+
+    elseif rot_seq == :YXZ
+        return DCM(
+             δθ*(e*b*c-d*s) + δϕ*e*a*s  + δγ*(d*b*s-e*c),
+             δθ*(e*s+d*b*c) + δϕ*d*a*s  - δγ*(d*c+e*b*s),
+             δθ*a*c         - δϕ*b*s, 
+                            - δϕ*e*b    + δγ*d*a,
+                            - δϕ*d*b    - δγ*e*a,
+                            - δϕ*a, 
+            -δθ*(d*c+e*b*s) + δϕ*e*a*c  + δγ*(e*s+d*b*c),
+             δθ*(e*c-d*b*s) + δϕ*d*a*c  + δγ*(d*s-e*b*c),
+            -δθ*a*s         - δϕ*b*c, 
+        )
+
+    elseif rot_seq == :YZX
+        return DCM(
+            -δθ*a*s         - δϕ*b*c, 
+             δθ*(d*b*s+e*c) - δϕ*d*a*c  + δγ*(e*b*c+d*s),
+             δθ*(d*c-e*b*s) + δϕ*e*a*c  + δγ*(d*b*c-e*s),
+                              δϕ*a,
+                            - δϕ*d*b    - δγ*e*a,
+                              δϕ*e*b    - δγ*d*a,
+            -δθ*a*c         + δϕ*b*s,
+             δθ*(d*b*c-e*s) + δϕ*d*a*s  + δγ*(d*c-e*b*s),
+            -δθ*(e*b*c+d*s) - δϕ*e*a*s  - δγ*(d*b*s+e*c)
+        )
+
+    elseif rot_seq == :YZY
+        return DCM(
+            -δθ*(e*c+d*a*s) - δϕ*d*b*c  - δγ*(e*a*c+d*s),
+             δθ*b*s         - δϕ*a*c, 
+             δθ*(d*c-e*a*s) - δϕ*e*b*c  + δγ*(d*a*c-e*s),
+                              δϕ*d*a    - δγ*e*b,
+                            - δϕ*b, 
+                              δϕ*e*a    + δγ*d*b,
+             δθ*(e*s-d*a*c) + δϕ*d*b*s  + δγ*(e*a*s-d*c),
+             δθ*b*c         + δϕ*a*s, 
+            -δθ*(e*a*c+d*s) + δϕ*e*b*s  - δγ*(d*a*s+e*c)
+        )
+
+    elseif rot_seq == :ZXY
+        return DCM(
+            -δθ*(d*s+e*b*c) - δϕ*e*a*s  - δγ*(e*c+d*b*s),
+            -δθ*a*c         + δϕ*b*s,
+             δθ*(d*b*c-e*s) + δϕ*d*a*s  + δγ*(d*c-e*b*s),
+             δθ*(d*c-e*b*s) + δϕ*e*a*c  + δγ*(d*b*c-e*s),
+            -δθ*a*s         - δϕ*b*c,
+             δθ*(e*c+d*b*s) - δϕ*d*a*c  + δγ*(d*s+e*b*c),
+                              δϕ*e*b    - δγ*d*a,
+                              δϕ*a,
+                            - δϕ*d*b    - δγ*e*a
+        )
+
+    elseif rot_seq == :ZXZ
+        return DCM(
+            -δθ*(d*s+e*a*c) + δϕ*e*b*s  - δγ*(e*c+d*a*s),
+             δθ*(e*s-d*a*c) + δϕ*d*b*s  + δγ*(e*a*s-d*c),
+             δθ*b*c         + δϕ*a*s,
+             δθ*(d*c-e*a*s) - δϕ*e*b*c  + δγ*(d*a*c-e*s),
+            -δθ*(e*c+d*a*s) - δϕ*d*b*c  - δγ*(d*s+e*a*c),
+             δθ*b*s         - δϕ*a*c,
+                              δϕ*a*e    + δγ*d*b,
+                              δϕ*d*a    - δγ*e*b,
+                            - δϕ*b
+        )
+        
+    elseif rot_seq == :ZYZ
+        return DCM(
+            -δθ*(d*a*s+e*c) - δϕ*d*b*c  - δγ*(e*a*c+d*s),
+             δθ*(e*a*s-d*c) + δϕ*e*b*c  + δγ*(e*s-d*a*c),
+            -δθ*b*s         + δϕ*a*c,
+             δθ*(d*a*c-e*s) - δϕ*d*b*s  + δγ*(d*c-e*a*s),
+            -δθ*(e*a*c+d*s) + δϕ*e*b*s  - δγ*(d*a*s+e*c),
+             δθ*b*c         + δϕ*a*s,
+                            - δϕ*a*d    + δγ*e*b,
+                              δϕ*e*a    + δγ*d*b,
+                            - δϕ*b
+        )
+
+    else
+        throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
+    end
 end
