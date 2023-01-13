@@ -53,4 +53,14 @@ struct EOPData{T}
     LOD::T
     dX::T
     dY::T
+
+    # EOP data parametrized by TT epoch
+    # These are parsed automatically in eop.jl to allow direct computation of EOP 
+    # without performing many transformations from TT/TDB, which are considered to be equal.
+    x_TT::T
+    y_TT::T 
+    UT1_TT::T
+    LOD_TT::T 
+    dX_TT::T
+    dY_TT::T
 end

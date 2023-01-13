@@ -195,3 +195,23 @@ For even more precise applications, the series expansion by
          + 0.000002*sin(21.3299*T + 5.5431)
          + 0.000010*T*sin(628.3076*T + 4.2490)
 end
+
+#######
+# GPS #
+#######
+
+const OFFSET_TAI_GPS = 19.000  # seconds 
+
+"""
+    offset_tai2gps(seconds)
+
+Return the fixed offset between [`TAI`](@ref) and [`GPS`](@ref) in seconds.
+"""
+@inline offset_tai2gps(seconds) = OFFSET_TAI_GPS
+
+"""
+    offset_gps2tai(seconds)
+
+Return the fixed offset between [`GPS`](@ref) and [`TAI`](@ref) in seconds.
+"""
+@inline offset_gps2tai(seconds) = -OFFSET_TAI_GPS
