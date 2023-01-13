@@ -70,47 +70,6 @@ function angle_to_δdcm(θ, rot_seq::Symbol)
 
 end
 
-using ReferenceFrameRotations
-
-
-
-function angle_to_δdcm(θ, ϕ, rot_seq::Symbol)
-
-    s, c = sincos(ϕ[1])
-    b, a = sincos(θ[1])
-
-    δϕ, δθ = θ[2], ϕ[2]
-
-    if rot_seq == :YX
-        return DCM(
-            -δθ*b, δϕ*c*b + δθ*s*a, δθ*c*a - δϕ*s*b, 
-            0, -δϕ*s, -δϕ*c, 
-            -δθ*a, δϕ*c*a - δθ*s*b, -δϕ*s*a - δθ*c*b
-        )
-    
-    elseif rot_seq == :ZX
-        return DCM(
-            -δθ*b, δϕ*s*b - δθ*c*a, δϕ*c*b + δθ*s*a, 
-            δθ*a, δθ*c*b - δϕ*s*a, -δϕ*c*a - δθ*s*b, 
-            0, δϕ*c, -δϕ*s
-        )
-
-    elseif rot_seq == :YX 
-
-    elseif rot_seq == :YZ 
-
-    elseif rot_seq == :ZX 
-
-    elseif rot_seq == :ZY 
-    
-    else 
-        throw(ArgumentError(
-            "The rotation sequence :$rot_seq is not valid."
-        ))
-    end
-
-end
-
 function angle_to_δdcm(θ, ϕ, rot_seq::Symbol)
 
     s, c = sincos(θ[1])

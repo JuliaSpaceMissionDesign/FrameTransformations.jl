@@ -2,6 +2,10 @@ module Utils
 
     using JSON3
     using JLD2
+
+    using ReferenceFrameRotations: DCM
+    using StaticArrays: SMatrix 
+    
     import YAML as YAMLLib
 
     include("IO/file.jl")
