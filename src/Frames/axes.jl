@@ -515,8 +515,8 @@ end
 Add `axes` as a set of projected axes to `frames`. The orientation of these axes depends only 
 on time and is computed through the custom functions provided by the user. 
 
-Projected axes are similar to rotating axis, except that all the positions, velocity, etc ... are 
-rotated by the 0-order rotation (i.e. the derivatives of the rotation matrix are null, 
+Projected axes are similar to rotating axis, except that all the positions, velocity, etc ... 
+are rotated by the 0-order rotation (i.e. the derivatives of the rotation matrix are null, 
 despite the rotation depends on time).
 
 !!! warning 

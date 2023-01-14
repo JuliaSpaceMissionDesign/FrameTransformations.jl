@@ -19,7 +19,7 @@ module Frames
                        CENTURY2DAY, CENTURY2SEC, 
                        DAY2SEC
 
-    using Basic.Utils: format_camelcase
+    using Basic.Utils: format_camelcase, angle_to_δdcm, angle_to_δ²dcm
     using Basic.Orient
     using Basic.MappedGraphs
 
@@ -34,6 +34,7 @@ module Frames
     # Rotations definitions 
     include("Definitions/ecliptic.jl")
     include("Definitions/planets.jl")
+    include("Definitions/earth.jl")
     include("Definitions/twovectors.jl")
     
 end
