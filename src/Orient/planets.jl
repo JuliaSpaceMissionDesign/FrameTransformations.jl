@@ -232,20 +232,17 @@ function orient_planets_angles(p, name)
 
     return eval(quote
         (   
-            function ($fname)(sec::Number)
-                d = sec/Tempo.DAY2SEC
+            function ($fname)(d::Number)
                 T = d/Tempo.CENTURY2DAY
                 Θᵢ = $Θᵢ
                 return $a, $del, $w
             end,
-            function ($fdname)(sec::Number)
-                d = sec/Tempo.DAY2SEC
+            function ($fdname)(d::Number)
                 T = d/Tempo.CENTURY2DAY
                 Θᵢ = $Θᵢ
                 return $a, $del, $w, $ad, $dd, $wd
             end,
-            function ($fddname)(sec::Number)
-                d = sec/Tempo.DAY2SEC
+            function ($fddname)(d::Number)
                 T = d/Tempo.CENTURY2DAY
                 Θᵢ = $Θᵢ
                 return $a, $del, $w, $ad, $dd, $wd, $add, $ddd, $wdd
