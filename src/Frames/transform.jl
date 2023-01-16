@@ -56,7 +56,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             $($axfun1)(frame::FrameSystem, from, to, t::Number)
         
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
-        specified set of axes to another at a given time, expressed in days since 
+        specified set of axes to another at a given time, expressed in seconds since 
         [`J2000`](@ref) if ephemerides are used. 
         """
         function ($axfun1)(frame::FrameSystem{O, T}, from, to, t::Number) where {O, T}
@@ -107,6 +107,17 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     if axes.class == :RotatingAxes 
                         stv = @SVector zeros(T, 3O)
                         axes.R[tid] = axes.f[$order](t, stv, stv)
+
+                    elseif axes.class == :EphemerisAxes 
+                        stv = @SVector zeros(T, 3O)
+
+                        # Retrieves libration angles for ephemeris kernels 
+                        ephem_orient_order!(axes.angles[tid], frame.eph, DJ2000, 
+                                            t/DAY2SEC, axes.id, $order-1)
+                        
+                        # Compute rotation matrix
+                        axes.R[tid] = axes.f[$order](t, SA[axes.angles[tid]...], stv)
+
                     else 
                         axes.R[tid] = axes.f[$order](t, 
                             $(compfun)(frame, axes.comp.v1, axes.parentid, t), 
@@ -156,7 +167,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time expressed in 
-        days since [`J2000`](@ref) if ephemerides are used. 
+        seconds since [`J2000`](@ref) if ephemerides are used. 
 
         """
         function ($pfun1)(frame::FrameSystem{O, T}, from, to, axes, t::Number) where {O, T}

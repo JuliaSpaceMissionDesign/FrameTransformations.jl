@@ -145,6 +145,7 @@ Define a set of axes.
 - `epochs` -- vector storing the epochs associated to `R`
 - `nzo` -- last order at which `R` has been computed 
 - `f` -- `FrameAxesFunctions` container 
+- `angles` -- vector storing the libration angles retrived from ephemerides
 """
 struct FrameAxesNode{O, T, N} <: AbstractGraphNode
     name::Symbol            
@@ -156,6 +157,7 @@ struct FrameAxesNode{O, T, N} <: AbstractGraphNode
     epochs::Vector{T}
     nzo::Vector{Int} # last updated order
     f::FrameAxesFunctions{T, O, N}
+    angles::Vector{MVector{N, T}}
 end
 
 MappedGraphs.get_node_id(ax::FrameAxesNode) = ax.id
@@ -258,10 +260,12 @@ end
 
 struct FrameSystemProperties{T}
     ebid::Vector{Int}  # ephemeris body ids
+    eaid::Vector{Int}  # ephemeris axes ids 
 end
-FrameSystemProperties() = FrameSystemProperties(Int64[])
+FrameSystemProperties() = FrameSystemProperties(Int64[], Int64[])
 
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
+@inline ephemeris_axes(fsp::FrameSystemProperties) = fsp.eaid
 
 """
     FrameSystem
@@ -273,29 +277,30 @@ struct FrameSystem{O, T <: Number, S <: AbstractTimeScale, E <: AbstractEphemeri
     axes::MappedNodeGraph{FrameAxesNode{O, T, N}, SimpleGraph{Int}}
 end
 
-function FrameSystem{O, T, S}(eph::E, points::Vector{Int}) where {O, T <: Number, 
-            S <: AbstractTimeScale, E <:AbstractEphemerisProvider} 
+function FrameSystem{O, T, S}(eph::E, points::Vector{Int}, axes::Vector{Int}) where {O, 
+            T <: Number, S <: AbstractTimeScale, E <:AbstractEphemerisProvider} 
     
     if O < 1 || O > 4
         throw(ArgumentError("FrameSystem order must be between 1 and 4."))
     end
 
     return FrameSystem{O, T, S, E, 3*O}(
-        eph, FrameSystemProperties{T}(points),
+        eph, FrameSystemProperties{T}(points, axes),
         MappedGraph(FramePointNode{O, T, 3O}),
         MappedGraph(FrameAxesNode{O, T, 3O})
     )
 end
 
 function FrameSystem{O, T}(eph::E) where {O, T, E}
-    prec = ephem_position_records(eph)
-    tids = map(x->x.target, prec)
-    cids = map(x->x.center, prec)
+
+    points = ephem_available_bodies(eph)
+    axes = ephem_available_axes(eph) 
+
     S = typeof(ephem_timescale(eph))
-    return FrameSystem{O, T, S}(eph, unique([tids..., cids...]))
+    return FrameSystem{O, T, S}(eph, points, axes)
 end
 
-FrameSystem{O, T, S}() where {O, T, S} = FrameSystem{O, T, S}(NullEphemerisProvider(), Int64[])
+FrameSystem{O, T, S}() where {O, T, S} = FrameSystem{O, T, S}(NullEphemerisProvider(), Int64[], Int64[])
 FrameSystem{O, T}() where {O, T <: Number} = FrameSystem{O, T, BarycentricDynamicalTime}()
 
 frames_order(::FrameSystem{O}) where O = O 
@@ -309,7 +314,9 @@ add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O, T} = add_ver
 
 @inline has_point(f::FrameSystem, NAIFId::Int) = has_vertex(frames_points(f), NAIFId)
 @inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(frames_axes(f), axesid)
+
 @inline ephemeris_points(fs::FrameSystem) = ephemeris_points(fs.prop)
+@inline ephemeris_axes(fs::FrameSystem) = ephemeris_axes(fs.prop)
 
 show_points(frame::FrameSystem) = mappedgraph_tree(frames_points(frame))
 show_axes(frame::FrameSystem) = mappedgraph_tree(frames_axes(frame))
