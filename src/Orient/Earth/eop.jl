@@ -71,7 +71,6 @@ function get_iers_eop_IAU2000A(
     # Create the EOP Data structure by creating the interpolations:
     # - The interpolation will be linear between two points in the grid.
     # - The extrapolation will be flat, considering the nearest point.
-
     j2000_utc = Vector{Float64}(eop[1:last_id, 1] .+ 2400000.5 .- DJ2000)
     j2000_tt = [Tempo.utc2tai(DJ2000, utci)[2] for utci in j2000_utc] .+ Tempo.offset_tai2tt(0.0)
 

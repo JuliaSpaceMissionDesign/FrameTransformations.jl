@@ -24,7 +24,7 @@ FRAMES = FrameSystem{3, Float64}()
         # NAIFId = i*100 + 99
         add_axes_bcrtod!(FRAMES, constants, i, "test", IAU_TEST, ICRF)
 
-        for _ in 1:100
+        for _ in 1:10
             ep = rand(0.0:1e6)
 
             R = sxform("J2000", "IAU_$(bodc2n(i))", ep)
@@ -32,11 +32,8 @@ FRAMES = FrameSystem{3, Float64}()
 
             v = rand(3)
             v /= norm(v)
-
-            # v = [1.0 ,0.0, 0.0]
-            @test isapprox(dot(R[1:3, 1:3] *v, R_[1]*v), 1.0, atol=1e-3)
-            # @test isapprox(norm(R[1:3, 1:3]*v -  R_[1] * v), 0.0, atol=1e-3)  
-                # isapprox(norm(R[4:6, 1:3]*v -  R_[2] * v), 0.0, atol=1e-2)
+            
+            @test isapprox(dot(R[1:3, 1:3] *v, R_[1]*v), 1.0, atol=1e-8)
         end
     end
 end

@@ -39,9 +39,9 @@ function _orient_bcrtod(p::Orient.PlanetsPrecessionNutation, bodyname)
                     )
 
                     d²R = angle_to_δ²dcm(
-                        (π/2 + ra, rad/CENTURY2SEC, radd/CENTURY2SEC/CENTURY2SEC), 
-                        (π/2 - dec, -decd/CENTURY2SEC, -decdd/CENTURY2SEC/CENTURY2SEC), 
-                        (w, wd/DAY2SEC, wdd/DAY2SEC/DAY2SEC), :ZXZ
+                        (π/2 + ra, rad/CENTURY2SEC, radd/CENTURY2SEC^2), 
+                        (π/2 - dec, -decd/CENTURY2SEC, -decdd/CENTURY2SEC^2), 
+                        (w, wd/DAY2SEC, wdd/DAY2SEC^2), :ZXZ
                     )
 
                     return R, dR, d²R

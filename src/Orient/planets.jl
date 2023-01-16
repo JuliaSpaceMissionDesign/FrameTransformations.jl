@@ -83,8 +83,8 @@ function PlanetsPrecessionNutation(NAIFId::N,  data::AbstractDict{N,
         end
         nuts = hasnuts ? 
             (
-                @views(nut[1 : lnuts÷2]), 
-                @views(nut[lnuts÷2+1 : lnuts])
+                @views(nut[1:2:end]), 
+                @views(nut[2:2:end])
             ) : nothing
 
         # Build planet precession/nutation
@@ -232,17 +232,20 @@ function orient_planets_angles(p, name)
 
     return eval(quote
         (   
-            function ($fname)(d::Number)
+            function ($fname)(sec::Number)
+                d = sec/Tempo.DAY2SEC
                 T = d/Tempo.CENTURY2DAY
                 Θᵢ = $Θᵢ
                 return $a, $del, $w
             end,
-            function ($fdname)(d::Number)
+            function ($fdname)(sec::Number)
+                d = sec/Tempo.DAY2SEC
                 T = d/Tempo.CENTURY2DAY
                 Θᵢ = $Θᵢ
                 return $a, $del, $w, $ad, $dd, $wd
             end,
-            function ($fddname)(d::Number)
+            function ($fddname)(sec::Number)
+                d = sec/Tempo.DAY2SEC
                 T = d/Tempo.CENTURY2DAY
                 Θᵢ = $Θᵢ
                 return $a, $del, $w, $ad, $dd, $wd, $add, $ddd, $wdd
