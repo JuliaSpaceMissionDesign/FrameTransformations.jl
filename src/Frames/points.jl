@@ -384,10 +384,10 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
     end
 
     funs = FramePointFunctions{T, O}(
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 0),
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 1),
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 2),
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t, NAIFId, parentid, 3), 
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 0),
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 1),
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 2),
+        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 3), 
     )
 
     build_point(frames, point_name(point), NAIFId, :EphemerisPoint, axesid, 
@@ -487,7 +487,7 @@ ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order
 ```
 
 ### See also 
-See also [`update_point!`](@ref), [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
+See also [`update_point!`](@ref), [`add_point_root`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_fixed!`](@ref)
 """
 function add_point_updatable!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
@@ -547,7 +547,7 @@ julia> vector6(FRAMES, Origin, Satellite, ICRF, π/6)
   0.0
 ```
 ### See also 
-See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
+See also [`add_point_root`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
 function add_point_dynamical!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
@@ -603,41 +603,41 @@ end
 # Function wrapper for time-point function derivative! 
 @inbounds function _tpoint_δfun_ad!(y, t, fun) 
     y[1:3] .= fun(t)
-    y[4:6] .= derivative(fun, t)
+    y[4:6] .= D¹(fun, t)
     nothing 
 end
 
 # Function wrappers for time-point second order derivative! 
 @inbounds function _tpoint_δ²fun_ad!(y, t, fun)
     y[1:3] .= fun(t) 
-    y[4:6] .= derivative(fun, t)
-    y[7:9] .= derivative(τ->derivative(fun, τ), t)
+    y[4:6] .= D¹(fun, t)
+    y[7:9] .= D²(fun, t)
     nothing
 end
 
 @inbounds function _tpoint_δ²fun_ad!(y, t, fun, δfun)
     y[1:6] .= δfun(t) 
-    y[7:9] .= derivative(τ->derivative(fun, τ), t)
+    y[7:9] .= D²(fun, t)
     nothing
 end
 
 # Function wrappers for time-point third order derivative! 
 @inbounds function _tpoint_δ³fun_ad!(y, t, fun)
     y[1:3] .= fun(t) 
-    y[4:6] .= derivative(fun, t)
-    y[7:9] .= derivative(τ->derivative(fun, τ), t)
-    y[10:12] .= derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
+    y[4:6] .= D¹(fun, t)
+    y[7:9] .= D²(fun, t)
+    y[10:12] .= D³(fun, t)
     nothing
 end
 
 @inbounds function _tpoint_δ³fun_ad!(y, t, fun, δfun)
     y[1:6] .= δfun(t) 
-    y[7:12] .= derivative(τ->derivative(δfun, τ), t)
+    y[7:12] .= D²(δfun, t)
     nothing
 end
 
 @inbounds function _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)
     y[1:9] .= δ²fun(t) 
-    y[10:12] .= derivative(τ->derivative(κ->derivative(fun, κ), τ), t)
+    y[10:12] .= D³(fun, t)
     nothing
 end
