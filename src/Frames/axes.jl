@@ -83,7 +83,7 @@ IauEarthAxes
 ```
 
 ### See also 
-See also [`point`](@ref) and [`axes_alias`](@ref).
+See also [`@point`](@ref) and [`axes_alias`](@ref).
 """
 macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     # construct type name if not assigned 

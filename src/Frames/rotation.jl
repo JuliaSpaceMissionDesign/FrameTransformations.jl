@@ -143,7 +143,7 @@ remaining slots are filled with null DCMs, otherwise if the number of inputs is 
     unexperienced users. 
 
 ### See also 
-See also [`get_rotation3`](@ref), [`get_rotation6`](@ref) and [`get_rotation9`](@ref).
+See also [`rotation3`](@ref), [`rotation6`](@ref) and [`rotation9`](@ref).
 """
 struct Rotation{S, N}
     m::NTuple{S, DCM{N}}
