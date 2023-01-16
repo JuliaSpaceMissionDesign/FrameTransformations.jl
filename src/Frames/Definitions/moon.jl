@@ -24,7 +24,7 @@ See also [`Orient.AXESID_MOONPA_DE440`](@ref), [`Orient.orient_icrf_to_pa440`](@
 function add_axes_pa440!(frames::FrameSystem, axes::AbstractFrameAxes, 
 			parent::AbstractFrameAxes)
 
-	if axes_name(parent) != :ICRF && axes_id(parent) != 1
+	if axes_name(parent) != :ICRF && axes_id(parent) != Orient.AXESID_ICRF
 		throw(
 			ArgumentError("The DE440 Moon Principal Axes (PA) can only be defined "*
 				"w.r.t. the International Celestial Reference Frame (ICRF)."

@@ -28,7 +28,7 @@ See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref
 function add_axes_meme2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
             parent::AbstractFrameAxes) where {T, O}
 
-    if axes_name(parent) != :ICRF ||  axes_id(parent) != 1
+    if axes_name(parent) != :ICRF && axes_id(parent) != Orient.AXESID_ICRF
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (MEME2000) axes can only be defined "*
@@ -77,7 +77,7 @@ function add_axes_eclipj2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes
 
     pname = axes_name(parent)
 
-    if pname == :ICRF || axes_id(parent) == 1
+    if pname == :ICRF || axes_id(parent) == Orient.AXESID_ICRF
         dcm = Orient.DCM_J2000_TO_ECLIPJ2000 * Orient.DCM_ICRF_TO_J2000_BIAS 
     elseif pname == :MEME2000 # TODO: che ID assegnamo al MEME2000, 2? 
         dcm = Orient.DCM_J2000_TO_ECLIPJ2000
@@ -108,11 +108,10 @@ Add `axes` as a set of projected axes representing the Mean of Date Ecliptic Equ
     International Celestial Reference Frame), otherwise an error is thrown. 
 
 """
-function add_axes_mememod!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
-            parent::AbstractFrameAxes) where {T, O}
+function add_axes_mememod!(frames::FrameSystem, axes::AbstractFrameAxes,
+            parent::AbstractFrameAxes)
 
-    pname = axes_name(parent)
-    if pname != :ICRF || axes_id(parent) != 1
+    if axes_name(parent) != :ICRF && axes_id(parent) != Orient.AXESID_ICRF
         throw(
             ArgumentError("Mean Equator, Mean Equinox of date axes can only be defined " * 
             "w.r.t. the International Celestial Reference Frame (ICRF)")
