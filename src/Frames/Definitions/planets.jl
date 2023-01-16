@@ -10,29 +10,41 @@ function _orient_bcrtod(p::Orient.PlanetsPrecessionNutation, bodyname)
     return eval(
         quote
             (
+                #FIXME: cambia sec in days!
                 function ($fname)(sec::Number)
                     ra, dec, w = $f1(sec)
                     return angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
                 end, 
                 function ($fdname)(sec::Number)
                     ra, dec, w, rad, decd, wd = $f2(sec)
-                    ω = SA[rad/CENTURY2SEC, decd/CENTURY2SEC, wd/DAY2SEC]
+
                     R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
-                    return R, DCM(ddcm(R, ω))
+                    dR = angle_to_δdcm(
+                        (π/2 + ra, rad/CENTURY2SEC), 
+                        (π/2 - dec, -decd/CENTURY2SEC), 
+                        (w, wd/DAY2SEC), :ZXZ
+                    )
+
+                    return R, dR
                 end,
                 function ($fddname)(sec::Number)
-                    # TODO: test derivative
+
                     ra, dec, w, rad, decd, wd, radd, decdd, wdd = $f3(sec)
-                    ω = SA[rad/CENTURY2SEC, decd/CENTURY2SEC, wd/DAY2SEC]
+
                     R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
-                    ωd = SA[
-                        radd/CENTURY2SEC/CENTURY2SEC, 
-                        decdd/CENTURY2SEC/CENTURY2SEC, 
-                        wdd/DAY2SEC/DAY2SEC
-                    ]
-                    Rd = DCM(ddcm(R, ω))
-                    Rdd = DCM(ddcm(R, ωd) + ddcm(Rd, ω))
-                    return R, Rd, Rdd
+                    dR = angle_to_δdcm(
+                        (π/2 + ra, rad/CENTURY2SEC), 
+                        (π/2 - dec, -decd/CENTURY2SEC), 
+                        (w, wd/DAY2SEC), :ZXZ
+                    )
+
+                    d²R = angle_to_δ²dcm(
+                        (π/2 + ra, rad/CENTURY2SEC, radd/CENTURY2SEC/CENTURY2SEC), 
+                        (π/2 - dec, -decd/CENTURY2SEC, -decdd/CENTURY2SEC/CENTURY2SEC), 
+                        (w, wd/DAY2SEC, wdd/DAY2SEC/DAY2SEC), :ZXZ
+                    )
+
+                    return R, dR, d²R
                 end
             )
         end

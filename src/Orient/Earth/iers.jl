@@ -1,3 +1,4 @@
+export orient_itrf_to_gcrf
 
 # Nominal Earth angular velocity  
 const ωₑ = 7.292_115_146_706_979e-5
@@ -251,6 +252,36 @@ end
 
 
 """
+    orient_itrf_to_gcrf(t, m::IAU2006Model=iau2006b)
+
+Compute the rotation matrix from ITRF to GCRF at time `t`, according to the IAU 2010 
+conventions, using `IAU2006B` as the default model.
+"""
+function orient_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
+
+    # TODO: add computation of xp, yp, dx e dy 
+    xp, yp, dx, dy = 0, 0, 0, 0
+    return orient_itrf_to_gcrf(t, m)
+
+end
+
+function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
+
+    # TODO: add computation of xp, yp, dx e dy 
+    xp, yp, dx, dy = 0, 0, 0, 0
+    return orient_d_itrf_to_gcrf(t, m)
+
+end
+
+function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
+
+    # TODO: add computation of xp, yp, dx e dy 
+    xp, yp, dx, dy = 0, 0, 0, 0
+    return orient_dd_itrf_to_gcrf(t, m)
+
+end
+
+"""
     orient_itrf_to_gcrf(t, m::IAU2006Model, xₚ, yₚ, δx=0.0, δy=0.0)
 
 Compute the rotation matrix from ITRF to GCRF at time `t`, according to the IAU 2010 
@@ -259,7 +290,9 @@ conventions.
 function orient_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
             δx::Number=0.0, δy::Number=0.0)
 
-    tt_cent = Tempo.j2000c(t)
+    # Convert TT since J2000 from days to centuries
+    tt_cent = t/Tempo.CENTURY2DAY
+
     t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
     # t_ut1 = Tempo.tt_to_ut1(t) 
 
@@ -272,9 +305,11 @@ function orient_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Num
 end
 
 function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
-    δx::Number=0.0, δy::Number=0.0)
+            δx::Number=0.0, δy::Number=0.0)
 
-    tt_cent = Tempo.j2000c(t)
+    # Convert TT since J2000 from days to centuries
+    tt_cent = t/Tempo.CENTURY2DAY
+
     t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
     # t_ut1 = Tempo.tt_to_ut1(t) 
 
@@ -285,8 +320,10 @@ function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::N
     ωe = SVector(0.0, 0.0, earth_rotation_rate()) # FIXME: sistema con quella del LOD
     Ω = skew(ωe)
 
-    D = Q*R*W
-    δD = Q*R*Ω*W
+    QR = Q*R
+
+    D = QR*W
+    δD = QR*Ω*W
 
     return D, δD
 end
@@ -295,7 +332,9 @@ end
 function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
             δx::Number=0.0, δy::Number=0.0)
 
-    tt_cent = Tempo.j2000c(t)
+    # Convert TT since J2000 from days to centuries
+    tt_cent = t/Tempo.CENTURY2DAY
+
     t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
     # t_ut1 = Tempo.tt_to_ut1(t) 
 
@@ -306,9 +345,12 @@ function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::
     ωe = SVector(0.0, 0.0, earth_rotation_rate()) # FIXME: sistema con quella del LOD
     Ω = skew(ωe)
 
-    D = Q*R*W
-    δD = Q*R*Ω*W
-    δ²D = Q*R*Ω*Ω*W
+    QR = Q*R 
+    QRΩ = QR*Ω
+
+    D = QR*W
+    δD = QRΩ*W
+    δ²D = QRΩ*Ω*W
 
     return D, δD, δ²D
 end
