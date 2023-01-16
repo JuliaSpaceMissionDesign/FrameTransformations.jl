@@ -531,7 +531,7 @@ end
 
 
 """
-    add_axes_ephemeris!(frames, axes, rot_seq; axesid=nothing)
+    add_axes_ephemeris!(frames, axes, rot_seq)
 
 Add `axes` as a set of ephemeris axes to `frames`. The orientation of these axes is computed 
 with a series of 3 rotations specified by `rot_seq`. The euler angles and their derivatives 
@@ -560,11 +560,9 @@ and [`add_axes_computable!`](@ref)
 
 """
 function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
-            rot_seq::Symbol; axesid=nothing) where {O, T} # FIXME: removed axesid
+            rot_seq::Symbol) where {O, T}
 
-    if isnothing(axesid)
-        axesid = axes_id(axes)
-    end
+    axesid = axes_id(axes)
 
     # Check that the kernels contain orientation data for the given axes ID 
     if !(axesid in ephemeris_axes(frames))
