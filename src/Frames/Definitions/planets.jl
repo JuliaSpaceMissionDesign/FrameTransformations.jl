@@ -10,7 +10,6 @@ function _orient_bcrtod(p::Orient.PlanetsPrecessionNutation, bodyname)
     return eval(
         quote
             (
-                #FIXME: cambia sec in days!
                 function ($fname)(sec::Number)
                     ra, dec, w = $f1(sec)
                     return angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
