@@ -66,16 +66,17 @@ function get_iers_eop_IAU2000A(
     # Obtain the last available index of the field.
     last_id = findlast(!isempty, eop[:, 11])
     last_id === nothing && (last_id = length(eop[:, 11]))
-    ut1_utc::Vector{Float64} = Vector{Float64}(eop[1:last_id])
+    ut1_utc::Vector{Float64} = Vector{Float64}(eop[1:last_id, 11])
 
     # Create the EOP Data structure by creating the interpolations:
     # - The interpolation will be linear between two points in the grid.
     # - The extrapolation will be flat, considering the nearest point.
     j2000_utc = Vector{Float64}(eop[1:last_id, 1] .+ 2400000.5 .- DJ2000)
-    j2000_tt = [Tempo.utc2tai(DJ2000, utci)[2] for utci in j2000_utc] .+ Tempo.offset_tai2tt(0.0)
+    j2000_tt = [Tempo.utc2tai(DJ2000, utci)[2] for utci in j2000_utc] 
+        .- Tempo.OFFSET_TAI_TT ./ Tempo.DAY2SEC
 
-    j2000_ut1 = j2000_utc + Vector{Float64}(ut1_utc)./86400.0  # utc + ut1-utc
-    ut1_tt = j2000_ut1 - j2000_tt
+    j2000_ut1 = j2000_utc + Vector{Float64}(ut1_utc) ./ Tempo.DAY2SEC  # utc + ut1-utc
+    ut1_tt = (j2000_ut1 - j2000_tt) .* Tempo.DAY2SEC .- Tempo.OFFSET_TAI_TT
 
     return EOPData(
         _create_iers_eop_interpolation(j2000_utc, eop[:, 6]),
