@@ -258,7 +258,7 @@ Compute the rotation matrix from ITRF to GCRF at time `t`, according to the IAU 
 conventions, using `IAU2006B` as the default model.
 """
 function orient_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
-
+    # TODO: specify time frame!
     # TODO: add computation of xp, yp, dx e dy 
     xp, yp, dx, dy = 0, 0, 0, 0
     return orient_itrf_to_gcrf(t, m)
@@ -291,7 +291,7 @@ function orient_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Num
             δx::Number=0.0, δy::Number=0.0)
 
     # Convert TT since J2000 from days to centuries
-    tt_cent = t/Tempo.CENTURY2DAY
+    tt_cent = t/Tempo.CENTURY2DAY # FIXME: from days to seconds
 
     t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
     # t_ut1 = Tempo.tt_to_ut1(t) 
@@ -308,7 +308,7 @@ function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::N
             δx::Number=0.0, δy::Number=0.0)
 
     # Convert TT since J2000 from days to centuries
-    tt_cent = t/Tempo.CENTURY2DAY
+    tt_cent = t/Tempo.CENTURY2DAY # FIXME: from days to seconds
 
     t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
     # t_ut1 = Tempo.tt_to_ut1(t) 
@@ -333,7 +333,7 @@ function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::
             δx::Number=0.0, δy::Number=0.0)
 
     # Convert TT since J2000 from days to centuries
-    tt_cent = t/Tempo.CENTURY2DAY
+    tt_cent = t/Tempo.CENTURY2DAY # FIXME: from days to seconds
 
     t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
     # t_ut1 = Tempo.tt_to_ut1(t) 

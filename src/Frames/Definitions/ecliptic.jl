@@ -8,8 +8,8 @@ Add `axes` as a set of inertial axes representing the Mean Equator Mean Equinox 
 to `frames`. 
 
 !!! warning 
-    The `parent` set of axes must be the International Celestial Reference Frame (ICRF), 
-    otherwise and error is thrown.
+    The `parent` set of axes must be named `ICRF` or have ID = 1 (i.e., the International 
+    Celestial Reference Frame), otherwise and error is thrown.
 
 ### Examples 
 ```jldoctest 
@@ -23,21 +23,21 @@ julia> add_axes_meme2000!(FRAMES, MEME2000, ICRF)
 ```
 
 ### See also 
-See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF2J2000_BIAS`](@ref)
+See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
 """
 function add_axes_meme2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
             parent::AbstractFrameAxes) where {T, O}
 
-    if axes_name(parent) != :ICRF 
+    if axes_name(parent) != :ICRF ||  axes_id(parent) != 1
         throw(
-            ErrorException(
+            ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (MEME2000) axes can only be defined "*
-                "w.r.t the International Celestial Reference Frame (ICRF)."
+                "w.r.t. the International Celestial Reference Frame (ICRF)."
             )
         )
     end
 
-    add_axes_inertial!(frames, axes; parent=parent, dcm=Orient.DCM_ICRF2J2000_BIAS)
+    add_axes_inertial!(frames, axes; parent=parent, dcm=Orient.DCM_ICRF_TO_J2000_BIAS)
 end
 
 
@@ -50,12 +50,12 @@ to `frames`.
 The `parent` set of axes can be either the International Celestial Reference Frame (ICRF) 
 or the Mean Earth/Moon Ephemeris of 2000 (MEME2000). If the `parent` set of axes is ICRF, 
 the orientation of the ECLIPJ2000 axes is defined using a rotation matrix called 
-[`DCM_J20002ECLIPJ2000`](@ref) and a bias matrix called [`DCM_ICRF2J2000_BIAS`](@ref). 
+[`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) and a bias matrix called [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref). 
 If the parent set of axes is MEME2000, the orientation of the ECLIPJ2000 axes is defined using 
-only the [`DCM_J20002ECLIPJ2000`](@ref) rotation matrix.
+only the [`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) rotation matrix.
 
 !!! warning 
-    If the parent set of `axes` is neither ICRF nor MEME2000, an error is thrown. 
+    If the name of the parent set of `axes` is neither ICRF nor MEME2000, an error is thrown. 
 
 ### Examples
 ```jldoctest 
@@ -69,22 +69,22 @@ julia> add_axes_eclipj2000!(FRAMES, MEME2000, ICRF)
 ``` 
 
 ### See also 
-See also [`add_axes_inertial!`](@ref), [`Orient.DCM_J20002ECLIPJ2000`](@ref) and 
-[`Orient.DCM_ICRF2J2000_BIAS`](@ref)
+See also [`add_axes_inertial!`](@ref), [`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) and 
+[`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
 """
 function add_axes_eclipj2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
             parent::AbstractFrameAxes) where {T, O}
 
     pname = axes_name(parent)
 
-    if pname == :ICRF 
-        dcm = Orient.DCM_J20002ECLIPJ2000 * Orient.DCM_ICRF2J2000_BIAS 
-    elseif pname == :MEME2000 
-        dcm = Orient.DCM_J20002ECLIPJ2000
+    if pname == :ICRF || axes_id(parent) == 1
+        dcm = Orient.DCM_J2000_TO_ECLIPJ2000 * Orient.DCM_ICRF_TO_J2000_BIAS 
+    elseif pname == :MEME2000 # TODO: che ID assegnamo al MEME2000, 2? 
+        dcm = Orient.DCM_J2000_TO_ECLIPJ2000
     else
         throw(
-            ErrorException("Ecliptic Equinox of J2000 (ECLIPJ2000) axes could not be defined" *
-            " w.r.t $pname axes. Only `ICRF` or `MEME2000` are accepted as parent axes.")
+            ArgumentError("Ecliptic Equinox of J2000 (ECLIPJ2000) axes could not be defined" *
+            " w.r.t. $pname axes. Only `ICRF` or `MEME2000` are accepted as parent axes.")
         )
     end
 
@@ -104,20 +104,21 @@ Add `axes` as a set of projected axes representing the Mean of Date Ecliptic Equ
     are assumed null.
 
 !!! warning 
-    The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
-    If the `parent` set of axes is not ICRF, an error is thrown.
+    The name of the `parent` set of axes must be the ICRF or have ID = 1 (i.e., the 
+    International Celestial Reference Frame), otherwise an error is thrown. 
 
 """
 function add_axes_mememod!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
             parent::AbstractFrameAxes) where {T, O}
 
     pname = axes_name(parent)
-    if pname != :ICRF 
+    if pname != :ICRF || axes_id(parent) != 1
         throw(
-            ErrorException("Mean Equator, Mean Equinox of date axes can only be defined " * 
-            "w.r.t the International Celestial Reference Frame (ICRF)")
+            ArgumentError("Mean Equator, Mean Equinox of date axes can only be defined " * 
+            "w.r.t. the International Celestial Reference Frame (ICRF)")
         )
     end
 
     add_axes_projected!(frames, axes, parent, Orient.orient_icrf_to_mememod)
+
 end
