@@ -3,6 +3,7 @@ module Utils
     using JSON3
     using JLD2
 
+    using ForwardDiff: derivative
     using ReferenceFrameRotations: DCM
     using StaticArrays: SMatrix 
     
@@ -15,6 +16,7 @@ module Utils
     include("angles.jl")
     
     # Interpolation 
+    include("Math/derivatives.jl")
     include("Math/akima.jl")
     include("Math/rotation.jl")
     
