@@ -11,6 +11,18 @@ NAIF Axes ID for the International Celestial Reference Frame (ICRF)
 """
 AXESID_ICRF = 1
 
+"""
+    AXESID_MEME2000
+
+Axes ID for the Mean Dynamical Equator and Equinox of J2000.0. 
+
+!!! note 
+    In SPICE the J2000 and ICRF axes are considered equal, thus there exist no 
+    specific NAIF ID for the MEME2000 axes. 22 has been chosen because it is the 
+    first unassigned axes ID among the built-in SPICE frames. 
+"""
+AXESID_MEME2000 = 22
+
 """ 
     AXESID_ECLIPJ2000 
    

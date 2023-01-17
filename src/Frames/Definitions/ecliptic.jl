@@ -8,14 +8,15 @@ Add `axes` as a set of inertial axes representing the Mean Equator Mean Equinox 
 to `frames`. 
 
 !!! warning 
-    The `parent` set of axes must be named `ICRF` or have ID = 1 (i.e., the International 
-    Celestial Reference Frame), otherwise and error is thrown.
+    The name (or the axes ID) of the parent set of axes must be `ICRF` (i.e., the International 
+    Celestial Reference Frame, ID = 1), or the `ECLIPJ2000` (i.e., the Ecliptic Equinox of 7
+    J2000, ID = 17), otherwise and error is thrown.
 
 ### Examples 
 ```jldoctest 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
-julia> @axes MEME2000 2 MeanEquatorMeanEquinoxJ2000 
+julia> @axes MEME2000 22 MeanEquatorMeanEquinoxJ2000 
 
 julia> add_axes_inertial!(FRAMES, ICRF)
 
@@ -28,7 +29,16 @@ See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref
 function add_axes_meme2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
             parent::AbstractFrameAxes) where {T, O}
 
-    if axes_name(parent) != :ICRF && axes_id(parent) != Orient.AXESID_ICRF
+    pname = axes_name(parent) 
+    pid = axes_id(parent)
+    
+
+    if pname == :ICRF || pid == Orient.AXESID_ICRF
+        dcm = Orient.DCM_ICRF_TO_J2000_BIAS
+
+    elseif pname == :ECLIPJ2000 || pid == Orient.AXESID_ECLIPJ2000
+        dcm = Orient.DCM_J2000_TO_ECLIPJ2000'
+    else
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (MEME2000) axes can only be defined "*
@@ -37,7 +47,7 @@ function add_axes_meme2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
         )
     end
 
-    add_axes_inertial!(frames, axes; parent=parent, dcm=Orient.DCM_ICRF_TO_J2000_BIAS)
+    add_axes_inertial!(frames, axes; parent=parent, dcm=dcm)
 end
 
 
@@ -55,7 +65,9 @@ If the parent set of axes is MEME2000, the orientation of the ECLIPJ2000 axes is
 only the [`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) rotation matrix.
 
 !!! warning 
-    If the name of the parent set of `axes` is neither ICRF nor MEME2000, an error is thrown. 
+    If the name (or the axes ID) of the parent set of `axes` is neither ICRF (ID = 1) nor 
+    MEME2000 (ID = 22), an error is thrown. 
+
 
 ### Examples
 ```jldoctest 
@@ -65,7 +77,7 @@ julia> @axes ECLIPJ2000 17 EclipticEquinoxJ2000
 
 julia> add_axes_inertial!(FRAMES, ICRF)
 
-julia> add_axes_eclipj2000!(FRAMES, MEME2000, ICRF)
+julia> add_axes_eclipj2000!(FRAMES, ECLIPJ2000, ICRF)
 ``` 
 
 ### See also 
@@ -76,10 +88,11 @@ function add_axes_eclipj2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes
             parent::AbstractFrameAxes) where {T, O}
 
     pname = axes_name(parent)
+    pid = axes_id(parent)
 
-    if pname == :ICRF || axes_id(parent) == Orient.AXESID_ICRF
+    if pname == :ICRF || pid == Orient.AXESID_ICRF
         dcm = Orient.DCM_J2000_TO_ECLIPJ2000 * Orient.DCM_ICRF_TO_J2000_BIAS 
-    elseif pname == :MEME2000 # TODO: che ID assegnamo al MEME2000, 2? 
+    elseif pname == :MEME2000 || pid ==  Orient.AXESID_MEME2000 
         dcm = Orient.DCM_J2000_TO_ECLIPJ2000
     else
         throw(
