@@ -14,7 +14,7 @@ fx = x->3x^2*cos(x)-sin(x)
 fy = y->π/7*cos(y)
 fz = z->π/3*sin(z)
 
-@testset "DCM" verbose=true begin 
+@testset "DCM Derivatives" verbose=true begin 
 
     τ = rand()
     x = getv(fx, τ)
@@ -32,7 +32,7 @@ fz = z->π/3*sin(z)
 
     # 2 Rotations 
     for seq in (:YX, :XY, :ZX, :XZ, :YZ, :ZY)
-        for (D, fun) in zip((D¹, D²), (angle_to_δdcm, angle_to_δ²dcm))
+        for (D, fun) in zip((D¹, D², D³), (angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm))
             d = D(t->getdcm(t, seq, fx, fy), τ) 
             E = fun(x, y, seq)
             @test E ≈ d atol=1e-10
@@ -43,7 +43,7 @@ fz = z->π/3*sin(z)
     for seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, 
                  :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
 
-        for (D, fun) in zip((D¹, D²), (angle_to_δdcm, angle_to_δ²dcm))
+        for (D, fun) in zip((D¹, D², D³), (angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm))
             d = D(t->getdcm(t, seq, fx, fy, fz), τ) 
             E = fun(x, y, z, seq)
             @test E ≈ d atol=1e-10

@@ -636,7 +636,9 @@ The rotation sequence is defined by a `Symbol` specifing the rotation axes. The 
 values depend on the number of rotations as follows: 
 
 - **1 rotation** (`θ₁`): `:X`, `:Y`, or `:Z`.
-
+- **2 rotations** (`θ₁`, `θ₂`): `:XY`, `:XZ`, `:YX`, `:YZ`, `:ZX`, or `:ZY`.
+- **3 rotations** (`θ₁`, `θ₂`, `θ₃`): `:XYX`, `XYZ`, `:XZX`, `:XZY`, `:YXY`,
+    `:YXZ`, `:YZX`, `:YZY`, `:ZXY`, `:ZXZ`, `:ZYX`, or `:ZYZ`
 
 !!! note 
     This function assigns `dcm = A3 * A2 * A1` in which `Ai` is the DCM related with
@@ -669,8 +671,317 @@ function angle_to_δ³dcm(θ, rot_seq::Symbol=:Z)
 
 end
 
+function angle_to_δ³dcm(θ, ϕ, rot_seq::Symbol)
 
-# TODO: Finish me! :)
+	s, c = sincos(θ[1])
+	b, a = sincos(ϕ[1])
+
+	δθ, δ²θ, δ³θ = θ[2], θ[3], θ[4]
+	δϕ, δ²ϕ, δ³ϕ = ϕ[2], ϕ[3], ϕ[4]
+
+    δθ², δϕ² = δθ^2, δϕ^2
+    δθ³, δϕ³ = δθ²*δθ, δϕ²*δϕ
+
+	δθδ²ϕ = 3δθ*δ²ϕ 
+	δθδ²θ = 3δθ*δ²θ 
+	δϕδ²θ = 3δϕ*δ²θ 
+	δϕδ²ϕ = 3δϕ*δ²ϕ 
+	δϕδθ² = 3δϕ*δθ² 
+	δϕ²δθ = 3δϕ²*δθ 
+
+	A = δθδ²θ + δϕδ²ϕ
+	B = δθδ²ϕ + δϕδ²θ
+	C = -δ³ϕ + δϕ³ + δϕδθ²
+	D = -δ³θ + δθ³ + δϕ²δθ
+	E = δ³ϕ - δϕ³
+	F = δ³θ - δθ³
+		
+	if rot_seq == :XY
+		return DCM(
+			-a*δϕδ²ϕ - b*E,0,
+			a*E - b*δϕδ²ϕ,
+			a*(c*B - s*C) - b*(c*D + s*A),
+			-c*δθδ²θ - s*F,
+			a*(c*D + s*A) + b*(c*B - s*C),
+			a*(c*C + s*B) + b*(c*A - s*D),
+			c*F - s*δθδ²θ,
+			-a*(c*A - s*D) + b*(c*C + s*B),
+		)
+	elseif rot_seq == :XZ
+		return DCM(
+			-a*δϕδ²ϕ - b*E,
+			-a*E + b*δϕδ²ϕ,
+			0,
+			-a*(c*C + s*B) - b*(c*A - s*D),
+			-a*(c*A - s*D) + b*(c*C + s*B),
+			-c*F + s*δθδ²θ,
+			a*(c*B - s*C) - b*(c*D + s*A),
+			-a*(c*D + s*A) - b*(c*B - s*C),
+			-c*δθδ²θ - s*F,
+		)
+	elseif rot_seq == :YX
+		return DCM(
+			-c*δθδ²θ - s*F,
+			a*(c*B - s*C) - b*(c*D + s*A),
+			-a*(c*D + s*A) - b*(c*B - s*C),
+			0,
+			-a*δϕδ²ϕ - b*E,
+			-a*E + b*δϕδ²ϕ,
+			-c*F + s*δθδ²θ,
+			-a*(c*C + s*B) - b*(c*A - s*D),
+			-a*(c*A - s*D) + b*(c*C + s*B),
+		)
+	elseif rot_seq == :YZ
+		return DCM(
+			-a*(c*A - s*D) + b*(c*C + s*B),
+			a*(c*C + s*B) + b*(c*A - s*D),
+			c*F - s*δθδ²θ,
+			a*E - b*δϕδ²ϕ,
+			-a*δϕδ²ϕ - b*E,
+			0,
+			a*(c*D + s*A) + b*(c*B - s*C),
+			a*(c*B - s*C) - b*(c*D + s*A),
+			-c*δθδ²θ - s*F,
+		)
+	elseif rot_seq == :ZX
+		return DCM(
+			-c*δθδ²θ - s*F,
+			a*(c*D + s*A) + b*(c*B - s*C),
+			a*(c*B - s*C) - b*(c*D + s*A),
+			c*F - s*δθδ²θ,
+			-a*(c*A - s*D) + b*(c*C + s*B),
+			a*(c*C + s*B) + b*(c*A - s*D),
+			0,
+			a*E - b*δϕδ²ϕ,
+			-a*δϕδ²ϕ - b*E,
+		)
+	elseif rot_seq == :ZY
+		return DCM(
+			-a*(c*A - s*D) + b*(c*C + s*B),
+			-c*F + s*δθδ²θ,
+			-a*(c*C + s*B) - b*(c*A - s*D),
+			-a*(c*D + s*A) - b*(c*B - s*C),
+			-c*δθδ²θ - s*F,
+			a*(c*B - s*C) - b*(c*D + s*A),
+			-a*E + b*δϕδ²ϕ,
+			0,
+			-a*δϕδ²ϕ - b*E,
+		)
+	else
+		throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
+	end
+
+end
+
+function angle_to_δ³dcm(θ, ϕ, γ, rot_seq::Symbol)
+    @inbounds _3angles_to_δ³dcm(
+        (
+            θ[1], ϕ[1], γ[1], 
+            θ[2], ϕ[2], γ[2], 
+            θ[3], ϕ[3], γ[3], 
+            θ[4], ϕ[4], γ[4]
+        ), 
+        rot_seq
+    )
+
+end
+
+
 function _3angles_to_δ³dcm(θ, rot_seq::Symbol)
+
+    s, c = sincos(θ[1])
+    b, a = sincos(θ[2])
+    e, d = sincos(θ[3])
+
+    δθ, δϕ, δγ    = θ[4], θ[5], θ[6]
+    δ²θ, δ²ϕ, δ²γ = θ[7], θ[8], θ[9]
+	δ³θ, δ³ϕ, δ³γ = θ[10], θ[11], θ[12]
+
+    δθ², δϕ², δγ² = δθ^2, δϕ^2, δγ^2
+    δθ³, δϕ³, δγ³ = δθ²*δθ, δϕ²*δϕ, δγ²*δγ
+
+	δθδ²θ = 3δθ*δ²θ
+	δθδ²ϕ = 3δθ*δ²ϕ
+	δθδ²γ = 3δθ*δ²γ
+
+	δγδ²θ = 3δγ*δ²θ
+	δγδ²ϕ = 3δγ*δ²ϕ 
+	δγδ²γ = 3δγ*δ²γ
+
+	δϕδ²θ = 3δϕ*δ²θ
+	δϕδ²ϕ = 3δϕ*δ²ϕ
+	δϕδ²γ = 3δϕ*δ²γ
+
+	δγδθ² = 3δγ*δθ²
+	δγδϕ² = 3δγ*δϕ²
+	δγ²δθ = 3δγ²*δθ
+	δϕ²δθ = 3δϕ²*δθ
+	δγ²δϕ = 3δγ²*δϕ
+	δϕδθ² = 3δϕ*δθ²
+
+	δγδϕδθ = 6*δγ*δϕ*δθ
+
+	A = δθδ²θ + δϕδ²ϕ
+	Z = δγδ²γ + A
+	B = δγδ²γ + δϕδ²ϕ
+	C = δγδ²γ + δθδ²θ
+	D = δγδ²ϕ + δϕδ²γ
+	E = δθδ²ϕ + δϕδ²θ
+	F = δγδ²θ + δθδ²γ
+
+	G = -δ³θ + δθ³ + δϕ²δθ
+	N = -δ³θ + δθ³ + δγ²δθ 
+	H = -δ³ϕ + δϕ³ + δϕδθ²
+	I = -δ³ϕ + δϕ³ + δγ²δϕ 
+	L = -δ³γ + δγ³ + δγδϕ²
+	M = -δ³γ + δγ³ + δγδθ²
+
+	if rot_seq == :ZYX
+		return DCM(
+			-a*(c*A - s*G) + b*(c*H + s*E),
+			a*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - b*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) + c*(d*N + e*F) + s*(d*C - e*M),
+			-a*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - b*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + c*(d*F - e*N) - s*(d*M + e*C),
+			-a*(c*G + s*A) - b*(c*E - s*H),
+			a*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) + b*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - b*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) + c*(d*M + e*C) + s*(d*F - e*N),
+			-a*(δ³ϕ - δϕ³) + b*δϕδ²ϕ,
+			-a*(d*L + e*B) - b*(d*D - e*I),
+			-a*(d*B - e*L) + b*(d*I + e*D),
+		)
+	elseif rot_seq == :XYX
+		return DCM(
+			-a*δϕδ²ϕ - b*(δ³ϕ - δϕ³),
+			a*(d*D - e*I) - b*(d*L + e*B),
+			-a*(d*I + e*D) - b*(d*B - e*L),
+			a*(c*E - s*H) - b*(c*G + s*A),
+			-a*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) + b*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) + b*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) + c*(d*M + e*C) + s*(d*F - e*N),
+			a*(c*H + s*E) + b*(c*A - s*G),
+			-a*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) - b*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - c*(d*N + e*F) - s*(d*C - e*M),
+			-a*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + b*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - c*(d*F - e*N) + s*(d*M + e*C),
+		)
+	elseif rot_seq == :XYZ
+		return DCM(
+			-a*(d*B - e*L) + b*(d*I + e*D),
+			a*(d*L + e*B) + b*(d*D - e*I),
+			a*(δ³ϕ - δϕ³) - b*δϕδ²ϕ,
+			a*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - b*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) - c*(d*M + e*C) - s*(d*F - e*N),
+			-a*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - b*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*G + s*A) + b*(c*E - s*H),
+			a*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) + b*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + c*(d*F - e*N) - s*(d*M + e*C),
+			a*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - b*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) - c*(d*N + e*F) - s*(d*C - e*M),
+			-a*(c*A - s*G) + b*(c*H + s*E),
+		)
+	elseif rot_seq == :XZX
+		return DCM(
+			-a*δϕδ²ϕ - b*(δ³ϕ - δϕ³),
+			a*(d*I + e*D) + b*(d*B - e*L),
+			a*(d*D - e*I) - b*(d*L + e*B),
+			-a*(c*H + s*E) - b*(c*A - s*G),
+			-a*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + b*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - c*(d*F - e*N) + s*(d*M + e*C),
+			a*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) + b*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) + c*(d*N + e*F) + s*(d*C - e*M),
+			a*(c*E - s*H) - b*(c*G + s*A),
+			-a*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) - b*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - c*(d*M + e*C) - s*(d*F - e*N),
+			-a*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) + b*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - c*(d*C - e*M) + s*(d*N + e*F),
+		)
+	elseif rot_seq == :XZY
+		return DCM(
+			-a*(d*B - e*L) + b*(d*I + e*D),
+			-a*(δ³ϕ - δϕ³) + b*δϕδ²ϕ,
+			-a*(d*L + e*B) - b*(d*D - e*I),
+			-a*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - b*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + c*(d*F - e*N) - s*(d*M + e*C),
+			-a*(c*A - s*G) + b*(c*H + s*E),
+			a*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - b*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) + c*(d*N + e*F) + s*(d*C - e*M),
+			a*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - b*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) + c*(d*M + e*C) + s*(d*F - e*N),
+			-a*(c*G + s*A) - b*(c*E - s*H),
+			a*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) + b*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) - c*(d*C - e*M) + s*(d*N + e*F),
+		)
+	elseif rot_seq == :YXY
+		return DCM(
+			-a*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) + b*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*E - s*H) - b*(c*G + s*A),
+			-a*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) - b*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - c*(d*M + e*C) - s*(d*F - e*N),
+			a*(d*D - e*I) - b*(d*L + e*B),
+			-a*δϕδ²ϕ - b*(δ³ϕ - δϕ³),
+			a*(d*I + e*D) + b*(d*B - e*L),
+			a*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) + b*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) + c*(d*N + e*F) + s*(d*C - e*M),
+			-a*(c*H + s*E) - b*(c*A - s*G),
+			-a*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + b*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - c*(d*F - e*N) + s*(d*M + e*C),
+		)
+	elseif rot_seq == :YXZ
+		return DCM(
+			a*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) + b*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - b*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) + c*(d*M + e*C) + s*(d*F - e*N),
+			-a*(c*G + s*A) - b*(c*E - s*H),
+			-a*(d*L + e*B) - b*(d*D - e*I),
+			-a*(d*B - e*L) + b*(d*I + e*D),
+			-a*(δ³ϕ - δϕ³) + b*δϕδ²ϕ,
+			a*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - b*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) + c*(d*N + e*F) + s*(d*C - e*M),
+			-a*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - b*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + c*(d*F - e*N) - s*(d*M + e*C),
+			-a*(c*A - s*G) + b*(c*H + s*E),
+		)
+	elseif rot_seq == :YZX
+		return DCM(
+			-a*(c*A - s*G) + b*(c*H + s*E),
+			a*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) + b*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + c*(d*F - e*N) - s*(d*M + e*C),
+			a*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - b*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) - c*(d*N + e*F) - s*(d*C - e*M),
+			a*(δ³ϕ - δϕ³) - b*δϕδ²ϕ,
+			-a*(d*B - e*L) + b*(d*I + e*D),
+			a*(d*L + e*B) + b*(d*D - e*I),
+			a*(c*G + s*A) + b*(c*E - s*H),
+			a*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - b*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) - c*(d*M + e*C) - s*(d*F - e*N),
+			-a*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - b*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) - c*(d*C - e*M) + s*(d*N + e*F),
+		)
+	elseif rot_seq == :YZY
+		return DCM(
+			-a*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + b*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - c*(d*F - e*N) + s*(d*M + e*C),
+			a*(c*H + s*E) + b*(c*A - s*G),
+			-a*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) - b*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - c*(d*N + e*F) - s*(d*C - e*M),
+			-a*(d*I + e*D) - b*(d*B - e*L),
+			-a*δϕδ²ϕ - b*(δ³ϕ - δϕ³),
+			a*(d*D - e*I) - b*(d*L + e*B),
+			a*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) + b*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) + c*(d*M + e*C) + s*(d*F - e*N),
+			a*(c*E - s*H) - b*(c*G + s*A),
+			-a*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) + b*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - c*(d*C - e*M) + s*(d*N + e*F),
+		)
+	elseif rot_seq == :ZXY
+		return DCM(
+			-a*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - b*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*G + s*A) + b*(c*E - s*H),
+			a*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - b*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) - c*(d*M + e*C) - s*(d*F - e*N),
+			a*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - b*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) - c*(d*N + e*F) - s*(d*C - e*M),
+			-a*(c*A - s*G) + b*(c*H + s*E),
+			a*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) + b*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + c*(d*F - e*N) - s*(d*M + e*C),
+			a*(d*L + e*B) + b*(d*D - e*I),
+			a*(δ³ϕ - δϕ³) - b*δϕδ²ϕ,
+			-a*(d*B - e*L) + b*(d*I + e*D),
+		)
+	elseif rot_seq == :ZXZ
+		return DCM(
+			-a*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) + b*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) + b*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) + c*(d*M + e*C) + s*(d*F - e*N),
+			a*(c*E - s*H) - b*(c*G + s*A),
+			-a*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) - b*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) - c*(d*N + e*F) - s*(d*C - e*M),
+			-a*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + b*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - c*(d*F - e*N) + s*(d*M + e*C),
+			a*(c*H + s*E) + b*(c*A - s*G),
+			a*(d*D - e*I) - b*(d*L + e*B),
+			-a*(d*I + e*D) - b*(d*B - e*L),
+			-a*δϕδ²ϕ - b*(δ³ϕ - δϕ³),
+		)
+	elseif rot_seq == :ZYZ
+		return DCM(
+			-a*(c*(d*Z - e*(M + δγδϕ²)) - s*(d*(N + δϕ²δθ) + e*F)) + b*(c*(d*(I + δϕδθ²) + e*D) + s*(d*E - e*δγδϕδθ)) - c*(d*F - e*N) + s*(d*M + e*C),
+			a*(c*(d*(M + δγδϕ²) + e*Z) + s*(d*F - e*(N + δϕ²δθ))) + b*(c*(d*D - e*(I + δϕδθ²)) - s*(d*δγδϕδθ + e*E)) + c*(d*N + e*F) + s*(d*C - e*M),
+			-a*(c*H + s*E) - b*(c*A - s*G),
+			-a*(c*(d*(N + δϕ²δθ) + e*F) + s*(d*Z - e*(M + δγδϕ²))) - b*(c*(d*E - e*δγδϕδθ) - s*(d*(I + δϕδθ²) + e*D)) - c*(d*M + e*C) - s*(d*F - e*N),
+			-a*(c*(d*F - e*(N + δϕ²δθ)) - s*(d*(M + δγδϕ²) + e*Z)) + b*(c*(d*δγδϕδθ + e*E) + s*(d*D - e*(I + δϕδθ²))) - c*(d*C - e*M) + s*(d*N + e*F),
+			a*(c*E - s*H) - b*(c*G + s*A),
+			a*(d*I + e*D) + b*(d*B - e*L),
+			a*(d*D - e*I) - b*(d*L + e*B),
+			-a*δϕδ²ϕ - b*(δ³ϕ - δϕ³),
+		)
+	else
+		throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
+	end
 
 end
