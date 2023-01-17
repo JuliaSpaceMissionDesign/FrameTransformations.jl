@@ -32,10 +32,11 @@ function add_axes_pa440!(frames::FrameSystem, axes::AbstractFrameAxes,
 		)
 	end
 
-	if axes_id(axes) != Orient.AXESID_MOONPA_DE440 
+	axesid = axes_id(axes)
+	if axesid != Orient.AXESID_MOONPA_DE440 
 		throw(
 			ArgumentError("$(axes_name(axes)) is associated to an ID that is not the standard 
-				Moon PA DE440 ID ($(Orient.AXESID_MOONPA_DE440))."
+				Moon PA DE440 ID. Found $axesid, expected ($(Orient.AXESID_MOONPA_DE440))."
 			)
 		)
 	end
@@ -74,10 +75,11 @@ function add_axes_pa421!(frames::FrameSystem, axes::AbstractFrameAxes,
 		)
 	end
 
-	if axes_id(axes) != Orient.AXESID_MOONPA_DE421
+	axesid = axes_id(axes)
+	if axesid != Orient.AXESID_MOONPA_DE421
 		throw(
 			ArgumentError("$(axes_name(axes)) is associated to an ID that is not the standard 
-				Moon PA DE421 ID ($(Orient.AXESID_MOONPA_DE421))."
+				Moon PA DE421 ID. Found $axesid, expected ($(Orient.AXESID_MOONPA_DE421))."
 			)
 		)
 	end

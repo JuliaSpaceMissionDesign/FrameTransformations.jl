@@ -23,6 +23,7 @@ AXESID_ECLIPJ2000 = 17
 # DCMs
 # --------------------------------------------------------
 
+
 """
     DCM_ICRF_TO_J2000_BIAS
 
@@ -37,6 +38,7 @@ dynamical equator and equinox at J2000. 0 to the ICRS. -- Astronomy & Astrophysi
 """
 const DCM_ICRF_TO_J2000_BIAS = orient_precession_bias(iau2006a, 0.0)
 
+
 """
     DCM_J2000_TO_ECLIPJ2000
 
@@ -45,6 +47,7 @@ Mean Ecliptic Equinox. This corresponds to the transformation `J2000 -> ECLIPJ20
 in the SPICE toolkit.
 """
 const DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau2006a, 0.0), :X)
+
 
 """
     DCM_ICRF_TO_ECLIPJ2000
@@ -59,11 +62,16 @@ const DCM_ICRF_TO_ECLIPJ2000 = DCM_ICRF_TO_J2000_BIAS * DCM_J2000_TO_ECLIPJ2000
 # TRANSFORMATIONS
 # --------------------------------------------------------
 
-# ICRF -> MEME2000 
-# TODO: docs!
-function orient_icrf_to_mememod(sec::Number)
+
+"""
+    orient_icrf_to_mememod(t::Number)
+
+Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
+the Mean Equinox Mean Equator of Date at time `t`, expressed in TT seconds since [`J2000`](@ref).
+"""
+function orient_icrf_to_mememod(t::Number)
     # convert TT seconds since J2000 to TT centuries since J2000
-    T = sec/Tempo.CENTURY2SEC
+    T = t/Tempo.CENTURY2SEC
 
     # fw_angles holds independent on the IAU Model! 
     γ, ϕ, ψ, ε = fw_angles(iau2006b, T)

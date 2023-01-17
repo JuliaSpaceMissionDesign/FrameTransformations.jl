@@ -195,7 +195,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             elseif axesid == pe_axes
                 return $(vfwd)(frame, t, path)
             else 
-                # TODO: to be optimised? (probably does not lead to any performance gains)
+                # to be optimised? (probably does not lead to any performance gains)
                 return $(axfun1)(frame, pe_axes, axesid, t)*$(vfwd)(frame, t, path)
             end
         end
