@@ -4,8 +4,8 @@ FRAMES = FrameSystem{3, Float64}()
 
 # insert ICRF
 @axes ICRF 1 InternationalCelestialReferenceFrame
-@axes MEME2000 2 
-@axes ECLIPJ2000 3
+@axes MEME2000 22 
+@axes ECLIPJ2000 17
 
 add_axes_inertial!(FRAMES, ICRF)
 add_axes_meme2000!(FRAMES, MEME2000, ICRF)
