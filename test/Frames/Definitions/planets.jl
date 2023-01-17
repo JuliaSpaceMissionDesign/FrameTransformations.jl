@@ -21,7 +21,6 @@ FRAMES = FrameSystem{3, Float64}()
 
         FRAMES = FrameSystem{3, Float64}()
         add_axes_inertial!(FRAMES, ICRF)
-        # NAIFId = i*100 + 99
         add_axes_bcrtod!(FRAMES, constants, i, "test", IAU_TEST, ICRF)
 
         for _ in 1:10
@@ -32,8 +31,16 @@ FRAMES = FrameSystem{3, Float64}()
 
             v = rand(3)
             v /= norm(v)
+
+            # It has a precision of about 36 marcsec
+            @test acosd(max(-1, min(1, dot(R[1:3, 1:3]*v, R_[1]*v)))) ≤ 1e-5
+            # @test acosd(max(-1, min(1, dot(R[4:6, 1:3]*v, R_[2]*v)))) ≤ 1e-5
+
+            # @test isapprox(dot(R[1:3, 1:3] *v, R_[1]*v), 1.0, atol=1e-8)
             
-            @test isapprox(dot(R[1:3, 1:3] *v, R_[1]*v), 1.0, atol=1e-8)
         end
-    end
-end
+    end;
+
+end;
+
+
