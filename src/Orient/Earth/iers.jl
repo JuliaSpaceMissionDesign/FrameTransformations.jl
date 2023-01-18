@@ -251,73 +251,184 @@ function cip_motion(m::IAU2006Model, t::Number, dx::Number=0.0, dy::Number=0.0)
 end
 
 
-"""
-    orient_itrf_to_gcrf(t, m::IAU2006Model=iau2006b)
+# Transform TT seconds since J2000 (sec) to Julian UT1 date
+function tt_to_ut1date(sec::Number)
+    ttd = sec/Tempo.DAY2SEC
+    offset = interpolate(IERS_EOP.UT1_TT, ttd)
+    ut1d = ttd + offset/Tempo.DAY2SEC
+    return Tempo.DJ2000 + ut1d
+end
 
-Compute the rotation matrix from ITRF to GCRF at time `t`, according to the IAU 2010 
-conventions, using `IAU2006B` as the default model.
+
+# Interpolate xp, yp in radians at `ttd` expressed as TT days since J2000
+function _interpolate_polar_motion(ttd::Number, eop)
+    # Compute polar motion 
+    xₚ = arcsec2rad(interpolate(eop.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(eop.y_TT, ttd))
+    return xₚ, yₚ
+end
+
+# Interpolate dX, dY in radians at `ttd` expressed as TT days since J2000
+function _interpolate_cip_deviation(ttd::Number, eop)
+    # Compute CIP deviation due to free core nutation effects
+    dX = arcsec2rad(interpolate(eop.dX_TT, ttd))
+    dY = arcsec2rad(interpolate(eop.dY_TT, ttd))
+    return dX, dY
+end
+
+
 """
-function orient_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
-    # TODO: specify time frame!
-    # TODO: add computation of xp, yp, dx e dy 
-    xp, yp, dx, dy = 0, 0, 0, 0
-    return orient_itrf_to_gcrf(t, m)
+    orient_itrf_to_gcrf(t, m::IAU2006Model)
+
+Compute the rotation matrix from `ITRF` to `GCRF` at time `t` expressed as 
+TT seconds since [`J2000`](@ref), according to the IAU 2010 Conventions. 
+
+Depending on the input IAU model `m`, the following operations as performed:
+- **IAU2006A**: the pole coordinates (xₚ, yₚ) and the free-core nutation and time 
+                corrections to the CIP coordinates (dX, dY) are interpolated from the 
+                latest released IERS EOP data. The precession-nutation matrix is 
+                computed using the full IAU 2006 A model.
+
+- **IAU2006B**: only the pole coordinates (xₚ, yₚ) are interpolated from the latest 
+                EOP data. The CIP position corrections dX, dY are neglected. 
+
+"""
+function orient_itrf_to_gcrf(t::Number, m::IAU2006A)
+
+    # Convert TT secs since J2000 to TT days
+    ttd = t/Tempo.DAY2SEC
+
+    # Compute pole coordinates 
+    xₚ, yₚ = _interpolate_polar_motion(ttd, IERS_EOP)
+
+    # Compute dX, dY 
+    dX, dY = _interpolate_cip_deviation(ttd, IERS_EOP)
+
+    return orient_itrf_to_gcrf(t, m, xₚ, yₚ, dX, dY)
+end
+
+function orient_itrf_to_gcrf(t::Number, m::IAU2006B)
+
+    # Convert TT secs since J2000 to TT days
+    ttd = t/Tempo.DAY2SEC
+    xₚ, yₚ = _interpolate_polar_motion(ttd, IERS_EOP)
+
+    return orient_itrf_to_gcrf(t, m, xₚ, yₚ, 0.0, 0.0)
+end
+
+
+"""
+    orient_d_itrf_to_gcrf(t, m::IAU2006Model)
+
+Compute the rotation matrix from `ITRF` to `GCRF` and its derivative at time `t` 
+expressed as TT seconds since [`J2000`](@ref), according to the IAU 2010 conventions.
+"""
+function orient_d_itrf_to_gcrf(t::Number, m::IAU2006A)
+
+    # Convert TT secs since J2000 to TT days
+    ttd = t/Tempo.DAY2SEC
+
+    # Compute pole coordinates 
+    xₚ, yₚ = _interpolate_polar_motion(ttd, IERS_EOP)
+
+    # Compute dX, dY 
+    dX, dY = _interpolate_cip_deviation(ttd, IERS_EOP)
+
+    # Compute LOD 
+    LOD = interpolate(IERS_EOP.LOD_TT, ttd)
+
+    return orient_d_itrf_to_gcrf(t, m, xₚ, yₚ, dX, dY, LOD)
 
 end
 
-function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
+function orient_d_itrf_to_gcrf(t::Number, m::IAU2006B)
 
-    # TODO: add computation of xp, yp, dx e dy 
-    xp, yp, dx, dy = 0, 0, 0, 0
-    return orient_d_itrf_to_gcrf(t, m)
+    # Convert TT secs since J2000 to TT days
+    ttd = t/Tempo.DAY2SEC
 
-end
+    # Compute pole coordinates 
+    xₚ, yₚ = _interpolate_polar_motion(ttd, IERS_EOP)
 
-function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model=iau2006b)
-
-    # TODO: add computation of xp, yp, dx e dy 
-    xp, yp, dx, dy = 0, 0, 0, 0
-    return orient_dd_itrf_to_gcrf(t, m)
+    return orient_d_itrf_to_gcrf(t, m, xₚ, yₚ, 0.0, 0.0, 0.0)
 
 end
 
 """
-    orient_itrf_to_gcrf(t, m::IAU2006Model, xₚ, yₚ, δx=0.0, δy=0.0)
+    orient_dd_itrf_to_gcrf(t, m::IAU2006Model)
 
-Compute the rotation matrix from ITRF to GCRF at time `t`, according to the IAU 2010 
-conventions. 
+Compute the rotation matrix from `ITRF` to `GCRF` and its time derivatives up to order 2 at 
+time `t` expressed as TT seconds since [`J2000`](@ref), according to the IAU 2010 conventions.
+"""
+function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006A)
+
+    # Convert TT secs since J2000 to TT days
+    ttd = t/Tempo.DAY2SEC
+
+    # Compute pole coordinates 
+    xₚ, yₚ = _interpolate_polar_motion(ttd, IERS_EOP)
+
+    # Compute dX, dY 
+    dX, dY = _interpolate_cip_deviation(ttd, IERS_EOP)
+
+    # Compute LOD 
+    LOD = interpolate(IERS_EOP.LOD_TT, ttd)
+
+    return orient_dd_itrf_to_gcrf(t, m, xₚ, yₚ, dX, dY, LOD)
+end
+
+function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006B)
+
+    # Convert TT secs since J2000 to TT days
+    ttd = t/Tempo.DAY2SEC
+
+    # Compute pole coordinates 
+    xₚ, yₚ = _interpolate_polar_motion(ttd, IERS_EOP)
+
+    return orient_dd_itrf_to_gcrf(t, m, xₚ, yₚ, 0.0, 0.0, 0.0)
+end
+
+
+
+"""
+    orient_itrf_to_gcrf(t, m::IAU2006Model, xₚ, yₚ, dX=0.0, dY=0.0)
+
+Compute the rotation matrix from ITRF to GCRF at time `t`, expressed in seconds
+since [`J2000`](@ref), according to the IAU 2010 conventions. 
+
+xₚ, yₚ, dX and dY must all be expressed in radians
 """
 function orient_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
-            δx::Number=0.0, δy::Number=0.0)
+            dX::Number=0.0, dY::Number=0.0)
 
-    # Convert TT since J2000 from days to centuries
-    tt_cent = t/Tempo.CENTURY2DAY # FIXME: from days to seconds
+    # Convert TT since J2000 from seconds to centuries
+    tt_c = t/Tempo.CENTURY2SEC
 
-    t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
-    # t_ut1 = Tempo.tt_to_ut1(t) 
+    # Compute Julian UT1 Date 
+    jd_ut1 = tt_to_ut1date(t)
 
-    W = polar_motion(xₚ, yₚ, tt_cent)
-    R = era_rotm(t_ut1)
-    Q = cip_motion(m, tt_cent, δx, δy)
+    W = polar_motion(xₚ, yₚ, tt_c)
+    R = era_rotm(jd_ut1)
+    Q = cip_motion(m, tt_c, dX, dY)
 
     return Q*R*W 
 
 end
 
+
 function orient_d_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
-            δx::Number=0.0, δy::Number=0.0)
+            dX::Number=0.0, dY::Number=0.0, LOD::Number=0.0)
 
-    # Convert TT since J2000 from days to centuries
-    tt_cent = t/Tempo.CENTURY2DAY # FIXME: from days to seconds
+    # Convert TT since J2000 from seconds to centuries
+    tt_c = t/Tempo.CENTURY2SEC
 
-    t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
-    # t_ut1 = Tempo.tt_to_ut1(t) 
+    # Compute Julian UT1 Date 
+    jd_ut1 = tt_to_ut1date(t)
 
-    W = polar_motion(xₚ, yₚ, tt_cent)
-    R = era_rotm(t_ut1)
-    Q = cip_motion(m, tt_cent, δx, δy)
+    W = polar_motion(xₚ, yₚ, tt_c)
+    R = era_rotm(jd_ut1)
+    Q = cip_motion(m, tt_c, dX, dY)
 
-    ωe = SVector(0.0, 0.0, earth_rotation_rate()) # FIXME: sistema con quella del LOD
+    ωe = SVector(0.0, 0.0, earth_rotation_rate(LOD))
     Ω = skew(ωe)
 
     QR = Q*R
@@ -330,19 +441,19 @@ end
 
 
 function orient_dd_itrf_to_gcrf(t::Number, m::IAU2006Model, xₚ::Number, yₚ::Number, 
-            δx::Number=0.0, δy::Number=0.0)
+            dX::Number=0.0, dY::Number=0.0, LOD::Number=0.0)
 
-    # Convert TT since J2000 from days to centuries
-    tt_cent = t/Tempo.CENTURY2DAY # FIXME: from days to seconds
+    # Convert TT since J2000 from seconds to centuries
+    tt_c = t/Tempo.CENTURY2SEC
 
-    t_ut1 = tt_cent # FIXME: cambia la funzione con quella sotto (una volta creata)
-    # t_ut1 = Tempo.tt_to_ut1(t) 
+    # Compute Julian UT1 Date 
+    jd_ut1 = tt_to_ut1date(t)
 
-    W = polar_motion(xₚ, yₚ, tt_cent)
-    R = era_rotm(t_ut1)
-    Q = cip_motion(m, tt_cent, δx, δy)
+    W = polar_motion(xₚ, yₚ, tt_c)
+    R = era_rotm(jd_ut1)
+    Q = cip_motion(m, tt_c, dX, dY)
 
-    ωe = SVector(0.0, 0.0, earth_rotation_rate()) # FIXME: sistema con quella del LOD
+    ωe = SVector(0.0, 0.0, earth_rotation_rate(LOD))
     Ω = skew(ωe)
 
     QR = Q*R 

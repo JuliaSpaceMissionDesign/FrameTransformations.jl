@@ -67,6 +67,10 @@ function get_iers_eop_IAU2000A(
     last_id = findlast(!isempty, eop[:, 11])
     last_id === nothing && (last_id = length(eop[:, 11]))
     ut1_utc::Vector{Float64} = Vector{Float64}(eop[1:last_id, 11])
+    # TODO: piccolo check che TT e UTC siano equivalenti 
+    # a 6 aprile 2004 a mezzanotte UTC ritorna valore esatto (da excel)
+    # mentre la corrispondente epoca in TT riporta un valore interpolato!
+    # Risulta più preciso passare a UTC!
 
     # Create the EOP Data structure by creating the interpolations:
     # - The interpolation will be linear between two points in the grid.
