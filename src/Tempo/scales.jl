@@ -96,13 +96,13 @@ function add_timescale(scales::TimeSystem{T}, ts::S, ffp::Function;
         # Check if a set of timescale with the same ID is already registered within 
         # the given time system 
         throw(ErrorException(
-            "[Tempo] TimeScale with id $id are already registered in the given TimeSystem"))
+            "[Tempo] TimeScale with id $id is already registered in the given TimeSystem"))
     end
 
     if name in map(x->x.name, scales.scales.nodes) 
         # Check if timescale with the same name also does not already exist
         throw(ErrorException(
-            "[Tempo] TimeScale with name $name are already registered in the given TimeSystem"))
+            "[Tempo] TimeScale with name $name is already registered in the given TimeSystem"))
     end    
 
     # if the scale has a parent
@@ -112,7 +112,7 @@ function add_timescale(scales::TimeSystem{T}, ts::S, ffp::Function;
 
         # Check if the parent scale are registered in system
         if !has_timescale(scales, pid)
-            throw(ErrorException("[Tempo] the specified parent timescale with id $pid are not "*
+            throw(ErrorException("[Tempo] the specified parent timescale with id $pid is not "*
                 "registered in the given TimeSystem"))
         end
     else 
