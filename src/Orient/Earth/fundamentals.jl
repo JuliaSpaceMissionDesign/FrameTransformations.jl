@@ -138,7 +138,6 @@ at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
-- [ERFA](https://github.com/liberfa/erfa/blob/master/src/nut00b.c) software library
 """
 function PlanetaryArguments(t::Number)
 	λ_Me = fa_mlon_mercury(t)
