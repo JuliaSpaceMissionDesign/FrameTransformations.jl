@@ -131,6 +131,6 @@ function add_axes_mememod!(frames::FrameSystem, axes::AbstractFrameAxes,
         )
     end
 
-    add_axes_projected!(frames, axes, parent, Orient.orient_icrf_to_mememod)
+    add_axes_projected!(frames, axes, parent, Orient.orient_rot3_icrf_to_mememod)
 
 end
