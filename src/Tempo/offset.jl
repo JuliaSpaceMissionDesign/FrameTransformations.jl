@@ -154,20 +154,6 @@ Return the offset between [`UTC`](@ref) and [`TAI`](@ref) in seconds.
     return (tai - utc) * 86400.0
 end
 
-#######
-# UT1 #
-#######
-
-"""
-    offset_utc2ut1(seconds)
-
-Return the offset between [`UTC`](@ref) and [`UT1`](@ref) in seconds.
-"""
-@inline function offset_utc2ut1(seconds)
-    utc = seconds/86400.0
-    return interpolate(IERS_EOP.UT1_UTC, utc)
-end
-
 ########################
 # TDB (high precision) #
 ########################

@@ -244,6 +244,7 @@ add_timescale(TIMESCALES, TAI, offset_tt2tai, parent=TT, ftp=offset_tai2tt)
 add_timescale(TIMESCALES, TCG, offset_tt2tcg, parent=TT, ftp=offset_tcg2tt)
 add_timescale(TIMESCALES, TCB, offset_tdb2tcb, parent=TDB, ftp=offset_tcb2tdb)
 add_timescale(TIMESCALES, UTC, offset_tai2utc, parent=TAI, ftp=offset_utc2tai)
-add_timescale(TIMESCALES, UT1, offset_utc2ut1, parent=UTC)
 add_timescale(TIMESCALES, TDBH, offset_tt2tdbh, parent=TT)
 add_timescale(TIMESCALES, GPS, offset_gps2tai, parent=TAI, ftp=offset_tai2gps)
+
+# Note: the UT1 timescale is added in the Orient module to exploit the IERS_EOP data. 
