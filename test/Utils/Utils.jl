@@ -1,3 +1,4 @@
+import Basic.Utils: D¹, D², D³
 
 # FIXME: per AP da sistemare\levare questi test (i file in asset non li ho)
 # include("file.jl")    

@@ -1,6 +1,5 @@
 import ReferenceFrameRotations: angle_to_dcm
 import Basic.Utils: angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
-import Basic.Utils: D¹, D², D³
 
 getdcm(t, seq, fx) = angle_to_dcm(fx(t), seq)
 getdcm(t, seq, fx, fy) = angle_to_dcm(fx(t), fy(t), seq)

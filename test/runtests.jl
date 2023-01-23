@@ -1,13 +1,19 @@
 using Basic
 using Test
 
-using RemoteFiles 
+using ERFA 
+using ReferenceFrameRotations
+using RemoteFiles
+using StaticArrays
+
+import LinearAlgebra: cross, dot, norm
+
 
 @RemoteFileSet KERNELS "Generic Spice Kernels" begin
     IAU = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc" dir=joinpath(@__DIR__, "assets")
     LEAP = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/latest_leapseconds.tls" dir=joinpath(@__DIR__, "assets")
     GMS = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de440.tpc" dir=joinpath(@__DIR__, "assets")
-end
+end;
 
 download(KERNELS, verbose=true, force=true)
 

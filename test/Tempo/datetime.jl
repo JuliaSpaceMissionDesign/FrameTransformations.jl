@@ -19,7 +19,7 @@
     d = Date(2000, 1, 1)
     @test d == Date(0)
     @test d == Date(2000, 1)
-    @test j2000(d) == 0
+    @test Tempo.j2000(d) == 0
     @test Tempo.find_dayinyear(d) == 1
 
     @test Tempo.find_month(32, true) == 2

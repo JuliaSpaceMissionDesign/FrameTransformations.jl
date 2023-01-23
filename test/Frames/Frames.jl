@@ -1,6 +1,3 @@
-using ReferenceFrameRotations
-using StaticArrays
-
 using Basic.Frames 
 
 include("rotation.jl")

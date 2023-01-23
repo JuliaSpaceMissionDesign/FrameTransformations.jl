@@ -1,5 +1,4 @@
 import ForwardDiff: derivative
-import LinearAlgebra: cross, dot
 
 
 @testset "TwoVectors" verbose=true begin 

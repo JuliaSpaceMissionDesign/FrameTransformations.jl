@@ -1,6 +1,4 @@
 
-using Basic.Utils: D¹, D², D³
-
 @testset "AD Derivatives" verbose=true begin 
 
     f = x-> sin(x) + 3x^3
