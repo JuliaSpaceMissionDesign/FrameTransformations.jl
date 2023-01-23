@@ -3,14 +3,18 @@ include("fundamentals.jl")
 include("eop.jl")
 
 function build_cio_series(fname::Symbol, iau_model::Symbol, 
-                          cpoly::AbstractVector{<:Number}, 
-                          ctrig::AbstractVector{<:AbstractVector{<:IAUSeries}})
+    cpoly::AbstractVector{<:AbstractVector{<:Number}}, 
+    ctrig::AbstractVector{<:AbstractVector{<:AbstractVector{<:IAUSeries}}})
+
+    nseries = length(cpoly)
+    if nseries != length(ctrig) 
+        throw(ArgumentError("[Orient] cpoly and ctrig must have same number of series."))
+    end 
 
     # Generates ad-hoc functions to compute the IAU Series including only 
     # the non-null coefficients. 
 
-    # cpoly and ctrig must have the same number of elements
-    nblocks = length(cpoly)
+    # The elements of cpoly must always be >= ctrig
     fcn_body = Expr(:block)
 
     # Maps IAUSeries coefficients to Fundamental Argument name
@@ -23,10 +27,12 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
         fad[fm] = Vector{Int}()
 
         # Finds all the multiplicative factors of argument `fm`
-        for i = 1:nblocks 
-            for s in ctrig[i]
-                if !(s.N[m] in fad[fm]) && s.N[m] != 0 
-                    push!(fad[fm], s.N[m])
+        for i in eachindex(ctrig)
+            for j in eachindex(ctrig[i])
+                for s in ctrig[i][j]
+                    if !(s.N[m] in fad[fm]) && s.N[m] != 0 
+                        push!(fad[fm], s.N[m])
+                    end
                 end
             end
         end
@@ -39,82 +45,108 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
     end
 
     # Final @evalpoly call expression (depends on nblocks)
-    poly_call = Expr(:macrocall, Symbol("@evalpoly"), :, :t)
+    pcall = Vector{Expr}(undef, nseries)
+    for j = 1:nseries 
+        var = Symbol("x$(j)x")
 
-    # Stores the indexes of all the contributions that have already been computed 
-    dct = Dict{Int, Vector{Int}}()
+        # Automatically includes transformation to radians
+        pcall[j] = Expr(:(=), var, Expr(:call, :(/), Expr(:call, :(*), 
+                        Expr(:macrocall, Symbol("@evalpoly"), :, :t), π*1e-6), 648000))
 
-    # Assings all the polynomial contributions
-    for i = 1:nblocks 
-        dct[i] = Vector{Int}() # initialises dictionary keys 
-        push!(fcn_body.args, Expr(:(=), Symbol("w$i"), cpoly[i]))
-        push!(poly_call.args, Symbol("w$i"))
     end
 
-    for i = 1:nblocks 
-        # Parses the trigonometric series
-        for s in ctrig[i]
+    # Stores the indexes of all the contributions that have already been computed 
+    dct = Dict{Tuple{Int, Int}, Vector{Int}}()
 
-            # Computes the ARGUMENT expression
-            argv = Vector{Symbol}()
-            for (j, n) in enumerate(s.N) 
-                if n != 0 
-                    push!(argv, Symbol("$(MAPPING[j])$(argmin(abs.(fad[MAPPING[j]] .- n)))"))
-                end
-            end
+    for j = 1:nseries 
+        # Assings all the polynomial contributions
+        for i in eachindex(cpoly[j])
+            dct[(j, i)] = Vector{Int}() # initialises dictionary keys 
+            push!(fcn_body.args, Expr(:(=), Symbol("x$(j)x$i"), cpoly[j][i]))
+            push!(pcall[j].args[2].args[2].args[2].args, Symbol("x$(j)x$i"))
+        end
+    end
 
-            arge = length(argv) > 0 ? Expr(:call, :(+), argv...) : 0.
+    for jj = 1:nseries 
+        for i in eachindex(ctrig[jj]) 
+            # Parses the trigonometric series
+            for s in ctrig[jj][i]
 
-            # Stores current block expression
-            blkₑ = Vector{Expr}()
-
-            # Re-parses the entire trigonometric coefficients vector to check 
-            # for elements with same arg coeffs 
-            cn, sn = false, false 
-
-            for ii = 1:nblocks 
-                sc, cc = 0., 0. 
-
-                for (k, sk) in enumerate(ctrig[ii])
-                    if sk.N == s.N && !(k in dct[ii])
-                        # Stores the current index
-                        push!(dct[ii], k)
-                        
-                        # Groups together all the sin\cos terms
-                        sc += sk.sc
-                        cc += sk.cc 
-
-                        # Stores whether sin\cos are actually computed
-                        sn = sn ? sn : sk.sc != 0.
-                        cn = cn ? cn : sk.cc != 0.
+                # Computes the ARGUMENT expression
+                argv = Vector{Symbol}()
+                for (j, n) in enumerate(s.N) 
+                    if n != 0 
+                        push!(argv, Symbol("$(MAPPING[j])$(argmin(abs.(fad[MAPPING[j]] .- n)))"))
                     end
                 end
 
-                sumₑ = Expr(:call, :(+))
-                sc != 0. && push!(sumₑ.args, Expr(:call, :(*), sc, :sarg))
-                cc != 0. && push!(sumₑ.args, Expr(:call, :(*), cc, :carg))
+                arge = length(argv) > 0 ? Expr(:call, :(+), argv...) : 0.
 
-                if sc != 0. || cc != 0. 
-                    push!(blkₑ, Expr(:(+=), Symbol("w$ii"), sumₑ))    
-                end      
-            end
+                # Stores current block expression
+                blkₑ = Vector{Expr}()
 
-            # Adds all the expressions 
-            if cn || sn 
+                # Re-parses the entire trigonometric coefficients vector to check 
+                # for elements with same arg coeffs 
+                cn, sn = false, false 
 
-                # Reassigns the arg variable
-                push!(fcn_body.args, Expr(:(=), :arg, arge))
+                for jjj = 1:nseries 
+                    for ii in eachindex(ctrig[jjj]) 
+                        sc, cc = 0., 0. 
 
-                # Computes and stores sin(ARG) and cos(ARG)
-                cn && push!(fcn_body.args, Expr(:(=), :carg, Expr(:call, :cos, :arg)))
-                sn && push!(fcn_body.args, Expr(:(=), :sarg, Expr(:call, :sin, :arg)))
-                    
-                push!(fcn_body.args, blkₑ...)
+                        for (k, sk) in enumerate(ctrig[jjj][ii])
+                            if sk.N == s.N && !(k in dct[(jjj, ii)])
+                                # Stores the current index
+                                push!(dct[(jjj, ii)], k)
+                                
+                                # Groups together all the sin\cos terms
+                                sc += sk.sc
+                                cc += sk.cc 
+
+                                # Stores whether sin\cos are actually computed
+                                sn = sn ? sn : sk.sc != 0.
+                                cn = cn ? cn : sk.cc != 0.
+                            end
+                        end
+
+                        sumₑ = Expr(:call, :(+))
+                        sc != 0. && push!(sumₑ.args, Expr(:call, :(*), sc, :sarg))
+                        cc != 0. && push!(sumₑ.args, Expr(:call, :(*), cc, :carg))
+
+                        if sc != 0. || cc != 0. 
+                            push!(blkₑ, Expr(:(+=), Symbol("x$(jjj)x$ii"), sumₑ))    
+                        end      
+                    end
+                end
+
+                # Adds all the expressions 
+                if cn || sn 
+
+                    # Reassigns the arg variable
+                    push!(fcn_body.args, Expr(:(=), :arg, arge))
+
+                    # Computes and stores sin(ARG) and cos(ARG)
+                    cn && push!(fcn_body.args, Expr(:(=), :carg, Expr(:call, :cos, :arg)))
+                    sn && push!(fcn_body.args, Expr(:(=), :sarg, Expr(:call, :sin, :arg)))
+                        
+                    push!(fcn_body.args, blkₑ...)
+                end
             end
         end
     end
 
-    push!(fcn_body.args, poly_call)
+    for j = 1:nseries 
+        push!(fcn_body.args, pcall[j])
+    end
+
+    # Adds return types
+    if nseries > 1 
+        rtupl= Expr(:tuple)
+        for j = 1:nseries 
+            push!(rtupl.args, Symbol("x$(j)x"))
+        end
+
+        push!(fcn_body.args, Expr(:return, rtupl))
+    end
 
     # Creates function call Expression
     fcall = Expr(:call, fname)
@@ -127,9 +159,8 @@ function build_cio_series(fname::Symbol, iau_model::Symbol,
     return eval(fcn)
 end
 
-function build_nutation_series(fname::Symbol, iau_model::Symbol, 
-                               ψseries::AbstractVector{N}, 
-                               ϵseries::AbstractVector{N}) where {N <: AbstractVector{<:IAUSeries} }
+function build_nutation_series(fname::Symbol, iau_model::Symbol, ψseries::AbstractVector{N}, 
+            ϵseries::AbstractVector{N}) where {N <: AbstractVector{<:IAUSeries} }
 
     # Generates ad-hoc functions to compute the IAU Series including only 
     # the non-null coefficients. 

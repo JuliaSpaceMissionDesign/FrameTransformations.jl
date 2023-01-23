@@ -86,16 +86,16 @@ function get_iers_eop_IAU2000A(
         _create_iers_eop_interpolation(j2000_utc, eop[:, 6]),
         _create_iers_eop_interpolation(j2000_utc, eop[:, 8]),
         _create_iers_eop_interpolation(j2000_utc, eop[:, 11]),
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 13]),
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 20]),
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 22]),
+        _create_iers_eop_interpolation(j2000_utc, eop[:, 13]), # This value is in ms 
+        _create_iers_eop_interpolation(j2000_utc, eop[:, 20]), # This value is in mas 
+        _create_iers_eop_interpolation(j2000_utc, eop[:, 22]), # This value is in mas
 
         _create_iers_eop_interpolation(j2000_tt, eop[:, 6]),
         _create_iers_eop_interpolation(j2000_tt, eop[:, 8]),
         _create_iers_eop_interpolation(j2000_tt, ut1_tt),
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 13]),
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 20]),
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 22]),
+        _create_iers_eop_interpolation(j2000_tt, eop[:, 13]), # This value is in ms 
+        _create_iers_eop_interpolation(j2000_tt, eop[:, 20]), # This value is in mas
+        _create_iers_eop_interpolation(j2000_tt, eop[:, 22]), # This value is in mas
     )
 
 end
@@ -152,3 +152,21 @@ Here the files are downloaded using the `RemoteFile` package with weekly updates
 See also: [`get_iers_eop`](@ref)
 """
 const IERS_EOP = get_iers_eop()
+
+
+
+# Adds UT1 Timescale to Tempo!
+# It is defined here because referring the variable IERS_EOP inside Tempo would lead to 
+# allocations! 
+
+"""
+    offset_utc2ut1(seconds)
+
+Return the offset between [`UTC`](@ref) and [`UT1`](@ref) in seconds.
+"""
+@inline function offset_utc2ut1(seconds)
+    utc = seconds/86400.0
+    return interpolate(IERS_EOP.UT1_UTC, utc)
+end
+
+Tempo.add_timescale(Tempo.TIMESCALES, Tempo.UT1, offset_utc2ut1, parent=Tempo.UTC)

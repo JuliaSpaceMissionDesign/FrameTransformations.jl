@@ -48,7 +48,7 @@ dynamical equator and equinox at J2000. 0 to the ICRS. -- Astronomy & Astrophysi
 413.2 (2004): 765-770. DOI: [10.1051/0004-6361:20031552](https://www.aanda.org/articles/aa/pdf/2004/02/aa3851.pdf)
 - [SOFA docs](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
 """
-const DCM_ICRF_TO_J2000_BIAS = orient_precession_bias(iau2006a, 0.0)
+const DCM_ICRF_TO_J2000_BIAS = orient_bias_precession(iau2006a, 0.0)
 
 
 """
@@ -76,12 +76,12 @@ const DCM_ICRF_TO_ECLIPJ2000 = DCM_ICRF_TO_J2000_BIAS * DCM_J2000_TO_ECLIPJ2000
 
 
 """
-    orient_icrf_to_mememod(t::Number)
+    orient_rot3_icrf_to_mememod(t::Number)
 
 Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
 the Mean Equinox Mean Equator of Date at time `t`, expressed in TT seconds since [`J2000`](@ref).
 """
-function orient_icrf_to_mememod(t::Number)
+function orient_rot3_icrf_to_mememod(t::Number)
     # convert TT seconds since J2000 to TT centuries since J2000
     T = t/Tempo.CENTURY2SEC
 

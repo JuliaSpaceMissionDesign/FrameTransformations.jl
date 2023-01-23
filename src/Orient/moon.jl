@@ -2,8 +2,8 @@ export DCM_MOONPA440_TO_MER421,
        DCM_MOONPA430_TO_MER430, 
        DCM_MOONPA430_TO_MER421,
        DCM_MOONPA421_TO_MER421,
-       orient_icrf_to_pa440, 
-       orient_icrf_to_pa421
+       orient_rot3_icrf_to_pa440, 
+       orient_rot3_icrf_to_pa421
 
 """ 
     AXESID_MOONPA_DE440 
@@ -85,7 +85,7 @@ DCM_MOONPA421_TO_MER421 = angle_to_dcm(arcsec2rad(-67.92), arcsec2rad(-78.56),
 
                                        
 """ 
-    orient_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
+    orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
 
 Compute the rotation matrix from the ICRF to the DE440 Moon's Principal Axes at the given 
 input time `t`, expressed in seconds since [`J2000`](@ref). 
@@ -95,7 +95,7 @@ input time `t`, expressed in seconds since [`J2000`](@ref).
     to retrieve the Principal axes orientation using the dedicated Frame System functions.
 
 """
-function orient_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
+function orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
 
     if !(AXESID_MOONPA_DE440 in ephem_available_axes(eph))
         throw(ErrorException(
@@ -110,18 +110,18 @@ function orient_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
 end
 
 """
-    orient_icrf_to_pa440(eph::AbstractEphemerisProvider, ep::Epoch)
+    orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, ep::Epoch)
 
 Compute the rotation matrix from the ICRF to the DE440 Moon's Principal Axes at the input 
 epoch `ep`.
 """
-function orient_icrf_to_pa440(eph::AbstractEphemerisProvider, ep::Epoch)
+function orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, ep::Epoch)
     orient_icrf_to_pa440(eph, j2000s(convert(TDB, ep)))
 end
 
 
 """ 
-    orient_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
+    orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
 
 Compute the rotation matrix from the ICRF to the DE421 Moon's Principal Axes at the given 
 input time `t`, expressed in seconds since [`J2000`](@ref). 
@@ -131,7 +131,7 @@ input time `t`, expressed in seconds since [`J2000`](@ref).
     to retrieve the Principal axes orientation using the dedicated Frame System functions.
 
 """
-function orient_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
+function orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
     if !(AXESID_MOONPA_DE421 in ephem_available_axes(eph))
         throw(ErrorException(
             "Orientation data for the DE421 Moon Principal Axes is not available "*
@@ -146,11 +146,11 @@ end
 
 
 """
-    orient_icrf_to_pa421(eph::AbstractEphemerisProvider, ep::Epoch)
+    orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, ep::Epoch)
 
 Compute the rotation matrix from the ICRF to the DE421 Moon's Principal Axes at the input 
 epoch `ep`.
 """
-function orient_icrf_to_pa421(eph::AbstractEphemerisProvider, ep::Epoch)
+function orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, ep::Epoch)
     orient_icrf_to_pa421(eph, j2000s(convert(TDB, ep)))
 end
