@@ -405,7 +405,7 @@ TT seconds since [`J2000`](@ref), according to the IAU Model `m`, as follows:
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
 - Wallace P. T. and Capitaine N. (2006), Precession-nutation procedures consistent with 
   IAU 2006 resolutions, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
-  - Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
+- Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
 """
 function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A, <:IAU2006A}, t::Number)
 
