@@ -23,6 +23,7 @@ makedocs(;
             "Timescales" => "Tutorials/t_02_extending_scales.md",
             "Ephemeris" => "Tutorials/t_03_ephem.md",
             "Points Graphs" => "Tutorials/t_04_points.md",
+            "Axes Graphs" => "Tutorials/t_05_axes.md",
               ],
         # "Manual" => [
         #     "Overview" => "manual.md"

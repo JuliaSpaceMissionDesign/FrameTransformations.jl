@@ -488,7 +488,7 @@ function add_axes_computable!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes
     end
 
     funs = FrameAxesFunctions{T, O}(
-        (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)...), 
+        (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)), 
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)...), 
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot9(x, y, seq)...),
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot12(x, y, seq)...),
@@ -597,16 +597,16 @@ function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
 
         funs = FrameAxesFunctions{T, O}(
             (t, x, y) -> Rotation{O}(_3angles_to_rot3(x, rot_seq)),
-            (t, x, y) -> Rotation{O}(_3angles_to_rot6(x, rot_seq)),
-            (t, x, y) -> Rotation{O}(_3angles_to_rot9(x, rot_seq)), 
-            (t, x, y) -> Rotation{O}(_3angles_to_rot12(x, rot_seq))
+            (t, x, y) -> Rotation{O}(_3angles_to_rot6(x, rot_seq)...),
+            (t, x, y) -> Rotation{O}(_3angles_to_rot9(x, rot_seq)...), 
+            (t, x, y) -> Rotation{O}(_3angles_to_rot12(x, rot_seq)...)
         )
     
     else 
         throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
     end
     
-    build_axes(frame, axes_name(axes), axesid, :EphemerisAxes, 
+    build_axes(frames, axes_name(axes), axesid, :EphemerisAxes, 
         funs, parentid=parentid)
 
 end
@@ -618,17 +618,17 @@ end
 end
 
 @inline function _3angles_to_rot6(θ, seq::Symbol)
-    return _3angles_to_dcm(θ, seq), _3angles_to_δdcm(θ, seq)
+    return _3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq)
 end 
 
 @inline function _3angles_to_rot9(θ, seq::Symbol)
-    return (_3angles_to_dcm(θ, seq), 
+    return (_3angles_to_rot3(θ, seq), 
             _3angles_to_δdcm(θ, seq), 
             _3angles_to_δ²dcm(θ, seq))
 end 
 
 @inline function _3angles_to_rot12(θ, seq::Symbol)
-    return (_3angles_to_dcm(θ, seq), 
+    return (_3angles_to_rot3(θ, seq), 
             _3angles_to_δdcm(θ, seq), 
             _3angles_to_δ²dcm(θ, seq), 
             _3angles_to_δ³dcm(θ, seq)) 

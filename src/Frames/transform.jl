@@ -14,11 +14,11 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         (:_get_comp_axes_vector3, :_get_comp_axes_vector6, 
          :_get_comp_axes_vector9, :_get_comp_axes_vector12),
 
-        (:_get_vector3_forward, :_get_vector6_forward, 
-         :_get_vector9_forward, :_get_vector12_forward),
+        (:_vector3_forward, :_vector6_forward, 
+         :_vector9_forward, :_vector12_forward),
 
-        (:_get_vector3_backwards, :_get_vector6_backwards, 
-         :_get_vector9_backwards, :_get_vector12_backwards)
+        (:_vector3_backwards, :_vector6_backwards, 
+         :_vector9_backwards, :_vector12_backwards)
     )
 
     @eval begin 
@@ -389,13 +389,13 @@ The returned vector depends on the order in `v` as follows:
     return quote 
         @inbounds begin 
             if v.order == 1 
-                stv = get_vector3(frame, v.from, v.to, axesid, t)        
+                stv = vector3(frame, v.from, v.to, axesid, t)        
                 return SA[stv..., $(expr)...]
             elseif v.order == 2 
-                stv = get_vector6(frame, v.from, v.to, axesid, t)
+                stv = vector6(frame, v.from, v.to, axesid, t)
                 return SA[stv[4], stv[5], stv[6], $(expr)...]
             else 
-                stv = get_vector9(frame, v.from, v.to, axesid, t)
+                stv = vector9(frame, v.from, v.to, axesid, t)
                 return SA[stv[7], stv[8], stv[9], $(expr)...]
             end
         end
@@ -411,13 +411,13 @@ end
     return quote 
         @inbounds begin 
             if v.order == 1 
-                stv = get_vector6(frame, v.from, v.to, axesid, t)        
+                stv = vector6(frame, v.from, v.to, axesid, t)        
                 return SA[stv..., $(expr)...]
             elseif v.order == 2 
-                stv = get_vector9(frame, v.from, v.to, axesid, t)
+                stv = vector9(frame, v.from, v.to, axesid, t)
                 return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9], $(expr)...]
             else 
-                stv = get_vector12(frame, v.from, v.to, axesid, t)
+                stv = vector12(frame, v.from, v.to, axesid, t)
                 return SA[stv[7], stv[8], stv[9], stv[10], stv[11], stv[12], $(expr)...]
             end
         end
@@ -433,11 +433,11 @@ end
     return quote 
         @inbounds begin 
             if v.order == 1 
-                stv = get_vector9(frame, v.from, v.to, axesid, t)        
+                stv = vector9(frame, v.from, v.to, axesid, t)        
                 return SA[stv..., $(expr)...]
 
             elseif v.order == 2 # v.order = 2
-                stv = get_vector12(frame, v.from, v.to, axesid, t)
+                stv = vector12(frame, v.from, v.to, axesid, t)
                 return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9], 
                          stv[10], stv[11], stv[12], $(expr)...]
             else 
@@ -454,7 +454,7 @@ end
     return quote 
         @inbounds begin 
             if v.order == 1 
-                return get_vector12(frame, v.from, v.to, axesid, t)        
+                return vector12(frame, v.from, v.to, axesid, t)        
             elseif v.order == 2 # v.order = 2
                 throw(ErrorException("unable to compute a vector of order 5 (snap)."))
 
