@@ -293,7 +293,7 @@ end
 
 function FrameSystem{O, T}(eph::E) where {O, T, E}
 
-    points = ephem_available_bodies(eph)
+    points = ephem_available_points(eph)
     axes = ephem_available_axes(eph) 
 
     S = typeof(ephem_timescale(eph))
@@ -364,7 +364,7 @@ function Base.show(io::IO, fs::FrameSystem{O, T, S, E}) where {O, T, S, E}
     if spoints != ""
         println(io, "  points: $(join(["\t "*si for si in split(spoints, "\n")], "\n"))")
     else
-        println(io, "  points: NONE")
+        println(io, "  points: EMPTY")
     end
 
     saxes = ""
@@ -372,7 +372,7 @@ function Base.show(io::IO, fs::FrameSystem{O, T, S, E}) where {O, T, S, E}
     if saxes != ""
         println(io, "  axes: $(join(["\t"*si for si in split(saxes, "\n")], "\n"))")
     else 
-        println(io, "  axes: NONE")
+        println(io, "  axes: EMPTY")
     end
     println(io, ")")
 end

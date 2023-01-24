@@ -1,5 +1,6 @@
 export vector3, vector6, vector9, vector12,
-       rotation3, rotation6, rotation9, rotation12
+       rotation3, rotation6, rotation9, rotation12,
+       update_point!
 
 for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         (1, 2, 3, 4), 
@@ -348,7 +349,7 @@ function update_point!(frames::FrameSystem{O, T}, point, stv::AbstractVector{T},
         "point with NAIF ID $NAIFId is not contained in the frame system."))
 
     ne = length(stv) 
-    ne > O && throw(ArgumentError("state vector order greater than frame system order."))
+    ne > 3*O && throw(ArgumentError("state vector order greater than frame system order."))
   
     if !(ne in (3, 6, 9, 12)) 
         throw(ArgumentError(
