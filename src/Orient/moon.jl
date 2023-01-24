@@ -116,7 +116,7 @@ Compute the rotation matrix from the ICRF to the DE440 Moon's Principal Axes at 
 epoch `ep`.
 """
 function orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, ep::Epoch)
-    orient_icrf_to_pa440(eph, j2000s(convert(TDB, ep)))
+    orient_rot3_icrf_to_pa440(eph, j2000s(convert(TDB, ep)))
 end
 
 
@@ -152,5 +152,5 @@ Compute the rotation matrix from the ICRF to the DE421 Moon's Principal Axes at 
 epoch `ep`.
 """
 function orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, ep::Epoch)
-    orient_icrf_to_pa421(eph, j2000s(convert(TDB, ep)))
+    orient_rot3_icrf_to_pa421(eph, j2000s(convert(TDB, ep)))
 end

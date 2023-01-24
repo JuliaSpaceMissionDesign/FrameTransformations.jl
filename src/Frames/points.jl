@@ -487,7 +487,7 @@ ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order
 ```
 
 ### See also 
-See also [`update_point!`](@ref), [`add_point_root`](@ref), [`add_point_ephemeris!`](@ref), 
+See also [`update_point!`](@ref), [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_fixed!`](@ref)
 """
 function add_point_updatable!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
@@ -547,7 +547,7 @@ julia> vector6(FRAMES, Origin, Satellite, ICRF, π/6)
   0.0
 ```
 ### See also 
-See also [`add_point_root`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
+See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
 function add_point_dynamical!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 

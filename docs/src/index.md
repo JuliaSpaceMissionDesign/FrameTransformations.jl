@@ -24,8 +24,7 @@ Depth = 2
 ### Modules
 
 ```@contents
-Pages = ["Modules/bodies.md", 
-         "Modules/time.md", 
+Pages = ["Modules/time.md", 
          "Modules/orient.md",
          "Modules/ephem.md",
          "Modules/utils.md"]

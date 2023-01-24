@@ -107,6 +107,9 @@ function Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
     return Epoch(jd2*86400, scale)
 end
 
+# This is the default timescale used by Epochs 
+const DEFAULT_EPOCH_TIMESCALE = :TDB
+
 """
     Epoch(s::AbstractString)
 
@@ -140,7 +143,7 @@ julia> # Parse Modified Julian Dates
 julia> Epoch("MJD 51544.5")
 2000-01-01T12:00:00.0000 TDB
 
-julia> # Parse Julian Dates since J200 
+julia> # Parse Julian Dates since J2000 
 julia> Epoch("12.0")
 2000-01-13T12:00:00.0000 TDB
 
@@ -150,7 +153,7 @@ julia> Epoch("12.0 TT")
 ```
 """
 function Epoch(s::AbstractString)
-    scale = TDB # default timescale
+    scale = eval(DEFAULT_EPOCH_TIMESCALE) # default timescale
 
     # ISO 
     m = match(r"\d{4}-", s)

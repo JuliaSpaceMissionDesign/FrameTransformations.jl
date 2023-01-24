@@ -1,6 +1,6 @@
 export add_axes_pa440!, 
        add_axes_pa421!, 
-       add_axes_mer421! 
+       add_axes_me421! 
 
 
 """
@@ -18,7 +18,7 @@ Celestial Reference Frame), otherwise and error is thrown.
 	NAIF's FRAME ID for the Moon PA DE440 axes (31008).
 
 ### See also 
-See also [`Orient.AXESID_MOONPA_DE440`](@ref), [`Orient.orient_icrf_to_pa440`](@ref), 
+See also [`Orient.AXESID_MOONPA_DE440`](@ref), [`Orient.orient_rot3_icrf_to_pa440`](@ref), 
 [`add_axes_pa421!`](@ref), and [`add_axes_me421!`](@ref)
 """
 function add_axes_pa440!(frames::FrameSystem, axes::AbstractFrameAxes, 
@@ -104,7 +104,7 @@ orientation will be automatically selected by this function.
 	[`Orient.DCM_MOONPA421_TO_MER421`](@ref) and [`Orient.DCM_MOONPA421_TO_MER421`](@ref), 
 	
 """
-function add_axes_mer421!(frames::FrameSystem, axes::AbstractFrameAxes, 
+function add_axes_me421!(frames::FrameSystem, axes::AbstractFrameAxes, 
 			parent::AbstractFrameAxes)
 
 	pid = axes_id(parent) 
