@@ -230,8 +230,9 @@ end
 Base.convert(::Type{S}, e::Epoch{S}) where {S<:AbstractTimeScale} = e
 Base.convert(::S, e::Epoch{S}) where {S<:AbstractTimeScale} = e
 
-function Base.convert(to::S2, e::Epoch{S1}) where {S1<:AbstractTimeScale, S2<:AbstractTimeScale}
+function Base.convert(to::S2, e::Epoch{S1}; 
+    system::TimeSystem=TIMESCALES) where {S1<:AbstractTimeScale, S2<:AbstractTimeScale}
     return Epoch{S2}(
-        apply_offsets(TIMESCALES, e.seconds, timescale(e), to)
+        apply_offsets(system, e.seconds, timescale(e), to)
     )
 end

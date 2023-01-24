@@ -19,7 +19,9 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Tutorials" => [
-            "Epochs" => "Tutorials/t_01_epochs.md"
+            "Epochs" => "Tutorials/t_01_epochs.md",
+            "Timescales" => "Tutorials/t_02_extending_scales.md",
+            "Ephemeris" => "Tutorials/t_03_ephem.md"
               ],
         # "Manual" => [
         #     "Overview" => "manual.md"

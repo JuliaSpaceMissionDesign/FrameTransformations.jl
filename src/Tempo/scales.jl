@@ -26,6 +26,8 @@ end
 
 timescale_alias(s::AbstractTimeScale) = timescale_id(s)
 timescale_alias(s::Int) = s
+timescale_id(::AbstractTimeScale) = nothing 
+timescale_name(::AbstractTimeScale) = nothing 
 
 """
     @timescale(name, id, type)
@@ -43,8 +45,8 @@ macro timescale(name::Symbol, id::Int, type::Symbol)
     name_split = join(split(type_str, r"(?=[A-Z])"), " ")
     name_str = String(name)
 
-    scaleid_expr = :(@inline timescale_id(::$type) = $id)
-    name_expr = :(@inline timescale_name(::$type) = Symbol($name_str))
+    scaleid_expr = :(@inline Tempo.timescale_id(::$type) = $id)
+    name_expr = :(@inline Tempo.timescale_name(::$type) = Symbol($name_str))
     show_expr = :(Base.show(io::IO, ::$type) = print(io, "$($(name_str))"))
 
     return quote 
@@ -86,10 +88,10 @@ Basic.register!(s::TimeSystem{T}, ts::TimeScaleNode{T}) where T = add_vertex!(s.
 
 @inline has_timescale(s::TimeSystem, sid::Int) = has_vertex(s.scales, sid)
 
-function add_timescale(scales::TimeSystem{T}, ts::S, ffp::Function; 
+function add_timescale(scales::TimeSystem{T}, ts::S, ffp::Function=_zero_offset; 
     ftp=nothing, parent=nothing) where {T, S<:AbstractTimeScale} 
 
-    name, id = timescale_name(ts), timescale_id(ts)
+    name, id = Tempo.timescale_name(ts), Tempo.timescale_id(ts)
     pid = isnothing(parent) ? nothing : timescale_alias(parent)
 
     if has_timescale(scales, id)

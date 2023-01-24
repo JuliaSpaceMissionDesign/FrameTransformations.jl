@@ -50,12 +50,12 @@ module Tempo
     include("convert.jl")
     include("parse.jl")
 
-    include("datetime.jl")
-    include("origin.jl")
-    include("epoch.jl")
-
     include("leapseconds.jl")
     include("offset.jl")
     include("scales.jl")
+
+    include("datetime.jl")
+    include("origin.jl")
+    include("epoch.jl")
 
 end

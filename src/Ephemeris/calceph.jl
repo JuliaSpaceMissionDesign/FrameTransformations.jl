@@ -6,7 +6,8 @@ export CalcephProvider,
        ephem_available_points, 
        ephem_available_axes,
        ephem_compute_order!,
-       ephem_orient_order!
+       ephem_orient_order!,
+       ephem_load
 
 using CALCEPH: Ephem as CalcephEphemHandler, 
                prefetch, 
