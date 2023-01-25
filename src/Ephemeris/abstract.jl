@@ -20,7 +20,7 @@ function ephem_position_records(::AbstractEphemerisProvider) end
 
 function ephem_available_points(::AbstractEphemerisProvider) end 
 
-function ephem_orint_records(::AbstractEphemerisProvider) end
+function ephem_orient_records(::AbstractEphemerisProvider) end
 
 function ephem_available_axes(::AbstractEphemerisProvider) end
 
