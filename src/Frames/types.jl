@@ -267,6 +267,7 @@ FrameSystemProperties() = FrameSystemProperties(Int64[], Int64[])
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
 @inline ephemeris_axes(fsp::FrameSystemProperties) = fsp.eaid
 
+# TODO: add documentation!
 """
     FrameSystem
 """

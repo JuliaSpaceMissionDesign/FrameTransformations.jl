@@ -16,7 +16,7 @@ module Frames
                        BarycentricDynamicalTime, 
                        Epoch, J2000, DJ2000, 
                        CENTURY2DAY, CENTURY2SEC, 
-                       DAY2SEC
+                       DAY2SEC, j2000
 
     using Basic.Utils: format_camelcase
     using Basic.Utils: D¹, D², D³
