@@ -12,6 +12,9 @@ module Utils
     include("IO/file.jl")
     include("IO/load.jl")
     include("IO/write.jl")
+    
+    include("constants.jl")
+
     include("format.jl")
     include("angles.jl")
     

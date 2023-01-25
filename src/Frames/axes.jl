@@ -523,7 +523,7 @@ function add_axes_projected!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
         (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I)),
         (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I))
     )
-
+                                                        
     build_axes(frames, axes_name(axes), axes_id(axes), :ProjectedAxes, 
         funs, parentid=axes_alias(parent))
 

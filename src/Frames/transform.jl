@@ -105,7 +105,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                 tid = Threads.threadid()
                 if axes.epochs[tid] != t || axes.nzo[tid] < $order
 
-                    if axes.class == :RotatingAxes 
+                    if axes.class in (:RotatingAxes, :ProjectedAxes)
                         stv = @SVector zeros(T, 3O)
                         axes.R[tid] = axes.f[$order](t, stv, stv)
 
