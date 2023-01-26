@@ -5,9 +5,9 @@ using ERFA
 using ReferenceFrameRotations
 using RemoteFiles
 using StaticArrays
+using ForwardDiff
 
 import LinearAlgebra: cross, dot, norm
-
 
 @RemoteFileSet KERNELS "Generic Spice Kernels" begin
     IAU = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc" dir=joinpath(@__DIR__, "assets")

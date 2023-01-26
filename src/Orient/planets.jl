@@ -125,7 +125,7 @@ function _add_sine!(β, B, f, i)
 end
 
 function _iau_angles(ts::Symbol, tp::Symbol, A::NV, B::NM, Θ₁::NM, Θ₂::NM, 
-    χ::Symbol, nuts::Bool) where {NV<:AbstractVector, NM<:AbstractVector}
+    χ::Symbol, nuts::Bool, factorp=1.0, factors=1.0) where {NV<:AbstractVector, NM<:AbstractVector}
     
     # β = ∑AᵢTⁱ + ∑ Bᵢ χ(θ₀ᵢ + θ₁ᵢ t)
     δχ = χ == :cos ? :sin : :cos
@@ -138,13 +138,17 @@ function _iau_angles(ts::Symbol, tp::Symbol, A::NV, B::NM, Θ₁::NM, Θ₂::NM,
     δ²β = Expr(:call, :+, )
 
     # polynomial
+    βp = Expr(:call, :+, )
+    δβp = Expr(:call, :+, )
+    δ²βp = Expr(:call, :+, )
+
     if length(A) > 0
         for i in eachindex(A)
             Aᵢ = A[i]
             if !(Aᵢ ≈ 0.0)
                 # angle 
                 push!(
-                    β.args, 
+                    βp.args, 
                     (i-1) == 0 
                         ? Aᵢ : Expr(:call, :*, Aᵢ, Expr(:call, :^, tp, Float64(i-1)))
                 )
@@ -153,7 +157,7 @@ function _iau_angles(ts::Symbol, tp::Symbol, A::NV, B::NM, Θ₁::NM, Θ₂::NM,
                 δAᵢ = (i-1) * Aᵢ
                 if i > 1 && !(δAᵢ ≈ 0.0)
                     push!(
-                        δβ.args, 
+                        δβp.args, 
                         (i-2) == 0 
                             ? δAᵢ : Expr(:call, :*, δAᵢ, Expr(:call, :^, tp, Float64(i-2)))
                     )
@@ -162,7 +166,7 @@ function _iau_angles(ts::Symbol, tp::Symbol, A::NV, B::NM, Θ₁::NM, Θ₂::NM,
                     δ²Aᵢ = (i-1) * (i-2) * Aᵢ
                     if i > 2 && !(δ²Aᵢ ≈ 0.0)
                         push!(
-                            δ²β.args, 
+                            δ²βp.args, 
                             (i-3) == 0 
                                 ? δ²Aᵢ : Expr(:call, :*, δ²Aᵢ, Expr(:call, :^, tp, Float64(i-3)))
                         )
@@ -171,30 +175,43 @@ function _iau_angles(ts::Symbol, tp::Symbol, A::NV, B::NM, Θ₁::NM, Θ₂::NM,
             end
         end
     end
+    δβp_ = Expr(:call, :*, δβp, 1/factorp)
+    δ²βp_ = Expr(:call, :*, δ²βp, 1/factorp^2)
+    if length(βp.args) != 1 push!(β.args, βp) end 
+    if length(δβp.args) != 1 push!(δβ.args, δβp_) end 
+    if length(δ²βp.args) != 1 push!(δ²β.args, δ²βp_) end 
 
     # sinusoidal 
     if nuts
+        βs = Expr(:call, :+, )
+        δβs = Expr(:call, :+, )
+        δ²βs = Expr(:call, :+, )
         for i in eachindex(B)
             Bᵢ = B[i]
             if !(Bᵢ ≈ 0.0)
                 Θᵢ = Expr(:call, :+, Θ₁[i], Expr(:call, :*, Θ₂[i], ts))
                 # angle
-                _add_sine!(β, Bᵢ, χ, i)
+                _add_sine!(βs, Bᵢ, χ, i)
 
                 # first derivative
                 δBᵢ = sχ * Bᵢ * Θ₂[i] 
                 if !(δBᵢ ≈ 0)
-                    _add_sine!(δβ, δBᵢ, δχ, i)
+                    _add_sine!(δβs, δBᵢ, δχ, i)
 
                     # second derivative
                     δ²Bᵢ = s²χ * Bᵢ * Θ₂[i]^2 
                     if !(δ²Bᵢ ≈ 0)
-                        _add_sine!(δ²β, δ²Bᵢ, δ²χ, i)
+                        _add_sine!(δ²βs, δ²Bᵢ, δ²χ, i)
 
                     end
                 end
             end
         end
+        δβs_ = Expr(:call, :*, δβs, 1/factors)
+        δ²βs_ = Expr(:call, :*, δ²βs, 1/factors^2)
+        if length(βs.args) != 1 push!(β.args, βs) end 
+        if length(δβs.args) != 1 push!(δβ.args, δβs_) end 
+        if length(δ²βs.args) != 1 push!(δ²β.args, δ²βs_) end 
     end
     
     β = length(β.args) == 1 ? :(0.0) : β
@@ -204,15 +221,15 @@ function _iau_angles(ts::Symbol, tp::Symbol, A::NV, B::NM, Θ₁::NM, Θ₂::NM,
     return β, δβ, δ²β
 end
 
-function _iau_angles(ts::Symbol, tp::Symbol,  p::PrecessionNutationComponent)
-    return _iau_angles(ts, tp, p.A, p.B, p.Θ₁, p.Θ₂, p.fun, p.nuts)
+function _iau_angles(ts::Symbol, tp::Symbol,  p::PrecessionNutationComponent, fp, fs)
+    return _iau_angles(ts, tp, p.A, p.B, p.Θ₁, p.Θ₂, p.fun, p.nuts, fp, fs)
 end
 
 function _iau_angles(p)
     return (
-        _iau_angles(:T, :T, getproperty(p, :ra)), 
-        _iau_angles(:T, :T, getproperty(p, :dec)),
-        _iau_angles(:T, :d, getproperty(p, :pm))
+        _iau_angles(:T, :T, getproperty(p, :ra), Tempo.CENTURY2SEC, Tempo.CENTURY2SEC), 
+        _iau_angles(:T, :T, getproperty(p, :dec), Tempo.CENTURY2SEC, Tempo.CENTURY2SEC),
+        _iau_angles(:T, :d, getproperty(p, :pm), Tempo.DAY2SEC, Tempo.CENTURY2SEC)
     )
 end
 
