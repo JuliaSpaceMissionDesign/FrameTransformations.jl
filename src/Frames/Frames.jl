@@ -39,10 +39,11 @@ module Frames
     include("transform.jl")
 
     # Rotations definitions 
+    include("Definitions/topocentric.jl")
+    include("Definitions/twovectors.jl")
     include("Definitions/ecliptic.jl")
     include("Definitions/planets.jl")
     include("Definitions/earth.jl")
     include("Definitions/moon.jl")
-    include("Definitions/twovectors.jl")
     
 end
