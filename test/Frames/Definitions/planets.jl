@@ -10,7 +10,7 @@ FRAMES = FrameSystem{3, Float64}()
 @axes ICRF 1 InternationalCelestialReferenceFrame
 @axes IAU_TEST 2
 
-@testset "Body-Centered Rotating (TOD)" verbose=true begin
+@testset "Body-Centered Rotating (TOD)" verbose=false begin
 
     NAIFIds = []
     for k in keys(constants)
