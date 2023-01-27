@@ -17,7 +17,7 @@ function add_axes_itrf!(frames::FrameSystem{O, T},
 
     pname = axes_name(parent)
 
-    if !(pname in :ICRF, :GCRF) && axes_id(parent) != Orient.AXESID_ICRF
+    if !(pname in (:ICRF, :GCRF)) && axes_id(parent) != Orient.AXESID_ICRF
         throw(
             ErrorException("International Terrestrial Reference Frame (ITRF) axes could "*
             " not be defined w.r.t $pname axes. Only the `ICRF` or `GCRF` are accepted as"*
