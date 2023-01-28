@@ -315,7 +315,7 @@ for (order, pfun, ltcorr, sacorr) in zip(
         end
 
         @inline function ($pfun)(frames::FrameSystem{<:Any, <:Any, S}, from, to, axes, 
-            ::Epoch{S}, ltcorr::AbstractLightTimeCorrection, dir::Int; kwargs...) where {S}
+            ep::Epoch{S}, ltcorr::AbstractLightTimeCorrection, dir::Int; kwargs...) where {S}
 
             $(pfun)(frames, from, to, axes, Tempo.j2000s(ep), ltcorr, dir; kwargs...)
         end
