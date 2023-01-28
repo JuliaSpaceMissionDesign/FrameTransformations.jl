@@ -43,7 +43,7 @@ G = FrameSystem{3, Float64}(eph)
 
 
     FrameSystem{3, Float64, BarycentricDynamicalTime, CalcephProvider}(
-      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000005d79080)),
+      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000003ee44c0)),
       points: EMPTY
       axes: EMPTY
     )
@@ -146,10 +146,15 @@ rotation6(G, ICRF, RotAx, π/4)
 ```
 
 
-    Rotation{2, Float64}(([1.0 0.0 0.0; 1.0146536357569526e-17 1.0 0.0; 0.0 0.0 1.0], [-1.0146536357569526e-17 -1.0 0.0; 1.0 0.0 0.0; 0.0 0.0 0.0]))
+    Rotation{2, Float64}(([1.0 1.0146536357569526e-17 0.0; 1.0146536357569526e-17 1.0 0.0; 0.0 0.0 1.0], [-1.0146536357569526e-17 -1.0 0.0; 1.0 1.0146536357569526e-17 0.0; 0.0 0.0 0.0]))
 
 
 ## Register computable axes
+
+Computable axes are a kind of _time dependant axes_. In this case, differently from the 
+rotating axes, the axes and their derivatives are computed through two time-dependant vectors
+that are extracted from the registered ephemeris. These axes are the equivalent of SPICE's
+two-vector frames.
 
 
 ```julia
@@ -187,6 +192,10 @@ rotation6(G, ICRF, SunFrame, 0.0)
 
 ## Register projected axes
 
+Projected axes are a particular type of inertial axes. In this case the rotation is built by
+means of a time dependant function `f(t)`. However, all the derivatives of `f(t)` are assumed
+to be zero. This axes type is usually used to build True-of-Date (TOD) axes sets.
+
 
 ```julia
 # Define new axes
@@ -199,7 +208,20 @@ fun(t) = angle_to_dcm(t, :Z)'
 add_axes_projected!(G, ProjAx, ICRF, fun)
 ```
 
+
+```julia
+rotation6(G, ICRF, ProjAx, 1.0)
+```
+
+
+    Rotation{2, Float64}(([0.5403023058681398 -0.8414709848078965 0.0; 0.8414709848078965 0.5403023058681398 0.0; 0.0 0.0 1.0], [0.0 0.0 0.0; 0.0 0.0 0.0; 0.0 0.0 0.0]))
+
+
 ## Register ephemeris axes
+
+Ephemeris axes a are a type of time-dependent axes which are build by means of Euler angles
+contained within an ephemeris file (`.bpc`). These are used to build Lunar frames or other
+high-precision axes.
 
 
 ```julia
