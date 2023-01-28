@@ -26,10 +26,10 @@ function add_axes_itrf!(frames::FrameSystem{O, T},
     end 
 
     add_axes_rotating!(frames, axes, parent, 
-                        t->Orient.orient_rot3_itrf_to_gcrf(model, t)',
-                        t->Orient.orient_rot6_itrf_to_gcrf(model, t)',
-                        t->Orient.orient_rot9_itrf_to_gcrf(model, t)',
-                        t->Orient.orient_rot12_itrf_to_gcrf(model, t)'
+                        t->adjoint(Orient.orient_rot3_itrf_to_gcrf(model, t)),
+                        t->adjoint.(Orient.orient_rot6_itrf_to_gcrf(model, t)),
+                        t->adjoint.(Orient.orient_rot9_itrf_to_gcrf(model, t)),
+                        t->adjoint.(Orient.orient_rot12_itrf_to_gcrf(model, t))
     )
 
 end

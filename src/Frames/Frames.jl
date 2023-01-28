@@ -9,6 +9,7 @@ module Frames
 
     using Basic.Ephemeris 
     using Basic.Orient
+    using Basic.Tempo
     using Basic.Orient: AXESID_ICRF
 
     using Basic.Ephemeris: AbstractEphemerisProvider, 
