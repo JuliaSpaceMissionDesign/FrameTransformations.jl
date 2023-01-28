@@ -50,7 +50,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         """
         @inline function ($axfun1)(frame::FrameSystem{<:Any, <:Any, S}, from, to, 
                             ep::Epoch{S}) where S
-            $(axfun1)(frame, from, to, j2000(ep))
+            $(axfun1)(frame, from, to, Tempo.j2000s(ep))
         end
 
         """
@@ -67,9 +67,12 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     "transformation requires at least order $($order)."))
             end
 
-            from == to && return Rotation{$order}(T(1)I)
-            $(axfun2)(frame, t, get_path(frames_axes(frame), 
-                                          axes_alias(from), axes_alias(to)))
+            # Retrieve aliased axes ids
+            idfrom = axes_alias(from)
+            idto = axes_alias(to) 
+
+            idfrom == idto && return Rotation{$order}(T(1)I)
+            $(axfun2)(frame, t, get_path(frames_axes(frame), idfrom, idto))
         end
 
         # Low-level function to parse a path of axes and chain their rotations 
@@ -160,7 +163,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
         @inline function ($pfun1)(frame::FrameSystem{<:Any, <:Any, S}, from, 
                     to, axes, ep::Epoch{S}) where S
-            $(pfun1)(frame, from, to, axes, j2000(ep))
+            $(pfun1)(frame, from, to, axes, Tempo.j2000s(ep))
         end
 
         """
@@ -178,9 +181,13 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     "transformation requires at least order $($order)."))
             end
 
+            # Retrieve aliased point ids
+            idfrom = point_alias(from)
+            idto = point_alias(to) 
+
             from == to && return @SVector zeros(T, 3*$order)
             $(pfun2)(frame, t, axes_alias(axes), get_path(frames_points(frame), 
-                     point_alias(from), point_alias(to)))
+                        idfrom, idto))
 
         end
 
@@ -289,12 +296,106 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 end
 
 
+# ---------------------------------------------
+# LIGHT TIME and STELLAR ABERRATION CORRECTIONS 
+# ---------------------------------------------
+
+for (order, pfun, ltcorr, sacorr) in zip(
+        (1, 2), (:vector3, :vector6), 
+        (:light_time3, :light_time6),
+        (:stellar_aberration3, :stellar_aberration6)
+    )
+
+    @eval begin 
+
+
+        @inline function ($pfun)(::FrameSystem{<:Any, <:Any, S1}, from, to, axes, 
+            ::Epoch{S2}, ::AbstractLightTimeCorrection, dir::Int; kwargs...) where {S1, S2}
+            throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
+        end
+
+        @inline function ($pfun)(frames::FrameSystem{<:Any, <:Any, S}, from, to, axes, 
+            ::Epoch{S}, ltcorr::AbstractLightTimeCorrection, dir::Int; kwargs...) where {S}
+
+            $(pfun)(frames, from, to, axes, Tempo.j2000s(ep), ltcorr, dir; kwargs...)
+        end
+
+
+        function ($pfun)(frames::FrameSystem{O, T}, from, to, axes, t::Number, 
+            ::LightTimeCorrection, dir::Int; maxiters=1, axescenter=nothing) where {O, T}
+
+            if O < $order
+                throw(ErrorException("Insufficient frame system order: "*
+                    "transformation requires at least order $($order)."))
+            end
+
+            if !(dir in (-1, 1))
+                throw(
+                    ArgumentError(
+                        "$dir is an invalid direction. Only -1 (Reception) and 1 "*
+                        "(Transmission) are accepted.")
+                )
+            end
+        
+            # Retrieve aliased point ids
+            idfrom = point_alias(from)
+            idto = point_alias(to) 
+
+            idfrom == idto && return @SVector zeros(T, 3*$order)
+            
+            # in absence of a specified axes center, the observer location is used. 
+            axc = isnothing(axescenter) ? idfrom : point_alias(axescenter)
+
+            ltp = LTProperties(axes_alias(axes), axc, dir, maxiters)
+            $(ltcorr)(frames, ltp, idfrom, idto, t)
+            
+        end
+
+        function ($pfun)(frames::FrameSystem{O, T}, from, to, axes, t::Number, 
+            ::StellarAberrationCorrection, dir::Int; maxiters=1, 
+            axescenter=nothing) where {O, T}
+
+            if O < (1+$order)
+                throw(ErrorException("Insufficient frame system order: "*
+                    "transformation requires at least order $(1+ $order)."))
+            end
+
+            if !(dir in (-1, 1))
+                throw(
+                    ArgumentError(
+                        "$dir is an invalid direction. Only -1 (Reception) and 1 "*
+                        "(Transmission) are accepted.")
+                )
+            end
+
+            # Retrieve aliased point ids
+            idfrom = point_alias(from)
+            idto = point_alias(to) 
+
+            idfrom == idto && return @SVector zeros(T, 3*$order)
+
+            # in absence of a specified axes center, the observer location is used. 
+            axc = isnothing(axescenter) ? idfrom : point_alias(axescenter)
+
+            ltp = LTProperties(axes_alias(axes), axc, dir, maxiters)
+            $(sacorr)(frames, ltp, idfrom, idto, t)
+
+        end
+
+    end
+
+end
+
+
+# ---------------------------------------------
+# UTILITIES
+# ---------------------------------------------
 """ 
     update_point!(frames, point, stv::AbstractVector, epoch::Epoch)
 """
 function update_point!(frames::FrameSystem{O, T, S}, point, stv::AbstractVector{T}, 
             epoch::Epoch{S}) where {O, T, S}
-    update_point!(frames, point, stv, j2000(epoch))
+    update_point!(frames, point, stv, Tempo.j2000s(epoch))
 end
 
 

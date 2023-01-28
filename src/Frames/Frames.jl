@@ -4,6 +4,7 @@ module Frames
     using ReferenceFrameRotations
     using StaticArrays
 
+    import LinearAlgebra: dot, norm
     import FunctionWrappers: FunctionWrapper
 
     using Basic.Ephemeris 
@@ -19,6 +20,7 @@ module Frames
                        CENTURY2DAY, CENTURY2SEC, 
                        DAY2SEC, j2000
 
+    using Basic.Utils: light_speed
     using Basic.Utils: format_camelcase
     using Basic.Utils: D¹, D², D³
     
@@ -36,6 +38,7 @@ module Frames
     include("types.jl")
     include("axes.jl")
     include("points.jl")
+    include("lightime.jl")
     include("transform.jl")
 
     # Rotations definitions 
