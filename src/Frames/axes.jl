@@ -5,7 +5,9 @@ export @axes,
        add_axes_computable!,
        add_axes_projected!,
        add_axes_ephemeris!,
-       is_inertial, axes_alias
+       is_inertial, 
+       is_timefixed, 
+       axes_alias
 
 
 """
@@ -44,6 +46,34 @@ function is_inertial(axframe::MappedNodeGraph, axesid::Int)
             return is_inertial(axframe, node.parentid)
         else 
             return true # Root axes are always inertial
+        end
+    else 
+        return false 
+    end
+end
+
+
+""" 
+    is_timefixed(frame::FrameSystem, axes::AbstractFrameAxes)
+    is_timefixed(frame::FrameSystem, axesid::Int)
+
+Return true if the given axes are time-fixed, i.e., their orientation does not change in 
+time with respect to the root inertial axes. 
+
+!!! note 
+    Only `:InertialAxes` and `:FixedOffsetAxes` defined with respect to other inertial axes 
+    are here considered as time fixed. 
+"""
+is_timefixed(frame::FrameSystem, axes::AbstractFrameAxes) = is_timefixed(frame, axes_alias(axes))
+is_timefixed(frame::FrameSystem, axesid::Int) = is_timefixed(frames_axes(frame), axesid)
+
+function is_timefixed(axframe::MappedNodeGraph, axesid::Int)
+    node = get_node(axframe, axesid) 
+    if node.class in (:InertialAxes, :FixedOffsetAxes)
+        if node.id != node.parentid 
+            return is_inertial(axframe, node.parentid)
+        else 
+            return true # Root axes are always time fixed
         end
     else 
         return false 

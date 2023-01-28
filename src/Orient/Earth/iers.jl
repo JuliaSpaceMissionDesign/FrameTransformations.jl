@@ -598,7 +598,7 @@ function orient_rot12_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number, xₚ::N
 
     W = polar_motion(tt_c, xₚ, yₚ)
     R = era_rotm(ut1)
-    Q = cip_motion(tt_c, m, dX, dY)
+    Q = cip_motion(m, tt_c, dX, dY)
 
     ωe = SVector(0.0, 0.0, earth_rotation_rate(LOD))
     Ω = skew(ωe)

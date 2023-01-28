@@ -5,7 +5,7 @@ module Utils
 
     using ForwardDiff: derivative
     using ReferenceFrameRotations: DCM
-    using StaticArrays: SMatrix 
+    using StaticArrays: SMatrix, SA
     
     import YAML as YAMLLib
 
@@ -21,6 +21,7 @@ module Utils
     # Interpolation 
     include("Math/derivatives.jl")
     include("Math/akima.jl")
+    include("Math/vectors.jl")
     include("Math/rotation.jl")
     
 end
