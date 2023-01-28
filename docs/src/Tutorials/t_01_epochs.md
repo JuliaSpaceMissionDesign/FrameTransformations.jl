@@ -1,4 +1,4 @@
-# Epoch handling and timescales conversions
+# [Epoch handling and timescales conversions](@id tutorial_01_epoch)
 
 `Basic` gives the capability to represent time in different manners and to convert their representation between different timescales.
 

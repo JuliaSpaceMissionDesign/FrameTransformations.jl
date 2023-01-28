@@ -1,4 +1,4 @@
-# Timescales graphs and extensions
+# [Timescales graphs and extensions](@id tutorial_02_scales)
 
 In `Basic`, timescales are connected each other via a **directed graph**. Thanks to the 
 structure of the `Tempo` module, it is possible to either extend the current graph of 

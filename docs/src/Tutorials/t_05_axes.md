@@ -1,4 +1,4 @@
-# Axes graphs creation and handling
+# [Axes graphs creation and handling](@id tutorial_05_axes)
 
 
 ```julia

@@ -24,7 +24,8 @@ makedocs(;
             "Ephemeris" => "Tutorials/t_03_ephem.md",
             "Points Graphs" => "Tutorials/t_04_points.md",
             "Axes Graphs" => "Tutorials/t_05_axes.md",
-              ],
+            "Frames" => "Tutorials/t_06_frames.md",
+            ],
         # "Manual" => [
         #     "Overview" => "manual.md"
         # ],

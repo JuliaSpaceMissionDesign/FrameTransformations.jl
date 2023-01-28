@@ -1,4 +1,4 @@
-# Points graphs creation and handling
+# [Points graphs creation and handling](@id tutorial_04_points)
 
 
 ```julia
