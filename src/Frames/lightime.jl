@@ -228,7 +228,7 @@ function stellar_aberration6(frames::FrameSystem, ltp::LTProperties, from::Int,
     pₒ, vₒ, aₒ = _posvelacc(xₒ)
 
     # Correct state for Light-time
-    xₜ, lt, dlt = light_time_correction(frames, ltp, to, pₒ, vₒ, t)
+    xₜ, lt, dlt = _light_time_correction(frames, ltp, to, pₒ, vₒ, t)
 
     # Compute stellar aberration state contribution
     δx = _stellar_aberration_correction(xₜ, -ltp.dir*vₒ, -ltp.dir*aₒ)
