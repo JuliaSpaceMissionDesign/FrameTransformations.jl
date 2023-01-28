@@ -92,22 +92,19 @@ eph = ephem_load(
 ```
 
 
-    CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000061ec350))
+    CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000003227dc0))
 
 
 At this point we are ready to create the empty instance of our `FrameSystem`:
 
 
 ```julia
-const FRAMES = FrameSystem{2, Float64}(eph)
+FRAMES = FrameSystem{2, Float64}(eph)
 ```
-
-    WARNING: redefinition of constant FRAMES. This may fail, cause incorrect answers, or produce other errors.
-
 
 
     FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000061ec350)),
+      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000003227dc0)),
       points: EMPTY
       axes: EMPTY
     )
@@ -194,9 +191,9 @@ add_axes_bcrtod!(FRAMES, iau, Moon, IAU_MOON, ICRF);
 ```
 
     ┌ Warning: ignoring orient_axes_dd_icrf_to_bcr_tod_Earth, frame system order is less than 3
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:374
+    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:404
     ┌ Warning: ignoring orient_axes_dd_icrf_to_bcr_tod_Moon, frame system order is less than 3
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:374
+    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:404
 
 
 Now let us insert also an inertial axes for the Moon, for convenience. This can be done using 
@@ -226,10 +223,10 @@ add_axes_itrf!(FRAMES, ITRF, GCRF) # default IAUModel is iau2006b
 add_axes_pa440!(FRAMES, MOONPA_DE440, ICRF)
 ```
 
-    ┌ Warning: ignoring #154, frame system order is less than 3
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:374
-    ┌ Warning: ignoring #155, frame system order is less than 4
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:374
+    ┌ Warning: ignoring #162, frame system order is less than 3
+    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:404
+    ┌ Warning: ignoring #163, frame system order is less than 4
+    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:404
 
 
 ### Using the `FrameSystem`
@@ -257,7 +254,7 @@ FRAMES
 
 
     FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000061ec350)),
+      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000003227dc0)),
       points: 	 
     	 Earth
     	  ├── Sun 
@@ -293,6 +290,22 @@ update_point!(FRAMES, SC, x, e)
 !!! note 
     The timescale used for the `Epoch` **shall** be the same used in the `FrameSystem`.
 
+
+```julia
+# This is the vector updated at epoch `e`
+vector6(FRAMES, Moon, SC, LME2000, e)
+```
+
+
+    6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
+     2274.0
+        0.0
+        0.0
+        0.0
+        1.4686507128813133
+        0.0
+
+
 At this point we are ready to get the desired (transformed) states:
 
 
@@ -303,12 +316,12 @@ vector6(FRAMES, Earth, SC, GCRF, e)
 
 
     6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
-     -284588.45268360287
-     -271663.34366381646
-      -78291.19908247433
-           0.7300629920301382
-           0.6818719329922416
-           0.3078533603313829
+     401327.31100528064
+     -36183.16492690273
+     -54688.10629132898
+          0.21054873073883976
+          2.223543751396112
+          0.9632321108748535
 
 
 
@@ -319,9 +332,9 @@ vector3(FRAMES, Moon, SC, IAU_MOON, e)
 
 
     3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
-      1681.6697518585638
-     -1530.7066491241687
-         0.003318830657668824
+     -2265.003321467859
+      -201.71716040981087
+       -12.088876530484503
 
 
 
@@ -332,9 +345,9 @@ vector3(FRAMES, Moon, SC, MOONPA_DE440, e)
 
 
     3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
-      1681.1972462850058
-     -1531.2254587454092
-         0.6430969025562603
+     -2265.0606877846335
+      -201.0246914960673
+       -12.851228015791362
 
 
 
@@ -345,9 +358,9 @@ vector3(FRAMES, Earth, SC, IAU_EARTH, e)
 
 
     3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
-       20597.321286475617
-     -392896.05374002125
-      -78291.2054867196
+     180191.31420984722
+     360539.44001832156
+     -53907.54517868193
 
 
 
@@ -358,9 +371,118 @@ vector3(FRAMES, Earth, SC, ITRF, e)
 
 
     3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
-     -391545.0010915323
-       38505.3058372699
-      -78300.22405992186
+     180632.14238010277
+     360316.9084524152
+     -53920.08508020518
 
 
 # Use Case: CR3BP
+
+The power of the `FrameSystem` is the capability to be used also for to handle axes transformations
+and point translations in simplified models. The use-case presented includes the case of the 
+Circular-Restricted Three-Body Problem (CR3BP) rotating frame transformation handling.
+
+When dealing with the [CR3BP](https://orbital-mechanics.space/the-n-body-problem/circular-restricted-three-body-problem.html), mission analysis are used to exploit non-dimensional, rotating coordinates to 
+express the equations of motion and perform the computations. 
+
+In this tutorial, we create a `FrameSystem` to handle transformations within the Earth-Moon 
+CR3BP, which is characterized by a mass ratio μ = 0.012. 
+
+First of all, let's create the `FrameSystem`. In this case no ephemeris is needed, therefore:
+
+
+```julia
+CR3BP = FrameSystem{2, Float64}()
+```
+
+
+    FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider}(
+      eph: Basic.Ephemeris.NullEphemerisProvider(),
+      points: EMPTY
+      axes: EMPTY
+    )
+
+
+
+### Inserting root point/axes
+
+The first step, as always, is to insert the root-point, which is the Earth-Moon Barycenter, and 
+the root axes, which are _generic_ inertial axes:
+
+
+```julia
+@axes InertialAx 1 InertialFrame 
+
+# Insert the new axes
+add_axes_inertial!(CR3BP, InertialAx)
+
+@point EMBc 1 EarthMoonBarycenterCr3bp
+
+# Register the root  point
+add_point_root!(CR3BP, EMBc, InertialAx)
+```
+
+### Transforming to rotating/synodic
+
+Once the root point/axes are declare, we are ready to insert our synodic axes: these are
+uniformly rotating w.r.t. the `InertialAx`, about the Z-axis. Therefore, we can use the `RotatingAxes`
+type available:
+
+
+```julia
+f(t) = angle_to_dcm(t, :Z)  # transformation rot -> inertial 
+
+@axes SynodicAx 2 SynodicFrame 
+
+# Register axes 
+add_axes_rotating!(CR3BP, SynodicAx, InertialAx, f)
+```
+
+Note that there is no need to specify the rotation derivatives, as they'll be computed by 
+automatic differentiation via `ForwardDiff` package. For performace-critical transformations,
+however, it is raccomanded to insert the derivatives manually.
+
+Now, let's assume we have our spacecraft. Most likely, its states will be expressed in the synodic frame.
+Therefore we can register it as:
+
+
+```julia
+# Create the new point
+@point Spacecraft -1_900_000
+
+# Register the new point
+add_point_updatable!(CR3BP, Spacecraft, EMBc, SynodicAx)
+```
+
+Assume our spacecraft is at L4:
+
+
+```julia
+μ = 0.012
+xL4 = [1/2-μ, sqrt(3)/2, 0.0, 0.0, 0.0, 0.0]
+t = 0.8
+
+# Update the point 
+update_point!(CR3BP, Spacecraft, xL4, t)
+```
+
+Than, we can transform to the `InertialAx` as:
+
+
+```julia
+vector6(CR3BP, EMBc, Spacecraft, InertialAx, t)
+```
+
+
+    6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
+     0.488
+     0.8660254037844386
+     0.0
+     0.0
+     0.0
+     0.0
+
+
+# Use Case: multi-thread
+
+TODO
