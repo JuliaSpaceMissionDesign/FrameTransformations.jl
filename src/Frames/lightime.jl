@@ -73,7 +73,7 @@ function _lt_rotation(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int
             ltaxes = _lt_axes(frames, ltp, from, to, pobs, t, lt)
 
             # Compute rotation matrix 
-            return rotation3(frames, AXESID_ICRF, ltp.aid, t+ltp.dir*ltaxes)
+            return rotation3(frames, AXESID_ICRF, ltp.aid, t+ltp.dir*ltaxes)*pos
         end
 
     end
