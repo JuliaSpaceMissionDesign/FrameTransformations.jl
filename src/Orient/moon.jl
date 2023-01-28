@@ -10,7 +10,7 @@ export DCM_MOONPA440_TO_MER421,
 
 NAIF Axes id for the DE440 Moon Principal Axes.
 """
-AXESID_MOONPA_DE440 = 31008
+const AXESID_MOONPA_DE440 = 31008
 
 
 """
@@ -18,7 +18,7 @@ AXESID_MOONPA_DE440 = 31008
 
 NAIF axes id for the DE421 Moon Principal Axes 
 """
-AXESID_MOONPA_DE421 = 31006
+const AXESID_MOONPA_DE421 = 31006
 
 """
     DCM_MOONPA440_TO_MER421
@@ -31,7 +31,7 @@ Earth/Mean Rotation (MER) axes.
  [DOI: 10.3847/1538-3881/abd414](https://doi.org/10.3847/1538-3881/abd414) 
 
 """
-DCM_MOONPA440_TO_MER421 = angle_to_dcm(arcsec2rad(-67.8526), arcsec2rad(-78.6944), 
+const DCM_MOONPA440_TO_MER421 = angle_to_dcm(arcsec2rad(-67.8526), arcsec2rad(-78.6944), 
                                        arcsec2rad(-0.2785), :ZYX)
 
 
@@ -48,7 +48,7 @@ Earth/Mean Rotation (MER430) axes.
 [DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
 
 """
-DCM_MOONPA430_TO_MER430 = angle_to_dcm(arcsec2rad(-67.573), arcsec2rad(-78.58), 
+const DCM_MOONPA430_TO_MER430 = angle_to_dcm(arcsec2rad(-67.573), arcsec2rad(-78.58), 
                                        arcsec2rad(-0.285), :ZYX)
 
 
@@ -65,7 +65,7 @@ Earth/Mean Rotation (MER421) axes.
 [DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
 
 """
-DCM_MOONPA430_TO_MER421 = angle_to_dcm(arcsec2rad(-67.737), arcsec2rad(-78.627), 
+const DCM_MOONPA430_TO_MER421 = angle_to_dcm(arcsec2rad(-67.737), arcsec2rad(-78.627), 
                                        arcsec2rad(-0.295), :ZYX)
 
 
@@ -80,7 +80,7 @@ Earth/Mean Rotation (MER421) axes.
 [DE421 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/de421_lunar_ephemeris_and_orientation.pdf) 
 
 """
-DCM_MOONPA421_TO_MER421 = angle_to_dcm(arcsec2rad(-67.92), arcsec2rad(-78.56),
+const DCM_MOONPA421_TO_MER421 = angle_to_dcm(arcsec2rad(-67.92), arcsec2rad(-78.56),
                                        arcsec2rad(-0.3), :ZYX)
 
                                        
