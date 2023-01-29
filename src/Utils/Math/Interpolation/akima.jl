@@ -1,8 +1,6 @@
-export InterpolationAkima, interplate
+export InterpAkima
 
-abstract type AbstractInerpolationMethod end
-
-struct InterpolationAkima{T} <: AbstractInerpolationMethod
+struct InterpAkima{T} <: AbstractInterpolationMethod
     n::Int
     x::Vector{T}
     y::Vector{T}
@@ -11,7 +9,7 @@ struct InterpolationAkima{T} <: AbstractInerpolationMethod
     d::Vector{T}
 end
 
-function InterpolationAkima(x::AbstractVector{T}, y) where T
+function InterpAkima(x::AbstractVector{T}, y) where T
     n = length(x)
     @assert n == length(y)
     dx = diff(x)
@@ -39,14 +37,14 @@ function InterpolationAkima(x::AbstractVector{T}, y) where T
     c = (3.0 .* m[3:end-2] .- 2.0 .* b[1:end-1] .- b[2:end]) ./ dx
     d = (b[1:end-1] .+ b[2:end] .- 2.0 .* m[3:end-2]) ./ dx.^2
 
-    return InterpolationAkima(n, x, y, b, c, d)
+    return InterpAkima(n, x, y, b, c, d)
 end
 
-@inline function interpolate(a::InterpolationAkima{T}, xi) where T
+@inline function interpolate(a::InterpAkima{T}, x) where T
     idx = searchsortedlast(a.x, xi)
     idx == 0 && return a.y[1]
     idx == a.n && return a.y[end]
 
-    wj = xi - a.x[idx]
-    @evalpoly wj a.y[idx] a.b[idx] a.c[idx] a.d[idx]
+    dx = x - a.x[idx]
+    @evalpoly dx a.y[idx] a.b[idx] a.c[idx] a.d[idx]
 end

@@ -5,10 +5,12 @@ module Utils
 
     using ForwardDiff: derivative
     using ReferenceFrameRotations: DCM
-    using StaticArrays: SMatrix, SA
+    using StaticArrays: SMatrix, SA, SVector
+    using LinearAlgebra
     
     import YAML as YAMLLib
-
+    
+    # IO 
     include("IO/file.jl")
     include("IO/load.jl")
     include("IO/write.jl")
@@ -19,8 +21,12 @@ module Utils
     include("angles.jl")
     
     # Interpolation 
+    include("Math/Interpolation/abstract.jl")
+    include("Math/Interpolation/akima.jl")
+    include("Math/Interpolation/splines.jl")
+
+    # Math
     include("Math/derivatives.jl")
-    include("Math/akima.jl")
     include("Math/vectors.jl")
     include("Math/rotation.jl")
     

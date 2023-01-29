@@ -112,7 +112,7 @@ function Base.show(io::IO, eop::EOPData{T}) where T
 end
 
 # Get timespan
-function _get_iers_eop_timespan(itp::InterpolationAkima)
+function _get_iers_eop_timespan(itp::InterpAkima)
     str = string(DateTime(first(itp.x)*86400)) * " - " *
           string(DateTime(last(itp.x)*86400))
     return str
@@ -131,7 +131,7 @@ function _create_iers_eop_interpolation(
     field_float::Vector{Float64} = Vector{Float64}(field[1:last_id])
 
     # Create the interpolation object.
-    return InterpolationAkima(knots[1:last_id], field_float)
+    return InterpAkima(knots[1:last_id], field_float)
 
 end
 

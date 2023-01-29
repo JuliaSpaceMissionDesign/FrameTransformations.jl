@@ -9,7 +9,7 @@ module Orient
     using Basic.Ephemeris: AbstractEphemerisProvider
     using Basic.Tempo 
     using Basic.Utils: arcsec2rad
-    using Basic.Utils: InterpolationAkima, interpolate
+    using Basic.Utils: InterpAkima, interpolate
     using Basic.Utils: skew
 
     # Earth
