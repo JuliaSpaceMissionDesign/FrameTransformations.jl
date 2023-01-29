@@ -45,6 +45,7 @@ end
 # LIGHT TIME 
 # -------------------------------------
 
+# Compute position from observer to target corrected for one-way light-time
 function light_time_corr3(frames::FrameSystem, ::LightTimeCorrection, 
             ltp::LTProperties, from::Int, to::Int, t::Number)
     
@@ -58,6 +59,7 @@ function light_time_corr3(frames::FrameSystem, ::LightTimeCorrection,
     return _lt_rotation(frames, ltp, from, to, pos, pₒ, t, lt)
 end
 
+# Compute state from observer to target corrected for one-way light-time
 function light_time_corr6(frames::FrameSystem, ::LightTimeCorrection, 
             ltp::LTProperties, from::Int, to::Int, t::Number)
             
@@ -228,6 +230,8 @@ end
 # STELLAR ABERRATION
 # -------------------------------------
 
+# Compute position from observer to target corrected for one-way light-time and 
+# stellar aberration
 function light_time_corr3(frames::FrameSystem, ::StellarAberrationCorrection,
              ltp::LTProperties, from::Int, to::Int, t::Number)
 
@@ -246,6 +250,8 @@ function light_time_corr3(frames::FrameSystem, ::StellarAberrationCorrection,
 
 end
 
+# Compute state from observer to target corrected for one-way light-time and 
+# stellar aberration
 function light_time_corr6(frames::FrameSystem, ::StellarAberrationCorrection,
             ltp::LTProperties, from::Int, to::Int, t::Number)
 
