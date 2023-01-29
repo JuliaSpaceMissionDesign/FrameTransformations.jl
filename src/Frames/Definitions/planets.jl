@@ -14,33 +14,35 @@ function _orient_bcrtod(p::Orient.PlanetsPrecessionNutation, bodyname)
                     ra, dec, w = $f1(sec)
                     return angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
                 end, 
+                
                 function ($fdname)(sec::Number)
                     ra, dec, w, rad, decd, wd = $f2(sec)
 
                     R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
                     dR = angle_to_δdcm(
-                        (π/2 + ra, rad/CENTURY2SEC), 
-                        (π/2 - dec, -decd/CENTURY2SEC), 
-                        (w, wd/DAY2SEC), :ZXZ
+                        (π/2 + ra, rad), 
+                        (π/2 - dec, -decd), 
+                        (w, wd), :ZXZ
                     )
 
                     return R, dR
                 end,
+
                 function ($fddname)(sec::Number)
 
                     ra, dec, w, rad, decd, wd, radd, decdd, wdd = $f3(sec)
 
                     R = angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
                     dR = angle_to_δdcm(
-                        (π/2 + ra, rad/CENTURY2SEC), 
-                        (π/2 - dec, -decd/CENTURY2SEC), 
-                        (w, wd/DAY2SEC), :ZXZ
+                        (π/2 + ra, rad), 
+                        (π/2 - dec, -decd), 
+                        (w, wd), :ZXZ
                     )
 
                     d²R = angle_to_δ²dcm(
-                        (π/2 + ra, rad/CENTURY2SEC, radd/CENTURY2SEC^2), 
-                        (π/2 - dec, -decd/CENTURY2SEC, -decdd/CENTURY2SEC^2), 
-                        (w, wd/DAY2SEC, wdd/DAY2SEC^2), :ZXZ
+                        (π/2 + ra, rad, radd), 
+                        (π/2 - dec, -decd, -decdd), 
+                        (w, wd, wdd), :ZXZ
                     )
 
                     return R, dR, d²R
