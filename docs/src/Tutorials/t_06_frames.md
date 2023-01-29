@@ -430,7 +430,7 @@ type available:
 
 
 ```julia
-f(t) = angle_to_dcm(t, :Z)  # transformation rot -> inertial 
+f(t) = angle_to_dcm(t, :Z)  # transformation inertial -> rot 
 
 @axes SynodicAx 2 SynodicFrame 
 
