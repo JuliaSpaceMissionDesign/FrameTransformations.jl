@@ -1,7 +1,3 @@
-using StaticArrays
-using Logging
-using ReferenceFrameRotations
-using Basic.Tempo
 
 struct PrecessionNutationComponent{T, DA, DB}
     A::SVector{DA, T}
@@ -13,11 +9,13 @@ struct PrecessionNutationComponent{T, DA, DB}
 end
 
 function PrecessionNutationComponent{T}(A, B, Θ₁, Θ₂, fun) where T
+    
     if isnothing(B) || length(B) == 0
         B = SVector{0, T}()
         Θ₁ = SVector{0, T}()
         Θ₂ = SVector{0, T}()
     end
+
     return PrecessionNutationComponent{T, length(A), length(B)}(
         A, 
         B, 
@@ -57,35 +55,31 @@ struct PlanetsPrecessionNutation{T}
     pm::PrecessionNutationComponent{T}
 end
 
-function PlanetsPrecessionNutation(NAIFId::N,  data::AbstractDict{N, 
-    Dict{Symbol, Union{T, Vector{T}}}}) where {N<:Integer, T}
+function PlanetsPrecessionNutation(NAIFId::N,  
+            data::AbstractDict{N, Dict{Symbol, Union{T, Vector{T}}}}) where {N <: Integer, T}
     
     # Find nutation coefficients
     sid = "$(NAIFId)"
     nutsid = NAIFId
+
+    # TODO: questo a cosa serve?
     if NAIFId < 1000 && NAIFId > 100
         nutsid = parse(N, sid[1])
     end
 
     if NAIFId < 9
-        Logging.@warn "[Basic/Orient] Cannot orient IAU frames for $NAIFId - IGNORED."
+        Logging.@warn "[Basic/Orient] IAU frame for point $NAIFId does not exist - IGNORED."
     else 
+
         # Get nutation-precession angles, if present
-        if haskey(data, nutsid)
-            nut = haskey(data[nutsid], :nut_prec_angles) ? 
-                data[nutsid][:nut_prec_angles] .* T(pi/180) : nothing
-            lnuts = length(nut)
-            hasnuts = lnuts != 0
+        if haskey(data, nutsid) && haskey(data[nutsid], :nut_prec_angles)
+            nut = data[nutsid][:nut_prec_angles] .* T(pi/180)
+            nuts = (@views(nut[1:2:end]), @views(nut[2:2:end]))
         else
-            nut = nothing 
-            lnuts = 0 
-            hasnuts = false 
+            nuts = nothing 
         end
-        nuts = hasnuts ? 
-            (
-                @views(nut[1:2:end]), 
-                @views(nut[2:2:end])
-            ) : nothing
+
+        hasnuts = !isnothing(nuts)
 
         # Build planet precession/nutation
         return PlanetsPrecessionNutation(
