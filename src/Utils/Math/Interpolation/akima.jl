@@ -41,7 +41,7 @@ function InterpAkima(x::AbstractVector{T}, y) where T
 end
 
 @inline function interpolate(a::InterpAkima{T}, x) where T
-    idx = searchsortedlast(a.x, xi)
+    idx = searchsortedlast(a.x, x)
     idx == 0 && return a.y[1]
     idx == a.n && return a.y[end]
 
