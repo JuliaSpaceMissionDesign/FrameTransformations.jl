@@ -14,7 +14,7 @@ aberration) corrections when computing vectors from the `FrameSystem`.
 ### See also 
 See also [`vector3`](@ref) and [`vector6`](@ref).
 """
-LightTime = LightTimeCorrection() 
+const LightTime = LightTimeCorrection() 
 
 
 """ 
@@ -27,7 +27,7 @@ The singleton instance of type `StellarAberrationCorrection`, used to apply ligh
 ### See also 
 See also [`vector3`](@ref) and [`vector6`](@ref).
 """
-StellarAberration = StellarAberrationCorrection()
+const StellarAberration = StellarAberrationCorrection()
 
 
 # Structure to store and collect useful infos required by 
@@ -45,20 +45,107 @@ end
 # LIGHT TIME 
 # -------------------------------------
 
+function light_time_corr3(frames::FrameSystem, ::LightTimeCorrection, 
+            ltp::LTProperties, from::Int, to::Int, t::Number)
+    
+    # Get observer position wrt to SSB 
+    pₒ = vector3(frames, 0, from, AXESID_ICRF, t)
+    
+    # Compute one-way LT position correction and light-time
+    pos, lt = light_time(frames, ltp, to, pₒ, t)
 
-# Compute light-time from observer to axes center point
-function _lt_axes(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, 
-            pobs::AbstractVector, t::Number, lt::T) where {T}
+    # Rotate to desired frame
+    return _lt_rotation(frames, ltp, from, to, pos, pₒ, t, lt)
+end
 
-    if ltp.ap == from 
-        return T(0)
-    elseif ltp.ap == to 
-        return lt 
-    else
-        return light_time(frames, ltp, ltp.ap, t, pobs)
+function light_time_corr6(frames::FrameSystem, ::LightTimeCorrection, 
+            ltp::LTProperties, from::Int, to::Int, t::Number)
+            
+    # Get observer state wrt to SSB 
+    xₒ = vector6(frames, 0, from, AXESID_ICRF, t)
+    pₒ, vₒ = _posvel(xₒ)
+    
+    # Compute one-way LT state correction, light-time and its derivative
+    state, lt, dlt = light_time(frames, ltp, to, pₒ, vₒ, t)
+
+    # Rotate to desired frame
+    return _lt_rotation(frames, ltp, from, to, state, pₒ, vₒ, t, lt, dlt)
+end
+
+
+# Retrieves the relative position and light-time between a given observer position and a target
+function light_time(frames::FrameSystem, ltp::LTProperties, to::Int, 
+            pobs::AbstractVector, t::Number)
+
+    # Compute first Light-time guess 
+    pₜ = vector3(frames, 0, to, AXESID_ICRF, t)
+    lt = light_time(pₜ, pobs)
+
+    iters = 1
+    while iters ≤ ltp.maxiters 
+        # Compute target position at light-time corrected epoch
+        pₜ = vector3(frames, 0, to, AXESID_ICRF, t+ltp.dir*lt)
+
+        # Light-time computation 
+        lt = light_time(pₜ, pobs)
+        iters += 1
     end
 
-end 
+    return pₜ - pobs, lt 
+end
+
+# Compute relative state, light time and its derivative wrt to a given observer state
+function light_time(frames::FrameSystem, ltp::LTProperties, to::Int, 
+            pobs::AbstractVector, vobs::AbstractVector, t::Number)
+
+    # Compute first Light-time guess 
+    xₜ = vector6(frames, 0, to, AXESID_ICRF, t)
+    pₜ, vₜ = _posvel(xₜ)
+
+    lt = light_time(pₜ, pobs)
+
+    iters = 1
+    while iters ≤ ltp.maxiters 
+        # Compute state position at light-time corrected epoch
+        if iters == ltp.maxiters
+            xₜ = vector6(frames, 0, to, AXESID_ICRF, t+ltp.dir*lt)
+            pₜ, vₜ = _posvel(xₜ)
+        else 
+            # just need the position for intermediate calculations
+            pₜ = vector3(frames, 0, to, AXESID_ICRF, t+ltp.dir*lt)
+        end
+
+        # Light-time computation 
+        lt = light_time(pₜ, pobs)
+        iters += 1
+    end
+
+    Δp = pₜ - pobs
+    Δv = vₜ - vobs
+
+    # Computing light-time derivative
+    A = 1/(light_speed*sqrt(sum(Δp.^2)))
+    B = dot(Δp, Δv)
+    C = dot(Δp, vₜ)
+
+    # Safe-check ensuring the target speed is not above the speed of light 
+    # to avoid possible overflow errors! 
+    if ltp.dir*C*A > .99999999989999999
+        throw(ErrorException(
+            "[Frames] Congrats, you have just won the Nobel Physics Prize! "*
+            "The target velocity is above light-speed. You are either a genius or wrong.")
+        )
+    end
+
+    dlt = A*B/(1-ltp.dir*A*C)
+    Δv = vₜ*(1+ltp.dir*dlt) - vobs
+
+    return vcat(Δp, Δv), lt, dlt
+
+end
+
+@inline light_time(a::AbstractVector, b::AbstractVector) = norm(a-b)/light_speed
+
 
 # Compute Light-time Position Rotation Matrix
 function _lt_rotation(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, 
@@ -84,21 +171,22 @@ end
 
 # Compute Light-time Position/Velocity Rotation Matrix
 function _lt_rotation(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, 
-            state::AbstractVector, pobs::AbstractVector, t::Number, lt::Number, dlt::Number)
+            state::AbstractVector, pobs::AbstractVector, vobs::AbstractVector, 
+            t::Number, lt::Number, dlt::Number)
 
     if ltp.aid != AXESID_ICRF     
         if is_timefixed(frames, ltp.aid)
             return rotation6(frames, AXESID_ICRF, ltp.aid, t)*state
         else 
             # Get light-time from observer to axes center point
-            ltaxes = _lt_axes(frames, ltp, from, to, pobs, t, lt)
+            lta, dlta = _lt_axes(frames, ltp, from, to, pobs, vobs, t, lt, dlt)
 
             # Compute rotation matrix 
-            R = rotation6(frames, AXESID_ICRF, ltp.aid, t+ltp.dir*ltaxes)
+            R = rotation6(frames, AXESID_ICRF, ltp.aid, t+ltp.dir*lta)
 
             # Correct the velocity portion of the rotation matrix to account for 
             # the light-time derivative contribution! 
-            return Rotation((R[1], (1+ltp.dir*dlt)*R[2]))*state
+            @inbounds return Rotation((R[1], (1+ltp.dir*dlta)*R[2]))*state
         end
     end
 
@@ -107,110 +195,48 @@ function _lt_rotation(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int
 
 end
 
-function light_time3(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, t::Number)
-    
-    # Get observer position wrt to SSB 
-    pₒ = vector3(frames, 0, from, AXESID_ICRF, t)
-    
-    # Compute position LT correction 
-    pos, lt = _light_time_correction(frames, ltp, to, pₒ, t)
 
-    # Rotate to desired frame
-    return _lt_rotation(frames, ltp, from, to, pos, pₒ, t, lt)
-end
+# Compute the light-time from observer to axes center point
+function _lt_axes(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, 
+            pobs::AbstractVector, t::Number, lt::T) where {T}
 
-function light_time6(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, t::Number)
-            
-    # Get observer state wrt to SSB 
-    xₒ = vector6(frames, 0, from, AXESID_ICRF, t)
-    pₒ, vₒ = _posvel(xₒ)
-    
-    # Compute state LT correction 
-    state, lt, dlt = _light_time_correction(frames, ltp, to, pₒ, vₒ, t)
-
-    # Rotate to desired frame
-    return _lt_rotation(frames, ltp, from, to, state, pₒ, t, lt, dlt)
-end
-
-
-function _light_time_correction(frames::FrameSystem, ltp::LTProperties, to::Int, 
-            pobs::AbstractVector, t::Number)
-
-    lt = light_time(frames, ltp, to, pobs, t)
-    pₜ = vector3(frames, 0, to, AXESID_ICRF, t+ltp.dir*lt)
-
-    return pₜ - pobs, lt
-
+    if ltp.ap == from 
+        return T(0)
+    elseif ltp.ap == to 
+        return lt 
+    else
+        _, lt = light_time(frames, ltp, ltp.ap, pobs, t)
+        return lt
+    end
 end 
 
-function _light_time_correction(frames::FrameSystem, ltp::LTProperties, to::Int, 
-            pobs::AbstractVector, vobs::AbstractVector, t::Number)
+# Compute the light-time and its derivative from observer to axes center point
+function _lt_axes(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int, 
+            pobs::AbstractVector, vobs::AbstractVector, t::Number, lt::T, dlt::T) where {T}
 
-    # Compute light-time 
-    lt = light_time(frames, ltp, to, pobs, t)
-    
-    # Compute target state at light-time corrected epoch
-    xₜ = vector6(frames, 0, to, AXESID_ICRF, t+ltp.dir*lt)
-    pₜ, vₜ = _posvel(xₜ)
-
-    Δp = pₜ - pobs
-    Δv = vₜ - vobs
-
-    # Computing light-time derivative
-    A = 1/(light_speed*sqrt(sum(Δp.^2)))
-    B = dot(Δp, Δv)
-    C = dot(Δp, vₜ)
-
-    # Safe-check ensuring the target speed is not above the speed of light 
-    # to avoid possible overflow errors! 
-    if ltp.dir*C*A > .99999999989999999
-        throw(ErrorException(
-            "[Frames] Congrats, you have just won the Nobel Physics Prize! "*
-            "The target velocity is above light-speed. You are either a genius or wrong.")
-        )
+    if ltp.ap == from 
+        return T(0), T(0)
+    elseif ltp.ap == to 
+        return lt, dlt
+    else
+        _, lt, dlt = light_time(frames, ltp, ltp.ap, pobs, vobs, t)
+        return lt, dlt
     end
-
-    dLT = A*B/(1-ltp.dir*A*C)
-    Δv = vₜ*(1+ltp.dir*dLT) - vobs
-
-    return vcat(Δp, Δv), lt, dLT
-end
-
-
-# Retrieves the light-time between a given observer position and a target
-function light_time(frames::FrameSystem, ltp::LTProperties, target::Int, 
-            pobs::AbstractVector, t::Number)
-
-    iters = 1
-    lt = 0.0
-
-    while iters ≤ ltp.maxiters 
-        # Compute target position at light-time corrected epoch
-        ptrg = vector3(frames, 0, target, AXESID_ICRF, t+ltp.dir*lt)
-
-        # Light-time computation 
-        lt = sqrt(sum((ptrg-pobs).^2))/light_speed
-        iters += 1
-    end
-
-    return lt 
-end
-
-
+end 
 
 # -------------------------------------
 # STELLAR ABERRATION
 # -------------------------------------
 
-function stellar_aberration3(frames::FrameSystem, ltp::LTProperties, from::Int, 
-            to::Int, t::Number)
+function light_time_corr3(frames::FrameSystem, ::StellarAberrationCorrection,
+             ltp::LTProperties, from::Int, to::Int, t::Number)
 
     # Compute observer state with respect to SSB 
     xₒ = vector6(frames, 0, from, AXESID_ICRF, t)
     pₒ, vₒ = _posvel(xₒ)
 
     # Correct position for Light-time
-    pₜ, lt = _light_time_correction(frames, ltp, to, pₒ, t)
+    pₜ, lt = light_time(frames, ltp, to, pₒ, t)
 
     # Compute stellar aberration position contribution
     δp = _stellar_aberration_correction(pₜ, -ltp.dir*vₒ)
@@ -220,21 +246,21 @@ function stellar_aberration3(frames::FrameSystem, ltp::LTProperties, from::Int,
 
 end
 
-function stellar_aberration6(frames::FrameSystem, ltp::LTProperties, from::Int, 
-            to::Int, t::Number)
+function light_time_corr6(frames::FrameSystem, ::StellarAberrationCorrection,
+            ltp::LTProperties, from::Int, to::Int, t::Number)
 
     # Compute observer state with respect to SSB 
     xₒ = vector9(frames, 0, from, AXESID_ICRF, t)
     pₒ, vₒ, aₒ = _posvelacc(xₒ)
 
     # Correct state for Light-time
-    xₜ, lt, dlt = _light_time_correction(frames, ltp, to, pₒ, vₒ, t)
+    xₜ, lt, dlt = light_time(frames, ltp, to, pₒ, vₒ, t)
 
     # Compute stellar aberration state contribution
     δx = _stellar_aberration_correction(xₜ, -ltp.dir*vₒ, -ltp.dir*aₒ)
 
     # Rotate to desired frame
-    return _lt_rotation(frames, ltp, from, to, xₜ + δx, pₒ, t, lt, dlt)
+    return _lt_rotation(frames, ltp, from, to, xₜ + δx, pₒ, vₒ, t, lt, dlt)
 
 end
 
@@ -296,6 +322,7 @@ function _stellar_aberration_correction(xrel::AbstractVector, vobs::AbstractVect
     return vcat(δp, δv)
 end
 
+
 # compute sine and cosine of aberration angle, given observer velocity 
 function _aberration_angle(vₚ::AbstractVector)
     # Compute sine and cosine of aberration angle! 
@@ -310,6 +337,7 @@ function _aberration_angle(vₚ::AbstractVector)
 
     return cₐ, sₐ
 end
+
 
 # Utilities functions to split state vector
 @inline _posvel(x::AbstractVector) = @inbounds SA[x[1], x[2], x[3]], SA[x[4], x[5], x[6]]

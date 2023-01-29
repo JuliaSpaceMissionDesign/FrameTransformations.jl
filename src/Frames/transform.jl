@@ -57,7 +57,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             $($axfun1)(frame::FrameSystem, from, to, t::Number)
         
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
-        specified set of axes to another at a given time, expressed in seconds since 
+        specified set of axes to another at a given time `t`, expressed in seconds since 
         [`J2000`](@ref) if ephemerides are used. 
         """
         function ($axfun1)(frame::FrameSystem{O, T}, from, to, t::Number) where {O, T}
@@ -144,7 +144,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             $($pfun1)(frame::FrameSystem, from, to, axes, ep::Epoch) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
-        an observing point, in a given set of axes, at the desired epoch.
+        an observing point, in a given set of axes, at the desired epoch `ep`.
 
         Requires a frame system of order ≥ $($order).
 
@@ -167,10 +167,10 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         """
-            $($pfun1)(frame::FrameSystem, from, to, axes, t::Number) 
+            $($pfun1)(frame, from, to, axes, t::Number) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
-        an observing point, in a given set of axes, at the desired time expressed in 
+        an observing point, in a given set of axes, at the desired time `t` expressed in 
         seconds since [`J2000`](@ref) if ephemerides are used. 
 
         """
@@ -300,29 +300,79 @@ end
 # LIGHT TIME and STELLAR ABERRATION CORRECTIONS 
 # ---------------------------------------------
 
-for (order, pfun, ltcorr, sacorr) in zip(
-        (1, 2), (:vector3, :vector6), 
-        (:light_time3, :light_time6),
-        (:stellar_aberration3, :stellar_aberration6)
+for (order, pfun, ltcorr) in zip(
+        (1, 2), (:vector3, :vector6), (:light_time_corr3, :light_time_corr6)
     )
 
     @eval begin 
-
 
         @inline function ($pfun)(::FrameSystem{<:Any, <:Any, S1}, from, to, axes, 
             ::Epoch{S2}, ::AbstractLightTimeCorrection, dir::Int; kwargs...) where {S1, S2}
             throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
         end
 
+
+        """
+            $($pfun)(frame, from, to, axes, ep::Epoch, ltcorr, dir; <keyword arguments>) 
+
+        Compute a light-time corrected $(3*$order)-elements state vector of a target point 
+        relative to an observing point, in a given set of axes, at the desired epoch `ep`, 
+        using the aberration flag `ltcorr`, which may be any of the following `AbstractLightTimeCorrection`:
+        
+        - **LightTimeCorrection**: it applies the one-way light time (planetary aberration) 
+            correction, using a Newtonian formulation. 
+
+        - **StellarAberrationCorrection**: it applies the one-way light time and stellar 
+            aberration corrections using a Newtonian fromulation. It modifies the vector 
+            obtained with the `LightTimeCorrection` option to account for the observer velocity 
+            with respect to the Solar System Barycenter. 
+        
+        The integer argument `dir` is used to specify correction direction, as follows:
+            
+        - **-1**: for **Reception**, in which photons depart from the target's location at the 
+            light-time corrected epoch `ep-lt` and arrive at the observer's location at `ep`.
+
+        - **+1**: for **Transmission**, in which photons depart from the observer's location at
+            `ep` and arrive at the target's location at the light-time corrected epoch `ep+lt`.
+    
+        ### Keyword Arguments 
+                
+        - `iters::Int=1`: the number of iterations used to find the solution to the 
+                light time equation. For the solar system bodies, a solution is usually 
+                found in 3 iterations.
+
+        - `axescenter`: ID or instance of the center point for `axes`. This parameter is used 
+                only when `axes` have an orientation that depends on time. In these cases, 
+                the point is used to find the time at which the orientation of the axes 
+                should be computed. It defaults to `from`.
+        
+        !!! note 
+            If the `StellarAberrationCorrection` is applied, the frame system must be at 
+            least one order higher than that of the requested transformation.
+
+        ### See also 
+        See also [`LightTime`](@ref), [`StellarAberration`](@ref) and [`vector6`](@ref).
+
+        ### References 
+        - CSPICE [Library](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html)
+        """
         @inline function ($pfun)(frames::FrameSystem{<:Any, <:Any, S}, from, to, axes, 
             ep::Epoch{S}, ltcorr::AbstractLightTimeCorrection, dir::Int; kwargs...) where {S}
 
             $(pfun)(frames, from, to, axes, Tempo.j2000s(ep), ltcorr, dir; kwargs...)
         end
 
+        """
+            $($pfun)(frame, from, to, axes, t::Number, ltcorr, dir; <keyword arguments>) 
 
+        Compute a light-time corrected $(3*$order)-elements state vector of a target point 
+        relative to an observing point, in a given set of axes, at the desired time `t`,  
+        expressed in seconds since [`J2000`](@ref), using the aberration flag `ltcorr` and 
+        the direction `dir`.
+        """
         function ($pfun)(frames::FrameSystem{O, T}, from, to, axes, t::Number, 
-            ::LightTimeCorrection, dir::Int; maxiters=1, axescenter=nothing) where {O, T}
+                    ltc::AbstractLightTimeCorrection, dir::Int; 
+                    iters=1, axescenter=nothing) where {O, T}
 
             if O < $order
                 throw(ErrorException("Insufficient frame system order: "*
@@ -346,40 +396,9 @@ for (order, pfun, ltcorr, sacorr) in zip(
             # in absence of a specified axes center, the observer location is used. 
             axc = isnothing(axescenter) ? idfrom : point_alias(axescenter)
 
-            ltp = LTProperties(axes_alias(axes), axc, dir, maxiters)
-            $(ltcorr)(frames, ltp, idfrom, idto, t)
+            ltp = LTProperties(axes_alias(axes), axc, dir, iters)
+            $(ltcorr)(frames, ltc, ltp, idfrom, idto, t)
             
-        end
-
-        function ($pfun)(frames::FrameSystem{O, T}, from, to, axes, t::Number, 
-            ::StellarAberrationCorrection, dir::Int; maxiters=1, 
-            axescenter=nothing) where {O, T}
-
-            if O < (1+$order)
-                throw(ErrorException("Insufficient frame system order: "*
-                    "transformation requires at least order $(1+ $order)."))
-            end
-
-            if !(dir in (-1, 1))
-                throw(
-                    ArgumentError(
-                        "$dir is an invalid direction. Only -1 (Reception) and 1 "*
-                        "(Transmission) are accepted.")
-                )
-            end
-
-            # Retrieve aliased point ids
-            idfrom = point_alias(from)
-            idto = point_alias(to) 
-
-            idfrom == idto && return @SVector zeros(T, 3*$order)
-
-            # in absence of a specified axes center, the observer location is used. 
-            axc = isnothing(axescenter) ? idfrom : point_alias(axescenter)
-
-            ltp = LTProperties(axes_alias(axes), axc, dir, maxiters)
-            $(sacorr)(frames, ltp, idfrom, idto, t)
-
         end
 
     end
