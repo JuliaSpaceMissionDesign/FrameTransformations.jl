@@ -62,7 +62,6 @@ function PlanetsPrecessionNutation(NAIFId::N,
     sid = "$(NAIFId)"
     nutsid = NAIFId
 
-    # TODO: questo a cosa serve?
     if NAIFId < 1000 && NAIFId > 100
         nutsid = parse(N, sid[1])
     end
