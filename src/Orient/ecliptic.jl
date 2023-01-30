@@ -56,9 +56,9 @@ const DCM_ICRF_TO_J2000_BIAS = orient_bias_precession(iau2006a, 0.0)
 
 DCM for the rotation from the Mean Dynamical Equator of J2000 (`MEME2000`) to the 
 Mean Ecliptic Equinox. This corresponds to the transformation `J2000 -> ECLIPJ2000` 
-in the SPICE toolkit.
+in the SPICE toolkit, and uses the mean obliquity of the ecliptic from the IAU 1976 theory.
 """
-const DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau2006a, 0.0), :X)
+const DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau1980, 0.0), :X)
 
 
 """

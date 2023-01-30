@@ -14,9 +14,15 @@ add_axes_eclipj2000!(FRAMES, ECLIPJ2000, MEME2000)
 @testset "Ecliptic Equinox at J2000" begin
     ep = rand(0.0:1e7)
 
+    v2as = (x, y) -> acosd(max(-1, min(1, dot(x/norm(x), y/norm(y)))))*3600
+    
     R = sxform("J2000", "ECLIPJ2000", ep)
     R_ = rotation6(FRAMES, MEME2000, ECLIPJ2000, ep)
-    @test isapprox(R[1:3, 1:3],  R_[1], atol=1e-6)
-    @test R_[2] ≈ zeros(3,3)
+    
+    v = rand(BigFloat, 3); 
+    v /= norm(v)
 
-end
+    @test v2as(R[1:3, 1:3]*v, R_[1]*v) ≈ 0.0 atol=1e-6
+    @test R_[2] ≈ zeros(3,3) atol=1e-14
+
+end;

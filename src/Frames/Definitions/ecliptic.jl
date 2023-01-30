@@ -52,22 +52,18 @@ end
 
 
 """
-    add_axes_eclipj2000!(frames, axes, parent::AbstractFrameAxes)
+    add_axes_eclipj2000!(frames, axes, parent::AbstractFrameAxes, iau_model::IAUModel=iau1980)
     
 Add `axes` as a set of inertial axes representing the Ecliptic Equinox of J2000 (ECLIPJ2000)
-to `frames`.
+to `frames`. The obliquity of the ecliptic is computed using the IAU Model `iau_model`.
 
-The `parent` set of axes can be either the International Celestial Reference Frame (ICRF) 
-or the Mean Earth/Moon Ephemeris of 2000 (MEME2000). If the `parent` set of axes is ICRF, 
-the orientation of the ECLIPJ2000 axes is defined using a rotation matrix called 
-[`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) and a bias matrix called [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref). 
-If the parent set of axes is MEME2000, the orientation of the ECLIPJ2000 axes is defined using 
-only the [`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) rotation matrix.
+The admissed `parent` set of axes are the following: 
+- **ICRF**: for the International Celestial Reference Frame, with ID = 1
+- **MEME2000**: the Mean Earth/Moon Ephemeris of J2000, with ID = 22
 
 !!! warning 
     If the name (or the axes ID) of the parent set of `axes` is neither ICRF (ID = 1) nor 
     MEME2000 (ID = 22), an error is thrown. 
-
 
 ### Examples
 ```jldoctest 
@@ -81,19 +77,21 @@ julia> add_axes_eclipj2000!(FRAMES, ECLIPJ2000, ICRF)
 ``` 
 
 ### See also 
-See also [`add_axes_inertial!`](@ref), [`Orient.DCM_J2000_TO_ECLIPJ2000`](@ref) and 
-[`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
+See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
 """
 function add_axes_eclipj2000!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
-            parent::AbstractFrameAxes) where {T, O}
+            parent::AbstractFrameAxes, iau_model::Orient.IAUModel=Orient.iau1980) where {T, O}
 
     pname = axes_name(parent)
     pid = axes_id(parent)
 
+    # Compute ecliptic orientation using the specified obliquity model!
+    j2000_to_eclip = angle_to_dcm(orient_obliquity(iau_model, 0.0), :X)
+
     if pname == :ICRF || pid == Orient.AXESID_ICRF
-        dcm = Orient.DCM_J2000_TO_ECLIPJ2000 * Orient.DCM_ICRF_TO_J2000_BIAS 
+        dcm = j2000_to_eclip * Orient.DCM_ICRF_TO_J2000_BIAS 
     elseif pname == :MEME2000 || pid ==  Orient.AXESID_MEME2000 
-        dcm = Orient.DCM_J2000_TO_ECLIPJ2000
+        dcm = j2000_to_eclip
     else
         throw(
             ArgumentError("Ecliptic Equinox of J2000 (ECLIPJ2000) axes could not be defined" *
