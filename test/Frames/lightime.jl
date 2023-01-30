@@ -1,19 +1,6 @@
 # unload spice kernels 
 kclear()
 
-# load spice kernels 
-furnsh(path(KERNELS[:SPK]), path(KERNELS[:IAU10]), path(KERNELS[:LEAP]))
-
-# Spice ECLIPJ2000 has an older orientation!
-DCM_ECLIPJ2000 = DCM(pxform("J2000", "ECLIPJ2000", 0.0))
-
-# Load TPC 
-tpc_constants = Basic.load(TPC(path(KERNELS[:IAU10])));
-
-# Create frame system
-eph = CalcephProvider(path(KERNELS[:SPK]))
-FRAMES = FrameSystem{3, Float64}(eph);
-
 # Register axes
 @axes ICRF 1 InternationalCelestialReferenceFrame
 @axes ECLIPJ2000 17
@@ -25,19 +12,32 @@ FRAMES = FrameSystem{3, Float64}(eph);
 @point Earth 399 
 @point SaturnB 6 SaturnBarycenter
 
-# add axes
-add_axes_inertial!(FRAMES, ICRF)
-add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, DCM_ECLIPJ2000)
-add_axes_bcrtod!(FRAMES, tpc_constants, Earth, IAU_EARTH, ICRF)
-
-# add points
-add_point_root!(FRAMES, SSB, ICRF)
-add_point_ephemeris!(FRAMES, Sun)
-add_point_ephemeris!(FRAMES, Earth, SSB)
-add_point_ephemeris!(FRAMES, SaturnB, SSB)
-
 # -- Position LT corrections 
 @testset "Light Time Corrections" verbose=true begin
+
+    # load spice kernels 
+    furnsh(path(KERNELS[:SPK]), path(KERNELS[:IAU10]), path(KERNELS[:LEAP]))
+
+    # Spice ECLIPJ2000 has an older orientation!
+    DCM_ECLIPJ2000 = DCM(pxform("J2000", "ECLIPJ2000", 0.0))
+
+    # Load TPC 
+    tpc_constants = Basic.load(TPC(path(KERNELS[:IAU10])));
+
+    # Create frame system
+    eph = CalcephProvider(path(KERNELS[:SPK]))
+    FRAMES = FrameSystem{3, Float64}(eph);
+
+    # add axes
+    add_axes_inertial!(FRAMES, ICRF)
+    add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, DCM_ECLIPJ2000)
+    add_axes_bcrtod!(FRAMES, tpc_constants, Earth, IAU_EARTH, ICRF)
+
+    # add points
+    add_point_root!(FRAMES, SSB, ICRF)
+    add_point_ephemeris!(FRAMES, Sun)
+    add_point_ephemeris!(FRAMES, Earth, SSB)
+    add_point_ephemeris!(FRAMES, SaturnB, SSB)
 
     tol = 1e-11
 
