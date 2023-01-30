@@ -195,22 +195,35 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         # path of points depending on the input axes
         function ($pfun2)(frame::FrameSystem, t::Number, axesid::Int, path::Vector{Int})
 
-            @inbounds ps_axes = get_mappednode(frames_points(frame), path[1]).axesid
-            @inbounds pe_axes = get_mappednode(frames_points(frame), path[end]).axesid
-
-            if axesid == ps_axes
-                return $(vbwd)(frame, t, path)
-            elseif axesid == pe_axes
-                return $(vfwd)(frame, t, path)
+            @inbounds p1 = get_mappednode(frames_points(frame), path[1])
+            @inbounds p2 = get_mappednode(frames_points(frame), path[end])
+            
+            if length(path) == 2
+                # This handles all the cases where you don't need to chain any transformations
+                ax2id, stv = ($pfun2)(p1, p2, t)
+                if ax2id == axesid 
+                    return stv
+                else 
+                    return $(axfun1)(frame, ax2id, axesid, t)*stv 
+                end
+            
+            elseif axesid == p1.axesid
+                return $(vbwd)(frame, t, path, p2)
+            
+            elseif axesid == p2.axesid
+                return $(vfwd)(frame, t, path, p1)
+            
             else 
-                # to be optimised? (probably does not lead to any performance gains)
-                return $(axfun1)(frame, pe_axes, axesid, t)*$(vfwd)(frame, t, path)
+                # Optimising this transformation would probably demand a significant 
+                # portion of time with respect to the time required by the whole transformation
+                return $(axfun1)(frame, p2.axesid, axesid, t)*$(vfwd)(frame, t, path, p1)
             end
         end
 
         # Low-level function to chain point translations in a forward direction 
-        @inbounds function ($vfwd)(frame::FrameSystem, t::Number, path::Vector{Int}) 
-            p1 = get_mappednode(frames_points(frame), path[1])
+        @inbounds function ($vfwd)(frame::FrameSystem, t::Number, path::Vector{Int}, 
+                    p1::FramePointNode)
+
             p2 = get_mappednode(frames_points(frame), path[2])
         
             axid, stv = ($pfun2)(p1, p2, t)
@@ -229,13 +242,12 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                 axid = ax2id 
                 stv += stv2
             end
-        
-            return stv 
         end
 
         # Low-level function to chain point translations in a backward direction 
-        @inbounds function ($vbwd)(frame::FrameSystem, t::Number, path::Vector{Int}) 
-            p1 = get_mappednode(frames_points(frame), path[end])
+        @inbounds function ($vbwd)(frame::FrameSystem, t::Number, path::Vector{Int}, 
+                    p1::FramePointNode) 
+
             p2 = get_mappednode(frames_points(frame), path[end-1])
         
             axid, stv = ($pfun2)(p1, p2, t)
