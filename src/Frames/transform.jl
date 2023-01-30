@@ -242,6 +242,8 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                 axid = ax2id 
                 stv += stv2
             end
+
+            return stv
         end
 
         # Low-level function to chain point translations in a backward direction 
