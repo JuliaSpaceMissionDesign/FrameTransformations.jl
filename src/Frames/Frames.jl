@@ -21,7 +21,7 @@ module Frames
                        CENTURY2DAY, CENTURY2SEC, 
                        DAY2SEC, j2000
 
-    using Basic.Utils: light_speed
+    using Basic.Utils: light_speed, geod2pos
     using Basic.Utils: format_camelcase
     using Basic.Utils: D¹, D², D³
     
