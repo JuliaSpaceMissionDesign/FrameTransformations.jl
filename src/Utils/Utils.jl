@@ -19,6 +19,8 @@ module Utils
 
     include("format.jl")
     include("angles.jl")
+
+    include("geodesy.jl")
     
     # Interpolation 
     include("Math/Interpolation/abstract.jl")
