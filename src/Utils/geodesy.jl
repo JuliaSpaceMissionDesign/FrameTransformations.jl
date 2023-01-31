@@ -36,6 +36,10 @@ end
 
 Transform a cartesian 3-elements position vector `pos` into longitude, geodetic latitude 
 and altitude over the reference ellipsoid with radius `R` and flattening `f`. 
+ 
+### References 
+- Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications, Microcosm Press, 
+    Hawthorn, CA, USA.
 """
 @fastmath function pos2geod(pos::AbstractVector, R::Number, f::Number, toll::Number=1e-12)
     
@@ -86,6 +90,10 @@ end
 
 Transform longitude `λ`, geodetic latitude `ϕ` and altitude over the reference ellipsoid to 
 a cartesian position vector, given the reference radius `R` and the flattening `f`.
+
+### References 
+- Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications, Microcosm Press, 
+    Hawthorn, CA, USA.
 """ 
 @fastmath function geod2pos(h::Number, λ::Number, ϕ::Number, R::Number, f::Number)
 
