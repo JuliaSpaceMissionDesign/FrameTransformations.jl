@@ -14,22 +14,24 @@ function ephem_load(::Type{E}, file::String) where {E<:AbstractEphemerisProvider
     return E(file)
 end
 
-# TODO: add NotImplementedErrors to the abstract implementation of those functions.
 
-function ephem_position_records(::AbstractEphemerisProvider) end
+for fun in (:ephem_position_records, 
+            :ephem_orient_records, 
+            :ephem_available_points, 
+            :ephem_available_axes, 
+            :ephem_timespan, 
+            :ephem_timescale, 
+            :ephem_compute_order!, 
+            :ephem_orient_order!
+            )
 
-function ephem_available_points(::AbstractEphemerisProvider) end 
+    @eval begin 
+        function ($fun)(E::AbstractEphemerisProvider)
+            throw(NotImplementedError(
+                String(Symbol(@__MODULE__)),
+                "$($fun) shall be implemented for $(typeof(E))"
+            ))
+        end
+    end
 
-function ephem_orient_records(::AbstractEphemerisProvider) end
-
-function ephem_available_axes(::AbstractEphemerisProvider) end
-
-function ephem_timespan(::AbstractEphemerisProvider) end
-
-function ephem_timescale(::AbstractEphemerisProvider) end
-
-function ephem_compute_order!(res, eph::AbstractEphemerisProvider, 
-    jd::Number, time::Number, target::Int, center::Int, order::Int) end
-
-function ephem_orient_order!(res, eph::AbstractEphemerisProvider, 
-    jd::Number, time::Number, target::Int, order::Int) end
+end 
