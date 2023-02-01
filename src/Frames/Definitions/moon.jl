@@ -113,9 +113,10 @@ function add_axes_me421!(frames::FrameSystem, axes::AbstractFrameAxes,
 		dcm = Orient.DCM_MOONPA421_TO_MER421
 
 	elseif pid == Orient.AXESID_MOONPA_DE440
-		dcm = Orient.DCM_MOONPA421_TO_MER421
+		dcm = Orient.DCM_MOONPA440_TO_MER421
 		
 	else 
+		pname = axes_name(parent)
 		throw(ArgumentError(
 			"The DE421 Mean Earth/Mean Rotation (MER) axes cannot be defined w.r.t. "*
 			"$pname with ID $pid. Only the DE440 or DE421 Moon Principal Axes are "*
