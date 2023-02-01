@@ -16,16 +16,16 @@ kclear()
 @testset "Light Time Corrections" verbose=true begin
 
     # load spice kernels 
-    furnsh(path(KERNELS[:SPK]), path(KERNELS[:IAU10]), path(KERNELS[:LEAP]))
+    furnsh(path(KERNELS[:DE432]), path(KERNELS[:PCK10]), path(KERNELS[:LEAP]))
 
     # Spice ECLIPJ2000 has an older orientation!
     DCM_ECLIPJ2000 = DCM(pxform("J2000", "ECLIPJ2000", 0.0))
 
     # Load TPC 
-    tpc_constants = Basic.load(TPC(path(KERNELS[:IAU10])));
+    tpc_constants = Basic.load(TPC(path(KERNELS[:PCK10])));
 
     # Create frame system
-    eph = CalcephProvider(path(KERNELS[:SPK]))
+    eph = CalcephProvider(path(KERNELS[:DE432]))
     FRAMES = FrameSystem{3, Float64}(eph);
 
     # add axes

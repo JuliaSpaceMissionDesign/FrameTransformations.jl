@@ -30,8 +30,8 @@ kclear()
         angle_to_dcm(π/2 + ra, π/2 - dec, w, :ZXZ)
     end 
 
-    tpc10_constants = Basic.load(TPC(path(KERNELS[:IAU10])));
-    furnsh(path(KERNELS[:IAU10]));
+    tpc10_constants = Basic.load(TPC(path(KERNELS[:PCK10])));
+    furnsh(path(KERNELS[:PCK10]));
     
     # Test against manual computation 
     p = Basic.Orient.PlanetsPrecessionNutation(point_alias(MIMAS), tpc10_constants)
@@ -89,7 +89,7 @@ kclear()
         end 
     end;
 
-    for (version, pckname) in zip((10, 11), (:IAU10, :IAU11))
+    for (version, pckname) in zip((10, 11), (:PCK10, :PCK11))
         # load constants 
         kclear()
 
