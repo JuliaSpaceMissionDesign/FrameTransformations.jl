@@ -43,43 +43,33 @@ and altitude over the reference ellipsoid with radius `R` and flattening `f`.
 """
 @fastmath function pos2geod(pos::AbstractVector, R::Number, f::Number, toll::Number=1e-12)
     
-    # Get eccentricity from flattening 
-    e = sqrt(1-(1-f)^2)
-    e² = e*e 
+    @inbounds x, y, z = pos[1], pos[2], pos[3]
+    sz = sign(z)
 
-    @inbounds ri, rj, rk = pos[1], pos[2], pos[3]
+    rδs = x^2 + y^2
 
-    rδs = ri^2 + rj^2
-    r = rδs + rk^2 
-    rδ = sqrt(rδs)
-
-    sϕ = rk/r 
-    ϕ = asin(sϕ)
-
-    d = sqrt(1-e²*sϕ^2)
-    c = R/d
-
-    err, iter = 1.0, 1
-    while iter < 5 && err > toll
-        ϕn = atan(rk + c*e²*sϕ, rδ)
-        err, ϕ = abs(ϕn - ϕ), ϕn
-
-        sϕ = sin(ϕ)
-        d = sqrt(1-e²*sϕ^2)
-        c = R/d
-        
-        iter += 1
-    end
-
-    if π/2 - abs(ϕ) < π/180
-        s = R*(1-e²)/d
-        hₑ = rk/sϕ - s
-    else 
-        cϕ = cos(ϕ)
-        hₑ = rδ/cϕ - c 
-    end
+    # Get eccentricity from flattening  
+    e² = f*(2-f)
+    sϕ² = z^2/(rδs + z^2) 
     
-    λ = atan(rj, ri)
+    zₙ, cₙ = z, 1.0
+    err = toll + 1
+    while err > toll
+        c = cₙ
+
+        z² = zₙ^2 
+        sϕ² = z²/(rδs + z²)
+
+        cₙ = R*e²*sqrt(sϕ²/(1-e²*sϕ²))  
+        zₙ = z + cₙ*sz 
+
+        err = abs(cₙ - c)
+    end
+
+    λ = atan(y, x)
+    ϕ = atan(zₙ, sqrt(rδs))
+    hₑ = sqrt(rδs + zₙ^2) - R/sqrt(1-e²*sϕ²)
+    
     return λ, ϕ, hₑ
 
 end
@@ -98,14 +88,14 @@ a cartesian position vector, given the reference radius `R` and the flattening `
 @fastmath function geod2pos(h::Number, λ::Number, ϕ::Number, R::Number, f::Number)
 
     # Get eccentricity from flattening 
-    e = sqrt(1-(1-f)^2)
-    e² = e*e 
+    e² = (2-f)*f
 
     sϕ, cϕ = sincos(ϕ)
     sλ, cλ = sincos(λ)
 
-    d = sqrt(1-e²*sϕ^2)
-    c, s = R/d, R*(1-e²)/d 
+    d = R/sqrt(1-e²*sϕ^2)
+    c = (d+h)*cϕ
+    s = (1-e²)*d
 
-    SA[(c+h)*cϕ*cλ, (c+h)*cϕ*sλ, (s+h)*sϕ]
+    SA[c*cλ, c*sλ, (s+h)*sϕ]
 end
