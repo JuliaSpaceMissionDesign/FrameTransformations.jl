@@ -169,10 +169,10 @@ supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes`, `:P
 - `dcm` -- DCM with respect to the parent axes. Required only for FixedOffsetAxes. 
 - `cax_prop` -- `ComputableAxesProperties`, required only by ComputableAxes.
 
-### Notes 
-This is a low-level function and is NOT meant to be directly used. Instead, to add a set of
-axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), 
-[`add_axes_computable!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_projected!`](@ref).
+!!! warning 
+    This is a low-level function and is NOT meant to be directly used. Instead, to add a set of
+    axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), 
+    [`add_axes_computable!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_projected!`](@ref).
 
 """
 function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Symbol, 
@@ -574,7 +574,6 @@ assigns `dcm = A3 * A2 * A1` in which `Ai` is the DCM related with the *i*-th ro
 The possible `rot_seq` values are: :XYX`, `XYZ`, `:XZX`, `:XZY`, `:YXY`, `:YXZ`, `:YZX`, 
 `:YZY`, `:ZXY`, `:ZXZ`, `:ZYX`, or `:ZYZ`.
 
-### Notes 
 This operation is only possible if the ephemeris kernels loaded within `frames` contain 
 orientation data for the AXES ID associated to `axes`. An error is returned if the parent 
 axes ID is yet to be added to `frames.`
@@ -662,5 +661,5 @@ end
             _3angles_to_δdcm(θ, seq), 
             _3angles_to_δ²dcm(θ, seq), 
             _3angles_to_δ³dcm(θ, seq)) 
-end 
+end
 
