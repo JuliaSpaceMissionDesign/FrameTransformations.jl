@@ -7,7 +7,9 @@ module Orient
     using RemoteFiles 
     using StaticArrays
 
-    using Basic.Ephemeris: AbstractEphemerisProvider
+    using Basic.Ephemeris: AbstractEphemerisProvider, 
+                           ephem_available_axes, 
+                           ephem_orient_order!
     using Basic.Tempo 
     using Basic.Utils: arcsec2rad
     using Basic.Utils: InterpAkima, interpolate
