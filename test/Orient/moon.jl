@@ -13,6 +13,9 @@ kclear()
             furnsh(path(KERNELS[kernel]))
         end
 
+        ephempty = CalcephProvider(path(KERNELS[:DE432]))
+        @test_throws ErrorException Orient.orient_rot3_icrf_to_pa421(ephempty, 0.0)
+
         eph = CalcephProvider(path(KERNELS[:PA421]))
 
         for _ = 1:10
@@ -43,6 +46,9 @@ kclear()
         for kernel in (:LEAP, :PA440, :FK_DE440)
             furnsh(path(KERNELS[kernel]))
         end
+
+        ephempty = CalcephProvider(path(KERNELS[:DE432]))
+        @test_throws ErrorException Orient.orient_rot3_icrf_to_pa440(ephempty, 0.0)
 
         eph = CalcephProvider(path(KERNELS[:PA440]))
 

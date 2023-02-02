@@ -76,15 +76,15 @@
 
         # 1st order DCM derivative
         B = Frames.twovectors_to_δdcm(a, b, seq)
-        @test B ≈ D¹(dfun, θ)                                       atol=atol
+        @test B ≈ D¹(dfun, θ) atol=atol
 
         # 2nd order DCM derivative
         C = Frames.twovectors_to_δ²dcm(a, b, seq)
-        @test C ≈ D²(dfun, θ)                     atol=atol
+        @test C ≈ D²(dfun, θ) atol=atol
 
         # 3rd order DCM derivative
         D = Frames.twovectors_to_δ³dcm(a, b, seq)
-        @test D ≈ D³(dfun, θ)   atol=atol
+        @test D ≈ D³(dfun, θ) atol=atol
     
         A = Frames.twovectors_to_dcm(a, b, seq) 
 
