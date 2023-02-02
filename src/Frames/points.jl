@@ -118,9 +118,9 @@ and `:UpdatablePoint`.
 - `parentid` -- NAIF ID of the parent point. Not required only for the root point.
 - `offset` -- Position offset with respect to a parent point. Required only for FixedPoints.
 
-### Notes 
-This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
-to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
+!!! warning Notes 
+    This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
+    to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
 function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class::Symbol, 
                 axesid::Int, funs::FramePointFunctions{T, O};
@@ -217,9 +217,9 @@ origin, i.e., its position will equal (0., 0., 0.).
 - `point` -- Target point instance
 - `axes` -- ID or instance of the axes where the point state-vector is expressed. 
 
-### Notes 
-This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
-points in the same graph are both inadmissible and meaningless.
+!!! note 
+    This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
+    points in the same graph are both inadmissible and meaningless.
 
 ### Examples 
 ```jldoctest
@@ -266,14 +266,12 @@ state-vector is read from ephemeris kernels (i.e., de440.bsp). If a parent point
 specified, it will automatically be assigned to the point with respect to which the ephemeris 
 data is written in the kernels.
 
-Ephemeris points only accept as parent points root-points or other ephemeris points.
-
-### Notes 
+Ephemeris points only accept as parent points root-points or other ephemeris points. The axes
+in which the state-vector is expressed are taken from the ephemeris data: an error is returned 
+if the axes ID is yet to be added to `frames`.
+ 
 This operation is only possible if the ephemeris kernels loaded within `frames` contain 
 data for the NAIF ID associated to `point` and to its `parent`. 
-    
-The axes in which the state-vector is expressed are taken from the ephemeris data: an error 
-is returned if the axes ID is yet to be added to `frames`.
 
 !!! warning 
     It is expected that the NAIF ID and the axes ID assigned by the user are aligned with 
@@ -449,9 +447,9 @@ Add `point` as an updatable point to `frames`. Differently from all the other cl
 state vector for updatable points (expressed in the set of input `axes`) must be manually 
 updated before being used for other computations.  
 
-### Notes 
-This class of points becomes particularly useful if the state vector is not known a-priori, 
-e.g., when it is the output of an optimisation process which exploits the frame system.
+!!! note 
+    This class of points becomes particularly useful if the state vector is not known a-priori, 
+    e.g., when it is the output of an optimisation process which exploits the frame system.
 
 ### Examples 
 ```jldoctest
