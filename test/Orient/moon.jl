@@ -41,7 +41,7 @@ kclear()
         end
     end
 
-    @testset "DE421" verbose=false begin 
+    @testset "DE440" verbose=false begin 
 
         for kernel in (:LEAP, :PA440, :FK_DE440)
             furnsh(path(KERNELS[kernel]))
