@@ -1,12 +1,13 @@
 module Utils
 
+    using ForwardDiff
+    using ForwardDiff: derivative
     using JSON3
     using JLD2
-
-    using ForwardDiff: derivative
+    using LinearAlgebra
     using ReferenceFrameRotations: DCM
     using StaticArrays: SMatrix, SA, SVector
-    using LinearAlgebra
+
     
     import YAML as YAMLLib
     
