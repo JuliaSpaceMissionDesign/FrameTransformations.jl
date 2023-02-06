@@ -1,33 +1,94 @@
 """
-    geoc2pos(h::Number, λ::Number, ϕ::Number, R::Number)
+    geoc2pos(r::Number, λ::Number, ϕ::Number)
+    geoc2pos(geoc::AbstractArray)
 
 Transform geocentric coordinates in a cartesian position vector, given the longitude `λ`, 
-the geocentric latitude `ϕ`, the geocentric altitude over the reference sphere `h` and its 
-radius `R`.
+the geocentric latitude `ϕ` and the radius `r`.
 """
-@fastmath function geoc2pos(h::Number, λ::Number, ϕ::Number, R::Number)
+@fastmath function geoc2pos(r::Number, λ::Number, ϕ::Number)
     sϕ, cϕ = sincos(ϕ)
     sλ, cλ = sincos(λ)
-    r = R + h
     return SA[r*cϕ*cλ, r*cϕ*sλ, r*sϕ]
+end
+
+@inline geoc2pos(geoc::AbstractVector) = geoc2pos(geoc[1], geoc[2], geoc[3])
+
+"""
+    pos2geoc(pos::AbstractVector)
+
+Transform a cartesian 3-elements position vector `pos` into radius, longitude and geocentric 
+latitude, respectively.
+"""
+@fastmath function pos2geoc(pos::AbstractVector)
+
+    @inbounds x, y, z = pos[1], pos[2], pos[3]
+    r = sqrt(x^2 + y^2 + z^2)
+
+    λ = atan(y, x)
+    ϕ = asin(z/r)
+    
+    return SA[r, λ, ϕ]
 end
 
 
 """
-    pos2geoc(pos::AbstractVector, R::Number)
+    geoc2pv(geoc::AbstractVector)
 
-Transform a cartesian 3-elements position vector `pos` into longitude, geocentric latitude
-and altitude over the reference sphere with radius `R`, respectively.
+Transform a spherical geocentric 6-elements state vector (radius, longitude, geocentric 
+latitude and their derivatives) into a cartesian 6-elements vector (position and velocity).
 """
-@fastmath function pos2geoc(pos::AbstractVector, R::Number)
-    @inbounds begin 
-        r = sqrt(pos[1]^2 + pos[2]^2 + pos[3]^2)
+function geoc2pv(geoc::AbstractVector)
 
-        ϕ = asin(pos[3]/r)
-        λ = atan(pos[2], pos[1])
-        h = r - R
+    @fastmath @inbounds begin 
+        r = geoc[1]   
+        δr, δλ, δϕ = geoc[4], geoc[5], geoc[6]
+
+        sλ, cλ = sincos(geoc[2])
+        sϕ, cϕ = sincos(geoc[3])
     end
-    return λ, ϕ, h
+
+    δϕr = δϕ*r
+    δϕrsϕ = δϕr*sϕ
+
+    δrcϕ = δr*cϕ
+    rcϕδλ = r*cϕ*δλ
+
+    SA[r*cϕ*cλ, r*cϕ*sλ, r*sϕ, 
+        δrcϕ*cλ - δϕrsϕ*cλ - rcϕδλ*sλ, 
+        δrcϕ*sλ - δϕrsϕ*sλ + rcϕδλ*cλ, 
+        δr*sϕ + δϕr*cϕ]
+
+end
+
+"""
+    pv2geoc(pv::AbstractVector)
+
+Transform a cartesian 6-elements state vector (position and velocity) into radius, longitude, 
+geocentric latitude and their derivatives, respectively.
+"""
+@fastmath function pv2geoc(pv::AbstractVector)
+    @inbounds x, y, z = pv[1], pv[2], pv[3]
+    @inbounds dx, dy, dz = pv[4], pv[5], pv[6]
+
+    rxy2 = x^2 + y^2
+    rxy = sqrt(rxy2)
+
+    r2 = rxy2 + z^2
+    r = sqrt(r2)
+
+    # radius
+    δr = (x*dx + y*dy + z*dz)/r
+    δrxy = (x*dx + y*dy)/rxy
+
+    # longitude
+    λ = atan(y, x)
+    δλ = (dy*x - dx*y)/rxy2
+
+    # latitude
+    ϕ = atan(z, rxy)
+    δϕ = (dz*rxy - z*δrxy)/r2
+
+    return SA[r, λ, ϕ, δr, δλ, δϕ]
 end
 
 
