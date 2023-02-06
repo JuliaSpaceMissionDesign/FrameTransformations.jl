@@ -54,8 +54,8 @@ function geoc2pv(geoc::AbstractVector)
     rcϕδλ = r*cϕ*δλ
 
     SA[r*cϕ*cλ, r*cϕ*sλ, r*sϕ, 
-        δrcϕ*cλ - δϕrsϕ*cλ - rcϕδλ*sλ, 
-        δrcϕ*sλ - δϕrsϕ*sλ + rcϕδλ*cλ, 
+        (δrcϕ - δϕrsϕ)*cλ - rcϕδλ*sλ, 
+        (δrcϕ - δϕrsϕ)*sλ + rcϕδλ*cλ, 
         δr*sϕ + δϕr*cϕ]
 
 end
