@@ -47,7 +47,7 @@ kclear()
     # --- LT corrections with 1 iteration
     @testset "LT Corrections" verbose=true begin 
         for (bfun, sfun) in zip((vector3, vector6), (spkpos, spkezr))
-            for (bcorr, scorr) in zip((LightTime, StellarAberration), ("LT", "LT+S"))
+            for (bcorr, scorr) in zip((LightTime, PlanetaryAberration), ("LT", "LT+S"))
                 for (bdir, sdir) in zip((-1, 1), ("", "X"))
 
                     # Corrections with epoch
@@ -93,7 +93,7 @@ kclear()
     # --- LT corrections with 3 iterations
     @testset "LT Converged Corrections" verbose=true begin 
         for (bfun, sfun) in zip((vector3, vector6), (spkpos, spkezr))
-            for (bcorr, scorr) in zip((LightTime, StellarAberration), ("CN", "CN+S"))
+            for (bcorr, scorr) in zip((LightTime, PlanetaryAberration), ("CN", "CN+S"))
 
                 for (bdir, sdir) in zip((-1, 1), ("", "X"))
 

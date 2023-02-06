@@ -1,9 +1,9 @@
-export LightTime, StellarAberration
+export LightTime, PlanetaryAberration
 
 # Abstract types definition
 abstract type AbstractLightTimeCorrection end 
 struct LightTimeCorrection <: AbstractLightTimeCorrection end 
-struct StellarAberrationCorrection <: AbstractLightTimeCorrection end 
+struct PlanetaryAberrationCorrection <: AbstractLightTimeCorrection end 
 
 """ 
     LightTime 
@@ -18,16 +18,15 @@ const LightTime = LightTimeCorrection()
 
 
 """ 
-    StellarAberration 
+    PlanetaryAberration 
 
-The singleton instance of type `StellarAberrationCorrection`, used to apply light-time 
-(planetary aberration) and stellar aberration corrections when computing vectors from the 
-`FrameSystem`.
+The singleton instance of type `PlanetaryAberrationCorrection`, used to apply one-way 
+light-time and stellar aberration corrections when computing vectors from the `FrameSystem`.
 
 ### See also 
 See also [`vector3`](@ref) and [`vector6`](@ref).
 """
-const StellarAberration = StellarAberrationCorrection()
+const PlanetaryAberration = PlanetaryAberrationCorrection()
 
 
 # Structure to store and collect useful infos required by 
@@ -227,12 +226,12 @@ function _lt_axes(frames::FrameSystem, ltp::LTProperties, from::Int, to::Int,
 end 
 
 # -------------------------------------
-# STELLAR ABERRATION
+# PLANETARY ABERRATION
 # -------------------------------------
 
 # Compute position from observer to target corrected for one-way light-time and 
 # stellar aberration
-function light_time_corr3(frames::FrameSystem, ::StellarAberrationCorrection,
+function light_time_corr3(frames::FrameSystem, ::PlanetaryAberrationCorrection,
              ltp::LTProperties, from::Int, to::Int, t::Number)
 
     # Compute observer state with respect to SSB 
@@ -252,7 +251,7 @@ end
 
 # Compute state from observer to target corrected for one-way light-time and 
 # stellar aberration
-function light_time_corr6(frames::FrameSystem, ::StellarAberrationCorrection,
+function light_time_corr6(frames::FrameSystem, ::PlanetaryAberrationCorrection,
             ltp::LTProperties, from::Int, to::Int, t::Number)
 
     # Compute observer state with respect to SSB 

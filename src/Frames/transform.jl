@@ -336,7 +336,7 @@ for (order, pfun, ltcorr) in zip(
         - **LightTimeCorrection**: it applies the one-way light time (planetary aberration) 
             correction, using a Newtonian formulation. 
 
-        - **StellarAberrationCorrection**: it applies the one-way light time and stellar 
+        - **PlanetaryAberrationCorrection**: it applies the one-way light time and stellar 
             aberration corrections using a Newtonian fromulation. It modifies the vector 
             obtained with the `LightTimeCorrection` option to account for the observer velocity 
             with respect to the Solar System Barycenter. 
@@ -361,11 +361,11 @@ for (order, pfun, ltcorr) in zip(
                 should be computed. It defaults to `from`.
         
         !!! note 
-            If the `StellarAberrationCorrection` is applied, the frame system must be at 
+            If the `PlanetaryAberrationCorrection` is applied, the frame system must be at 
             least one order higher than that of the requested transformation.
 
         ### See also 
-        See also [`LightTime`](@ref), [`StellarAberration`](@ref) and [`vector6`](@ref).
+        See also [`LightTime`](@ref), [`PlanetaryAberration`](@ref) and [`vector6`](@ref).
 
         ### References 
         - CSPICE [Library](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html)
