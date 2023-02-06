@@ -30,10 +30,13 @@ abstract type AbstractFrameAxes end
 # -------------------------------------
 
 """
-    ComputableAxesVector 
+    ComputableAxesVector(from, to, order::Int)
 
 Store the properties required to retrieve the i-th order components of a 
-desired vector.
+desired vector. Arguments `from` and `to` are the NAIFIDs or `AbstractFramePoint` instances 
+that define the observer and target points.
+
+Only orders between 1 and 3 are supported.
 
 ### Example 
 ```jldoctest
@@ -41,19 +44,19 @@ julia> @point SSB 0 SolarSystemBarycenter
 
 julia> @point Sun 10 
 
-julia> ComputableAxesVector(Sun, SSB, 1)
-ComputableAxesVector(10, 0, 1)
+julia> ComputableAxesVector(SSB, Sun, 1)
+ComputableAxesVector(0, 10, 1)
 
-julia> ComputableAxesVector(10, 0, 1)
-ComputableAxesVector(10, 0, 1)
+julia> ComputableAxesVector(0, 10, 1)
+ComputableAxesVector(0, 10, 1)
 ```
 """
 struct ComputableAxesVector 
-    to::Int 
     from::Int 
+    to::Int 
     order::Int 
 
-    function ComputableAxesVector(to::Int, from::Int, order::Int)
+    function ComputableAxesVector(from::Int, to::Int, order::Int)
         if order < 1 || order > 3
             throw(ArgumentError("order must be between 1 and 3."))
         end
@@ -62,14 +65,14 @@ struct ComputableAxesVector
             throw(ArgumentError("vector origin and target must be different."))
         end
 
-        new(to, from, order)
+        new(from, to, order)
     end
 
 end
  
 ComputableAxesVector() = ComputableAxesVector(1, 2, 1)
-function ComputableAxesVector(to::T, from::T, order::Int) where {T <: Union{Int, <:AbstractFramePoint}}
-    ComputableAxesVector(point_alias(to), point_alias(from), order)
+function ComputableAxesVector(from, to, order::Int)
+    ComputableAxesVector(point_alias(from), point_alias(to), order)
 end
 
 """ 

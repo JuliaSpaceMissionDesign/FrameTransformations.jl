@@ -71,7 +71,7 @@ function is_timefixed(axframe::MappedNodeGraph, axesid::Int)
     node = get_node(axframe, axesid) 
     if node.class in (:InertialAxes, :FixedOffsetAxes)
         if node.id != node.parentid 
-            return is_inertial(axframe, node.parentid)
+            return is_timefixed(axframe, node.parentid)
         else 
             return true # Root axes are always time fixed
         end
@@ -182,24 +182,26 @@ function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Sym
     if has_axes(frames, id)
         # Check if a set of axes with the same ID is already registered within 
         # the given frame system 
-        throw(ErrorException(
-            "Axes with ID $id are already registered in the given FrameSystem."))
+        throw(ArgumentError(
+            "Axes with ID $id are already registered in the given FrameSystem.")
+        )
     end
 
     if name in map(x->x.name, frames_axes(frames).nodes) 
-        # Check if axes with the same name also does not already exist
-        throw(ErrorException(
-            "Axes with name=$name are already registered in the given FrameSystem."))
+        # Check if axes with the same name also do not already exist
+        throw(ArgumentError(
+            "Axes with name=$name are already registered in the given FrameSystem.")
+        )
     end    
 
     # if the frame has a parent
     if !isnothing(parentid)
         # Check if the root axes is not present
-        isempty(frames_axes(frames)) && throw(ErrorException("Missing root axes."))
+        isempty(frames_axes(frames)) && throw(ArgumentError("Missing root axes."))
         
         # Check if the parent axes are registered in frame 
         if !has_axes(frames, parentid)
-            throw(ErrorException("The specified parent axes with ID $parentid are not "*
+            throw(ArgumentError("The specified parent axes with ID $parentid are not "*
                 "registered in the given FrameSystem."))
         end
 
@@ -257,7 +259,8 @@ classes may be added aswell. Once a set of root-axes has been added, `parent` an
 become mandatory fields.
 
 !!! note
-    The parent of a set of inertial axes must also be inertial.
+    The parent of a set of inertial axes must also be inertial. FixedOffset axes that are 
+    that only have inertial parents are also accepted.
 
 ### Examples 
 ```jldoctest 
@@ -282,26 +285,40 @@ function add_axes_inertial!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes;
             parent=nothing, dcm::Union{Nothing, DCM{T}}=nothing) where {O, T}
 
     name = axes_name(axes)
+    pid = isnothing(parent) ? nothing : axes_alias(parent)
+
 
     # Checks for root-axes existence 
-    if isnothing(parent)
-        !isempty(frames_axes(frames)) && throw(ErrorException(
-            "A set of parent axes for $name is required because the root axes "*
-            "have already been specified in the given FrameSystem."))
-
-        !isnothing(dcm) && throw(ArgumentError(
-            "Providing a DCM for root axes is meaningless."))
-    else 
-        isnothing(dcm) && throw(ArgumentError(
-            "Missing DCM from axes $parent."))
-
-        # Check that the parent axes are inertial 
-        if get_node(frames_axes(frames), axes_alias(parent)).class != :InertialAxes 
-            throw(ErrorException("The parent axes for inertial axes must also be inertial."))
+    if isnothing(pid)
+        if !isempty(frames_axes(frames))
+            throw(ArgumentError(
+                "A set of parent axes for $name is required because the root axes "*
+                "have already been specified in the given FrameSystem."
+            ))
         end
-    end
 
-    pid = isnothing(parent) ? nothing : axes_alias(parent)
+        if !isnothing(dcm)
+            throw(ArgumentError("Providing a DCM for root axes is meaningless."))
+        end
+        
+    else 
+        # Check that the parent axes are contained in frames! 
+        if !has_axes(frames, pid)
+            throw(ArgumentError(
+                "The parent axes $pid are not present in the given FrameSystem."
+            ))
+        end
+
+        # Check that the parent axes are inertial\timefixed
+        if !is_timefixed(frames, pid)
+            throw(ArgumentError("The parent axes for inertial axes must also be inertial."))
+        end
+
+        if isnothing(dcm) 
+            throw(ArgumentError("Missing DCM from axes $parent."))
+        end 
+
+    end
 
     # construct the axes and insert in the FrameSystem
     build_axes(frames, name, axes_id(axes), :InertialAxes, FrameAxesFunctions{T, O}();
@@ -507,13 +524,19 @@ and [`add_axes_computable!`](@ref)
 function add_axes_computable!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, parent, 
             v1::ComputableAxesVector, v2::ComputableAxesVector, seq::Symbol) where {O, T}
 
-    !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) && throw(ArgumentError(
-        "$seq is not a valid rotation sequence for two vectors frames."))
+    if !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) 
+        throw(ArgumentError(
+            "$seq is not a valid rotation sequence for two vectors frames.")
+        )
+    end
 
     for v in (v1, v2)
         for id in (v.from, v.to)
-            !has_point(frames, id) && throw(ArgumentError(
-                "Point with NAIFID $id is unknown in the given frame system."))
+            if !has_point(frames, id) 
+                throw(ArgumentError(
+                    "Point with NAIFID $id is unknown in the given frame system.")
+                )
+            end
         end
     end
 
@@ -570,8 +593,8 @@ The parent axes are automatically assigned to the axes with respect to which the
 data has been written in the kernels.
 
 The rotation sequence is defined by a `Symbol` specifing the rotation axes. This function
-assigns `dcm = A3 * A2 * A1` in which `Ai` is the DCM related with the *i*-th rotation. 
-The possible `rot_seq` values are: :XYX`, `XYZ`, `:XZX`, `:XZY`, `:YXY`, `:YXZ`, `:YZX`, 
+assigns `dcm = A3 * A2 * A1` in which `Ai` is the DCM related with the **i-th** rotation. 
+The possible `rot_seq` values are: `:XYX`, `XYZ`, `:XZX`, `:XZY`, `:YXY`, `:YXZ`, `:YZX`, 
 `:YZY`, `:ZXY`, `:ZXZ`, `:ZYX`, or `:ZYZ`.
 
 This operation is only possible if the ephemeris kernels loaded within `frames` contain 
@@ -595,7 +618,7 @@ function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
 
     # Check that the kernels contain orientation data for the given axes ID 
     if !(axesid in ephemeris_axes(frames))
-        throw(ErrorException("Orientation data for AXESID $axesid is not available "*
+        throw(ArgumentError("Orientation data for AXESID $axesid is not available "*
             "in the kernels loaded in the given FrameSystem."))
     end
 
@@ -616,7 +639,7 @@ function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
 
     # Check that the default parent is available in the FrameSystem! 
     if !has_axes(frames, parentid)
-        throw(ErrorException("Orientation data for axes with AXESID $axesid is available "*
+        throw(ArgumentError("Orientation data for axes with AXESID $axesid is available "*
             "with respect to axes with AXESID $parentid, which has not yet been defined "*
             "in the given FrameSystem."))
     end

@@ -1,6 +1,10 @@
 import Basic.Frames: FrameAxesFunctions, FramePointFunctions,
                     _get_fixedrot, _empty_stv_update!
 
+@point SSB 0 SolarSystemBarycenter
+@point Sun 10 
+@point Earth 399
+
 @testset "Frame types" verbose=true begin 
 
     atol = 1e-10
@@ -10,9 +14,14 @@ import Basic.Frames: FrameAxesFunctions, FramePointFunctions,
 
         # ComputableAxesVector 
         # ------------------------ 
-        x = Frames.ComputableAxesVector(10, 20, 3)
+        x = Frames.ComputableAxesVector(Earth, Sun, 1)
+        @test x.from == 399 
         @test x.to == 10 
+        @test x.order == 1
+
+        x = Frames.ComputableAxesVector(20, 10, 3)
         @test x.from == 20 
+        @test x.to == 10 
         @test x.order == 3
          
         @test_throws ArgumentError Frames.ComputableAxesVector(1, 2, 4)

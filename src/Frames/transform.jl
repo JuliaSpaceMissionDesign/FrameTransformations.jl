@@ -122,7 +122,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                         # Compute rotation matrix
                         axes.R[tid] = axes.f[$order](t, SA[axes.angles[tid]...], stv)
 
-                    else 
+                    else # Computable axes 
                         axes.R[tid] = axes.f[$order](t, 
                             $(compfun)(frame, axes.comp.v1, axes.parentid, t), 
                             $(compfun)(frame, axes.comp.v2, axes.parentid, t))
@@ -341,7 +341,7 @@ for (order, pfun, ltcorr) in zip(
             obtained with the `LightTimeCorrection` option to account for the observer velocity 
             with respect to the Solar System Barycenter. 
         
-        The integer argument `dir` is used to specify correction direction, as follows:
+        The integer argument `dir` is used to specify the correction direction, as follows:
             
         - **-1**: for **Reception**, in which photons depart from the target's location at the 
             light-time corrected epoch `ep-lt` and arrive at the observer's location at `ep`.
@@ -478,19 +478,31 @@ function update_point!(frames::FrameSystem{O, T}, point, stv::AbstractVector{T},
             time::T) where {O, T}
 
     NAIFId = point_alias(point) 
+    # Check that point exists in the frame system
+    if !has_point(frames, NAIFId) 
+        throw(ArgumentError(
+            "point with NAIF ID $NAIFId is not contained in the frame system.")
+        )
+    end
 
-    !has_point(frames, NAIFId) && throw(ErrorException(
-        "point with NAIF ID $NAIFId is not contained in the frame system."))
-
+    # Check that the state vector is compatible with the frame system
     ne = length(stv) 
-    ne > 3*O && throw(ArgumentError("state vector order greater than frame system order."))
+    if ne > 3*O 
+        throw(ArgumentError("state vector order greater than frame system order."))
+    end
   
+    # Check that the state vector is admissible 
     if !(ne in (3, 6, 9, 12)) 
         throw(ArgumentError(
             "wrong state vector length: expected either 3, 6 or 9, found $ne"))
     end 
 
     pnt = get_node(frames_points(frames), point_alias(point))
+    
+    # Check that the point is an updatable point! 
+    if pnt.class != :UpdatablePoint 
+        throw(ArgumentError("Point $(pnt.NAIFId) is not an Updatable Point."))
+    end
 
     id = Threads.threadid()
     @inbounds pnt.epochs[id] = time

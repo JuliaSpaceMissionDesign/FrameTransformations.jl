@@ -118,9 +118,9 @@ and `:UpdatablePoint`.
 - `parentid` -- NAIF ID of the parent point. Not required only for the root point.
 - `offset` -- Position offset with respect to a parent point. Required only for FixedPoints.
 
-!!! warning Notes 
-    This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
-    to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
+### Notes 
+This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
+to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
 function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class::Symbol, 
                 axesid::Int, funs::FramePointFunctions{T, O};
@@ -129,24 +129,29 @@ function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class
     if has_point(frames, NAIFId) 
         # Check if a point with the same NAIFId is already registered 
         # within the given FrameSystem 
-        throw(ErrorException(
-            "A point with NAIFID $NAIFId is already registered in the given FrameSystem."))
+        throw(ArgumentError(
+            "A point with NAIFID $NAIFId is already registered in the given FrameSystem.")
+        )
     end
 
     # Check if a point with the same name does not already exist 
     if name in map(x->x.name, frames_points(frames).nodes)
-        throw(ErrorException(
-            "A point with name=$name is already registed in the given FrameSystem"))
+        throw(ArgumentError(
+            "A point with name=$name is already registed in the given FrameSystem")
+        )
     end 
 
     # Check if the given axes are known in the FrameSystem
-    !has_axes(frames, axesid) && throw(ErrorException(
-            "Axes with ID $axesid are not registered in the given FrameSystem"))
-            
+    if !has_axes(frames, axesid) 
+        throw(ArgumentError(
+            "Axes with ID $axesid are not registered in the given FrameSystem")
+        )
+    end 
+
     if isnothing(parentid) 
         # If a root-point exists, check that a parent has been specified 
         if !isempty(frames_points(frames)) 
-            throw(ErrorException("A parent point is required because the given FrameSystem "*
+            throw(ArgumentError("A parent point is required because the given FrameSystem "*
                 "already contains a root-point."))
         end
 
@@ -155,7 +160,7 @@ function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class
     else 
         # Check that the parent point is registered in frames 
         if !has_point(frames, parentid)
-            throw(ErrorException("The specified parent point with NAIFID $parentid is not "*
+            throw(ArgumentError("The specified parent point with NAIFID $parentid is not "*
                 "registered in the given FrameSystem"))
         end
     end
@@ -187,7 +192,7 @@ function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class
         nth = Threads.nthreads() 
         nzo = -ones(Int, nth)
         
-        epochs = zeros(T, 9)
+        epochs = zeros(T, nth)
         stvs = [@MVector zeros(T, 3O) for _ = 1:nth]
     end
 
@@ -217,9 +222,9 @@ origin, i.e., its position will equal (0., 0., 0.).
 - `point` -- Target point instance
 - `axes` -- ID or instance of the axes where the point state-vector is expressed. 
 
-!!! note 
-    This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
-    points in the same graph are both inadmissible and meaningless.
+### Notes 
+This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
+points in the same graph are both inadmissible and meaningless.
 
 ### Examples 
 ```jldoctest
@@ -248,7 +253,7 @@ function add_point_root!(frames::FrameSystem{O, T}, point::AbstractFramePoint, a
 
     # Check for root-point existence 
     if !isempty(frames_points(frames)) 
-        throw(ErrorException(
+        throw(ArgumentError(
             "A root-point is already registed in the given FrameSystem."))
     end
 
@@ -266,12 +271,14 @@ state-vector is read from ephemeris kernels (i.e., de440.bsp). If a parent point
 specified, it will automatically be assigned to the point with respect to which the ephemeris 
 data is written in the kernels.
 
-Ephemeris points only accept as parent points root-points or other ephemeris points. The axes
-in which the state-vector is expressed are taken from the ephemeris data: an error is returned 
-if the axes ID is yet to be added to `frames`.
- 
+Ephemeris points only accept as parent points root-points or other ephemeris points.
+
+### Notes 
 This operation is only possible if the ephemeris kernels loaded within `frames` contain 
 data for the NAIF ID associated to `point` and to its `parent`. 
+    
+The axes in which the state-vector is expressed are taken from the ephemeris data: an error 
+is returned if the axes ID is yet to be added to `frames`.
 
 !!! warning 
     It is expected that the NAIF ID and the axes ID assigned by the user are aligned with 
@@ -314,7 +321,7 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
 
     # Check that the kernels contain the ephemeris data for the given NAIFId
     if !(NAIFId in ephemeris_points(frames))
-        throw(ErrorException("Ephemeris data for NAIFID $NAIFId is not available "*
+        throw(ArgumentError("Ephemeris data for NAIFID $NAIFId is not available "*
             "in the kernels loaded in the given FrameSystem."))
     end
 
@@ -336,7 +343,7 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
         
         # Check that the default parent is available in the FrameSystem
         if !has_point(frames, parentid)
-            throw(ErrorException("Ephemeris data for point with NAIFID $NAIFId is available "*
+            throw(ArgumentError("Ephemeris data for point with NAIFID $NAIFId is available "*
                 "with respect to point with NAIFID $parentid, which has not yet been defined "*
                 "in the given FrameSystem."))
         end
@@ -344,9 +351,18 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
     else 
         # Check that the parent point is admissible
         parentid = point_alias(parent) 
+        
+        # Check that the parent is registered! 
+        if !has_point(frames, parentid)
+            throw(ArgumentError(
+                "The specified parent point with NAIFID $parentid has not yet been defined "*
+                "in the given FrameSystem.")
+            )
+        end
+
         parentclass = get_node(frames_points(frames), parentid).class
         if !(parentclass in (:RootPoint, :EphemerisPoint))
-            throw(ErrorException("The specified parent point with NAIFID $parentid is a "*
+            throw(ArgumentError("The specified parent point with NAIFID $parentid is a "*
                 "$parentclass in the given FrameSystem, but only RootPoints and "*
                 "EphemerisPoints are accepted as parents of EphemerisPoints."))
         end
@@ -354,7 +370,7 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
 
     # Check that the parent point has available ephemeris data 
     if !(parentid in ephemeris_points(frames)) 
-        throw(ErrorException("Insufficient ephemeris data has been loaded to compute "*
+        throw(ArgumentError("Insufficient ephemeris data has been loaded to compute "*
             "the point with NAIFID $NAIFId with respect to the parent point with "*
             "NAIFID $parentid"))
     end
@@ -376,7 +392,7 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
     # This check is also performed by build_point, but it is reported here because 
     # it provides more specific information for ephemeris points 
     if !has_axes(frames, axesid)
-        throw(ErrorException("Ephemeris data for point with NAIFID $NAIFId is expressed "*
+        throw(ArgumentError("Ephemeris data for point with NAIFID $NAIFId is expressed "*
             "in a set of axes with ID $axesid, which are yet to be defined in the "*
             "given FrameSystem."))
     end
@@ -430,7 +446,8 @@ function add_point_fixed!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
     
     if length(offset) != 3
         throw(DimensionMismatch(
-            "The offset vector should have length 3, but has $(length(offset))."))
+            "The offset vector should have length 3, but has $(length(offset)).")
+        )
     end
 
     build_point(frames, point_name(point), point_id(point), :FixedPoint, 

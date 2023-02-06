@@ -14,7 +14,7 @@ kclear()
         # Check that if you haven't loaded the kernel you get an error 
         frames = FrameSystem{2, Float64}() 
         add_axes_inertial!(frames, ICRF)
-        @test_throws ErrorException add_axes_pa421!(frames, PA421, ICRF)
+        @test_throws ArgumentError add_axes_pa421!(frames, PA421, ICRF)
 
         for kernel in (:LEAP, :PA421, :FK_DE421)
             furnsh(path(KERNELS[kernel]))
@@ -63,7 +63,7 @@ kclear()
         # Check that if you haven't loaded the kernel you get an error 
         frames = FrameSystem{2, Float64}() 
         add_axes_inertial!(frames, ICRF)
-        @test_throws ErrorException add_axes_pa440!(frames, PA440, ICRF)
+        @test_throws ArgumentError add_axes_pa440!(frames, PA440, ICRF)
 
         for kernel in (:LEAP, :PA440, :FK_DE440)
             furnsh(path(KERNELS[kernel]))
