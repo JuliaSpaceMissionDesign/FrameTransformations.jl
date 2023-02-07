@@ -23,6 +23,7 @@ interpolation indexing is set to Julian days since J2000.
 function get_iers_eop(; force_download = false)
     return get_iers_eop_IAU2000A(force_download = force_download)
 end
+# FIXME: se non c'è connessione internet fai caricare comunque ma con warning che non è aggiornato.
 
 """
     get_iers_eop_iau_2000A(url::String="https://datacenter.iers.org/data/csv/finals2000A.all.csv"; 
