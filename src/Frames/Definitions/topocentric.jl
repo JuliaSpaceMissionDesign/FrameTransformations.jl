@@ -21,7 +21,7 @@ and the type `type`, which may be any of the following:
     not satisfied, the results may be fundamentally wrong. 
 
 ### See also 
-See also [`add_axes_fixedoffset!`](@ref) and [`add_point_topocentric!`](@ref).
+See also [`add_axes_fixedoffset!`](@ref) and [`add_point_surface!`](@ref).
 """
 function add_axes_topocentric!(frames::FrameSystem, axes::AbstractFrameAxes, 
             λ::Number, ϕ::Number, type::Symbol, parent)
