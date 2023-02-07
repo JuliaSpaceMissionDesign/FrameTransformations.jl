@@ -56,7 +56,7 @@ struct PlanetsPrecessionNutation{T}
 end
 
 function PlanetsPrecessionNutation(NAIFId::N,  
-            data::AbstractDict{N, Dict{Symbol, Union{T, Vector{T}}}}) where {N <: Integer, T}
+    data::AbstractDict{N, Dict{Symbol, Union{T, Int64, Vector{T}}}}) where {N <: Integer, T}
     
     # Find nutation coefficients
     sid = "$(NAIFId)"
