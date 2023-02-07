@@ -27,11 +27,11 @@ function add_axes_topocentric!(frames::FrameSystem, axes::AbstractFrameAxes,
             λ::Number, ϕ::Number, type::Symbol, parent)
 
     if type == :NED 
-        dcm = angle_to_dcm(-ϕ-π/2, λ, :ZY)
+        dcm = angle_to_dcm(λ, -ϕ-π/2, :ZY)
     elseif type == :SEZ 
-        dcm = angle_to_dcm(π/2-ϕ, λ, :ZY)
+        dcm = angle_to_dcm(λ, π/2-ϕ, :ZY)
     elseif type == :ENU 
-        dcm = angle_to_dcm(π/2-ϕ, -λ-π/2, :ZY)
+        dcm = angle_to_dcm(λ+π/2, π/2-ϕ, :ZX)
     else 
         throw(ArgumentError("$type is not a supported topocentric orientation."))
     end
