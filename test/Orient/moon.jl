@@ -23,7 +23,7 @@ kclear()
 
             # Test orientation between ME421 and PA421
             Rs = pxform("MOON_PA", "MOON_ME", et)
-            @test v2as(Rs*v, Orient.DCM_MOONPA421_TO_MER421*v) ≤ 1e-6
+            @test v2as(Rs*v, Orient.DCM_MOON_PA421_TO_ME421*v) ≤ 1e-6
 
             # Test orientation between PA421 and ICRF 
             Rs = pxform("J2000", "MOON_PA", et)
@@ -57,7 +57,7 @@ kclear()
 
             # Test orientation between ME421 and PA440
             Rs = pxform("MOON_PA", "MOON_ME", et)
-            @test v2as(Rs*v, Orient.DCM_MOONPA440_TO_MER421*v) ≤ 1e-6
+            @test v2as(Rs*v, Orient.DCM_MOON_PA440_TO_ME421*v) ≤ 1e-6
 
             # Test orientation between PA440 and ICRF 
             Rs = pxform("J2000", "MOON_PA", et)

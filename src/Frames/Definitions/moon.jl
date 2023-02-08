@@ -90,9 +90,9 @@ end
 
 
 """
-	add_axes_mer421!(frames, axes, parent) 
+	add_axes_me421!(frames, axes, parent) 
 
-Add `axes` as fixed offset axes representing the DE421 Moon's Mean Earth/Mean Rotation (MER) 
+Add `axes` as fixed offset axes representing the DE421 Moon's Mean Earth/Mean Rotation (ME) 
 to `frames`.
 
 The `parent` set of axes can be either the DE440 Principal Axes (PA440) or the DE421 
@@ -101,7 +101,7 @@ orientation will be automatically selected by this function.
 
 ### See also 
 	See also [`add_axes_pa440!`](@ref), and [`add_axes_pa421!`](@ref), 
-	[`Orient.DCM_MOONPA421_TO_MER421`](@ref) and [`Orient.DCM_MOONPA421_TO_MER421`](@ref), 
+	[`Orient.DCM_MOON_PA421_TO_ME421`](@ref) and [`Orient.DCM_MOON_PA421_TO_ME421`](@ref), 
 	
 """
 function add_axes_me421!(frames::FrameSystem, axes::AbstractFrameAxes, 
@@ -110,15 +110,15 @@ function add_axes_me421!(frames::FrameSystem, axes::AbstractFrameAxes,
 	pid = axes_id(parent) 
 
 	if pid == Orient.AXESID_MOONPA_DE421
-		dcm = Orient.DCM_MOONPA421_TO_MER421
+		dcm = Orient.DCM_MOON_PA421_TO_ME421
 
 	elseif pid == Orient.AXESID_MOONPA_DE440
-		dcm = Orient.DCM_MOONPA440_TO_MER421
+		dcm = Orient.DCM_MOON_PA440_TO_ME421
 		
 	else 
 		pname = axes_name(parent)
 		throw(ArgumentError(
-			"The DE421 Mean Earth/Mean Rotation (MER) axes cannot be defined w.r.t. "*
+			"The DE421 Mean Earth/Mean Rotation (ME) axes cannot be defined w.r.t. "*
 			"$pname with ID $pid. Only the DE440 or DE421 Moon Principal Axes are "*
 			"accepted as parent axes."
 		))

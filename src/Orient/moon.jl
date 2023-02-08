@@ -1,21 +1,21 @@
-export DCM_MOONPA440_TO_MER421, 
-       DCM_MOONPA430_TO_MER430, 
-       DCM_MOONPA430_TO_MER421,
-       DCM_MOONPA421_TO_MER421,
+export DCM_MOON_PA440_TO_ME421, 
+       DCM_MOON_PA430_TO_ME430, 
+       DCM_MOON_PA430_TO_ME421,
+       DCM_MOON_PA421_TO_ME421,
        orient_rot3_icrf_to_pa440, 
        orient_rot3_icrf_to_pa421
 
 """
     AXESID_MOONPA_DE421 
 
-NAIF axes id for the DE421 Moon Principal Axes 
+NAIF axes id for the DE421 Moon Principal Axes (PA421).
 """
 const AXESID_MOONPA_DE421 = 31006
 
 
 """ 
     AXESID_MOONME_DE421
-NAIF axes id for the DE421 Moon Mean Earth axes 
+NAIF axes id for the DE421 Moon Mean Earth/Mean Rotation axes  (ME421).
 """
 const AXESID_MOONME_DE421 = 31007
 
@@ -23,31 +23,31 @@ const AXESID_MOONME_DE421 = 31007
 """ 
     AXESID_MOONPA_DE440 
 
-NAIF Axes id for the DE440 Moon Principal Axes.
+NAIF Axes id for the DE440 Moon Principal Axes (PA440).
 """
 const AXESID_MOONPA_DE440 = 31008
 
 
 """
-    DCM_MOONPA440_TO_MER421
+    DCM_MOON_PA440_TO_ME421
 
 DCM for the rotation from the Moon Principal Axis 440 (PA440) to the Moon Mean 
-Earth/Mean Rotation (MER) axes.
+Earth/Mean Rotation DE421 (ME421) axes.
 
 ### References 
  - Park, S. R. et al. (2021), _The JPL Planetary and Lunar Ephemerides DE440 and DE441_,
  [DOI: 10.3847/1538-3881/abd414](https://doi.org/10.3847/1538-3881/abd414) 
 
 """
-const DCM_MOONPA440_TO_MER421 = angle_to_dcm(arcsec2rad(-67.8526), arcsec2rad(-78.6944), 
+const DCM_MOON_PA440_TO_ME421 = angle_to_dcm(arcsec2rad(-67.8526), arcsec2rad(-78.6944), 
                                        arcsec2rad(-0.2785), :ZYX)
 
 
 """ 
-    DCM_MOONPA430_TO_MER430
+    DCM_MOON_PA430_TO_ME430
 
 DCM for the rotation from the Moon Principal Axis 430 (PA430) to the Moon Mean 
-Earth/Mean Rotation (MER430) axes.
+Earth/Mean Rotation DE430 (ME430) axes.
 
 ### References 
 - Folkner M. William et al. (2014), _The Planetary and Lunar EphemeridesDE430 and DE431_
@@ -56,15 +56,15 @@ Earth/Mean Rotation (MER430) axes.
 [DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
 
 """
-const DCM_MOONPA430_TO_MER430 = angle_to_dcm(arcsec2rad(-67.573), arcsec2rad(-78.58), 
+const DCM_MOON_PA430_TO_ME430 = angle_to_dcm(arcsec2rad(-67.573), arcsec2rad(-78.58), 
                                        arcsec2rad(-0.285), :ZYX)
 
 
 """ 
-    DCM_MOONPA430_TO_MER421
+    DCM_MOON_PA430_TO_ME421
 
 DCM for the rotation from the Moon Principal Axis 430 (PA430) to the Moon Mean 
-Earth/Mean Rotation (MER421) axes.
+Earth/Mean Rotation DE421 (ME421) axes.
 
 ### References 
 - Folkner M. William et al. (2014), _The Planetary and Lunar EphemeridesDE430 and DE431_
@@ -73,22 +73,22 @@ Earth/Mean Rotation (MER421) axes.
 [DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
 
 """
-const DCM_MOONPA430_TO_MER421 = angle_to_dcm(arcsec2rad(-67.737), arcsec2rad(-78.627), 
+const DCM_MOON_PA430_TO_ME421 = angle_to_dcm(arcsec2rad(-67.737), arcsec2rad(-78.627), 
                                        arcsec2rad(-0.295), :ZYX)
 
 
 """
-    DCM_MOONPA421_TO_MER421
+    DCM_MOON_PA421_TO_ME421
 
 DCM for the rotation from the Moon Principal Axis 421 (PA421) to the Moon Mean 
-Earth/Mean Rotation (MER421) axes.
+Earth/Mean Rotation DE421 (ME421) axes.
 
 ### References 
 - J. G. Williams et al. (2008), _DE421 Lunar Orbit, Physical Librations, and Surface Coordinates_,
 [DE421 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/de421_lunar_ephemeris_and_orientation.pdf) 
 
 """
-const DCM_MOONPA421_TO_MER421 = angle_to_dcm(arcsec2rad(-67.92), arcsec2rad(-78.56),
+const DCM_MOON_PA421_TO_ME421 = angle_to_dcm(arcsec2rad(-67.92), arcsec2rad(-78.56),
                                        arcsec2rad(-0.3), :ZYX)
 
                                        
