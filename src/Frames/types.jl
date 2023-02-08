@@ -270,9 +270,90 @@ FrameSystemProperties() = FrameSystemProperties(Int64[], Int64[])
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
 @inline ephemeris_axes(fsp::FrameSystemProperties) = fsp.eaid
 
-# TODO: add documentation!
+# TODO: finish documentation!
 """
-    FrameSystem
+    FrameSystem{O, T, S, E}
+
+A `FrameSystem` instance manages a collection of user-defined `FramePointNode` and 
+`FrameAxesNode` objects, enabling efficient computation of arbitrary transformations 
+between them. It is created by specifying the maximum transformation order `O`, the outputs 
+datatype `T` and an `AbstractTimeScale` instance `S`. Additionally, an `AbstractEphemerisProvider` 
+instance `E` can be provided to compute transformations that require ephemeris data. 
+
+Only orders between 1 (position) and 4 (jerk) are accepted. 
+
+--- 
+
+    FrameSystem{O, T}()
+
+Create a `FrameSystem` object of order `O` and datatype `T`. The `BarycentricDynamicalTime` 
+is automatically assigned as the default time scale. The resulting object is constructed 
+with a `NullEphemerisProvider`, that does not allow the computation of transformation that 
+involve ephemeris files.
+
+### Examples 
+```jldoctest
+julia> F = FrameSystem{2, Float64}();
+
+julia> @axes ICRF 1 
+
+julia> @axes ECLIPJ2000 17 
+
+julia> add_axes_inertial!(F, ICRF)
+
+julia> add_axes_eclipj2000!(F, ECLIPJ2000, ICRF)
+
+julia> rotation6(F, ICRF, ECLIPJ2000, 0.0)
+Rotation{2, Float64}([...])
+
+julia> rotation9(F, ICRF, ECLIPJ2000, 0.0)
+ERROR: Insufficient frame system order: transformation requires at least order 3.
+
+```
+
+---
+
+    FrameSystem{O, T, S}() 
+
+Create a `FrameSystem` object of order `O`, datatype `T` and time scale `S`. The resulting 
+object is constructed with a `NullEphemerisProvider`, that does not allow the computation 
+of transformation that involve ephemeris files.
+
+### Examples 
+
+```jldoctest
+julia> F = FrameSystem{1, Float64, TerrestrialTime}();
+
+julia> @axes ICRF 1 
+
+julia> @axes ECLIPJ2000 17 
+
+julia> add_axes_inertial!(F, ICRF)
+
+julia> add_axes_eclipj2000!(F, ECLIPJ2000, ICRF)
+
+julia> ep_tt = Epoch("2023-02-10T12:00:00 TT")
+2023-02-10T12:00:00.000 TT
+
+julia> rotation3(F, ICRF, ECLIPJ2000, ep_tt)
+Rotation{1, Float64}([...])
+
+julia> ep_tdb = Epoch("2023-02-10T12:00:00 TDB")
+2023-02-10T12:00:00.000 TDB
+
+julia> rotation3(F, ICRF, ECLIPJ2000, ep_tdb)
+ERROR: ArgumentError: Incompatible epoch timescale [...]
+```
+---
+
+    FrameSystem{O, T}(eph::AbstractEphemerisProvider)
+
+### Examples 
+
+
+
+### See also 
+See also [`add_axes_inertial!`](@ref), [`add_point_root!`](@ref), [`vector3`](@ref) and [`rotation3`](@ref)
 """
 struct FrameSystem{O, T <: Number, S <: AbstractTimeScale, E <: AbstractEphemerisProvider, N}
     eph::E
