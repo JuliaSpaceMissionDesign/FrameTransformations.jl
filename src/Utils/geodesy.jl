@@ -1,3 +1,5 @@
+export geoc2pos, pos2geoc, geod2pos, pos2geod 
+
 """
     geoc2pos(r::Number, λ::Number, ϕ::Number)
     geoc2pos(geoc::AbstractArray)
