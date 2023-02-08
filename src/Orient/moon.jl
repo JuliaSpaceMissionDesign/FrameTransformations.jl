@@ -5,6 +5,21 @@ export DCM_MOONPA440_TO_MER421,
        orient_rot3_icrf_to_pa440, 
        orient_rot3_icrf_to_pa421
 
+"""
+    AXESID_MOONPA_DE421 
+
+NAIF axes id for the DE421 Moon Principal Axes 
+"""
+const AXESID_MOONPA_DE421 = 31006
+
+
+""" 
+    AXESID_MOONME_DE421
+NAIF axes id for the DE421 Moon Mean Earth axes 
+"""
+const AXESID_MOONME_DE421 = 31007
+
+
 """ 
     AXESID_MOONPA_DE440 
 
@@ -12,13 +27,6 @@ NAIF Axes id for the DE440 Moon Principal Axes.
 """
 const AXESID_MOONPA_DE440 = 31008
 
-
-"""
-    AXESID_MOONPA_DE421 
-
-NAIF axes id for the DE421 Moon Principal Axes 
-"""
-const AXESID_MOONPA_DE421 = 31006
 
 """
     DCM_MOONPA440_TO_MER421
