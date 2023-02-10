@@ -270,7 +270,7 @@ FrameSystemProperties() = FrameSystemProperties(Int64[], Int64[])
 @inline ephemeris_points(fsp::FrameSystemProperties) = fsp.ebid
 @inline ephemeris_axes(fsp::FrameSystemProperties) = fsp.eaid
 
-# TODO: finish documentation!
+
 """
     FrameSystem{O, T, S, E}
 
@@ -280,7 +280,14 @@ between them. It is created by specifying the maximum transformation order `O`, 
 datatype `T` and an `AbstractTimeScale` instance `S`. Additionally, an `AbstractEphemerisProvider` 
 instance `E` can be provided to compute transformations that require ephemeris data. 
 
-Only orders between 1 (position) and 4 (jerk) are accepted. 
+The following transformation orders are accepted: 
+- **1**: position 
+- **2**: position and velocity 
+- **3**: position, velocity and acceleration
+- **4**: position, velocity, acceleration and jerk
+
+By specifying the maximum transformation the `FrameSystem` memory usage and performance can 
+be optimised and tailored to the user's needs.
 
 --- 
 
@@ -288,7 +295,7 @@ Only orders between 1 (position) and 4 (jerk) are accepted.
 
 Create a `FrameSystem` object of order `O` and datatype `T`. The `BarycentricDynamicalTime` 
 is automatically assigned as the default time scale. The resulting object is constructed 
-with a `NullEphemerisProvider`, that does not allow the computation of transformation that 
+with a `NullEphemerisProvider`, which does not allow the computation of transformation that 
 involve ephemeris files.
 
 ### Examples 
@@ -316,7 +323,7 @@ ERROR: Insufficient frame system order: transformation requires at least order 3
     FrameSystem{O, T, S}() 
 
 Create a `FrameSystem` object of order `O`, datatype `T` and time scale `S`. The resulting 
-object is constructed with a `NullEphemerisProvider`, that does not allow the computation 
+object is constructed with a `NullEphemerisProvider`, which does not allow the computation 
 of transformation that involve ephemeris files.
 
 ### Examples 
@@ -349,9 +356,28 @@ ERROR: ArgumentError: Incompatible epoch timescale
 
     FrameSystem{O, T}(eph::AbstractEphemerisProvider)
 
+Create a `FrameSystem` object of order `O` and datatype `T` by providing an instance of an 
+`AbstractEphemerisProvider` subtype. The timescale is automatically set to the one associated 
+to the ephemeris files loaded in `eph`. This constructor shall be used when the user desires 
+to compute transformations that involve ephemeris data. 
+
+!!! note 
+    All the kernels that will be used must be loaded within `eph`. Once the `FrameSystem` 
+    has been crated, no additional kernel can be added nor removed.
+
 ### Examples 
+```jldoctest
+julia> eph = CalcephProvider("PATH_TO_DE440_KERNEL")
+CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0))
 
+julia> F = FrameSystem{2, Float64}(eph)
+FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
+  eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0)),
+  points: EMPTY
+  axes: EMPTY
+)
 
+```
 
 ### See also 
 See also [`add_axes_inertial!`](@ref), [`add_point_root!`](@ref), [`vector3`](@ref) and [`rotation3`](@ref)

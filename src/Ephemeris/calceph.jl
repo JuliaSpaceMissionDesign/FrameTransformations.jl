@@ -22,7 +22,7 @@ using Basic: AstronautGenericError, EphemerisError
 
 """
     CalcephProvider
-
+#TODO: add documentation!
 Calceph-based ephemeris handler.
 """
 struct CalcephProvider <: AbstractEphemerisProvider
@@ -42,8 +42,8 @@ end
 """
     ephem_position_records(eph::CalcephProvider)
 
-Get ephemeris an array of `CALCEPH.PositionRecord`s, providing detailed 
-informations on the content of the ephemeris file.
+Get an array of `CALCEPH.PositionRecord`, providing detailed informations on the content of 
+the ephemeris file.
 """
 ephem_position_records(eph::CalcephProvider) = positionRecords(eph.ptr)
 
