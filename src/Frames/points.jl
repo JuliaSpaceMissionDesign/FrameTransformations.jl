@@ -10,7 +10,7 @@ export @point,
 
 
 """
-point_name(point::AbstractFramePoint)
+    point_name(point::AbstractFramePoint)
 
 Return the name of `point`.
 """
@@ -18,7 +18,7 @@ function point_name end
 
 
 """ 
-point_id(point::AbstractFramePoint)
+    point_id(point::AbstractFramePoint)
 
 Return the NAIF ID associated to `point`.
 """
@@ -40,7 +40,7 @@ point_alias(x::Int) = x
 
 Define a new point instance to alias the given NAIFID `id`. This macro creates an 
 [`AbstractFramePoint`](@ref) subtype and its singleton instance called `name`. Its type name 
-is obtained by appending 'Point' to either `name` or `type` (if provided).
+is obtained by appending `Point` to either `name` or `type` (if provided).
 
 ### Examples
 
@@ -118,9 +118,9 @@ and `:UpdatablePoint`.
 - `parentid` -- NAIF ID of the parent point. Not required only for the root point.
 - `offset` -- Position offset with respect to a parent point. Required only for FixedPoints.
 
-### Notes 
-This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
-to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
+!!! warning 
+    This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
+    to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
 function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class::Symbol, 
                 axesid::Int, funs::FramePointFunctions{T, O};
@@ -222,9 +222,9 @@ origin, i.e., its position will equal (0., 0., 0.).
 - `point` -- Target point instance
 - `axes` -- ID or instance of the axes where the point state-vector is expressed. 
 
-### Notes 
-This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
-points in the same graph are both inadmissible and meaningless.
+!!! note
+    This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
+    points in the same graph are both inadmissible and meaningless.
 
 ### Examples 
 ```jldoctest
@@ -415,7 +415,7 @@ end
 
 Add `point` as a fixed point to `frames`. Fixed points are those whose positions have a 
 constant `offset` with respect their `parent` points in the given set of `axes`. Thus, points 
-eligible for this class must have null velocity and acceleration. 
+eligible for this class must have null velocity and acceleration with respect to `parent`.
 
 ### Examples 
 ```jldoctest

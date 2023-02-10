@@ -1,10 +1,18 @@
 kclear()
 
-@axes ICRF 1 InternationalCelestialReferenceFrame
-@axes ECLIPJ2000 17
-@axes ITRF 3000
+eph = CalcephProvider(path(KERNELS[:ITRF]))
+furnsh(path(KERNELS[:LEAP]), path(KERNELS[:ITRF]))
 
-@testset "ITRF" verbose=true begin 
+frames = FrameSystem{2, Float64}(eph) 
+
+y = zeros(3);
+ephem_orient_order!(y, eph, DJ2000, 0.0, 3000, 0)
+
+α, δ, w = y[1], y[2], y[3]
+R = angle_to_dcm(π/2+α, π/2-δ, w, :ZXZ)
+pxform("J2000", "ITRF93", 0.0)
+
+# @testset "ITRF" verbose=true begin 
 
     # v2as = (x, y) -> acosd(max(-1, min(1, dot(x/norm(x), y/norm(y)))))*3600
 
@@ -38,6 +46,6 @@ kclear()
     # end
 
 
-end;
+# end;
 
 kclear()

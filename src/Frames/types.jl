@@ -342,7 +342,8 @@ julia> ep_tdb = Epoch("2023-02-10T12:00:00 TDB")
 2023-02-10T12:00:00.000 TDB
 
 julia> rotation3(F, ICRF, ECLIPJ2000, ep_tdb)
-ERROR: ArgumentError: Incompatible epoch timescale [...]
+ERROR: ArgumentError: Incompatible epoch timescale 
+[...]
 ```
 ---
 

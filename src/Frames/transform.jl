@@ -469,7 +469,7 @@ julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
 ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
 
 julia> vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
-ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 2
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.1 for order 2
 ```
 ### See also 
 See also [`add_point_updatable!`](@ref)

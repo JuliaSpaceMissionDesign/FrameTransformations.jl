@@ -7,8 +7,7 @@ Type storing the fundamental luni-solar and planetary arguments.
 ### Fields 
 - `Mₐ` -- Mean anomaly of the Moon 
 - `Sₐ` -- Mean anomaly of the Sun
-- `uₘ` -- Mean longitude of the Moon minus mean longitude of the 
-		  ascending node `F`
+- `uₘ` -- Mean longitude of the Moon minus mean longitude of the ascending node `F`
 - `Dₛ` -- Mean elongation of the Moon from the Sun 
 - `Ωₘ` -- Mean longitude of the Moon's ascending node
 - `λ_Me` -- Mercury's mean heliocentric longitude
@@ -127,12 +126,12 @@ at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).
 ### Outputs 
 - `λ☿` -- Mercury's mean heliocentric longitude.
 - `λ♀` -- Venus's mean heliocentric longitude.
-- `λe -- Earth's mean heliocentric longitude.
-- `λ♂ -- Mars's mean heliocentric longitude.
-- `λ♃ -- Jupiter's mean heliocentric longitude.
-- `λ♄ -- Saturn's mean heliocentric longitude.
-- `λ⛢ -- Uranus's mean heliocentric longitude.
-- `λ♆ -- Neptune's mean heliocentric longitude.
+- `λe` -- Earth's mean heliocentric longitude.
+- `λ♂` -- Mars's mean heliocentric longitude.
+- `λ♃` -- Jupiter's mean heliocentric longitude.
+- `λ♄` -- Saturn's mean heliocentric longitude.
+- `λ⛢` -- Uranus's mean heliocentric longitude.
+- `λ♆` -- Neptune's mean heliocentric longitude.
 - `pλ` -- General precession in longitude.
 
 ### References 
@@ -155,9 +154,9 @@ end
 
 
 """
-  	fa_mano_moon(t::Number) 
+	fa_mano_moon(t::Number) 
 
-Return the mean anomaly of the Moon 'Mₐ`, in radians, at time `t` expressed in `TDB` Julian 
+Return the mean anomaly of the Moon `Mₐ`, in radians, at time `t` expressed in `TDB` Julian 
 centuries since [`J2000`](@ref).
 
 ### References 
@@ -175,7 +174,7 @@ end
 
 
 """
-  	fa_mano_sun(t::Number) 
+	fa_mano_sun(t::Number) 
 
 Return the mean anomaly of the Sun `Sₐ` in radians, at time `t` expressed in `TDB` Julian 
 centuries since [`J2000`](@ref).
@@ -195,7 +194,7 @@ end
 
 
 """
-  	fa_mlon_moon(t::Number) 
+	fa_mlon_moon(t::Number) 
 
 Return the mean longitude of the Moon's ascending node `Ω` in radians, at time `t` expressed
 in `TDB` Julian centuries since [`J2000`](@ref).
@@ -215,7 +214,7 @@ end
 
 
 """
-  	fa_mlat_moon(t::Number) 
+	fa_mlat_moon(t::Number) 
 
 Return the mean longitude of the Moon minus the mean longitude of the ascending node `F` in
 radians, at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).  
@@ -235,7 +234,7 @@ end
 
 
 """
-  	fa_melo_moon(t::Number) 
+	fa_melo_moon(t::Number) 
 
 Return the mean elongation of the Moon from the Sun `D` in radians, at time `t` expressed in 
 `TDB` Julian centuries since [`J2000`](@ref).
@@ -307,7 +306,6 @@ end
 
 Return the mean heliocentric longitude of Earth in radians, at time `t` expressed in `TDB` 
 Julian centuries since [`J2000`](@ref). 
-
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 

@@ -18,6 +18,8 @@ julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
 julia> @axes MEME2000 22 MeanEquatorMeanEquinoxJ2000 
 
+julia> FRAMES = FrameSystem{1, Float64}();
+
 julia> add_axes_inertial!(FRAMES, ICRF)
 
 julia> add_axes_meme2000!(FRAMES, MEME2000, ICRF)
@@ -70,6 +72,8 @@ The admissed `parent` set of axes are the following:
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
 julia> @axes ECLIPJ2000 17 EclipticEquinoxJ2000 
+
+julia> FRAMES = FrameSystem{1, Float64}();
 
 julia> add_axes_inertial!(FRAMES, ICRF)
 

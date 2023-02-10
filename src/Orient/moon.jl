@@ -15,6 +15,7 @@ const AXESID_MOONPA_DE421 = 31006
 
 """ 
     AXESID_MOONME_DE421
+    
 NAIF axes id for the DE421 Moon Mean Earth/Mean Rotation axes  (ME421).
 """
 const AXESID_MOONME_DE421 = 31007
@@ -36,7 +37,7 @@ Earth/Mean Rotation DE421 (ME421) axes.
 
 ### References 
  - Park, S. R. et al. (2021), _The JPL Planetary and Lunar Ephemerides DE440 and DE441_,
- [DOI: 10.3847/1538-3881/abd414](https://doi.org/10.3847/1538-3881/abd414) 
+    [DOI: 10.3847/1538-3881/abd414](https://doi.org/10.3847/1538-3881/abd414) 
 
 """
 const DCM_MOON_PA440_TO_ME421 = angle_to_dcm(arcsec2rad(-67.8526), arcsec2rad(-78.6944), 
@@ -53,7 +54,7 @@ Earth/Mean Rotation DE430 (ME430) axes.
 - Folkner M. William et al. (2014), _The Planetary and Lunar EphemeridesDE430 and DE431_
 
 - J. G. Williams et al. (2013), _DE430 Lunar Orbit, Physical Librations, and Surface Coordinates_,
-[DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
+    [DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
 
 """
 const DCM_MOON_PA430_TO_ME430 = angle_to_dcm(arcsec2rad(-67.573), arcsec2rad(-78.58), 
@@ -70,7 +71,7 @@ Earth/Mean Rotation DE421 (ME421) axes.
 - Folkner M. William et al. (2014), _The Planetary and Lunar EphemeridesDE430 and DE431_
 
 - J. G. Williams et al. (2013), _DE430 Lunar Orbit, Physical Librations, and Surface Coordinates_,
-[DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
+    [DE430 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430_moon_coord.pdf) 
 
 """
 const DCM_MOON_PA430_TO_ME421 = angle_to_dcm(arcsec2rad(-67.737), arcsec2rad(-78.627), 
@@ -85,7 +86,7 @@ Earth/Mean Rotation DE421 (ME421) axes.
 
 ### References 
 - J. G. Williams et al. (2008), _DE421 Lunar Orbit, Physical Librations, and Surface Coordinates_,
-[DE421 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/de421_lunar_ephemeris_and_orientation.pdf) 
+    [DE421 Lunar Ephemeris and Orientation](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/de421_lunar_ephemeris_and_orientation.pdf) 
 
 """
 const DCM_MOON_PA421_TO_ME421 = angle_to_dcm(arcsec2rad(-67.92), arcsec2rad(-78.56),
@@ -102,6 +103,8 @@ input time `t`, expressed in seconds since [`J2000`](@ref).
     This function is not optimised for performance (it allocates!). The user is suggested 
     to retrieve the Principal axes orientation using the dedicated Frame System functions.
 
+### See also 
+See also [`Frames.add_axes_pa440!`](@ref)
 """
 function orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
 
@@ -138,6 +141,8 @@ input time `t`, expressed in seconds since [`J2000`](@ref).
     This function is not optimised for performance (it allocates!). The user is suggested 
     to retrieve the Principal axes orientation using the dedicated Frame System functions.
 
+### See also 
+See also [`Frames.add_axes_pa421!`](@ref)
 """
 function orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
     if !(AXESID_MOONPA_DE421 in ephem_available_axes(eph))
