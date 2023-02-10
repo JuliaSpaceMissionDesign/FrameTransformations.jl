@@ -21,9 +21,24 @@ using CALCEPH: Ephem as CalcephEphemHandler,
 using Basic: AstronautGenericError, EphemerisError
 
 """
-    CalcephProvider
-#TODO: add documentation!
-Calceph-based ephemeris handler.
+    CalcephProvider(file::String)
+    CalcephProvider(files::Vector{String})
+    
+Create a `CalcephProvider` instance by loading a single or multiples ephemeris kernel 
+files specified by `files`.
+
+!!! note 
+    Since this object is immutable, kernels cannot be added nor removed from the generated
+    `CalcephProvider` instance.  
+
+### Example 
+```jldoctest
+julia> eph1 = CalcephProvider("PATH_TO_KERNEL")
+CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} [...]))
+
+julia> eph2 = CalcephProvider(["PATH_TO_KERNEL_1", "PATH_TO_KERNEL_2"])
+CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} [...]))
+```
 """
 struct CalcephProvider <: AbstractEphemerisProvider
     ptr::CalcephEphemHandler
