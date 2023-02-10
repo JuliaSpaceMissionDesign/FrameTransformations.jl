@@ -7,6 +7,8 @@ module Orient
     using RemoteFiles 
     using StaticArrays
 
+    using Basic.Frames 
+    
     using Basic.Ephemeris: AbstractEphemerisProvider, 
                            ephem_available_axes, 
                            ephem_orient_order!

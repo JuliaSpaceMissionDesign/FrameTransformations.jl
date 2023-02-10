@@ -103,8 +103,6 @@ input time `t`, expressed in seconds since [`J2000`](@ref).
     This function is not optimised for performance (it allocates!). The user is suggested 
     to retrieve the Principal axes orientation using the dedicated Frame System functions.
 
-### See also 
-See also [`Frames.add_axes_pa440!`](@ref)
 """
 function orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
 
@@ -141,8 +139,6 @@ input time `t`, expressed in seconds since [`J2000`](@ref).
     This function is not optimised for performance (it allocates!). The user is suggested 
     to retrieve the Principal axes orientation using the dedicated Frame System functions.
 
-### See also 
-See also [`Frames.add_axes_pa421!`](@ref)
 """
 function orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
     if !(AXESID_MOONPA_DE421 in ephem_available_axes(eph))
