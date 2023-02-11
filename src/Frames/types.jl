@@ -363,7 +363,7 @@ to compute transformations that involve ephemeris data.
 
 !!! note 
     All the kernels that will be used must be loaded within `eph`. Once the `FrameSystem` 
-    has been crated, no additional kernel can be added nor removed.
+    has been created, no additional kernel can be added nor removed.
 
 ### Examples 
 ```jldoctest
