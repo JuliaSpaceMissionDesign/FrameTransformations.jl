@@ -584,7 +584,8 @@ end
 
 
 """
-    add_axes_ephemeris!(frames, axes, rot_seq)
+    add_axes_ephemeris!(frames, axes, rot_seq::Symbol)
+    add_axes_ephemeris!(frames, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing)
 
 Add `axes` as a set of ephemeris axes to `frames`. The orientation of these axes is computed 
 with a series of 3 rotations specified by `rot_seq`. The euler angles and their derivatives 
@@ -596,6 +597,9 @@ The rotation sequence is defined by a `Symbol` specifing the rotation axes. This
 assigns `dcm = A3 * A2 * A1` in which `Ai` is the DCM related with the **i-th** rotation. 
 The possible `rot_seq` values are: `:XYX`, `XYZ`, `:XZX`, `:XZY`, `:YXY`, `:YXZ`, `:YZX`, 
 `:YZY`, `:ZXY`, `:ZXZ`, `:ZYX`, or `:ZYZ`.
+
+Alternatively, one can provide custom functions that take a vector of euler angles and their 
+derivatives and return the DCM and its derivatives. 
 
 This operation is only possible if the ephemeris kernels loaded within `frames` contain 
 orientation data for the AXES ID associated to `axes`. An error is returned if the parent 
@@ -615,6 +619,54 @@ function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
             rot_seq::Symbol) where {O, T}
 
     axesid = axes_id(axes)
+    parentid = _check_axes_ephemeris(frames, axesid)
+    
+    if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, 
+                        :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
+
+        funs = FrameAxesFunctions{T, O}(
+            (t, x, y) -> Rotation{O}(_3angles_to_rot3(x, rot_seq)),
+            (t, x, y) -> Rotation{O}(_3angles_to_rot6(x, rot_seq)...),
+            (t, x, y) -> Rotation{O}(_3angles_to_rot9(x, rot_seq)...), 
+            (t, x, y) -> Rotation{O}(_3angles_to_rot12(x, rot_seq)...)
+        )
+
+    else 
+        throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
+
+    end
+    
+    build_axes(frames, axes_name(axes), axesid, :EphemerisAxes, 
+        funs, parentid=parentid)
+
+end
+
+function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
+            fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
+            
+    axesid = axes_id(axes)
+    parentid = _check_axes_ephemeris(frames, axesid)
+
+    if ((O ≥ 2 && isnothing(δfun)) || (O ≥ 3 && isnothing(δ²fun)) || (O ≥ 4 && isnothing(δ³fun)))
+        throw(ArgumentError(
+            "Transformation requires function derivatives up to the $(O-1) order.")
+        )
+    end
+    
+    funs = FrameAxesFunctions{T, O}(
+        (t, x, y) -> Rotation{O}(fun(x)),
+        (t, x, y) -> Rotation{O}(fun(x), δfun(x)),
+        (t, x, y) -> Rotation{O}(fun(x), δfun(x), δ²fun(x)), 
+        (t, x, y) -> Rotation{O}(fun(x), δfun(x), δ²fun(x), δ³fun(x))
+    )
+
+    build_axes(frames, axes_name(axes), axesid, :EphemerisAxes, 
+        funs, parentid=parentid)
+
+end
+
+# Perform checks on the requested ephemeris axes
+function _check_axes_ephemeris(frames::FrameSystem, axesid::Int)
 
     # Check that the kernels contain orientation data for the given axes ID 
     if !(axesid in ephemeris_axes(frames))
@@ -643,24 +695,8 @@ function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
             "with respect to axes with AXESID $parentid, which has not yet been defined "*
             "in the given FrameSystem."))
     end
-    
-    if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, 
-                        :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
 
-        funs = FrameAxesFunctions{T, O}(
-            (t, x, y) -> Rotation{O}(_3angles_to_rot3(x, rot_seq)),
-            (t, x, y) -> Rotation{O}(_3angles_to_rot6(x, rot_seq)...),
-            (t, x, y) -> Rotation{O}(_3angles_to_rot9(x, rot_seq)...), 
-            (t, x, y) -> Rotation{O}(_3angles_to_rot12(x, rot_seq)...)
-        )
-    
-    else 
-        throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
-    end
-    
-    build_axes(frames, axes_name(axes), axesid, :EphemerisAxes, 
-        funs, parentid=parentid)
-
+    return parentid
 end
 
 
