@@ -2,14 +2,12 @@ module Basic
 
     using Reexport
     using Logging
-
-    struct AstronautException <: Exception
-        msg::String
-    end
-
-    Base.showerror(io::IO, err::AstronautException) = print(io, err.msg)
     
+    include(joinpath("MappedGraphs.jl"))
+    @reexport using.MappedGraphs
+
     # Common 
+    include("errors.jl")
     include("graph.jl")
 
     include(joinpath("Utils", "Utils.jl"))
@@ -17,9 +15,6 @@ module Basic
 
     include(joinpath("Tempo", "Tempo.jl"))
     @reexport using .Tempo
-
-    include(joinpath("Bodies", "Bodies.jl"))
-    @reexport using .Bodies
 
     include(joinpath("Ephemeris", "Ephemeris.jl"))
     @reexport using .Ephemeris

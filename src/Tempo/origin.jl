@@ -1,29 +1,9 @@
-export DJ2000, DJM0, DMJD
+"""
+    AbstractEpochOrigin
 
+Abstract type for all epoch origins.
+"""
 abstract type AbstractEpochOrigin end
-
-"""
-    DJ2000
-
-Reference epoch (J2000.0), Julian Date (`2451545.0`). 
-It is `12:00 01-01-2000`.
-"""
-const DJ2000 = 2451545.0
-
-"""
-    DMJD
-
-Reference epoch (J2000.0), Modified Julian Date (`51544.5`).
-"""
-const DMJD = 51544.5
-
-"""
-    DJM0
-
-Julian Date of Modified Julian Date zero (`2400000.5`).
-It is `00:00 17-11-1858`.
-"""
-const DJM0 = 2400000.5
 
 const EPOCH_ORIGIN = (
     :JulianDate,
@@ -84,7 +64,7 @@ for (name, acr, off, start) in zip(EPOCH_ORIGIN, EPOCH_ORIGIN_ACRONYMS,
         """
             offset(::$($name))
 
-        Offset to shift J2000 epochs (with origin at `2000-01-01T12:00`) 
+        Offset in days to shift J2000 epochs (with origin at `2000-01-01T12:00`) 
         to [`$($name_str)`](@ref) (with origin at `$($start)`)
         """
         @inline offset(::$name) = $(off)

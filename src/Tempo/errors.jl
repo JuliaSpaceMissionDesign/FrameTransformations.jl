@@ -1,0 +1,1 @@
+@create_module_error EpochConversionError AstronautGenericException "ephemeris conversion errors"

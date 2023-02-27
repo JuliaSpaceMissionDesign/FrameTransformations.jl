@@ -28,6 +28,9 @@ Documentation:
     # - sh res/schemas/makeschema.sh
     # move docs
     - mv docs/build/* documentation/    
+  only:
+    - master
+    - /^v[0-9]+\.[0-9]+\.[0-9]+$/
 
 # Use the special job name "pages" to actually trigger deployment of the documentation 
 # on main/master branch.

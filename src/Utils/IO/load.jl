@@ -16,7 +16,7 @@ Open a JSON file and parse its data in a dictionary.
 function load(file::JSON)
     open(filepath(file), "r") do f 
         data = JSON3.read(f)
-        return OrderedDict(data)
+        return Dict(data)
     end
 end
 
@@ -35,7 +35,7 @@ end
 Open a YAML file and parse its data in a dictionary.
 """
 function load(file::YAML)
-    YAMLLib.load_file(filepath(file); dicttype=OrderedDict{Symbol, Any})
+    YAMLLib.load_file(filepath(file); dicttype=Dict{Symbol, Any})
 end
 
 """
@@ -44,7 +44,7 @@ end
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
 function load(file::TPC)
-    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
+    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Int64, Vector{Float64}}}}()
     load_tpc!(mapped, filepath(file))
     sort(mapped)
 end
@@ -55,7 +55,7 @@ end
 Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
 """
 function load(files::Vector{TPC})
-    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
+    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Int64, Vector{Float64}}}}()
     for file in files
         load_tpc!(mapped, filepath(file))
     end
@@ -63,7 +63,7 @@ function load(files::Vector{TPC})
 end
 
 function load_tpc!(dict::Dict{Int64, Dict{Symbol, 
-    Union{Float64, Vector{Float64}}}}, filename::String)
+    Union{Float64, Int64, Vector{Float64}}}}, filename::String)
     # load and strip lines (remove tabs and spaces)
     # extract lines which are within `\begindata` and `\begintext`
     parsed = split(join(strip.(readlines(filename)), " "), 
@@ -75,7 +75,7 @@ function load_tpc!(dict::Dict{Int64, Dict{Symbol,
     names_idx = findall.(r"(BODY\w{1,}\D{1,}=)", parsed)
     # row data are extracted as between square brackets, the `=` 
     # before the brackets is added
-    datas_idx = findall.(r"=\D{1,}\(([^()]*)\)", parsed)
+    datas_idx = findall.(r"=\D{1,}\(([^()]*)\)|(=\D{1,}([0-9]*\.?[0-9]*))", parsed)
 
     # data are mapped to a dictionary
     for i in range(1, length(names_idx))
@@ -94,8 +94,16 @@ function load_tpc!(dict::Dict{Int64, Dict{Symbol,
             data = split.([replace(parsed[i][idx], "D" => "E") for idx in datas_idx[i]])
 
             for (name, body, value_) in zip(prop, naif, data)
-                # parse a vector of floats
-                value = parse.(Float64, value_[3:end-1])
+                # parse a vector of floats, a float or a integer
+                if value_[2] == "("
+                    value = parse.(Float64, value_[3:end-1]) 
+                else
+                    try
+                        value = [parse(Int64, value_[2])]
+                    catch
+                        value = [parse(Float64, value_[2])]
+                    end
+                end
                 # create a temporary dictionary
                 temp = Dict(body => Dict(name => length(value) > 1 ? value : value[1]))
                 # merge with the global dictionary

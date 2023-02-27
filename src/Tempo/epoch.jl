@@ -3,7 +3,7 @@ export Epoch,
        second, timescale, value
 
 """
-    Epoch <: AbstractDateTimeEpoch
+    Epoch
 
 A type to represent Epoch-like data. 
 Epochs here are represented as seconds + fraction since a refence epoch, which 
@@ -12,29 +12,21 @@ is considered to be `2000-01-01T12:00:00`, i.e. [`J2000`](@ref).
 ### Fields 
 
 - `scale` -- `TimeScale` to represent the date 
-- `second` -- seconds since `origin`
-- `fraction` -- fraction of seconds
+- `seconds` -- seconds since `origin`
 
-### Constructor 
+### Constructors
 
-`Epoch{S}(second::N, frac::T) where {N<:Number, S<:TimeScale, T<:AbstractFloat}`
+- `Epoch{S}(seconds::T) where {S<:AbstractTimeScale, T<:AbstractFloat}` -- default
+- `Epoch(seconds::T, ::S) where {S<:AbstractTimeScale, T<:AbstractFloat}` 
+- `Epoch(dt::DateTime, ::S) where {S<:AbstractTimeScale}` -- construct from `DateTime`
 """
-struct Epoch{S, N, T} <: AbstractDateTimeEpoch
+struct Epoch{S, T}
     scale::S 
-    second::N
-    fraction::T
-    function Epoch{S}(second::N, frac::T) where {N<:Integer, S<:TimeScale, 
-                                                 T<:AbstractFloat}
-        return new{S, N, T}(S(), second, frac)
+    seconds::T
+    function Epoch{S}(seconds::T) where {S<:AbstractTimeScale, T<:AbstractFloat}
+        return new{S, T}(S(), seconds)
     end
 end
-
-"""
-    second(ep::Epoch)
-
-Seconds from origin.
-"""
-second(ep::Epoch) = ep.second
 
 """
     timescale(ep::Epoch)
@@ -48,43 +40,22 @@ timescale(ep::Epoch) = ep.scale
 
 Full `Epoch` value.
 """
-value(ep::Epoch) = ep.second + ep.fraction
+value(ep::Epoch) = ep.seconds
 
-""" 
-    Epoch(sec::T, scale::S) where {S<:TimeScale, T<:AbstractFloat}
-    Epoch(sec::N, frac::T, scale::S) where {N<:Integer, S<:TimeScale, 
-        T<:AbstractFloat}
-
-Construct an `Epoch` from seconds and fraction since J2000 in the scale `S`.
-"""
-function Epoch(sec::N, frac::T, scale::S) where {N<:Integer, S<:TimeScale, 
-    T<:AbstractFloat}
-    return Epoch{typeof(scale)}(sec, frac)
+function Epoch(sec::T, ::S) where {S<:AbstractTimeScale, T<:AbstractFloat}
+    return Epoch{S}(sec)
 end
 
-function Epoch(sec::T, scale::S) where {S<:TimeScale, T<:AbstractFloat}
-    ssec = floor(Int64, sec)
-    return Epoch(ssec, sec-ssec, scale)
+function Epoch(dt::DateTime, ::S) where {S<:AbstractTimeScale}
+    return Epoch{S}(j2000s(dt))
 end
 
-"""
-    Epoch{S}(js::T where {T<:Number, S<:TimeScale}
-
-Construct an `Epoch` from seconds since J2000 in the scale `S`.
-"""
-function Epoch{S}(js::T) where {T<:Number, S<:TimeScale}
-    sec = floor(Int, js)
-    frac = js - sec
-    return Epoch{S}(sec, frac)
+function Epoch(sec::T, ::Type{S}) where {S<:AbstractTimeScale, T<:AbstractFloat}
+    return Epoch{S}(sec)
 end
 
-"""
-    Epoch(dt::DateTime, scale::S) where {S<:TimeScale}
-
-Construct an `Epoch` from [`DateTime`](@ref) type and timescale `S` 
-"""
-function Epoch(dt::DateTime, scale::S) where {S<:TimeScale}
-    Epoch(j2000s(dt), scale)
+function Epoch(dt::DateTime, ::Type{S}) where {S<:AbstractTimeScale}
+    return Epoch{S}(j2000s(dt))
 end
 
 """
@@ -92,7 +63,7 @@ end
 
 Convert `Epoch` in Julian Date since J2000 (days)
 """
-j2000(e::Epoch) = e.second/DAY2SEC + e.fraction/DAY2SEC
+j2000(e::Epoch) = e.seconds/DAY2SEC
 
 """
     j2000s(e::Epoch)
@@ -113,47 +84,31 @@ function Base.show(io::IO, ep::Epoch)
 end
 
 function DateTime(ep::Epoch) 
-    # TODO: is there a more elegant way to do this? 
-    # There are cases where there is a loss of precision
-    days = ep.second ÷ DAY2SEC
-    frac = ep.fraction + (ep.second - DAY2SEC*(days - 0.5))
-    if frac > 0
-        fint = frac ÷ DAY2SEC
-        days += fint 
-        frac -= fint * DAY2SEC
-    elseif frac < 0
-        fint = (frac-DAY2SEC) ÷ DAY2SEC
-        days += fint 
-        frac -= fint * DAY2SEC
-    end
-    y, m, d = jd2cal(DJ2000, days)
-    H, M, S, f = fd2hmsf(frac/DAY2SEC)
-    fint = floor(Int64, f)
-    S += fint 
-    f -= fint
-    DateTime(y, m, d, H, M, S, f)
+    y, m, d, H, M, S = jd2calhms(DJ2000, ep.seconds / DAY2SEC)
+    fint = floor(Int64, S)
+    f = S-fint
+    return DateTime(y, m, d, H, M, fint, f)
 end
 
 Epoch(e::Epoch) = e 
-Epoch{S, N, T}(e::Epoch{S, N, T}) where {S, N, T} = e
+Epoch{S, T}(e::Epoch{S, T}) where {S, T} = e
 
 """
-    Epoch(s::AbstractString, scale::S) where {S<:TimeScale}
+    Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
 
-Construct an `Epoch` from a `str` in the [`TimeScale`](@ref) (`scale`). 
+Construct an `Epoch` from a `str` in the [`AbstractTimeScale`](@ref) (`scale`). 
 
 !!! note 
     This constructor requires that the `str` is in the format `yyyy-mm-ddTHH:MM:SS.sss`.
 """
-function Epoch(s::AbstractString, scale::S) where {S<:TimeScale}
-    y, m, d, H, M, s, sf = parse_iso(s)
-    _, jd2 = calhms2jd(y, m, d, H, M, s+sf)
-    days = floor(Int64, jd2)
-    fd = jd2 - days 
-    h, m, s, frac = fd2hmsf(fd)
-    sec = s + 60 * (m + 60*(h + 24*days))
-    return Epoch(sec, frac, scale)
+function Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
+    y, m, d, H, M, sec, sf = parse_iso(s)
+    _, jd2 = calhms2jd(y, m, d, H, M, sec+sf)
+    return Epoch(jd2*86400, scale)
 end
+
+# This is the default timescale used by Epochs 
+const DEFAULT_EPOCH_TIMESCALE = :TDB
 
 """
     Epoch(s::AbstractString)
@@ -188,7 +143,7 @@ julia> # Parse Modified Julian Dates
 julia> Epoch("MJD 51544.5")
 2000-01-01T12:00:00.0000 TDB
 
-julia> # Parse Julian Dates since J200 
+julia> # Parse Julian Dates since J2000 
 julia> Epoch("12.0")
 2000-01-13T12:00:00.0000 TDB
 
@@ -198,7 +153,7 @@ julia> Epoch("12.0 TT")
 ```
 """
 function Epoch(s::AbstractString)
-    scale = TDB # default timescale
+    scale = eval(DEFAULT_EPOCH_TIMESCALE) # default timescale
 
     # ISO 
     m = match(r"\d{4}-", s)
@@ -247,19 +202,14 @@ end
 # Operations
 
 function Base.:-(e1::Epoch{S}, e2::Epoch{S}) where S
-    return (e1.second - e2.second) + (e1.fraction - e2.fraction)
+    return e1.seconds - e2.seconds
 end
+
 function Base.:+(e::Epoch, x::N) where {N<:Number} 
-    xint = floor(Int64, x)
-    sec = e.second + xint
-    frac = e.fraction + (x - xint)
-    Epoch(sec, frac, timescale(e))
+    Epoch(e.seconds+x, timescale(e))
 end
 function Base.:-(e::Epoch, x::N) where {N<:Number} 
-    xint = floor(Int64, x)
-    sec = e.second - xint
-    frac = e.fraction - (x - xint)
-    Epoch(sec, frac, timescale(e))
+    Epoch(e.seconds-x, timescale(e))
 end
 
 function (::Base.Colon)(start::Epoch, step::T, stop::Epoch) where {T<:AbstractFloat}
@@ -277,18 +227,12 @@ function Base.isapprox(e1::Epoch{S}, e2::Epoch{S}; kwargs...) where {S}
     return isapprox(value(e1), value(e2); kwargs...)
 end
 
-function Base.convert(to::S2, e::Epoch{S1}) where {S1<:TimeScale, S2<:TimeScale}
-    apply_offsets(e, timescale(e), to)
-end
+Base.convert(::Type{S}, e::Epoch{S}) where {S<:AbstractTimeScale} = e
+Base.convert(::S, e::Epoch{S}) where {S<:AbstractTimeScale} = e
 
-function Base.convert(::Type{S2}, e::Epoch{S1}) where {S1<:TimeScale, S2<:TimeScale}
-    convert(S2(), e)
-end
-
-Base.convert(::Type{S}, e::Epoch{S}) where {S<:TimeScale} = e
-Base.convert(::S, e::Epoch{S}) where {S<:TimeScale} = e
-
-function apply_offsets(e::Epoch{S1}, from::S1, to::S2) where {S1<:TimeScale, S2<:TimeScale}
-    sec, frac = apply_offsets(e.second, e.fraction, from, to)    
-    return Epoch(sec, frac, to)
+function Base.convert(to::S2, e::Epoch{S1}; 
+    system::TimeSystem=TIMESCALES) where {S1<:AbstractTimeScale, S2<:AbstractTimeScale}
+    return Epoch{S2}(
+        apply_offsets(system, e.seconds, timescale(e), to)
+    )
 end
