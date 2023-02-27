@@ -1,6 +1,8 @@
 export parse_iso
 
-function tryparsenext_base10(str::AbstractString, i::Int, len::Int, min_width::Int=1, max_width::Int=0)
+function tryparsenext_base10(str::AbstractString, i::Int, len::Int, 
+    min_width::Int=1, max_width::Int=0)
+    
     i > len && return nothing
     min_pos = min_width <= 0 ? i : i + min_width - 1
     max_pos = max_width <= 0 ? len : min(i + max_width - 1, len)
@@ -20,7 +22,6 @@ function tryparsenext_base10(str::AbstractString, i::Int, len::Int, min_width::I
         return d, i
     end
 end
-
 
 """
     parse_iso(s::S) where {S<: AbstractString}
@@ -110,9 +111,17 @@ function parse_iso(s::S) where {S<: AbstractString}
     end
 
     @label done
-    return (dy, dm, dd, th, tm, ts, Float64(tms))
+    return (
+        dy, 
+        dm, 
+        dd, 
+        th, 
+        tm, 
+        ts, Float64(tms))
 
     @label error
-    throw(ArgumentError("Invalid ISO Epoch string! The correct format is YYYY-MM-DDThh:mm:ss.ffffffff!"))
+    throw(
+        ArgumentError("[Tempo] Invalid ISO Epoch string! " * 
+            "The correct format is YYYY-MM-DDThh:mm:ss.ffff!"))
 
 end

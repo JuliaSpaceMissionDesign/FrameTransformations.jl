@@ -19,7 +19,7 @@
     d = Date(2000, 1, 1)
     @test d == Date(0)
     @test d == Date(2000, 1)
-    @test j2000(d) == 0
+    @test Tempo.j2000(d) == 0
     @test Tempo.find_dayinyear(d) == 1
 
     @test Tempo.find_month(32, true) == 2
@@ -57,7 +57,7 @@ end
     @test Tempo.j2000s(D2) ≈ 1/3 * Tempo.DAY2SEC
     @test Tempo.j2000c(D2) ≈ 1/3 / Tempo.CENTURY2DAY
 
-    ry, rm, rd, rH, rM, rS, rF = generate_random_datetime()
+    _, ry, rm, rd, rH, rM, rS, rF = _random_datetime_isostr()
     dt = DateTime(ry, rm, rd, rH, rM, rS, rF)
     @test year(dt) == ry 
     @test month(dt) == rm

@@ -1,106 +1,102 @@
+using Basic.Utils: interpolate, arcsec2rad
+
 @testset "IERS Transformations" verbose=true begin 
 
-    @testset "Fundamental Arguments" begin 
+    atol, rtol = 1e-11, 1e-11
 
-        # Testing IERS 2010 conventions Fundamental Arguments 
-        # Test values are in radians and taken from ERFA 
-        # Absolute tolerance of 1e-13 guarantees an error below 0.02 μas
+    # Radians to arcseconds
+    r2a = 180/π*3600
 
-        # Testing at t = 1. to check correct coefficients!
+    # Function to compute the angle between 2 vectors in arcseconds
+    v2as = (x, y) -> acosd(max(-1, min(1, dot(x/norm(x), y/norm(y)))))*3600
 
-        t = [0.06567, 1.]
-        fa = [Orient.FundamentalArguments(t[1]), Orient.FundamentalArguments(t[2])]
-
-        atol, rtol = 1e-13, 1e-12 
+    @testset "Fundamental Arguments" verbose=true begin 
 
         # Testing Delaunay's Arguments 
-        @testset "Delaunay arguments 2003" begin
+        @testset "Fundamental Arguments 2003" begin
 
-            # Testing Mean Anomaly of the Moon 
-            @test fa[1].Mₐ ≈ 2.663600612437975    atol=atol rtol=rtol
-            @test fa[2].Mₐ ≈ 5.826604253498457    atol=atol rtol=rtol
+            t = [rand(29)..., 1.]
 
-            # Testing Mean Anomaly of the Sun 
-            @test fa[1].Sₐ ≈ 3.518352361195792    atol=atol rtol=rtol
-            @test fa[2].Sₐ ≈ 6.223481898965822    atol=atol rtol=rtol
+            for i in eachindex(t)
 
-            # Testing Mean Argument of Latitude of the Moon 
-            @test fa[1].uₘ ≈ 2.533320307830868    atol=atol rtol=rtol
-            @test fa[2].uₘ ≈ 3.059317938336433    atol=atol rtol=rtol
+                fa = Orient.FundamentalArguments(t[i], rand([iau2000a, iau2006a]))
+                
+                # --- Delaunay Arguments 
+                # Testing Mean Anomaly of the Moon 
+                @test fa.Mₐ ≈ fal03(t[i])   atol=atol rtol=rtol
 
-            # Testing mean elongation of the moon from the sun 
-            @test fa[1].Dₛ ≈ 3.236084178870326e-1 atol=atol rtol=rtol
-            @test fa[2].Dₛ ≈ 4.275356347495070    atol=atol rtol=rtol
+                # Testing Mean Anomaly of the Sun 
+                @test fa.Sₐ ≈ falp03(t[i])    atol=atol rtol=rtol
 
-            # Testing Mean Longitude of the Moon
-            @test fa[1].Ωₘ ≈ -3.438585492123376e-2 + 2π atol=atol rtol=rtol
-            @test fa[2].Ωₘ ≈ -1.586439578169723e-1 + 2π atol=atol rtol=rtol
+                # Testing Mean Argument of Latitude of the Moon 
+                @test fa.uₘ ≈ faf03(t[i])    atol=atol rtol=rtol
 
-        end
+                # Testing mean elongation of the moon from the sun 
+                @test fa.Dₛ ≈ fad03(t[i])   atol=atol rtol=rtol
 
-        @testset "Planetary Arguments" begin
+                # Testing Mean Longitude of the Moon
+                @test fa.Ωₘ ≈ mod(faom03(t[i]), 2π) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Mercury
-            @test fa[1].λ_Me ≈ 6.075865478867676 atol=atol rtol=rtol
-            @test fa[2].λ_Me ≈ 5.671020519871966 atol=atol rtol=rtol
+                # --- Planetary Arguments 
+                # Testing Mean Longitude of Mercury
+                @test fa.λ_Me ≈ fame03(t[i]) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Venus
-            @test fa[1].λ_Ve ≈ 1.131754499992205    atol=atol rtol=rtol
-            @test fa[2].λ_Ve ≈ 3.454962478273771e-1 atol=atol rtol=rtol
+                # Testing Mean Longitude of Venus
+                @test fa.λ_Ve ≈ fave03(t[i])    atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Earth
-            @test fa[1].λ_Ea ≈ 5.315317577813381 atol=atol rtol=rtol
-            @test fa[2].λ_Ea ≈ 1.742524595141305 atol=atol rtol=rtol
+                # Testing Mean Longitude of Earth
+                @test fa.λ_Ea ≈ fae03(t[i]) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Mars
-            @test fa[1].λ_Ma ≈ 3.008541490420559 atol=atol rtol=rtol
-            @test fa[2].λ_Ma ≈ 9.727169953023775e-1 atol=atol rtol=rtol
+                # Testing Mean Longitude of Mars
+                @test fa.λ_Ma ≈ fama03(t[i]) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Jupiter
-            @test fa[1].λ_Ju ≈ 4.078027048663447 atol=atol rtol=rtol
-            @test fa[2].λ_Ju ≈ 3.303160303663311 atol=atol rtol=rtol
+                # Testing Mean Longitude of Jupiter
+                @test fa.λ_Ju ≈ faju03(t[i]) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Saturn
-            @test fa[1].λ_Sa ≈ 2.274751979272320 atol=atol rtol=rtol
-            @test fa[2].λ_Sa ≈ 3.354371331461241 atol=atol rtol=rtol
+                # Testing Mean Longitude of Saturn
+                @test fa.λ_Sa ≈ fasa03(t[i]) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Uranus
-            @test fa[1].λ_Ur ≈ 5.972384629789489 atol=atol rtol=rtol
-            @test fa[2].λ_Ur ≈ 3.930831143408273e-1 atol=atol rtol=rtol
+                # Testing Mean Longitude of Uranus
+                @test fa.λ_Ur ≈ faur03(t[i]) atol=atol rtol=rtol
 
-            # Testing Mean Longitude of Neptune
-            @test fa[1].λ_Ne ≈ 5.562305932034747 atol=atol rtol=rtol
-            @test fa[2].λ_Ne ≈ 2.842004543620414 atol=atol rtol=rtol
+                # Testing Mean Longitude of Neptune
+                @test fa.λ_Ne ≈ fane03(t[i]) atol=atol rtol=rtol
 
-            # Testing General Accumulated Precession 
-            @test fa[1].pₐ ≈ 1.601172753812795e-3 atol=atol rtol=rtol
-            @test fa[2].pₐ ≈ 2.438713691000000e-2 atol=atol rtol=rtol
+                # Testing General Accumulated Precession 
+                @test fa.pₐ ≈ fapa03(t[i]) atol=atol rtol=rtol
 
-        end 
+            end
+
+        end;
+
+        t = [0.06567, 1.]
 
         # Testing the truncated expressions of the Delunary Arguments 
-        fab = [Orient.FundamentalArguments(t[1], iau2006b), 
-            Orient.FundamentalArguments(t[2], iau2006b)];
+        fab = [Orient.FundamentalArguments(t[1], rand([iau2000b, iau2006b])), 
+            Orient.FundamentalArguments(t[2], rand([iau2000b, iau2006b]))];
 
-        @testset "Delaunay arguments IAU2000B" begin 
+        fa = [Orient.FundamentalArguments(t[1]), 
+            Orient.FundamentalArguments(t[2])]
+        
+        @testset "Delaunay Arguments IAU2000B" begin 
 
-            # Testing Mean Anomaly of the Moon 
+            # -- Testing Mean Anomaly of the Moon 
             @test fab[1].Mₐ ≈ 2.663599945842266      atol=atol rtol=rtol
             @test fab[2].Mₐ ≈ 5.826449449627781      atol=atol rtol=rtol
 
-            # Testing Mean Anomaly of the Sun 
+            # -- Testing Mean Anomaly of the Sun 
             @test fab[1].Sₐ ≈ 3.518352372771510          atol=atol rtol=rtol
             @test fab[2].Sₐ ≈ 6.223484580361229          atol=atol rtol=rtol
 
-            # Testing Mean Argument of Latitude of the Moon 
+            # -- Testing Mean Argument of Latitude of the Moon 
             @test fab[1].uₘ ≈ 2.533320574432192          atol=atol rtol=rtol
             @test fab[2].uₘ ≈ 3.059379762905646          atol=atol rtol=rtol
 
-            # Testing mean elongation of the moon from the sun 
+            # -- Testing mean elongation of the moon from the sun 
             @test fab[1].Dₛ ≈ 3.236085510636535e-1       atol=atol rtol=rtol
             @test fab[2].Dₛ ≈ 4.275387201216140          atol=atol rtol=rtol
 
-            # Testing Mean Longitude of the Moon
+            # -- Testing Mean Longitude of the Moon
             @test fab[1].Ωₘ ≈ -3.438601115926876e-2 + 2π  atol=atol rtol=rtol 
             @test fab[2].Ωₘ ≈ -1.586802211172697e-1 + 2π  atol=atol rtol=rtol 
 
@@ -109,205 +105,335 @@
                     @test getproperty(fab[i], f) == getproperty(fa[i], f)
                 end
             end
-
         end 
 
     end;
 
+    @testset "Obliquity" verbose=true begin 
+        atol, rtol = 1e-8, 1e-8
+        
+        t = [rand(0.0:20000, 49)..., 0.0]
 
-    @testset "Nutation" begin 
+        for i in eachindex(t)
+            ep = Epoch("$(t[i]) TT")
 
-        jdₜ = 2400000.5 + 53750.892855; 
-        ERFA_DJ00 = 2451545.
-        ERFA_DJC = 36525.
-
-        t = ((jdₜ - ERFA_DJ00)) / ERFA_DJC;
-
-        r2a = 180/π*3600 
-
-        # Current Nutation series are taken from ERFA 
-        @testset "IAU 2006 A/B Nutation Models" begin
-
-            # Testing IAU 2000A Nutation model from ERFA 
-            # must be precise up to 1 μas
-            atol, rtol = 1e-7, 1e-7
-
-            fa = Orient.FundamentalArguments(t);
-            Δψ, Δϵ = Orient.nutation00(iau2006a, t, fa) .* r2a
-
-            @test Δψ ≈ -1.071332651430803 atol=atol rtol=rtol
-            @test Δϵ ≈  8.656842463521295 atol=atol rtol=rtol
-
-            Δψ, Δϵ = Orient.orient_nutation(iau2006a, t) .* r2a
-            @test Δψ ≈ -1.071332974891340 atol=atol rtol=rtol
-            @test Δϵ ≈  8.656841011106838 atol=atol rtol=rtol
+            tt_d = Tempo.j2000(ep)
+            tt_c = Tempo.j2000c(ep)
             
-            # Testing IAU 2000B Nutation model from ERFA 
+            ϵ80 = obl80(DJ2000, tt_d)*r2a
+            ϵ06 = obl06(DJ2000, tt_d)*r2a
+            
+            @test ϵ80 ≈ r2a*orient_obliquity(iau1980, tt_c)  atol=atol rtol=rtol
+            @test ϵ06 ≈ r2a*orient_obliquity(iau2006a, tt_c) atol=atol rtol=rtol
+
+        end
+
+    end
+
+    @testset "Nutation" verbose=true begin 
+
+        # Testing IAU 2000A Nutation model from ERFA 
+        # must be precise up to 1 μas
+        atol, rtol = 1e-7, 1e-7
+
+        for _ = 1:50
+
+            ep = Epoch("$(rand(0.0:20000)) TT")
+            
+            tt_d = Tempo.j2000(ep)
+            tt_c = Tempo.j2000c(ep)
+
+            fa = Orient.FundamentalArguments(tt_c);
+
+            # -- Testing IAU2000A Nutation model
+            Δψ, Δϵ = Orient.nutation00(iau2000a, tt_c, fa) .* r2a
+            p, e = nut00a(DJ2000, tt_d) .* r2a
+
+            @test Δψ ≈ p atol=atol rtol=rtol
+            @test Δϵ ≈ e atol=atol rtol=rtol
+        
+            # -- Testing IAU2006A Nutation model 
+            Δψ, Δϵ = Orient.orient_nutation(iau2006a, tt_c) .* r2a
+            p, e = nut06a(DJ2000, tt_d) .* r2a 
+
+            @test Δψ ≈ p atol=atol rtol=rtol
+            @test Δϵ ≈ e atol=atol rtol=rtol
+
+            # -- Testing IAU 2000B Nutation model from ERFA 
             # Must be precise up to n 1 mas 
-            atol, rtol = 1e-12, 1e-12
-            Δψ, Δϵ = Orient.orient_nutation(iau2006b, t) .* r2a
+            m = rand([iau2000b, iau2006b])
+            Δψ, Δϵ = Orient.orient_nutation(m, tt_c) .* r2a
+            p, e = nut00b(DJ2000, tt_d) .* r2a 
 
-            @test Δψ ≈ -1.071752875965778 atol=atol rtol=rtol
-            @test Δϵ ≈  8.656781912467901 atol=atol rtol=rtol
-        end  
+            @test Δψ ≈ p atol=atol rtol=rtol
+            @test Δϵ ≈ e atol=atol rtol=rtol
+        end
     end
 
-    @testset "Precession" begin 
+    @testset "Precession" verbose=true begin 
 
-        jdₜ = 2400000.5 + 53750.892855; 
-        ERFA_DJ00 = 2451545.
-        ERFA_DJC = 36525.
+        atol, rtol = 1e-9, 1e-9
+        t = [rand(0.0:20000, 49)..., 0.0]
 
-        t = ((jdₜ - ERFA_DJ00)) / ERFA_DJC;
 
-        r2a = 180/π*3600 
-        atol, rtol = 1e-12, 1e-12
+        # -- Testing Frame Bias IAU 2000 (does not depend on t)
+        Δψb, Δϵb, Δα₀ = Orient.frame_bias(iau2000a).*r2a
+        db, de, da = bi00().*r2a
 
-        # Testing Fukushima-Williams angles in μas 
-        # Values taken from ERFA, error must be below 1 μas to be acceptable.
+        @test Δψb ≈ db atol=atol
+        @test Δϵb ≈ de atol=atol
+        @test Δα₀ ≈ da atol=atol
 
-        fw = [Orient.fw_angles(iau2006a, t).* r2a, Orient.fw_angles(iau2006a, 0).* r2a] 
+        for i in eachindex(t)
 
-        @testset "Fukushima-Williams angles" begin 
-            # Testing γ
-            @test fw[1][1] ≈ 5.865586624386230e-1 atol=atol rtol=rtol
-            @test fw[2][1] ≈ -5.292800000000158e-2 atol=atol rtol=rtol
+            ep = Epoch("$(t[i]) TT")
+            tt_d = Tempo.j2000(ep)
+            tt_c = Tempo.j2000c(ep)
+            
+            m2000 = rand([iau2000a, iau2000b])
+            m2006 = rand([iau2006a, iau2006b])
 
-            # Testing ϕ 
-            @test fw[1][2] ≈ 8.437858525780872e4 atol=atol rtol=rtol
-            @test fw[2][2] ≈ 8.438141281900251e4 atol=atol rtol=rtol
+            # -- Testing Fukushima-Williams angles IAU 2006A
+            fw = Orient.fw_angles(m2006, tt_c)
+            fe = pfw06(DJ2000, tt_d)
+            
+            for j = 1:4 
+                @test fw[j].*r2a ≈ fe[j].*r2a atol=atol rtol=rtol
+            end
 
-            # Testing longitude ψ
-            @test fw[1][3] ≈ 3.043272121523480e2 atol=atol rtol=rtol
-            @test fw[2][3] ≈ -4.177500000000124e-2 atol=atol rtol=rtol
+            v = rand(BigFloat, 3); v /= norm(v)
+            
+            # -- Testing Rotation FW Rotation Matrix IAU 2006A
+            Rₑ = fw2m(fe[1], fe[2], fe[3], fe[4])
+            Rₐ = Orient.fw_matrix(fw[1], fw[2], fw[3], fw[4])
 
-            # Testing obliquity ϵ
-            @test fw[1][4] ≈ 8.43785766962175e4 atol=atol rtol=rtol
-            @test fw[2][4] ≈ 8.438140600000251e4 atol=atol rtol=rtol
-        end
+            @test v2as(Rₑ*v, Rₐ*v) ≤ 1e-10
 
-        @testset "Rotation Matrices" begin 
+            # -- Testing Precession Rate IAU 2000
+            Δψₚ, Δϵₚ = Orient.precession_rate(m2000, tt_c).*r2a
+            dp, de = pr00(DJ2000, tt_d).*r2a
 
-            γ, ϕ, ψ, ϵ = Orient.fw_angles(iau2006a, t); 
-            FW = Orient.fw_matrix(γ, ϕ, ψ, ϵ)
+            @test Δψₚ ≈ dp atol=atol rtol=rtol
+            @test Δϵₚ ≈ de atol=atol rtol=rtol
 
-            # Check the matrix originating from the FW Precession Angles 
-            @test FW[1, 1] ≈ 9.999989154136046e-1  atol=atol rtol=rtol
-            @test FW[1, 2] ≈ -1.350835287774888e-3 atol=atol rtol=rtol
-            @test FW[1, 3] ≈ -5.868693548984236e-4 atol=atol rtol=rtol
-            @test FW[2, 1] ≈  1.350835311644812e-3 atol=atol rtol=rtol
-            @test FW[2, 2] ≈  9.999990876215008e-1 atol=atol rtol=rtol
-            @test FW[2, 3] ≈ -3.557088188443913e-7 atol=atol rtol=rtol
-            @test FW[3, 1] ≈  5.868692999554672e-4 atol=atol rtol=rtol
-            @test FW[3, 2] ≈ -4.370554148591665e-7 atol=atol rtol=rtol
-            @test FW[3, 3] ≈  9.999998277921019e-1 atol=atol rtol=rtol
+            # -- Testing Bias-Precession matrix 
+            # IAU 2000 
+            Ra = Orient.orient_bias_precession(m2000, tt_c)
+            Re = pmat00(DJ2000, tt_d)
 
-            # Check the whole Assembly process 
-            FW2 = Orient.orient_precession_bias(iau2006a, t);
+            @test v2as(Ra*v, Re*v) ≤ 1e-10
 
-            @test FW2[1, 1] ≈ 9.999989154136046e-1  atol=atol rtol=rtol
-            @test FW2[1, 2] ≈ -1.350835287774888e-3 atol=atol rtol=rtol
-            @test FW2[1, 3] ≈ -5.868693548984236e-4 atol=atol rtol=rtol
-            @test FW2[2, 1] ≈  1.350835311644812e-3 atol=atol rtol=rtol
-            @test FW2[2, 2] ≈  9.999990876215008e-1 atol=atol rtol=rtol
-            @test FW2[2, 3] ≈ -3.557088188443913e-7 atol=atol rtol=rtol
-            @test FW2[3, 1] ≈  5.868692999554672e-4 atol=atol rtol=rtol
-            @test FW2[3, 2] ≈ -4.370554148591665e-7 atol=atol rtol=rtol
-            @test FW2[3, 3] ≈  9.999998277921019e-1 atol=atol rtol=rtol
+            # IAU 2006 
+            Ra = Orient.orient_bias_precession(m2006, tt_c)
+            Re = pmat06(DJ2000, tt_d)
+
+            @test v2as(Ra*v, Re*v) ≤ 1e-10
+
+            # -- Testing Bias-Precession-Nutation
+            # IAU 2000A 
+            Ra = Orient.orient_bias_precession_nutation(iau2000a, tt_c)
+            Re = pnm00a(DJ2000, tt_d)
+            @test v2as(Ra*v, Re*v) ≤ 1e-7
+
+            # IAU 2000B 
+            Ra = Orient.orient_bias_precession_nutation(iau2000b, tt_c)
+            Re = pnm00b(DJ2000, tt_d)
+            @test v2as(Ra*v, Re*v) ≤ 1e-7
+
+            # IAU 2006A 
+            Ra = Orient.orient_bias_precession_nutation(iau2006a, tt_c)
+            Re = pnm06a(DJ2000, tt_d)
+            @test v2as(Ra*v, Re*v) ≤ 1e-7
 
         end
 
     end
 
-    @testset "ITRF to GCRF Routines" begin
-
-        r2a = 180/π*3600 
-
-        jdₜ = 2400000.5 + 53750.892855; 
-        ERFA_DJ00 = 2451545.
-        ERFA_DJC = 36525.
-
-        t = ((jdₜ - ERFA_DJ00)) / ERFA_DJC;
+    @testset "ITRF to GCRF Routines" verbose=true begin
 
         atol, rtol = 1e-12, 1e-12
+        t = [rand(0.0:20000, 49)..., 0.0]
 
         @testset "Polar Motion" begin 
-            # Testing TIO Locator Position [in arcseconds] 
-            sp = Orient.tio_locator(t) .* r2a
-            @test sp ≈ -2.839163974949028e-6 atol=atol rtol=rtol
 
-            # Polar Motion Matrix 
-            xₚ, yₚ = 1.857, 0.123;  
-            W = Orient.polar_motion(xₚ, yₚ, t)
+            for i in eachindex(t)
+                ep = Epoch("$(t[i]) TT")
+                tt_c = Tempo.j2000c(ep)
 
-            @test W[1, 1] ≈ -2.823123663590987e-1   atol=atol rtol=rtol
-            @test W[1, 2] ≈  1.176993683001583e-1   atol=atol rtol=rtol
-            @test W[1, 3] ≈ -9.520748849236963e-1   atol=atol rtol=rtol
-            @test W[2, 1] ≈  3.885932432356596e-12  atol=atol rtol=rtol
-            @test W[2, 2] ≈  9.924450321335735e-1   atol=atol rtol=rtol
-            @test W[2, 3] ≈  1.226900900374203e-1   atol=atol rtol=rtol
-            @test W[3, 1] ≈  9.593225358557600e-1   atol=atol rtol=rtol
-            @test W[3, 2] ≈  3.463692964357531e-2   atol=atol rtol=rtol
-            @test W[3, 3] ≈ -2.801795055034182e-1   atol=atol rtol=rtol
+                # -- Testing TIO Locator 
+                sp = Orient.tio_locator(tt_c).*r2a
+                spₑ = sp00(DJ2000, Tempo.j2000(ep)).*r2a
+
+                @test sp ≈ spₑ atol=atol rtol=rtol
+
+                # -- Testing Polar Motion 
+                xₚ, yₚ = rand(), rand(), rand()
+                                    
+                RPₐ = Orient.polar_motion(tt_c, xₚ, yₚ)
+                RPₑ = pom00(xₚ, yₚ, sp00(DJ2000, Tempo.j2000(ep)))'
+
+                v = rand(BigFloat, 3); v /= norm(v); 
+                @test v2as(RPₑ*v, RPₐ*v) ≤ 1e-9
+
+            end
+
         end
 
         @testset "Earth Rotation Angle" begin 
-            
-            # Testing Earth Rotation Angle [radians]
-            # Note in this case the input time should be expressed in UT1
-            era = Orient.earth_rotation_angle(jdₜ); 
-            @test era ≈ 1.335810933027503 atol=atol rtol=rtol
+            for i in eachindex(t)
+                ep = Epoch("$(t[i]) TT")
+                ep_ut1 = convert(UT1, ep)
+
+                ut1_d = Tempo.j2000(ep_ut1)
+
+                # -- Testing ERA Rotation Angle 
+                ERA = Orient.earth_rotation_angle(ut1_d).*r2a
+                ERAₑ = era00(DJ2000, ut1_d).*r2a
+
+                @test ERA ≈ ERAₑ atol=1e-9 rtol=1e-9
+
+            end
         end
 
         @testset "Precession-Nutation" begin 
+            for i in eachindex(t)
 
-            # Testing CIP Coordinates from FW angles 
-            # Error should be below 1μas
-            x, y = Orient.fw2xy(0.1, 0.7, 1.1, -2.5);
+                ep = Epoch("$(t[i]) TT")
+                tt_d = Tempo.j2000(ep)
+                tt_c = Tempo.j2000c(ep)
 
-            @test x ≈ -5.614951267014441e-1 atol=atol rtol=rtol        
-            @test y ≈  2.536947155044642e-1 atol=atol rtol=rtol
+                v = rand(BigFloat, 3); v /= norm(v)
 
-            atol, rtol = 1e-7, 1e-7
-            # Testing X, Y coordinates including IAU2000A nutation series 
-            # Error must be below 1 μas
-            x, y = Orient.cip_coords(iau2006a, t) .* r2a;
-            @test x ≈ 1.206359974143122e2 atol=atol rtol=rtol
-            @test y ≈ 8.567258642517157   atol=atol rtol=rtol
+                m2000 = rand([iau2000a, iau2000b])
+                m2006 = rand([iau2006a, iau2006b])
 
-            # Testing CIO Locator [in radians]
-            # Error should be below 1 μas 
-            s = Orient.cio_locator(iau2006a, t, 0.125, 0.745); 
-            @test s ≈ -4.656250032319267e-2 atol=1e-12 rtol=1e-12
-            
-            atol, rtol = 1e-12, 1e-12
+                # -- Testing CIP coordinates 
+                # IAU 2000A 
+                X, Y = Orient.cip_coords(iau2000a, tt_c).*r2a
+                Xₑ, Yₑ = bpn2xy(pnm00a(DJ2000, tt_d)).*r2a
 
-            # Testing IAU 2006A CIP Motion Rotation Matrix 
-            Q = Orient.cip_motion(iau2006a, t); 
-            @test Q[1, 1] ≈  9.999998289694806e-1   atol=atol rtol=rtol
-            @test Q[1, 2] ≈ -2.461548571919270e-8   atol=atol rtol=rtol
-            @test Q[1, 3] ≈  5.848598198075143e-4   atol=atol rtol=rtol
-            @test Q[2, 1] ≈  3.231916262391721e-10  atol=atol rtol=rtol
-            @test Q[2, 2] ≈  9.999999991374118e-1   atol=atol rtol=rtol
-            @test Q[2, 3] ≈  4.153524199496106e-5   atol=atol rtol=rtol
-            @test Q[3, 1] ≈ -5.848598203254312e-4   atol=atol rtol=rtol
-            @test Q[3, 2] ≈ -4.153523470214526e-5   atol=atol rtol=rtol
-            @test Q[3, 3] ≈  9.999998281068927e-1   atol=atol rtol=rtol
-            
-            # Testing IAU2000B CIP Motion Rotation Matrix 
-            # Tolerances are 1000x the previous because this model is 1000x less 
-            # precise than the IAU2006A 
-            atol, rtol = 1e-9, 1e-9
-            Q = Orient.cip_motion(iau2006b, t); 
-            @test Q[1, 1] ≈  9.999998289699551e-1   atol=atol rtol=rtol
-            @test Q[1, 2] ≈ -2.461541308285131e-8   atol=atol rtol=rtol
-            @test Q[1, 3] ≈  5.848590084916441e-4   atol=atol rtol=rtol
-            @test Q[2, 1] ≈  3.232319550905416e-10  atol=atol rtol=rtol
-            @test Q[2, 2] ≈  9.999999991374174e-1   atol=atol rtol=rtol
-            @test Q[2, 3] ≈  4.153510643734409e-5   atol=atol rtol=rtol
-            @test Q[3, 1] ≈ -5.848590090095588e-4   atol=atol rtol=rtol
-            @test Q[3, 2] ≈ -4.153509914454784e-5   atol=atol rtol=rtol
-            @test Q[3, 3] ≈  9.999998281073728e-1   atol=atol rtol=rtol
+                @test X ≈ Xₑ atol=1e-7
+                @test Y ≈ Yₑ atol=1e-7
+
+                # IAU 2000B 
+                X, Y = Orient.cip_coords(iau2000b, tt_c).*r2a
+                Xₑ, Yₑ = bpn2xy(pnm00b(DJ2000, tt_d)).*r2a
+
+                @test X ≈ Xₑ atol=1e-7
+                @test Y ≈ Yₑ atol=1e-7
+
+                # IAU 2006A 
+                X, Y = Orient.cip_coords(iau2006a, tt_c).*r2a
+                Xₑ, Yₑ = bpn2xy(pnm06a(DJ2000, tt_d)).*r2a
+
+                @test X ≈ Xₑ atol=1e-7
+                @test Y ≈ Yₑ atol=1e-7
+
+                # -- Testing CIO Locator 
+                X, Y = rand(), rand()
+
+                # IAU 2000A/B 
+                s = Orient.cio_locator(m2000, tt_c, X, Y)*r2a
+                sₑ = s00(DJ2000, tt_d, X, Y)*r2a
+                @test s ≈ sₑ atol=1e-12
+
+                # IAU 2006A/B 
+                s = Orient.cio_locator(m2006, tt_c, X, Y)*r2a
+                sₑ = s06(DJ2000, tt_d, X, Y)*r2a
+                @test s ≈ sₑ atol=1e-12
+
+                # -- Testing CIP Rotation Matrix 
+                # IAU 2000A 
+                Q = Orient.cip_motion(iau2000a, tt_c, 0.0, 0.0)
+                Qₑ = c2i00a(DJ2000, tt_d)'
+                @test v2as(Q*v, Qₑ*v) ≤ 1e-7
+
+                # IAU 2000B 
+                Q = Orient.cip_motion(iau2000b, tt_c, 0.0, 0.0)
+                Qₑ = c2i00b(DJ2000, tt_d)'
+                @test v2as(Q*v, Qₑ*v) ≤ 1e-7
+
+                # IAU 2006A 
+                Q = Orient.cip_motion(iau2006a, tt_c, 0.0, 0.0)
+                Qₑ = c2i06a(DJ2000, tt_d)'
+                @test v2as(Q*v, Qₑ*v) ≤ 1e-7
+
+            end
+
+        end
+
+        @testset "Full Rotation" verbose=true begin 
+            for i in eachindex(t)
+
+                ep = Epoch("$(t[i]) TT")
+                ep_utc = convert(UTC, ep)
+                ep_ut1 = convert(UT1, ep_utc)
+
+                tt_d = Tempo.j2000(ep)
+                tt_s = Tempo.j2000s(ep)
+                tt_c = Tempo.j2000c(ep)
+
+                utc_d = Tempo.j2000(ep_utc)
+                ut1_d = Tempo.j2000(ep_ut1)
+
+                v = rand(BigFloat, 3); v /= norm(v)
+
+                # Polar coordinates with UTC 
+                xₚ = interpolate(Orient.IERS_EOP.x, utc_d) |> arcsec2rad
+                yₚ = interpolate(Orient.IERS_EOP.y, utc_d) |> arcsec2rad
+
+                # Polar coordinates with TT 
+                xₚ_TT = interpolate(Orient.IERS_EOP.x_TT, tt_d) |> arcsec2rad
+                yₚ_TT = interpolate(Orient.IERS_EOP.y_TT, tt_d) |> arcsec2rad
+
+                # CIP Deviations 
+                dX = 1e-3*interpolate(Orient.IERS_EOP.dX, utc_d) |> arcsec2rad
+                dY = 1e-3*interpolate(Orient.IERS_EOP.dY, utc_d) |> arcsec2rad
+
+                # -- Testing GCRF-to-ITRF Rotation 
+                # IAU 2000A (accurate to ~μas)
+                Rₑ = c2t00a(DJ2000, tt_d, DJ2000, ut1_d, xₚ, yₚ)'
+                R = orient_rot3_itrf_to_gcrf(iau2000a, tt_s, ut1_d, xₚ, yₚ)
+                @test v2as(R*v, Rₑ*v) ≤ 1e-7
+
+                # IAU 2000B (accurate to ~mas)
+                Rₑ = c2t00b(DJ2000, tt_d, DJ2000, ut1_d, xₚ, yₚ)'
+                R = orient_rot3_itrf_to_gcrf(iau2000b, tt_s, ut1_d, xₚ, yₚ)
+                @test v2as(R*v, Rₑ*v) ≤ 1e-4
+
+                # IAU 2006A (accurate to ~μas)
+                Rₑ = c2t06a(DJ2000, tt_d, DJ2000, ut1_d, xₚ, yₚ)'
+                R = orient_rot3_itrf_to_gcrf(iau2006a, tt_s, ut1_d, xₚ, yₚ)
+                @test v2as(R*v, Rₑ*v) ≤ 1e-7
+
+
+                # -- Testing Time Routines 
+                # IAU2000A \ IAU2006A
+                for m in (iau2000a, iau2006a)
+                    R1 = orient_rot3_itrf_to_gcrf(m, tt_s)
+                    R2 = orient_rot3_itrf_to_gcrf(m, tt_s, ut1_d, xₚ, yₚ, dX, dY)
+                    @test v2as(R1*v, R2*v) ≤ 1e-10
+                end
+
+                # IAU2000B
+                offset = interpolate(Orient.IERS_EOP.UT1_TT, tt_d)
+                ut1 = tt_d + offset/Tempo.DAY2SEC
+
+                R1 = orient_rot3_itrf_to_gcrf(iau2000b, tt_s)
+                R2 = orient_rot3_itrf_to_gcrf(iau2000b, tt_s, ut1, xₚ_TT, yₚ_TT, 0.0, 0.0)
+                @test v2as(R1*v, R2*v) ≤ 1e-10
+
+                # CPNc (accurate to ~16mas)
+                R = orient_rot3_itrf_to_gcrf(CPNc, tt_s)
+                Rₑ = orient_rot3_itrf_to_gcrf(iau2006a, tt_s)
+                @test v2as(R*v, Rₑ*v) ≤ 1e-1
+
+                # CPNc (accurate to ~1as)
+                R = orient_rot3_itrf_to_gcrf(CPNd, tt_s)
+                Rₑ = orient_rot3_itrf_to_gcrf(iau2006a, tt_s)
+                @test v2as(R*v, Rₑ*v) ≤ 1
+
+            end
 
         end
 

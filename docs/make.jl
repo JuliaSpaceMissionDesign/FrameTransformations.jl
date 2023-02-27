@@ -17,17 +17,25 @@ makedocs(;
         assets=["assets/init.js"]
     ),
     pages=[
-        # "Home" => "index.md",
+        "Home" => "index.md",
+        "Tutorials" => [
+            "Epochs" => "Tutorials/t_01_epochs.md",
+            "Timescales" => "Tutorials/t_02_extending_scales.md",
+            "Ephemeris" => "Tutorials/t_03_ephem.md",
+            "Points Graphs" => "Tutorials/t_04_points.md",
+            "Axes Graphs" => "Tutorials/t_05_axes.md",
+            "Frames" => "Tutorials/t_06_frames.md",
+            ],
         # "Manual" => [
         #     "Overview" => "manual.md"
         # ],
         "Modules" => [
-            "Bodies" => "Modules/bodies.md",
             "Tempo" => "Modules/time.md",
             "Ephemeris" => "Modules/ephem.md",
             "Orient" => "Modules/orient.md",
-            # "Frames" => "Modules/frames.md",
-            "Utils" => "Modules/utils.md"
+            "Frames" => "Modules/frames.md",
+            "Utils" => "Modules/utils.md",
+            "Graphs" => "Modules/graph.md"
         ]
     ],
     strict = !("strict=false" in ARGS),
