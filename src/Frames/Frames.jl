@@ -31,7 +31,12 @@ module Frames
     using Basic.Utils: angle_to_δdcm, angle_to_δ²dcm
     using Basic.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
-    using Basic.MappedGraphs # TODO: remove in future
+    using MultiGraphs: 
+        MappedNodeGraph, AbstractGraphNode, SimpleGraph, MappedGraph,
+        get_path, get_mappedid, get_mappednode, get_node, get_node_id,
+        has_vertex, add_vertex!, add_edge!
+
+    import MultiGraphs: get_node_id
 
     include("rotation.jl")
 

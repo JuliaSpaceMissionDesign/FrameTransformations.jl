@@ -5,9 +5,13 @@ module Tempo
     using Dates: DateTime as DatesDateTime, datetime2julian, now
 
     using Basic
-    using Basic.MappedGraphs
     using Basic.Utils: format_camelcase, interpolate
     using Basic: AstronautGenericException, @create_module_error
+
+    using MultiGraphs: 
+        MappedNodeGraph, MappedDiGraph, AbstractGraphNode, SimpleDiGraph, 
+        has_vertex, add_vertex!, add_edge!, get_path, get_mappedid, get_mappednode
+    import MultiGraphs: get_node_id
 
     const DAY2SEC = 86400.0
     const YEAR2SEC = 60.0 * 60.0 * 24.0 * 365.25

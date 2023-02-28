@@ -1,7 +1,7 @@
 name = "Basic"
 uuid = "f7345b97-8646-4350-bca5-2368100b77e2"
 authors = ["andreapasquale94 <andrea.pasquale@outlook.it> and contributors"]
-version = "1.0.1"
+version = "1.0.2"
 
 [deps]
 CALCEPH = "1537fe66-4725-5aba-80f4-3a74792cecc1"
@@ -14,6 +14,7 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+MultiGraphs = "3cb9d4dc-0a5d-4917-ab7c-1a21a1c41a88"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 ReferenceFrameRotations = "74f56ac7-18b3-5285-802d-d4bd4f104033"
