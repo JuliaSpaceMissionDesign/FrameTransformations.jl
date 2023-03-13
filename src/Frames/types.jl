@@ -163,7 +163,7 @@ struct FrameAxesNode{O, T, N} <: AbstractGraphNode
     angles::Vector{MVector{N, T}}
 end
 
-MappedGraphs.get_node_id(ax::FrameAxesNode) = ax.id
+get_node_id(ax::FrameAxesNode) = ax.id
 
 function Base.show(io::IO, ax::FrameAxesNode{O, T}) where {O, T}
     pstr = "FrameAxesNode{$O, $T}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
@@ -247,7 +247,7 @@ struct FramePointNode{O, T, N} <: AbstractGraphNode
     f::FramePointFunctions{T, O, N}
 end 
 
-MappedGraphs.get_node_id(p::FramePointNode) = p.NAIFId
+get_node_id(p::FramePointNode) = p.NAIFId
 
 function Base.show(io::IO, p::FramePointNode{O, T}) where {O, T}
     pstr = "FramePointNode{$O, $T}(name=$(p.name), class=$(p.class), NAIFId=$(p.NAIFId), axes=$(p.axesid)"

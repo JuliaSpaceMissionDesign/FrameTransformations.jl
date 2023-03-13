@@ -8,7 +8,7 @@ struct TimeScaleNode{T} <: AbstractGraphNode
     ftp::FunctionWrapper{T, Tuple{T}}
 end
 
-MappedGraphs.get_node_id(s::TimeScaleNode) = s.id
+get_node_id(s::TimeScaleNode) = s.id
 
 function Base.show(io::IO, s::TimeScaleNode{T}) where T 
     pstr = "TimeScaleNode{$T}(name=$(s.name), id=$(s.id)"
