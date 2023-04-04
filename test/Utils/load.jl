@@ -3,21 +3,17 @@
 end
 
 @testset "Function load(JSON)" begin
-    @test load(
-        JSON(joinpath(@__DIR__, "assets", "test_json.json")))[:check] == 1
+    @test load(JSON(joinpath(@__DIR__, "assets", "test_json.json")))[:check] == 1
 end
 
 @testset "Function load(TXT)" begin
-    @test load(
-        TXT(joinpath(@__DIR__, "assets", "test_txt.txt")))[1] == "check: 1"
+    @test load(TXT(joinpath(@__DIR__, "assets", "test_txt.txt")))[1] == "check: 1"
 end
 
 @testset "Function load(YAML)" begin
-    @test load(
-        YML(joinpath(@__DIR__, "assets", "test_yaml.yml")))[:check] == 1
+    @test load(YML(joinpath(@__DIR__, "assets", "test_yaml.yml")))[:check] == 1
 
-    @test load(
-        YAML(joinpath(@__DIR__, "assets", "test_yaml.yml")))[:check] == 1
+    @test load(YAML(joinpath(@__DIR__, "assets", "test_yaml.yml")))[:check] == 1
 end
 
 @testset "Function load(TPC)" begin
@@ -26,12 +22,12 @@ end
     @test data[399][:gm] == 3.9860043543609598E+05
     @test_throws KeyError data[-100]
 
-    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Vector{Float64}}}}()
+    mapped = Dict{Int64,Dict{Symbol,Union{Float64,Vector{Float64}}}}()
     Utils.load_tpc!(mapped, Utils.filepath(file))
     @test data == mapped
 end
 
-@testset "Function load(Vector(TPC))" begin 
+@testset "Function load(Vector(TPC))" begin
     gms = TPC(joinpath(@__DIR__, "..", "assets", "gms.tpc"))
     orient = TPC(joinpath(@__DIR__, "..", "assets", "orient.tpc"))
 

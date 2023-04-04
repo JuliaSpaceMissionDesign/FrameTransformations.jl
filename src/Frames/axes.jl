@@ -1,14 +1,13 @@
-export @axes, 
-       add_axes_inertial!, 
-       add_axes_rotating!,
-       add_axes_fixedoffset!, 
-       add_axes_computable!,
-       add_axes_projected!,
-       add_axes_ephemeris!,
-       is_inertial, 
-       is_timefixed, 
-       axes_alias
-
+export @axes,
+    add_axes_inertial!,
+    add_axes_rotating!,
+    add_axes_fixedoffset!,
+    add_axes_computable!,
+    add_axes_projected!,
+    add_axes_ephemeris!,
+    is_inertial,
+    is_timefixed,
+    axes_alias
 
 """
     axes_name(axes::AbstractFrameAxes)
@@ -22,8 +21,7 @@ function axes_name end
 
 Return the ID associated to `axes`.
 """
-function axes_id end 
-
+function axes_id end
 
 """ 
     is_inertial(frame::FrameSystem, axes::AbstractFrameAxes)
@@ -35,23 +33,23 @@ axes.
 !!! note 
     FixedOffsetAxes with respect to an inertial set of axes, are also consired inertial.
 """
-is_inertial(frame::FrameSystem, axes::AbstractFrameAxes) = is_inertial(frame, axes_alias(axes))
+function is_inertial(frame::FrameSystem, axes::AbstractFrameAxes)
+    return is_inertial(frame, axes_alias(axes))
+end
 is_inertial(frame::FrameSystem, axesid::Int) = is_inertial(frames_axes(frame), axesid)
 
 function is_inertial(axframe::MappedNodeGraph, axesid::Int)
-
-    node = get_node(axframe, axesid) 
+    node = get_node(axframe, axesid)
     if node.class in (:InertialAxes, :FixedOffsetAxes, :ProjectedAxes)
-        if node.id != node.parentid 
+        if node.id != node.parentid
             return is_inertial(axframe, node.parentid)
-        else 
+        else
             return true # Root axes are always inertial
         end
-    else 
-        return false 
+    else
+        return false
     end
 end
-
 
 """ 
     is_timefixed(frame::FrameSystem, axes::AbstractFrameAxes)
@@ -64,19 +62,21 @@ time with respect to the root inertial axes.
     Only `:InertialAxes` and `:FixedOffsetAxes` defined with respect to other inertial axes 
     are here considered as time fixed. 
 """
-is_timefixed(frame::FrameSystem, axes::AbstractFrameAxes) = is_timefixed(frame, axes_alias(axes))
+function is_timefixed(frame::FrameSystem, axes::AbstractFrameAxes)
+    return is_timefixed(frame, axes_alias(axes))
+end
 is_timefixed(frame::FrameSystem, axesid::Int) = is_timefixed(frames_axes(frame), axesid)
 
 function is_timefixed(axframe::MappedNodeGraph, axesid::Int)
-    node = get_node(axframe, axesid) 
+    node = get_node(axframe, axesid)
     if node.class in (:InertialAxes, :FixedOffsetAxes)
-        if node.id != node.parentid 
+        if node.id != node.parentid
             return is_timefixed(axframe, node.parentid)
-        else 
+        else
             return true # Root axes are always time fixed
         end
-    else 
-        return false 
+    else
+        return false
     end
 end
 
@@ -87,7 +87,6 @@ Return the axes ID.
 """
 axes_alias(x::AbstractFrameAxes) = axes_id(x)
 axes_alias(x::Int) = x
-
 
 """
     @axes(name, id, type=nothing)
@@ -116,10 +115,10 @@ IauEarthAxes
 ### See also 
 See also [`@point`](@ref) and [`axes_alias`](@ref).
 """
-macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
+macro axes(name::Symbol, id::Int, type::Union{Symbol,Nothing}=nothing)
     # construct type name if not assigned 
 
-    type = isnothing(type) ? name : type     
+    type = isnothing(type) ? name : type
     type = Symbol(format_camelcase(Symbol, String(type)), :Axes)
     typ_str = String(type)
     name_str = String(name)
@@ -127,7 +126,7 @@ macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     axesid_expr = :(@inline Frames.axes_id(::$type) = $id)
     name_expr = :(Frames.axes_name(::$type) = Symbol($name_str))
 
-    return quote 
+    return quote
         """
             $($typ_str) <: AbstractFrameAxes
 
@@ -147,7 +146,6 @@ macro axes(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
         nothing
     end
 end
-
 
 """
     build_axes(frames, name, id, class, funs; parentid, dcm, cax_prop)
@@ -175,46 +173,63 @@ supported classes are: `:InertialAxes`, `:FixedOffsetAxes`, `:RotatingAxes`, `:P
     [`add_axes_computable!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_projected!`](@ref).
 
 """
-function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Symbol, 
-            funs::FrameAxesFunctions{T, O}; parentid=nothing, dcm=nothing, 
-            cax_prop=ComputableAxesProperties()) where {O, T}
-
+function build_axes(
+    frames::FrameSystem{O,T},
+    name::Symbol,
+    id::Int,
+    class::Symbol,
+    funs::FrameAxesFunctions{T,O};
+    parentid=nothing,
+    dcm=nothing,
+    cax_prop=ComputableAxesProperties(),
+) where {O,T}
     if has_axes(frames, id)
         # Check if a set of axes with the same ID is already registered within 
         # the given frame system 
-        throw(ArgumentError(
-            "Axes with ID $id are already registered in the given FrameSystem.")
+        throw(
+            ArgumentError(
+                "Axes with ID $id are already registered in the given FrameSystem."
+            ),
         )
     end
 
-    if name in map(x->x.name, frames_axes(frames).nodes) 
+    if name in map(x -> x.name, frames_axes(frames).nodes)
         # Check if axes with the same name also do not already exist
-        throw(ArgumentError(
-            "Axes with name=$name are already registered in the given FrameSystem.")
+        throw(
+            ArgumentError(
+                "Axes with name=$name are already registered in the given FrameSystem."
+            ),
         )
-    end    
+    end
 
     # if the frame has a parent
     if !isnothing(parentid)
         # Check if the root axes is not present
         isempty(frames_axes(frames)) && throw(ArgumentError("Missing root axes."))
-        
+
         # Check if the parent axes are registered in frame 
         if !has_axes(frames, parentid)
-            throw(ArgumentError("The specified parent axes with ID $parentid are not "*
-                "registered in the given FrameSystem."))
+            throw(
+                ArgumentError(
+                    "The specified parent axes with ID $parentid are not " *
+                    "registered in the given FrameSystem.",
+                ),
+            )
         end
 
-    elseif class == :InertialAxes 
-        parentid = id 
+    elseif class == :InertialAxes
+        parentid = id
     end
 
     # Check that the given functions have the correct signature 
-    for i = 1:O
+    for i in 1:O
         otype = funs[i](T(1), SVector{3O}(zeros(T, 3O)), SVector{3O}(zeros(T, 3O)))
 
-        !(otype isa Rotation{O, T}) && throw(ArgumentError(
-            "$(funs[i]) return type is $(typeof(otype)) but should be Rotation{$O, $T}."))
+        !(otype isa Rotation{O,T}) && throw(
+            ArgumentError(
+                "$(funs[i]) return type is $(typeof(otype)) but should be Rotation{$O, $T}.",
+            ),
+        )
     end
 
     # Initialize struct caches
@@ -222,23 +237,24 @@ function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Sym
         nzo = Int[]
         epochs = T[]
         angles = [@MVector zeros(T, 3O)]
-        
+
         R = [!isnothing(dcm) ? Rotation{O}(dcm) : Rotation{O}(T(1)I)]
 
     else
         # This is to handle generic frames in a multi-threading architecture 
         # without having to copy the FrameSystem
-        nth = Threads.nthreads() 
+        nth = Threads.nthreads()
         nzo = -ones(Int, nth)
-        
+
         epochs = zeros(T, nth)
-        angles = [@MVector zeros(T, 3O) for _ = 1:nth]
-        R = [Rotation{O}(T(1)I) for _ = 1:nth]
+        angles = [@MVector zeros(T, 3O) for _ in 1:nth]
+        R = [Rotation{O}(T(1)I) for _ in 1:nth]
     end
-    
+
     # Creates axes node
-    axnode = FrameAxesNode{O, T, 3*O}(name, class, id, parentid, cax_prop, 
-                R, epochs, nzo, funs, angles)
+    axnode = FrameAxesNode{O,T,3 * O}(
+        name, class, id, parentid, cax_prop, R, epochs, nzo, funs, angles
+    )
 
     # Insert the new axes in the graph
     add_axes!(frames, axnode)
@@ -246,9 +262,8 @@ function build_axes(frames::FrameSystem{O, T}, name::Symbol, id::Int, class::Sym
     # Connect the new axes to the parent axes in the graph 
     !isnothing(parentid) && add_edge!(frames_axes(frames), parentid, id)
 
-    nothing
+    return nothing
 end
-    
 
 """
     add_axes_inertial!(frames, axes; parent=nothing, dcm=nothing)
@@ -281,32 +296,38 @@ julia> add_axes_inertial!(FRAMES, ECLIPJ2000; parent=ICRF, dcm=angle_to_dcm(π/3
 ### See also 
 See also [`add_axes_rotating!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-function add_axes_inertial!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes; 
-            parent=nothing, dcm::Union{Nothing, DCM{T}}=nothing) where {O, T}
-
+function add_axes_inertial!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes;
+    parent=nothing,
+    dcm::Union{Nothing,DCM{T}}=nothing,
+) where {O,T}
     name = axes_name(axes)
     pid = isnothing(parent) ? nothing : axes_alias(parent)
-
 
     # Checks for root-axes existence 
     if isnothing(pid)
         if !isempty(frames_axes(frames))
-            throw(ArgumentError(
-                "A set of parent axes for $name is required because the root axes "*
-                "have already been specified in the given FrameSystem."
-            ))
+            throw(
+                ArgumentError(
+                    "A set of parent axes for $name is required because the root axes " *
+                    "have already been specified in the given FrameSystem.",
+                ),
+            )
         end
 
         if !isnothing(dcm)
             throw(ArgumentError("Providing a DCM for root axes is meaningless."))
         end
-        
-    else 
+
+    else
         # Check that the parent axes are contained in frames! 
         if !has_axes(frames, pid)
-            throw(ArgumentError(
-                "The parent axes $pid are not present in the given FrameSystem."
-            ))
+            throw(
+                ArgumentError(
+                    "The parent axes $pid are not present in the given FrameSystem."
+                ),
+            )
         end
 
         # Check that the parent axes are inertial\timefixed
@@ -314,18 +335,22 @@ function add_axes_inertial!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes;
             throw(ArgumentError("The parent axes for inertial axes must also be inertial."))
         end
 
-        if isnothing(dcm) 
+        if isnothing(dcm)
             throw(ArgumentError("Missing DCM from axes $parent."))
-        end 
-
+        end
     end
 
     # construct the axes and insert in the FrameSystem
-    build_axes(frames, name, axes_id(axes), :InertialAxes, FrameAxesFunctions{T, O}();
-        parentid=pid, dcm=dcm)
-
+    return build_axes(
+        frames,
+        name,
+        axes_id(axes),
+        :InertialAxes,
+        FrameAxesFunctions{T,O}();
+        parentid=pid,
+        dcm=dcm,
+    )
 end
-
 
 """
     add_axes_fixedoffset!(frames::FrameSystem{T}, axes, parent, dcm::DCM{T}) where T 
@@ -354,13 +379,19 @@ julia> add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, angle_to_dcm(π/3, :Z))
 ### See also 
 See also [`add_axes_rotating!`](@ref), [`add_axes_inertial!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-function add_axes_fixedoffset!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
-            parent, dcm::DCM{T}) where {O, T}
-
-    build_axes(frames, axes_name(axes), axes_id(axes), :FixedOffsetAxes, 
-        FrameAxesFunctions{T, O}(); parentid=axes_alias(parent), dcm=dcm)
+function add_axes_fixedoffset!(
+    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent, dcm::DCM{T}
+) where {O,T}
+    return build_axes(
+        frames,
+        axes_name(axes),
+        axes_id(axes),
+        :FixedOffsetAxes,
+        FrameAxesFunctions{T,O}();
+        parentid=axes_alias(parent),
+        dcm=dcm,
+    )
 end
-
 
 """
     add_axes_rotating!(frames, axes, parent, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where T 
@@ -413,46 +444,73 @@ DCM{Float64}:
 ### See also 
 See also [`add_axes_fixedoffset!`](@ref), [`add_axes_inertial!`](@ref) and [`add_axes_computable!`](@ref) 
 """
-function add_axes_rotating!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes,
-            parent, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
-
+function add_axes_rotating!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    parent,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
-        if (O < order+1 && !isnothing(fcn))
-             @warn "ignoring $fcn, frame system order is less than $(order+1)"
+        if (O < order + 1 && !isnothing(fcn))
+            @warn "ignoring $fcn, frame system order is less than $(order+1)"
         end
-    end 
+    end
 
-    funs = FrameAxesFunctions{T, O}(
+    funs = FrameAxesFunctions{T,O}(
         (t, x, y) -> Rotation{O}(fun(t)),
 
         # First derivative 
-        isnothing(δfun) ? 
-            (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t)) : 
-            (t, x, y) -> Rotation{O}(δfun(t)...),
+        if isnothing(δfun)
+            (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t))
+        else
+            (t, x, y) -> Rotation{O}(δfun(t)...)
+        end,
 
         # Second derivative 
-        isnothing(δ²fun) ?
-            (isnothing(δfun) ? 
-                (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t)) : 
-                (t, x, y) -> Rotation{O}(δfun(t)..., D²(fun, t))) : 
-
-            (t, x, y) -> Rotation{O}(δ²fun(t)...),
+        if isnothing(δ²fun)
+            (
+            if isnothing(δfun)
+                (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t))
+            else
+                (t, x, y) -> Rotation{O}(δfun(t)..., D²(fun, t))
+            end
+        )
+        else
+            (t, x, y) -> Rotation{O}(δ²fun(t)...)
+        end,
 
         # Third derivative 
-        isnothing(δ³fun) ?
-            (isnothing(δ²fun) ? 
-                (isnothing(δfun) ? 
-                    (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t)) :
-                    (t, x, y) -> Rotation{O}(δfun(t)..., D²(δfun, t)...)) : 
-                (t, x, y) -> Rotation{O}(δ²fun(t)..., D³(fun, t))) :
-
+        if isnothing(δ³fun)
+            (
+            if isnothing(δ²fun)
+                (
+                if isnothing(δfun)
+                    (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t))
+                else
+                    (t, x, y) -> Rotation{O}(δfun(t)..., D²(δfun, t)...)
+                end
+            )
+            else
+                (t, x, y) -> Rotation{O}(δ²fun(t)..., D³(fun, t))
+            end
+        )
+        else
             (t, x, y) -> Rotation{O}(δ³fun(t)...)
+        end,
     )
 
-    build_axes(frames, axes_name(axes), axes_id(axes), :RotatingAxes, 
-        funs, parentid=axes_alias(parent))
+    return build_axes(
+        frames,
+        axes_name(axes),
+        axes_id(axes),
+        :RotatingAxes,
+        funs;
+        parentid=axes_alias(parent),
+    )
 end
-
 
 """
     add_axes_computable!(frames, axes, parent, v1, v2, seq::Symbol)
@@ -521,37 +579,49 @@ See also [`ComputableAxesVector`](@ref), [`add_axes_fixedoffset!`](@ref), [`add_
 and [`add_axes_computable!`](@ref)
 
 """
-function add_axes_computable!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, parent, 
-            v1::ComputableAxesVector, v2::ComputableAxesVector, seq::Symbol) where {O, T}
-
-    if !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY)) 
-        throw(ArgumentError(
-            "$seq is not a valid rotation sequence for two vectors frames.")
+function add_axes_computable!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    parent,
+    v1::ComputableAxesVector,
+    v2::ComputableAxesVector,
+    seq::Symbol,
+) where {O,T}
+    if !(seq in (:XY, :YX, :XZ, :ZX, :YZ, :ZY))
+        throw(
+            ArgumentError("$seq is not a valid rotation sequence for two vectors frames.")
         )
     end
 
     for v in (v1, v2)
         for id in (v.from, v.to)
-            if !has_point(frames, id) 
-                throw(ArgumentError(
-                    "Point with NAIFID $id is unknown in the given frame system.")
+            if !has_point(frames, id)
+                throw(
+                    ArgumentError(
+                        "Point with NAIFID $id is unknown in the given frame system."
+                    ),
                 )
             end
         end
     end
 
-    funs = FrameAxesFunctions{T, O}(
-        (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)), 
-        (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)...), 
+    funs = FrameAxesFunctions{T,O}(
+        (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)),
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)...),
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot9(x, y, seq)...),
         (t, x, y) -> Rotation{O}(_two_vectors_to_rot12(x, y, seq)...),
     )
 
-    build_axes(frames, axes_name(axes), axes_id(axes), :ComputableAxes, funs;
-        parentid=axes_alias(parent), cax_prop=ComputableAxesProperties(v1, v2))
-    
+    return build_axes(
+        frames,
+        axes_name(axes),
+        axes_id(axes),
+        :ComputableAxes,
+        funs;
+        parentid=axes_alias(parent),
+        cax_prop=ComputableAxesProperties(v1, v2),
+    )
 end
-
 
 """
     add_axes_projected!(frames, axes, parent, fun)
@@ -567,21 +637,25 @@ despite the rotation depends on time).
     It is expected that the input function and their outputs have the correct signature. This 
     function does not perform any checks on the output types. 
 """
-function add_axes_projected!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
-            parent, fun) where {O, T}
-
-    funs = FrameAxesFunctions{T, O}(
+function add_axes_projected!(
+    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent, fun
+) where {O,T}
+    funs = FrameAxesFunctions{T,O}(
         (t, x, y) -> Rotation{O}(fun(t)),
         (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I)),
         (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I)),
-        (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I))
+        (t, x, y) -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I)),
     )
-                                                        
-    build_axes(frames, axes_name(axes), axes_id(axes), :ProjectedAxes, 
-        funs, parentid=axes_alias(parent))
 
+    return build_axes(
+        frames,
+        axes_name(axes),
+        axes_id(axes),
+        :ProjectedAxes,
+        funs;
+        parentid=axes_alias(parent),
+    )
 end
-
 
 """
     add_axes_ephemeris!(frames, axes, rot_seq::Symbol)
@@ -615,54 +689,62 @@ See also [`ComputableAxesVector`](@ref), [`add_axes_fixedoffset!`](@ref), [`add_
 and [`add_axes_computable!`](@ref)
 
 """
-function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
-            rot_seq::Symbol) where {O, T}
-
+function add_axes_ephemeris!(
+    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, rot_seq::Symbol
+) where {O,T}
     axesid = axes_id(axes)
     parentid = _check_axes_ephemeris(frames, axesid)
-    
-    if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, 
-                        :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
 
-        funs = FrameAxesFunctions{T, O}(
+    if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
+        funs = FrameAxesFunctions{T,O}(
             (t, x, y) -> Rotation{O}(_3angles_to_rot3(x, rot_seq)),
             (t, x, y) -> Rotation{O}(_3angles_to_rot6(x, rot_seq)...),
-            (t, x, y) -> Rotation{O}(_3angles_to_rot9(x, rot_seq)...), 
-            (t, x, y) -> Rotation{O}(_3angles_to_rot12(x, rot_seq)...)
+            (t, x, y) -> Rotation{O}(_3angles_to_rot9(x, rot_seq)...),
+            (t, x, y) -> Rotation{O}(_3angles_to_rot12(x, rot_seq)...),
         )
 
-    else 
+    else
         throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
-
     end
-    
-    build_axes(frames, axes_name(axes), axesid, :EphemerisAxes, 
-        funs, parentid=parentid)
 
+    return build_axes(
+        frames, axes_name(axes), axesid, :EphemerisAxes, funs; parentid=parentid
+    )
 end
 
-function add_axes_ephemeris!(frames::FrameSystem{O, T}, axes::AbstractFrameAxes, 
-            fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
-            
+function add_axes_ephemeris!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
     axesid = axes_id(axes)
     parentid = _check_axes_ephemeris(frames, axesid)
 
-    if ((O ≥ 2 && isnothing(δfun)) || (O ≥ 3 && isnothing(δ²fun)) || (O ≥ 4 && isnothing(δ³fun)))
-        throw(ArgumentError(
-            "Transformation requires function derivatives up to the $(O-1) order.")
+    if (
+        (O ≥ 2 && isnothing(δfun)) ||
+        (O ≥ 3 && isnothing(δ²fun)) ||
+        (O ≥ 4 && isnothing(δ³fun))
+    )
+        throw(
+            ArgumentError(
+                "Transformation requires function derivatives up to the $(O-1) order."
+            ),
         )
     end
-    
-    funs = FrameAxesFunctions{T, O}(
+
+    funs = FrameAxesFunctions{T,O}(
         (t, x, y) -> Rotation{O}(fun(x)),
         (t, x, y) -> Rotation{O}(fun(x), δfun(x)),
-        (t, x, y) -> Rotation{O}(fun(x), δfun(x), δ²fun(x)), 
-        (t, x, y) -> Rotation{O}(fun(x), δfun(x), δ²fun(x), δ³fun(x))
+        (t, x, y) -> Rotation{O}(fun(x), δfun(x), δ²fun(x)),
+        (t, x, y) -> Rotation{O}(fun(x), δfun(x), δ²fun(x), δ³fun(x)),
     )
 
-    build_axes(frames, axes_name(axes), axesid, :EphemerisAxes, 
-        funs, parentid=parentid)
-
+    return build_axes(
+        frames, axes_name(axes), axesid, :EphemerisAxes, funs; parentid=parentid
+    )
 end
 
 # Perform checks on the requested ephemeris axes
@@ -670,35 +752,46 @@ function _check_axes_ephemeris(frames::FrameSystem, axesid::Int)
 
     # Check that the kernels contain orientation data for the given axes ID 
     if !(axesid in ephemeris_axes(frames))
-        throw(ArgumentError("Orientation data for AXESID $axesid is not available "*
-            "in the kernels loaded in the given FrameSystem."))
+        throw(
+            ArgumentError(
+                "Orientation data for AXESID $axesid is not available " *
+                "in the kernels loaded in the given FrameSystem.",
+            ),
+        )
     end
 
     # Retrieve the parent from the ephemeris data 
     orient_records = ephem_orient_records(frames.eph)
-    parentid = nothing 
+    parentid = nothing
 
     for or in orient_records
-        if or.target == axesid 
-            if isnothing(parentid) 
-                parentid = or.frame 
-            elseif parentid != or.frame 
-                throw(ErrorException("UnambiguityError: at least two set of orientation data "*
-                "with different centers are available for axes with AXESID $NAIFId.")) 
+        if or.target == axesid
+            if isnothing(parentid)
+                parentid = or.frame
+            elseif parentid != or.frame
+                throw(
+                    ErrorException(
+                        "UnambiguityError: at least two set of orientation data " *
+                        "with different centers are available for axes with AXESID $NAIFId.",
+                    ),
+                )
             end
-        end 
+        end
     end
 
     # Check that the default parent is available in the FrameSystem! 
     if !has_axes(frames, parentid)
-        throw(ArgumentError("Orientation data for axes with AXESID $axesid is available "*
-            "with respect to axes with AXESID $parentid, which has not yet been defined "*
-            "in the given FrameSystem."))
+        throw(
+            ArgumentError(
+                "Orientation data for axes with AXESID $axesid is available " *
+                "with respect to axes with AXESID $parentid, which has not yet been defined " *
+                "in the given FrameSystem.",
+            ),
+        )
     end
 
     return parentid
 end
-
 
 # Functions for an easier definition\handling of ephemeris axes
 @inline function _3angles_to_rot3(θ, seq::Symbol)
@@ -707,18 +800,17 @@ end
 
 @inline function _3angles_to_rot6(θ, seq::Symbol)
     return _3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq)
-end 
-
-@inline function _3angles_to_rot9(θ, seq::Symbol)
-    return (_3angles_to_rot3(θ, seq), 
-            _3angles_to_δdcm(θ, seq), 
-            _3angles_to_δ²dcm(θ, seq))
-end 
-
-@inline function _3angles_to_rot12(θ, seq::Symbol)
-    return (_3angles_to_rot3(θ, seq), 
-            _3angles_to_δdcm(θ, seq), 
-            _3angles_to_δ²dcm(θ, seq), 
-            _3angles_to_δ³dcm(θ, seq)) 
 end
 
+@inline function _3angles_to_rot9(θ, seq::Symbol)
+    return (_3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), _3angles_to_δ²dcm(θ, seq))
+end
+
+@inline function _3angles_to_rot12(θ, seq::Symbol)
+    return (
+        _3angles_to_rot3(θ, seq),
+        _3angles_to_δdcm(θ, seq),
+        _3angles_to_δ²dcm(θ, seq),
+        _3angles_to_δ³dcm(θ, seq),
+    )
+end

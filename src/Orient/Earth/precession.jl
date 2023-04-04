@@ -1,6 +1,4 @@
-export orient_bias_precession, 
-       orient_bpn
-
+export orient_bias_precession, orient_bpn
 
 """
     fw_angles(m::IAU2006Model, t::Number) 
@@ -21,43 +19,22 @@ formulation at time `t` expressed in `TT` Julian centuries since [`J2000`](@ref)
   IAU 2006 resolutions, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
-function fw_angles(::IAU2006Model, t::Number) 
-    
-    γ = @evalpoly(
-        t,
-        -0.052928,
-        10.556378,
-         0.4932044,
-        -0.00031238,
-        -0.000002788,
-         0.0000000260,
-    ) |> arcsec2rad
+function fw_angles(::IAU2006Model, t::Number)
+    γ = arcsec2rad(@evalpoly(
+        t, -0.052928, 10.556378, 0.4932044, -0.00031238, -0.000002788, 0.0000000260,
+    ))
 
-    ϕ = @evalpoly(
-        t,
-        84381.412819,
-          -46.811016,
-            0.0511268,
-            0.00053289,
-           -0.000000440,
-           -0.0000000176,
-    ) |> arcsec2rad
+    ϕ = arcsec2rad(@evalpoly(
+        t, 84381.412819, -46.811016, 0.0511268, 0.00053289, -0.000000440, -0.0000000176,
+    ))
 
-    ψ = @evalpoly(
-        t,
-          -0.041775,
-        5038.481484,
-           1.5584175,
-          -0.00018522,
-          -0.000026452,
-          -0.0000000148,
-    ) |> arcsec2rad
+    ψ = arcsec2rad(@evalpoly(
+        t, -0.041775, 5038.481484, 1.5584175, -0.00018522, -0.000026452, -0.0000000148,
+    ))
 
     ϵ = orient_obliquity(iau2006a, t)
     return γ, ϕ, ψ, ϵ
-
 end
-
 
 """
     fw_matrix(γ, ϕ, ψ, ε)
@@ -87,9 +64,8 @@ three appropriately.
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/fw2m.c) library
 """
 function fw_matrix(γ, ϕ, ψ, ϵ)
-    angle_to_dcm(-ϵ, :X)*angle_to_dcm(γ, ϕ, -ψ, :ZXZ)
+    return angle_to_dcm(-ϵ, :X) * angle_to_dcm(γ, ϕ, -ψ, :ZXZ)
 end
-
 
 """
     precession_angles(m::IAU1980Model, t::Number)
@@ -102,13 +78,12 @@ expressed in `TT` Julian centuries since [`J2000`](@ref).
 """
 function precession_angles(::IAU1980Model, t::Number)
     # Compute Precession Angles from Lieske et al. 1977 
-    ψₐ = @evalpoly(t, 0.0, 5038.7784, -1.07259, -0.001147) |> arcsec2rad
-    ωₐ = @evalpoly(t, 84381.448, 0.0, 0.05127, -0.007726) |> arcsec2rad
-    χₐ = @evalpoly(t, 0.0, 10.5526, -2.38064, -0.001125) |> arcsec2rad
+    ψₐ = arcsec2rad(@evalpoly(t, 0.0, 5038.7784, -1.07259, -0.001147))
+    ωₐ = arcsec2rad(@evalpoly(t, 84381.448, 0.0, 0.05127, -0.007726))
+    χₐ = arcsec2rad(@evalpoly(t, 0.0, 10.5526, -2.38064, -0.001125))
 
     return ψₐ, ωₐ, χₐ
 end
-
 
 """
     precession_rate(m::IAU2000Model, t::Number)
@@ -120,13 +95,11 @@ time `t` expressed as `TT` Julian centuries since [`J2000`](@ref).
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pr00.c) software library
 """
 function precession_rate(::IAU2000Model, t::Number)
-
     Δψₚ = arcsec2rad(-0.29965t)
     Δϵₚ = arcsec2rad(-0.02524t)
 
     return Δψₚ, Δϵₚ
 end
-
 
 """
     frame_bias(::IAU2000Model)
@@ -149,14 +122,13 @@ Compute the frame bias components of the IAU 2000 precession-nutation models, in
 function frame_bias(::IAU2000Model)
 
     # The frame bias corrections in longitude and obliquity
-    Δψb = arcsec2rad(-0.041775) 
+    Δψb = arcsec2rad(-0.041775)
     Δϵb = arcsec2rad(-0.0068192)
 
     # The ICRS RA of the J2000.0 equinox (Chapront et al., 2002) 
     Δα₀ = arcsec2rad(-0.0146)
     return Δψb, Δϵb, Δα₀
 end
-
 
 """
     orient_bias_precession(m::IAUModel, t::Number)
@@ -186,11 +158,11 @@ end
 function orient_bias_precession(m::IAU2000Model, t::Number)
 
     # J2000.0 obliquity (Lieske et al. 1977)
-    ϵ₀ = arcsec2rad(84381.448); # arcseconds 
+    ϵ₀ = arcsec2rad(84381.448) # arcseconds 
 
     # Frame bias matrix: it transforms vectors from GCRS to mean J2000.0
-    δψᵦ, δϵᵦ, δα₀ = frame_bias(m) 
-    Rᵦ = angle_to_dcm(δα₀, δψᵦ*sin(ϵ₀), -δϵᵦ, :ZYX)
+    δψᵦ, δϵᵦ, δα₀ = frame_bias(m)
+    Rᵦ = angle_to_dcm(δα₀, δψᵦ * sin(ϵ₀), -δϵᵦ, :ZYX)
 
     # Precession angles
     ψₐ, ωₐ, χₐ = precession_angles(iau1980, t)
@@ -202,11 +174,10 @@ function orient_bias_precession(m::IAU2000Model, t::Number)
     ωₐ += Δϵₚ
 
     # Precession matrix: it transforms from mean J2000.0 to mean of date
-    Rₚ = angle_to_dcm(χₐ, :Z)*angle_to_dcm(ϵ₀, -ψₐ, -ωₐ, :XZX)
+    Rₚ = angle_to_dcm(χₐ, :Z) * angle_to_dcm(ϵ₀, -ψₐ, -ωₐ, :XZX)
 
-    return Rₚ*Rᵦ
+    return Rₚ * Rᵦ
 end
-
 
 """ 
     orient_bias_precession_nutation(m::IAUModel, t::Number)
@@ -228,11 +199,11 @@ function orient_bias_precession_nutation(m::IAU2006Model, t::Number)
     γ, ϕ, ψ, ϵ = fw_angles(m, t)
 
     # Computes IAU 2000 nutation components 
-    Δψ, Δϵ = orient_nutation(m, t) 
+    Δψ, Δϵ = orient_nutation(m, t)
 
     # Equinox-based Bias-precession-nutation matrix, with 
     # applied IAU-2006 compatible nutations 
-    fw_matrix(γ, ϕ, ψ + Δψ, ϵ + Δϵ)    
+    return fw_matrix(γ, ϕ, ψ + Δψ, ϵ + Δϵ)
 end
 
 function orient_bias_precession_nutation(m::IAU2000Model, t::Number)
@@ -244,9 +215,8 @@ function orient_bias_precession_nutation(m::IAU2000Model, t::Number)
 
     # Nutation Matrix
     Δψ, Δϵ = orient_nutation(m, t)
-    RN = angle_to_dcm(ϵₐ, -Δψ, -(ϵₐ+Δϵ), :XZX)
+    RN = angle_to_dcm(ϵₐ, -Δψ, -(ϵₐ + Δϵ), :XZX)
 
     # Bias-precession-nutation matrix! 
-    return RN*RPB    
+    return RN * RPB
 end
-

@@ -1,6 +1,6 @@
 export format_camelcase, format_snakecase
 
-function format_camelcase(::Type{T}, s::S) where {T, S <: AbstractString}
+function format_camelcase(::Type{T}, s::S) where {T,S<:AbstractString}
     words = split(s, r"[\_, \s, \-]")
     if length(words) > 1
         T(join(uppercasefirst.(lowercase.(words))))
@@ -11,10 +11,6 @@ function format_camelcase(::Type{T}, s::S) where {T, S <: AbstractString}
     end
 end
 
-function format_snakecase(::Type{T}, s::S) where {T, S <: AbstractString}
-    T(join(
-        lowercase.(split(
-            replace(s, r"[\-\.\s]" => "_"), r"(?=[A-Z])"))
-        , "_")
-    )
+function format_snakecase(::Type{T}, s::S) where {T,S<:AbstractString}
+    return T(join(lowercase.(split(replace(s, r"[\-\.\s]" => "_"), r"(?=[A-Z])")), "_"))
 end

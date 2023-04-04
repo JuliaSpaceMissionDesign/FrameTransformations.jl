@@ -12,30 +12,28 @@ passing `cross`, `cross6`, `cross9` or `cross12` to `fc`. The returned vectors w
 a length of 3, 6 or 9, respectively.
 
 """
-function _two_vectors_basis(a::AbstractVector, b::AbstractVector, 
-                        seq::Symbol, fc::Function)
-
-    if seq == :XY 
+function _two_vectors_basis(a::AbstractVector, b::AbstractVector, seq::Symbol, fc::Function)
+    if seq == :XY
         w = fc(a, b)
         v = fc(w, a)
         u = a
 
-    elseif seq == :YX 
+    elseif seq == :YX
         w = fc(b, a)
         u = fc(a, w)
         v = a
 
-    elseif seq == :XZ 
+    elseif seq == :XZ
         v = fc(b, a)
         w = fc(a, v)
-        u = a 
+        u = a
 
-    elseif seq == :ZX 
+    elseif seq == :ZX
         v = fc(a, b)
         u = fc(v, a)
-        w = a 
+        w = a
 
-    elseif seq == :YZ 
+    elseif seq == :YZ
         u = fc(a, b)
         w = fc(u, a)
         v = a
@@ -43,14 +41,13 @@ function _two_vectors_basis(a::AbstractVector, b::AbstractVector,
     elseif seq == :ZY
         u = fc(b, a)
         v = fc(a, u)
-        w = a 
-    else 
+        w = a
+    else
         throw(ArgumentError("Invalid rotation sequence."))
     end
 
     return u, v, w
 end
-
 
 """
     _twovectors_to_dcm(a, b, seq::Symbol, fc::Function, fn::Function)
@@ -62,18 +59,14 @@ according to the directions specifeid in `seq`.
 `fc` and `fn` are used to control the derivative order. 
 
 """
-function _twovectors_to_dcm(a::AbstractVector, b::AbstractVector, seq::Symbol, 
-                        fc::Function, fn::Function)
-
+function _twovectors_to_dcm(
+    a::AbstractVector, b::AbstractVector, seq::Symbol, fc::Function, fn::Function
+)
     u, v, w = _two_vectors_basis(a, b, seq, fc)
     u, v, w = fn(u), fn(v), fn(w)
 
-    @inbounds DCM((u[1], v[1], w[1], 
-                   u[2], v[2], w[2],  
-                   u[3], v[3], w[3]))
-
+    @inbounds DCM((u[1], v[1], w[1], u[2], v[2], w[2], u[3], v[3], w[3]))
 end
-
 
 """
     twovectors_to_dcm(a, b, seq)
@@ -99,7 +92,6 @@ following the directions specified in `seq`.
 """
 twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross3, normalize)
 
-
 """
     twovectors_to_δdcm(a, b, seq)
 
@@ -113,7 +105,6 @@ state vectors `a` and `b`, following the directions specified in `seq`.
 """
 twovectors_to_δdcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross6, δnormalize)
 
-
 """
     twovectors_to_δ²dcm(a, b, seq)
 
@@ -125,7 +116,6 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 - `seq` -- Accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
 twovectors_to_δ²dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²normalize)
-
 
 """
     twovectors_to_δ³dcm(a, b, seq)
@@ -139,13 +129,13 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 """
 twovectors_to_δ³dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross12, δ³normalize)
 
-
 # Generate a dcm and its derivative
-function _two_vectors_to_rot6(a::AbstractVector{T}, b::AbstractVector{T}, seq::Symbol) where T
-
+function _two_vectors_to_rot6(
+    a::AbstractVector{T}, b::AbstractVector{T}, seq::Symbol
+) where {T}
     u, v, w = _two_vectors_basis(a, b, seq, cross6)
 
-    @inbounds @fastmath begin 
+    @inbounds @fastmath begin
         ru = sqrt(u[1]^2 + u[2]^2 + u[3]^2)
         rv = sqrt(v[1]^2 + v[2]^2 + v[3]^2)
         rw = sqrt(w[1]^2 + w[2]^2 + w[3]^2)
@@ -155,20 +145,24 @@ function _two_vectors_to_rot6(a::AbstractVector{T}, b::AbstractVector{T}, seq::S
     δv = δnormalize(v)
     δw = δnormalize(w)
 
-    @inbounds begin 
-        dcm = DCM((u[1]/ru, v[1]/rv, w[1]/rw, 
-                   u[2]/ru, v[2]/rv, w[2]/rw,  
-                   u[3]/ru, v[3]/rv, w[3]/rw))
+    @inbounds begin
+        dcm = DCM((
+            u[1] / ru,
+            v[1] / rv,
+            w[1] / rw,
+            u[2] / ru,
+            v[2] / rv,
+            w[2] / rw,
+            u[3] / ru,
+            v[3] / rv,
+            w[3] / rw,
+        ))
 
-        δdcm = DCM((δu[1], δv[1], δw[1], 
-                    δu[2], δv[2], δw[2], 
-                    δu[3], δv[3], δw[3]))
-
+        δdcm = DCM((δu[1], δv[1], δw[1], δu[2], δv[2], δw[2], δu[3], δv[3], δw[3]))
     end
 
     return dcm, δdcm
 end
-
 
 """
     _two_vectors_to_rot9(a, b, seq::Symbol)
@@ -180,10 +174,9 @@ the number of repeated computations.
 See `twovectors_to_dcm` and `twovectors_to_δdcm` for more information. 
 """
 function _two_vectors_to_rot9(a::AbstractVector, b::AbstractVector, seq::Symbol)
-
     u, v, w = _two_vectors_basis(a, b, seq, cross9)
 
-    @inbounds @fastmath begin 
+    @inbounds @fastmath begin
         ru = sqrt(u[1]^2 + u[2]^2 + u[3]^2)
         rv = sqrt(v[1]^2 + v[2]^2 + v[3]^2)
         rw = sqrt(w[1]^2 + w[2]^2 + w[3]^2)
@@ -193,23 +186,28 @@ function _two_vectors_to_rot9(a::AbstractVector, b::AbstractVector, seq::Symbol)
     δv, δ²v = δnormalize(v), δ²normalize(v)
     δw, δ²w = δnormalize(w), δ²normalize(w)
 
-    @inbounds begin 
-        dcm = DCM((u[1]/ru, v[1]/rv, w[1]/rw, 
-                   u[2]/ru, v[2]/rv, w[2]/rw,  
-                   u[3]/ru, v[3]/rv, w[3]/rw))
+    @inbounds begin
+        dcm = DCM((
+            u[1] / ru,
+            v[1] / rv,
+            w[1] / rw,
+            u[2] / ru,
+            v[2] / rv,
+            w[2] / rw,
+            u[3] / ru,
+            v[3] / rv,
+            w[3] / rw,
+        ))
 
-        δdcm = DCM((δu[1], δv[1], δw[1], 
-                    δu[2], δv[2], δw[2], 
-                    δu[3], δv[3], δw[3]))
+        δdcm = DCM((δu[1], δv[1], δw[1], δu[2], δv[2], δw[2], δu[3], δv[3], δw[3]))
 
-        δ²dcm = DCM((δ²u[1], δ²v[1], δ²w[1], 
-                     δ²u[2], δ²v[2], δ²w[2], 
-                     δ²u[3], δ²v[3], δ²w[3]))
+        δ²dcm = DCM((
+            δ²u[1], δ²v[1], δ²w[1], δ²u[2], δ²v[2], δ²w[2], δ²u[3], δ²v[3], δ²w[3]
+        ))
     end
 
     return dcm, δdcm, δ²dcm
 end
-
 
 """
     _two_vectors_to_rot12(a, b, seq::Symbol)
@@ -221,10 +219,9 @@ the number of repeated computations.
 See [`twovectors_to_dcm`](@ref) and [`twovectors_to_δdcm`](@ref) for more information. 
 """
 function _two_vectors_to_rot12(a::AbstractVector, b::AbstractVector, seq::Symbol)
-
     u, v, w = _two_vectors_basis(a, b, seq, cross12)
 
-    @inbounds @fastmath begin 
+    @inbounds @fastmath begin
         ru = sqrt(u[1]^2 + u[2]^2 + u[3]^2)
         rv = sqrt(v[1]^2 + v[2]^2 + v[3]^2)
         rw = sqrt(w[1]^2 + w[2]^2 + w[3]^2)
@@ -234,22 +231,28 @@ function _two_vectors_to_rot12(a::AbstractVector, b::AbstractVector, seq::Symbol
     δv, δ²v, δ³v = δnormalize(v), δ²normalize(v), δ³normalize(v)
     δw, δ²w, δ³w = δnormalize(w), δ²normalize(w), δ³normalize(w)
 
-    @inbounds begin 
-        dcm = DCM((u[1]/ru, v[1]/rv, w[1]/rw, 
-                   u[2]/ru, v[2]/rv, w[2]/rw,  
-                   u[3]/ru, v[3]/rv, w[3]/rw))
+    @inbounds begin
+        dcm = DCM((
+            u[1] / ru,
+            v[1] / rv,
+            w[1] / rw,
+            u[2] / ru,
+            v[2] / rv,
+            w[2] / rw,
+            u[3] / ru,
+            v[3] / rv,
+            w[3] / rw,
+        ))
 
-        δdcm = DCM((δu[1], δv[1], δw[1], 
-                    δu[2], δv[2], δw[2], 
-                    δu[3], δv[3], δw[3]))
+        δdcm = DCM((δu[1], δv[1], δw[1], δu[2], δv[2], δw[2], δu[3], δv[3], δw[3]))
 
-        δ²dcm = DCM((δ²u[1], δ²v[1], δ²w[1], 
-                     δ²u[2], δ²v[2], δ²w[2], 
-                     δ²u[3], δ²v[3], δ²w[3]))
+        δ²dcm = DCM((
+            δ²u[1], δ²v[1], δ²w[1], δ²u[2], δ²v[2], δ²w[2], δ²u[3], δ²v[3], δ²w[3]
+        ))
 
-        δ³dcm = DCM((δ³u[1], δ³v[1], δ³w[1], 
-                     δ³u[2], δ³v[2], δ³w[2], 
-                     δ³u[3], δ³v[3], δ³w[3]))
+        δ³dcm = DCM((
+            δ³u[1], δ³v[1], δ³w[1], δ³u[2], δ³v[2], δ³w[2], δ³u[3], δ³v[3], δ³w[3]
+        ))
     end
 
     return dcm, δdcm, δ²dcm, δ³dcm

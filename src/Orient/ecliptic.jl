@@ -1,8 +1,5 @@
 
-export DCM_ICRF_TO_J2000_BIAS, 
-       DCM_ICRF_TO_ECLIPJ2000,
-       DCM_J2000_TO_ECLIPJ2000
-
+export DCM_ICRF_TO_J2000_BIAS, DCM_ICRF_TO_ECLIPJ2000, DCM_J2000_TO_ECLIPJ2000
 
 """ 
     AXESID_ICRF 
@@ -30,11 +27,9 @@ NAIF Axes ID for the Mean Ecliptic Equinox of J2000 (ECLIPJ2000)
 """
 const AXESID_ECLIPJ2000 = 17
 
-
 # --------------------------------------------------------
 # DCMs
 # --------------------------------------------------------
-
 
 """
     DCM_ICRF_TO_J2000_BIAS
@@ -55,7 +50,6 @@ Mean Dynamical Equator and Equinox of J2000.0 (`MEME2000`).
 """
 const DCM_ICRF_TO_J2000_BIAS = orient_bias_precession(iau2006a, 0.0)
 
-
 """
     DCM_J2000_TO_ECLIPJ2000
 
@@ -65,7 +59,6 @@ in the SPICE toolkit, and uses the mean obliquity of the ecliptic from the IAU 1
 """
 const DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau1980, 0.0), :X)
 
-
 """
     DCM_ICRF_TO_ECLIPJ2000
 
@@ -74,11 +67,9 @@ Mean Ecliptic Equinox of J2000 (`ECLIPJ2000`).
 """
 const DCM_ICRF_TO_ECLIPJ2000 = DCM_ICRF_TO_J2000_BIAS * DCM_J2000_TO_ECLIPJ2000
 
-
 # --------------------------------------------------------
 # TRANSFORMATIONS
 # --------------------------------------------------------
-
 
 """
     orient_rot3_icrf_to_mememod(t::Number)
@@ -88,7 +79,7 @@ the Mean Equinox Mean Equator of Date at time `t`, expressed in TT seconds since
 """
 function orient_rot3_icrf_to_mememod(t::Number)
     # convert TT seconds since J2000 to TT centuries since J2000
-    T = t/Tempo.CENTURY2SEC
+    T = t / Tempo.CENTURY2SEC
 
     # fw_angles holds independent on the IAU Model! 
     γ, ϕ, ψ, ε = fw_angles(iau2006b, T)

@@ -1,13 +1,12 @@
-export @point, 
-       add_point_root!, 
-       add_point_ephemeris!,
-       add_point_fixed!, 
-       add_point_updatable!, 
-       add_point_dynamical!,
-       point_alias,
-       point_name, 
-       point_id
-
+export @point,
+    add_point_root!,
+    add_point_ephemeris!,
+    add_point_fixed!,
+    add_point_updatable!,
+    add_point_dynamical!,
+    point_alias,
+    point_name,
+    point_id
 
 """
     point_name(point::AbstractFramePoint)
@@ -16,14 +15,12 @@ Return the name of `point`.
 """
 function point_name end
 
-
 """ 
     point_id(point::AbstractFramePoint)
 
 Return the NAIF ID associated to `point`.
 """
-function point_id end 
-
+function point_id end
 
 """
     point_alias(ax::AbstractFramePoint)
@@ -32,8 +29,7 @@ Return the NAIF ID associated to the input point.
 
 """
 @inline point_alias(x::AbstractFramePoint) = point_id(x)
-point_alias(x::Int) = x 
-
+point_alias(x::Int) = x
 
 """ 
     @point(name, id, type=nothing)
@@ -65,10 +61,10 @@ julia> point_alias(EMB)
 ### See also 
 See also [`@axes`](@ref) and [`point_alias`](@ref).
 """
-macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
+macro point(name::Symbol, id::Int, type::Union{Symbol,Nothing}=nothing)
     # construct type name if not assigned 
 
-    type = isnothing(type) ? name : type 
+    type = isnothing(type) ? name : type
     type = Symbol(format_camelcase(Symbol, String(type)), :Point)
     typ_str = String(type)
     name_str = String(name)
@@ -76,7 +72,7 @@ macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
     pointid_expr = :(@inline Frames.point_id(::$type) = $id)
     name_expr = :(Frames.point_name(::$type) = Symbol($name_str))
 
-    return quote 
+    return quote
         """
             $($typ_str) <: AbstractFramePoint
 
@@ -96,7 +92,6 @@ macro point(name::Symbol, id::Int, type::Union{Symbol, Nothing}=nothing)
         nothing
     end
 end
-
 
 """ 
     build_point(frames, name, NAIFId, class, axesid, funs; parentid, offset)
@@ -122,52 +117,72 @@ and `:UpdatablePoint`.
     This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
     to the frame system, see [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), etc...
 """
-function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class::Symbol, 
-                axesid::Int, funs::FramePointFunctions{T, O};
-                parentid=nothing, offset=nothing) where {O, T}
-
-    if has_point(frames, NAIFId) 
+function build_point(
+    frames::FrameSystem{O,T},
+    name::Symbol,
+    NAIFId::Int,
+    class::Symbol,
+    axesid::Int,
+    funs::FramePointFunctions{T,O};
+    parentid=nothing,
+    offset=nothing,
+) where {O,T}
+    if has_point(frames, NAIFId)
         # Check if a point with the same NAIFId is already registered 
         # within the given FrameSystem 
-        throw(ArgumentError(
-            "A point with NAIFID $NAIFId is already registered in the given FrameSystem.")
+        throw(
+            ArgumentError(
+                "A point with NAIFID $NAIFId is already registered in the given FrameSystem.",
+            ),
         )
     end
 
     # Check if a point with the same name does not already exist 
-    if name in map(x->x.name, frames_points(frames).nodes)
-        throw(ArgumentError(
-            "A point with name=$name is already registed in the given FrameSystem")
+    if name in map(x -> x.name, frames_points(frames).nodes)
+        throw(
+            ArgumentError(
+                "A point with name=$name is already registed in the given FrameSystem"
+            ),
         )
-    end 
+    end
 
     # Check if the given axes are known in the FrameSystem
-    if !has_axes(frames, axesid) 
-        throw(ArgumentError(
-            "Axes with ID $axesid are not registered in the given FrameSystem")
+    if !has_axes(frames, axesid)
+        throw(
+            ArgumentError(
+                "Axes with ID $axesid are not registered in the given FrameSystem"
+            ),
         )
-    end 
+    end
 
-    if isnothing(parentid) 
+    if isnothing(parentid)
         # If a root-point exists, check that a parent has been specified 
-        if !isempty(frames_points(frames)) 
-            throw(ArgumentError("A parent point is required because the given FrameSystem "*
-                "already contains a root-point."))
+        if !isempty(frames_points(frames))
+            throw(
+                ArgumentError(
+                    "A parent point is required because the given FrameSystem " *
+                    "already contains a root-point.",
+                ),
+            )
         end
 
         parentid = NAIFId # Root-point has parentid = NAIFId
 
-    else 
+    else
         # Check that the parent point is registered in frames 
         if !has_point(frames, parentid)
-            throw(ArgumentError("The specified parent point with NAIFID $parentid is not "*
-                "registered in the given FrameSystem"))
+            throw(
+                ArgumentError(
+                    "The specified parent point with NAIFID $parentid is not " *
+                    "registered in the given FrameSystem",
+                ),
+            )
         end
     end
 
     # Error check temporarily removed to avoid possible issues with unavailable point 
     # data at the programmatic start time. 
-    
+
     # Check that the given functions have the correct signature 
     # for (i, fun) in enumerate((f, δf, δ²f))
     #     otype = typeof(fun(MVector{9}(zeros(T, 9)), T(1)))
@@ -182,23 +197,24 @@ function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class
         stvs = [@MVector zeros(T, 3O)]
 
         if class == :FixedPoint
-            for i = 1:3 
+            for i in 1:3
                 stvs[1][i] = offset[i]
             end
         end
-    else 
+    else
         # This is to handle generic frames in a multi-threading architecture 
         # without having to copy the FrameSystem
-        nth = Threads.nthreads() 
+        nth = Threads.nthreads()
         nzo = -ones(Int, nth)
-        
+
         epochs = zeros(T, nth)
-        stvs = [@MVector zeros(T, 3O) for _ = 1:nth]
+        stvs = [@MVector zeros(T, 3O) for _ in 1:nth]
     end
 
     # Creates point node 
-    pnode = FramePointNode{O, T, 3*O}(name, class, axesid, parentid, NAIFId, 
-                stvs, epochs, nzo, funs)
+    pnode = FramePointNode{O,T,3 * O}(
+        name, class, axesid, parentid, NAIFId, stvs, epochs, nzo, funs
+    )
 
     # Insert new point in the graph
     add_point!(frames, pnode)
@@ -206,9 +222,8 @@ function build_point(frames::FrameSystem{O, T}, name::Symbol, NAIFId::Int, class
     # Connect the new point to the parent point in the graph 
     !isnothing(parentid) && add_edge!(frames_points(frames), parentid, NAIFId)
 
-    nothing 
+    return nothing
 end
-
 
 """ 
     add_point_root!(frames, point, axes)
@@ -249,19 +264,24 @@ ERROR: A root-point is already registed in the given FrameSystem.
 See also [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_root!(frames::FrameSystem{O, T}, point::AbstractFramePoint, axes) where {O, T}
+function add_point_root!(
+    frames::FrameSystem{O,T}, point::AbstractFramePoint, axes
+) where {O,T}
 
     # Check for root-point existence 
-    if !isempty(frames_points(frames)) 
-        throw(ArgumentError(
-            "A root-point is already registed in the given FrameSystem."))
+    if !isempty(frames_points(frames))
+        throw(ArgumentError("A root-point is already registed in the given FrameSystem."))
     end
 
-    build_point(frames, point_name(point), point_id(point), :RootPoint, 
-                axes_alias(axes), FramePointFunctions{T, O}())
-
+    return build_point(
+        frames,
+        point_name(point),
+        point_id(point),
+        :RootPoint,
+        axes_alias(axes),
+        FramePointFunctions{T,O}(),
+    )
 end
-
 
 """ 
     add_point_ephemeris!(frames, point, parent=nothing)
@@ -314,76 +334,102 @@ ERROR: Ephemeris data for NAIFID 599 is not available in the kernels loaded [...
 See also [`add_point_root!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
-            parent=nothing) where {O, T}
-
+function add_point_ephemeris!(
+    frames::FrameSystem{O,T}, point::AbstractFramePoint, parent=nothing
+) where {O,T}
     NAIFId = point_id(point)
 
     # Check that the kernels contain the ephemeris data for the given NAIFId
     if !(NAIFId in ephemeris_points(frames))
-        throw(ArgumentError("Ephemeris data for NAIFID $NAIFId is not available "*
-            "in the kernels loaded in the given FrameSystem."))
+        throw(
+            ArgumentError(
+                "Ephemeris data for NAIFID $NAIFId is not available " *
+                "in the kernels loaded in the given FrameSystem.",
+            ),
+        )
     end
 
     pos_records = ephem_position_records(frames.eph)
 
     if isnothing(parent)
         # Retrieve the parent from the ephemeris data 
-        parentid = nothing  
-        for pr in pos_records 
-            if pr.target == NAIFId 
+        parentid = nothing
+        for pr in pos_records
+            if pr.target == NAIFId
                 if isnothing(parentid)
                     parentid = pr.center
-                elseif parentid != pr.center 
-                    throw(ErrorException("UnambiguityError: at least two set of data "*
-                        "with different centers are available for point with NAIFID $NAIFId.")) 
+                elseif parentid != pr.center
+                    throw(
+                        ErrorException(
+                            "UnambiguityError: at least two set of data " *
+                            "with different centers are available for point with NAIFID $NAIFId.",
+                        ),
+                    )
                 end
             end
         end
-        
+
         # Check that the default parent is available in the FrameSystem
         if !has_point(frames, parentid)
-            throw(ArgumentError("Ephemeris data for point with NAIFID $NAIFId is available "*
-                "with respect to point with NAIFID $parentid, which has not yet been defined "*
-                "in the given FrameSystem."))
+            throw(
+                ArgumentError(
+                    "Ephemeris data for point with NAIFID $NAIFId is available " *
+                    "with respect to point with NAIFID $parentid, which has not yet been defined " *
+                    "in the given FrameSystem.",
+                ),
+            )
         end
-        
-    else 
+
+    else
         # Check that the parent point is admissible
-        parentid = point_alias(parent) 
-        
+        parentid = point_alias(parent)
+
         # Check that the parent is registered! 
         if !has_point(frames, parentid)
-            throw(ArgumentError(
-                "The specified parent point with NAIFID $parentid has not yet been defined "*
-                "in the given FrameSystem.")
+            throw(
+                ArgumentError(
+                    "The specified parent point with NAIFID $parentid has not yet been defined " *
+                    "in the given FrameSystem.",
+                ),
             )
         end
 
         parentclass = get_node(frames_points(frames), parentid).class
         if !(parentclass in (:RootPoint, :EphemerisPoint))
-            throw(ArgumentError("The specified parent point with NAIFID $parentid is a "*
-                "$parentclass in the given FrameSystem, but only RootPoints and "*
-                "EphemerisPoints are accepted as parents of EphemerisPoints."))
+            throw(
+                ArgumentError(
+                    "The specified parent point with NAIFID $parentid is a " *
+                    "$parentclass in the given FrameSystem, but only RootPoints and " *
+                    "EphemerisPoints are accepted as parents of EphemerisPoints.",
+                ),
+            )
         end
     end
 
     # Check that the parent point has available ephemeris data 
-    if !(parentid in ephemeris_points(frames)) 
-        throw(ArgumentError("Insufficient ephemeris data has been loaded to compute "*
-            "the point with NAIFID $NAIFId with respect to the parent point with "*
-            "NAIFID $parentid"))
+    if !(parentid in ephemeris_points(frames))
+        throw(
+            ArgumentError(
+                "Insufficient ephemeris data has been loaded to compute " *
+                "the point with NAIFID $NAIFId with respect to the parent point with " *
+                "NAIFID $parentid",
+            ),
+        )
     end
 
     # Retrieves the axes stored in the ephemeris kernels for the given point
-    axesid = nothing 
+    axesid = nothing
     for pr in pos_records
         if pr.target == NAIFId
             if isnothing(axesid)
-                axesid = pr.frame 
-            elseif axesid != pr.frame 
-                throw(ErrorException("UnambiguityError: at least two set of data "*
-                    "with different axes are available for point with NAIFID $NAIFId."))
+                axesid = pr.frame
+            elseif axesid != pr.frame
+                throw(
+                    ErrorException(
+                        "UnambiguityError: at least two set of data " *
+                        "with different axes are available for point with NAIFID $NAIFId.",
+                    ),
+                )
             end
         end
     end
@@ -392,23 +438,30 @@ function add_point_ephemeris!(frames::FrameSystem{O, T}, point::AbstractFramePoi
     # This check is also performed by build_point, but it is reported here because 
     # it provides more specific information for ephemeris points 
     if !has_axes(frames, axesid)
-        throw(ArgumentError("Ephemeris data for point with NAIFID $NAIFId is expressed "*
-            "in a set of axes with ID $axesid, which are yet to be defined in the "*
-            "given FrameSystem."))
+        throw(
+            ArgumentError(
+                "Ephemeris data for point with NAIFID $NAIFId is expressed " *
+                "in a set of axes with ID $axesid, which are yet to be defined in the " *
+                "given FrameSystem.",
+            ),
+        )
     end
 
-    funs = FramePointFunctions{T, O}(
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 0),
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 1),
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 2),
-        (y, t) -> ephem_compute_order!(y, frames.eph, DJ2000, t/DAY2SEC, NAIFId, parentid, 3), 
+    funs = FramePointFunctions{T,O}(
+        (y, t) ->
+            ephem_compute_order!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 0),
+        (y, t) ->
+            ephem_compute_order!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 1),
+        (y, t) ->
+            ephem_compute_order!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 2),
+        (y, t) ->
+            ephem_compute_order!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 3),
     )
 
-    build_point(frames, point_name(point), NAIFId, :EphemerisPoint, axesid, 
-                funs; parentid=parentid)
-
-end 
-
+    return build_point(
+        frames, point_name(point), NAIFId, :EphemerisPoint, axesid, funs; parentid=parentid
+    )
+end
 
 """
     add_point_fixed!(frames, point, parent, axes, offset::AbstractVector)
@@ -440,22 +493,32 @@ julia> add_point_fixed!(FRAMES, SolarArrayCenter, SC, SF, sa_offset)
 See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_updatable!`](@ref)
 """
-function add_point_fixed!(frames::FrameSystem{O, T}, point::AbstractFramePoint, parent, 
-            axes, offset::AbstractVector{T}) where {O, T}
-
-    
+function add_point_fixed!(
+    frames::FrameSystem{O,T},
+    point::AbstractFramePoint,
+    parent,
+    axes,
+    offset::AbstractVector{T},
+) where {O,T}
     if length(offset) != 3
-        throw(DimensionMismatch(
-            "The offset vector should have length 3, but has $(length(offset)).")
+        throw(
+            DimensionMismatch(
+                "The offset vector should have length 3, but has $(length(offset))."
+            ),
         )
     end
 
-    build_point(frames, point_name(point), point_id(point), :FixedPoint, 
-                axes_alias(axes), FramePointFunctions{T, O}(); 
-                parentid=point_alias(parent), offset=offset)
-        
+    return build_point(
+        frames,
+        point_name(point),
+        point_id(point),
+        :FixedPoint,
+        axes_alias(axes),
+        FramePointFunctions{T,O}();
+        parentid=point_alias(parent),
+        offset=offset,
+    )
 end
-
 
 """
     add_point_updatable!(frames, point, parent, axes)
@@ -505,14 +568,19 @@ ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order
 See also [`update_point!`](@ref), [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref), 
 [`add_point_dynamical!`](@ref) and [`add_point_fixed!`](@ref)
 """
-function add_point_updatable!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
-                              parent, axes) where {O, T}
-
-    build_point(frames, point_name(point), point_id(point), :UpdatablePoint, 
-                axes_alias(axes), FramePointFunctions{T, O}(); 
-                parentid=point_alias(parent))
+function add_point_updatable!(
+    frames::FrameSystem{O,T}, point::AbstractFramePoint, parent, axes
+) where {O,T}
+    return build_point(
+        frames,
+        point_name(point),
+        point_id(point),
+        :UpdatablePoint,
+        axes_alias(axes),
+        FramePointFunctions{T,O}();
+        parentid=point_alias(parent),
+    )
 end
-
 
 """ 
     add_point_dynamical!(frames, point, parent, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing)
@@ -565,94 +633,124 @@ julia> vector6(FRAMES, Origin, Satellite, ICRF, π/6)
 See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_fixed!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_dynamical!(frames::FrameSystem{O, T}, point::AbstractFramePoint, 
-            parent, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing) where {O, T}
-
+function add_point_dynamical!(
+    frames::FrameSystem{O,T},
+    point::AbstractFramePoint,
+    parent,
+    axes,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
-        if (O < order+1 && !isnothing(fcn))
-                @warn "ignoring $fcn, frame system order is less than $(order+1)"
+        if (O < order + 1 && !isnothing(fcn))
+            @warn "ignoring $fcn, frame system order is less than $(order+1)"
         end
-    end 
+    end
 
-    funs = FramePointFunctions{T, O}(
-        (y, t) -> _tpoint_fun!(y, t, fun), 
+    funs = FramePointFunctions{T,O}(
+        (y, t) -> _tpoint_fun!(y, t, fun),
 
         # First derivative
-        isnothing(δfun) ? 
-            (y, t) -> _tpoint_δfun_ad!(y, t, fun) : 
-            (y, t) -> _tpoint_δfun!(y, t, δfun),
+        if isnothing(δfun)
+            (y, t) -> _tpoint_δfun_ad!(y, t, fun)
+        else
+            (y, t) -> _tpoint_δfun!(y, t, δfun)
+        end,
 
         # Second derivative
-        isnothing(δ²fun) ? 
-            (isnothing(δfun) ?  
-                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun) : 
-                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, δfun)) : 
-            (y, t) -> _tpoint_δ²fun!(y, t, δ²fun),
+        if isnothing(δ²fun)
+            (
+            if isnothing(δfun)
+                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun)
+            else
+                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, δfun)
+            end
+        )
+        else
+            (y, t) -> _tpoint_δ²fun!(y, t, δ²fun)
+        end,
 
         # Third derivative 
-        isnothing(δ³fun) ? 
-            (isnothing(δ²fun) ? 
-                (isnothing(δfun) ?  
-                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun) : 
-                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun)) : 
-                (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)) :
+        if isnothing(δ³fun)
+            (
+            if isnothing(δ²fun)
+                (
+                if isnothing(δfun)
+                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun)
+                else
+                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun)
+                end
+            )
+            else
+                (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)
+            end
+        )
+        else
             (y, t) -> _tpoint_δ³fun!(y, t, δ³fun)
-    ) 
+        end,
+    )
 
-    build_point(frames, point_name(point), point_id(point), :DynamicalPoint, axes_alias(axes), 
-                funs; parentid=point_alias(parent))
+    return build_point(
+        frames,
+        point_name(point),
+        point_id(point),
+        :DynamicalPoint,
+        axes_alias(axes),
+        funs;
+        parentid=point_alias(parent),
+    )
 end
 
-
 # Default function wrappers for time point functions! 
-for (i, fun) in enumerate([:_tpoint_fun!, :_tpoint_δfun!, 
-                           :_tpoint_δ²fun!, :_tpoint_δ³fun!])
-    @eval begin 
+for (i, fun) in enumerate([:_tpoint_fun!, :_tpoint_δfun!, :_tpoint_δ²fun!, :_tpoint_δ³fun!])
+    @eval begin
         function ($fun)(y, t, fn)
-            @inbounds y[1:3*$i] .= fn(t) 
-            nothing 
+            @inbounds y[1:(3 * $i)] .= fn(t)
+            return nothing
         end
-    end 
+    end
 end
 
 # Function wrapper for time-point function derivative! 
-@inbounds function _tpoint_δfun_ad!(y, t, fun) 
+@inbounds function _tpoint_δfun_ad!(y, t, fun)
     y[1:3] .= fun(t)
     y[4:6] .= D¹(fun, t)
-    nothing 
+    return nothing
 end
 
 # Function wrappers for time-point second order derivative! 
 @inbounds function _tpoint_δ²fun_ad!(y, t, fun)
-    y[1:3] .= fun(t) 
+    y[1:3] .= fun(t)
     y[4:6] .= D¹(fun, t)
     y[7:9] .= D²(fun, t)
-    nothing
+    return nothing
 end
 
 @inbounds function _tpoint_δ²fun_ad!(y, t, fun, δfun)
-    y[1:6] .= δfun(t) 
+    y[1:6] .= δfun(t)
     y[7:9] .= D²(fun, t)
-    nothing
+    return nothing
 end
 
 # Function wrappers for time-point third order derivative! 
 @inbounds function _tpoint_δ³fun_ad!(y, t, fun)
-    y[1:3] .= fun(t) 
+    y[1:3] .= fun(t)
     y[4:6] .= D¹(fun, t)
     y[7:9] .= D²(fun, t)
     y[10:12] .= D³(fun, t)
-    nothing
+    return nothing
 end
 
 @inbounds function _tpoint_δ³fun_ad!(y, t, fun, δfun)
-    y[1:6] .= δfun(t) 
+    y[1:6] .= δfun(t)
     y[7:12] .= D²(δfun, t)
-    nothing
+    return nothing
 end
 
 @inbounds function _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)
-    y[1:9] .= δ²fun(t) 
+    y[1:9] .= δ²fun(t)
     y[10:12] .= D³(fun, t)
-    nothing
+    return nothing
 end

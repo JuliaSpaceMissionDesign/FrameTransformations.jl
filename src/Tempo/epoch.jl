@@ -1,6 +1,4 @@
-export Epoch, 
-       j2000, j2000s, j2000c, 
-       second, timescale, value
+export Epoch, j2000, j2000s, j2000c, second, timescale, value
 
 """
     Epoch
@@ -20,11 +18,11 @@ is considered to be `2000-01-01T12:00:00`, i.e. [`J2000`](@ref).
 - `Epoch(seconds::T, ::S) where {S<:AbstractTimeScale, T<:AbstractFloat}` 
 - `Epoch(dt::DateTime, ::S) where {S<:AbstractTimeScale}` -- construct from `DateTime`
 """
-struct Epoch{S, T}
-    scale::S 
+struct Epoch{S,T}
+    scale::S
     seconds::T
-    function Epoch{S}(seconds::T) where {S<:AbstractTimeScale, T<:AbstractFloat}
-        return new{S, T}(S(), seconds)
+    function Epoch{S}(seconds::T) where {S<:AbstractTimeScale,T<:AbstractFloat}
+        return new{S,T}(S(), seconds)
     end
 end
 
@@ -42,7 +40,7 @@ Full `Epoch` value.
 """
 value(ep::Epoch) = ep.seconds
 
-function Epoch(sec::T, ::S) where {S<:AbstractTimeScale, T<:AbstractFloat}
+function Epoch(sec::T, ::S) where {S<:AbstractTimeScale,T<:AbstractFloat}
     return Epoch{S}(sec)
 end
 
@@ -50,7 +48,7 @@ function Epoch(dt::DateTime, ::S) where {S<:AbstractTimeScale}
     return Epoch{S}(j2000s(dt))
 end
 
-function Epoch(sec::T, ::Type{S}) where {S<:AbstractTimeScale, T<:AbstractFloat}
+function Epoch(sec::T, ::Type{S}) where {S<:AbstractTimeScale,T<:AbstractFloat}
     return Epoch{S}(sec)
 end
 
@@ -63,7 +61,7 @@ end
 
 Convert `Epoch` in Julian Date since J2000 (days)
 """
-j2000(e::Epoch) = e.seconds/DAY2SEC
+j2000(e::Epoch) = e.seconds / DAY2SEC
 
 """
     j2000s(e::Epoch)
@@ -77,21 +75,21 @@ j2000s(e::Epoch) = value(e)
 
 Convert `Epoch` in Julian Date since J2000 (centuries)
 """
-j2000c(e::Epoch) = value(e)/CENTURY2SEC
+j2000c(e::Epoch) = value(e) / CENTURY2SEC
 
-function Base.show(io::IO, ep::Epoch) 
-    print(io, DateTime(ep), " ", timescale(ep))
+function Base.show(io::IO, ep::Epoch)
+    return print(io, DateTime(ep), " ", timescale(ep))
 end
 
-function DateTime(ep::Epoch) 
+function DateTime(ep::Epoch)
     y, m, d, H, M, S = jd2calhms(DJ2000, ep.seconds / DAY2SEC)
     fint = floor(Int64, S)
-    f = S-fint
+    f = S - fint
     return DateTime(y, m, d, H, M, fint, f)
 end
 
-Epoch(e::Epoch) = e 
-Epoch{S, T}(e::Epoch{S, T}) where {S, T} = e
+Epoch(e::Epoch) = e
+Epoch{S,T}(e::Epoch{S,T}) where {S,T} = e
 
 """
     Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
@@ -103,8 +101,8 @@ Construct an `Epoch` from a `str` in the [`AbstractTimeScale`](@ref) (`scale`).
 """
 function Epoch(s::AbstractString, scale::S) where {S<:AbstractTimeScale}
     y, m, d, H, M, sec, sf = parse_iso(s)
-    _, jd2 = calhms2jd(y, m, d, H, M, sec+sf)
-    return Epoch(jd2*86400, scale)
+    _, jd2 = calhms2jd(y, m, d, H, M, sec + sf)
+    return Epoch(jd2 * 86400, scale)
 end
 
 # This is the default timescale used by Epochs 
@@ -157,7 +155,7 @@ function Epoch(s::AbstractString)
 
     # ISO 
     m = match(r"\d{4}-", s)
-    if !isnothing(m) && length(m.match) != 0 
+    if !isnothing(m) && length(m.match) != 0
         sub = split(s, " ")
         if length(sub) == 2 # check for timescale
             scale = eval(Symbol(sub[2]))
@@ -168,11 +166,11 @@ function Epoch(s::AbstractString)
     # JD
     m = match(r"JD", s)
     mjd = match(r"MJD", s)
-    if !isnothing(m) && isnothing(mjd) && length(m.match) != 0 
+    if !isnothing(m) && isnothing(mjd) && length(m.match) != 0
         sub = split(s, " ")
         if length(sub) == 3 # check for timescale
             scale = eval(Symbol(sub[3]))
-        end 
+        end
         days = parse(Float64, sub[2])
         sec = (days - DJ2000) * DAY2SEC
         return Epoch(sec, scale)
@@ -180,11 +178,11 @@ function Epoch(s::AbstractString)
 
     # MJD
     m = mjd
-    if !isnothing(m) && length(m.match) != 0 
+    if !isnothing(m) && length(m.match) != 0
         sub = split(s, " ")
         if length(sub) == 3 # check for timescale
             scale = eval(Symbol(sub[3]))
-        end 
+        end
         days = parse(Float64, sub[2])
         sec = (days - DMJD) * DAY2SEC
         return Epoch(sec, scale)
@@ -194,27 +192,27 @@ function Epoch(s::AbstractString)
     sub = split(s, " ")
     if length(sub) == 2 # check for timescale
         scale = eval(Symbol(sub[2]))
-    end 
-    return Epoch(parse(Float64, sub[1])*86400.0, scale)
+    end
+    return Epoch(parse(Float64, sub[1]) * 86400.0, scale)
 end
 
 # ----
 # Operations
 
-function Base.:-(e1::Epoch{S}, e2::Epoch{S}) where S
+function Base.:-(e1::Epoch{S}, e2::Epoch{S}) where {S}
     return e1.seconds - e2.seconds
 end
 
-function Base.:+(e::Epoch, x::N) where {N<:Number} 
-    Epoch(e.seconds+x, timescale(e))
+function Base.:+(e::Epoch, x::N) where {N<:Number}
+    return Epoch(e.seconds + x, timescale(e))
 end
-function Base.:-(e::Epoch, x::N) where {N<:Number} 
-    Epoch(e.seconds-x, timescale(e))
+function Base.:-(e::Epoch, x::N) where {N<:Number}
+    return Epoch(e.seconds - x, timescale(e))
 end
 
 function (::Base.Colon)(start::Epoch, step::T, stop::Epoch) where {T<:AbstractFloat}
     step = start < stop ? step : -step
-    StepRangeLen(start, step, floor(Int64, (stop-start)/step)+1)
+    return StepRangeLen(start, step, floor(Int64, (stop - start) / step) + 1)
 end
 
 (::Base.Colon)(start::Epoch, stop::Epoch) = (:)(start, 86400.0, stop)
@@ -230,9 +228,8 @@ end
 Base.convert(::Type{S}, e::Epoch{S}) where {S<:AbstractTimeScale} = e
 Base.convert(::S, e::Epoch{S}) where {S<:AbstractTimeScale} = e
 
-function Base.convert(to::S2, e::Epoch{S1}; 
-    system::TimeSystem=TIMESCALES) where {S1<:AbstractTimeScale, S2<:AbstractTimeScale}
-    return Epoch{S2}(
-        apply_offsets(system, e.seconds, timescale(e), to)
-    )
+function Base.convert(
+    to::S2, e::Epoch{S1}; system::TimeSystem=TIMESCALES
+) where {S1<:AbstractTimeScale,S2<:AbstractTimeScale}
+    return Epoch{S2}(apply_offsets(system, e.seconds, timescale(e), to))
 end

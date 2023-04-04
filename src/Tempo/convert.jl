@@ -1,6 +1,6 @@
 const MTAB = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 const PREVIOUS_MONTH_END_DAY_LEAP = (0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335)
-const PREVIOUS_MONTH_END_DAY      = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
+const PREVIOUS_MONTH_END_DAY = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
 
 """
     isleapyear(year::Integer)
@@ -13,9 +13,7 @@ end
 
 function find_dayinyear(month::N, day::N, isleap::Bool) where {N<:Integer}
     previous_days = ifelse(
-        isleap, 
-        PREVIOUS_MONTH_END_DAY_LEAP[month], 
-        PREVIOUS_MONTH_END_DAY[month]
+        isleap, PREVIOUS_MONTH_END_DAY_LEAP[month], PREVIOUS_MONTH_END_DAY[month]
     )
     return day + previous_days
 end
@@ -26,28 +24,31 @@ end
 Convert hours, minutes, seconds to day fraction. The day fraction is returned 
 converted in type `T`.
 """
-function hms2fd(h::N, m::N, s::T) where {N <: Integer, T <: AbstractFloat}
+function hms2fd(h::N, m::N, s::T) where {N<:Integer,T<:AbstractFloat}
     # Validate arguments
-    if h < 0 || h > 23 
+    if h < 0 || h > 23
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid hour provided, must be between 0 and 23"
-        ))
-    elseif m < 0 || m > 59 
+                "invalid hour provided, must be between 0 and 23",
+            ),
+        )
+    elseif m < 0 || m > 59
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid minutes provided, must be between 0 and 59"
-        ))
-    elseif s < 0.0 || s >= 60.0 
+                "invalid minutes provided, must be between 0 and 59",
+            ),
+        )
+    elseif s < 0.0 || s >= 60.0
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid seconds provided, must be between 0.0 and 59.99999999999999"
-         ))
-    end 
-    return T(((60.0*(60.0*h + m))+s)/86400.0)
+                "invalid seconds provided, must be between 0.0 and 59.99999999999999",
+            ),
+        )
+    end
+    return T(((60.0 * (60.0 * h + m)) + s) / 86400.0)
 end
 
 """
@@ -61,8 +62,9 @@ function fd2hms(fd::T) where {T<:AbstractFloat}
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "seconds are out of range: must be between 0 and 86400, provided $secinday"
-        ))
+                "seconds are out of range: must be between 0 and 86400, provided $secinday",
+            ),
+        )
     end
     hours = Integer(secinday ÷ 3600)
     secinday -= 3600 * hours
@@ -79,9 +81,9 @@ Convert day fraction to hour, minute, second, fraction of seconds.
 function fd2hmsf(fd::T) where {T<:AbstractFloat}
     h, m, sid = fd2hms(fd)
     sec = Integer(sid ÷ 1)
-    fsec = sid - sec 
-    return h, m, sec, fsec 
-end 
+    fsec = sid - sec
+    return h, m, sec, fsec
+end
 
 """
     cal2jd(Y::N, M::N, D::N) where {N<:Integer}
@@ -140,29 +142,30 @@ function cal2jd(Y::N, M::N, D::N) where {N<:Integer}
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid year provided, must be greater than 1583"
-        ))
-        
+                "invalid year provided, must be greater than 1583",
+            ),
+        )
+
     elseif M < 1 || M > 12
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid month provided, must be between 1 and 12"
-        ))
-        
+                "invalid month provided, must be between 1 and 12",
+            ),
+        )
     end
 
     # If February in a leap year, 1, otherwise 0
     ly = isleapyear(Y)
-    
+
     # Validate day, taking into account leap years
     if (D < 1) || (D > (MTAB[M] + ly))
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid day provided, shall be between 1 and $(MTAB[M]+ly)"
-        ))
-    
+                "invalid day provided, shall be between 1 and $(MTAB[M]+ly)",
+            ),
+        )
     end
 
     Y = Y - 1
@@ -191,7 +194,7 @@ Convert Gregorian Calendar date and time to Julian Date.
 function calhms2jd(Y::N, M::N, D::N, h::N, m::N, sec::Number) where {N<:Integer}
     jd1, jd2 = cal2jd(Y, M, D)
     fd = hms2fd(h, m, sec)
-    return jd1, jd2+fd-0.5
+    return jd1, jd2 + fd - 0.5
 end
 
 """ 
@@ -248,38 +251,39 @@ function jd2cal(dj1::Number, dj2::Number)
         throw(
             EpochConversionError(
                 String(Symbol(@__MODULE__)),
-                "invalid JD provided, shall be between -68569.5 and 1e9"
-        ))
+                "invalid JD provided, shall be between -68569.5 and 1e9",
+            ),
+        )
     end
 
     # Copy the date, big then small, and re-align to midnight
-    if abs(dj1) ≥ abs(dj2) 
-        d1 = dj1 
-        d2 = dj2 
+    if abs(dj1) ≥ abs(dj2)
+        d1 = dj1
+        d2 = dj2
     else
-        d1 = dj2 
-        d2 = dj1 
+        d1 = dj2
+        d2 = dj1
     end
-    d2 -= 0.5 
+    d2 -= 0.5
 
     #  Separate day and fraction
     f1 = mod(d1, 1.0)
     f2 = mod(d2, 1.0)
-    fd = mod(f1+f2, 1.0)
+    fd = mod(f1 + f2, 1.0)
     if fd < 0.0
-        fd += 1.0 
+        fd += 1.0
     end
-    d = round(Int, d1-f1) + round(Int, d2-f2) + round(Int, f1+f2-fd)
+    d = round(Int, d1 - f1) + round(Int, d2 - f2) + round(Int, f1 + f2 - fd)
     jd = round(Int, d) + 1
 
     # Express day in Gregorian calendar
-    f = jd + 1401 + (((4*jd + 274277)÷146097)*3)÷4 - 38
-    e = 4*f + 3
-    g = mod(e, 1461)÷4
+    f = jd + 1401 + (((4 * jd + 274277) ÷ 146097) * 3) ÷ 4 - 38
+    e = 4 * f + 3
+    g = mod(e, 1461) ÷ 4
     h = 5 * g + 2
-    D = mod(h, 153)÷5 + 1
-    M = mod(h÷153 + 2, 12) + 1
-    Y = e÷1461 - 4716 + (12+2-M)÷12
+    D = mod(h, 153) ÷ 5 + 1
+    M = mod(h ÷ 153 + 2, 12) + 1
+    Y = e ÷ 1461 - 4716 + (12 + 2 - M) ÷ 12
     return Y, M, D, fd
 end
 
@@ -306,9 +310,8 @@ A `Tuple` containing:
 function jd2calhms(dj1::Number, dj2::Number)
     y, m, d, fd = jd2cal(dj1, dj2)
     h, min, sec = fd2hms(fd)
-    return y, m, d, h, min, sec 
+    return y, m, d, h, min, sec
 end
-
 
 """
     utc2tai(utc1, utc2)
@@ -352,40 +355,39 @@ function utc2tai(utc1, utc2)
     # Put the two parts of the UTC into big-first order
     big1 = abs(utc1) >= abs(utc2)
 
-    if big1 
+    if big1
         u1 = utc1
         u2 = utc2
     else
         u1 = utc2
         u2 = utc1
     end
-    
+
     # Get TAI-UTC at 0h today
     iy, im, _, fd = jd2cal(u1, u2)
-    Δt0 = leapseconds((utc1-DJ2000)+utc2)
+    Δt0 = leapseconds((utc1 - DJ2000) + utc2)
 
     z2 = u2 - fd
-    
+
     # Get TAI-UTC at 0h tomorrow (to detect jumps)
-    iyt, imt, _, _ = jd2cal(u1+1.5, z2)
-    Δt24 = leapseconds((utc1-DJ2000)+utc2)
+    iyt, imt, _, _ = jd2cal(u1 + 1.5, z2)
+    Δt24 = leapseconds((utc1 - DJ2000) + utc2)
 
     # Detect any jump
     # Spread leap into preceding day
-    fd += (Δt24-Δt0)/86400.0
+    fd += (Δt24 - Δt0) / 86400.0
 
     # Assemble the TAI result, preserving the UTC split and order
-    a2 = z2 + fd + Δt0/86400.0
+    a2 = z2 + fd + Δt0 / 86400.0
 
-    if big1 
-        tai1 = u1 
-        tai2 = a2 
-    else 
-        tai1 = a2 
-        tai2 = u1 
+    if big1
+        tai1 = u1
+        tai2 = a2
+    else
+        tai1 = a2
+        tai2 = u1
     end
-    return tai1, tai2 
-
+    return tai1, tai2
 end
 
 """
@@ -430,7 +432,7 @@ Coordinated Universal Time, [`UTC`](@ref).
 function tai2utc(tai1, tai2)
     # Put the two parts of the UTC into big-first order
     big1 = abs(tai1) >= abs(tai2)
-    if big1 
+    if big1
         a1 = tai1
         a2 = tai2
     else
@@ -444,22 +446,20 @@ function tai2utc(tai1, tai2)
     #  Iterate (in most cases just once is enough)
     for _ in 1:2
         g1, g2 = utc2tai(u1, u2)
-        u2 += a1 - g1 
-        u2 += a2 - g2 
+        u2 += a1 - g1
+        u2 += a2 - g2
     end
 
     # Return the UTC result, preserving the TAI order
-    if big1 
-        utc1 = u1 
-        utc2 = u2 
-    else 
-        utc1 = u2 
-        utc2 = u1 
+    if big1
+        utc1 = u1
+        utc2 = u2
+    else
+        utc1 = u2
+        utc2 = u1
     end
     return utc1, utc2
-
 end
-
 
 """
     j2000(jd)
@@ -468,7 +468,7 @@ end
 Convert Julian Date in days since J2000
 """
 @inline j2000(jd) = jd - DJ2000
-@inline j2000(jd1, jd2) = abs(jd1) > abs(jd2) ? (jd1-DJ2000)+jd2 : (jd2-DJ2000)+jd1
+@inline j2000(jd1, jd2) = abs(jd1) > abs(jd2) ? (jd1 - DJ2000) + jd2 : (jd2 - DJ2000) + jd1
 
 """
     j2000s(jd)
@@ -485,5 +485,5 @@ Convert Julian Date (in days) in seconds past J2000
 
 Convert Julian Date (in days) to Julian Centuries
 """
-@inline j2000c(jd) = j2000(jd)/CENTURY2DAY
-@inline j2000c(jd1, jd2) = j2000(jd1, jd2)/CENTURY2DAY
+@inline j2000c(jd) = j2000(jd) / CENTURY2DAY
+@inline j2000c(jd1, jd2) = j2000(jd1, jd2) / CENTURY2DAY

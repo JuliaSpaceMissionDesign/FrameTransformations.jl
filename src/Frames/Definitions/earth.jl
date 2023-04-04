@@ -11,25 +11,31 @@ to specify which IAU model model should be used for the computations. The defaul
 ### See also 
 See also [`orient_rot3_itrf_to_gcrf`](@ref)
 """
-function add_axes_itrf!(frames::FrameSystem{O, T}, 
-    axes::AbstractFrameAxes, parent::AbstractFrameAxes, 
-    model::Orient.IAUModel=Orient.iau2006b) where {T, O}
-
+function add_axes_itrf!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    parent::AbstractFrameAxes,
+    model::Orient.IAUModel=Orient.iau2006b,
+) where {T,O}
     pname = axes_name(parent)
 
     if !(pname in (:ICRF, :GCRF)) && axes_id(parent) != Orient.AXESID_ICRF
         throw(
-            ErrorException("International Terrestrial Reference Frame (ITRF) axes could "*
-            "not be defined w.r.t $pname axes. Only the `ICRF` or `GCRF` are accepted as "*
-            "parent axes.")
+            ErrorException(
+                "International Terrestrial Reference Frame (ITRF) axes could " *
+                "not be defined w.r.t $pname axes. Only the `ICRF` or `GCRF` are accepted as " *
+                "parent axes.",
+            ),
         )
-    end 
+    end
 
-    add_axes_rotating!(frames, axes, parent, 
-                        t->adjoint(Orient.orient_rot3_itrf_to_gcrf(model, t)),
-                        t->adjoint.(Orient.orient_rot6_itrf_to_gcrf(model, t)),
-                        t->adjoint.(Orient.orient_rot9_itrf_to_gcrf(model, t)),
-                        t->adjoint.(Orient.orient_rot12_itrf_to_gcrf(model, t))
+    return add_axes_rotating!(
+        frames,
+        axes,
+        parent,
+        t -> adjoint(Orient.orient_rot3_itrf_to_gcrf(model, t)),
+        t -> adjoint.(Orient.orient_rot6_itrf_to_gcrf(model, t)),
+        t -> adjoint.(Orient.orient_rot9_itrf_to_gcrf(model, t)),
+        t -> adjoint.(Orient.orient_rot12_itrf_to_gcrf(model, t)),
     )
-
 end

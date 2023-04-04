@@ -12,4 +12,4 @@ abstract type AbstractInterpolationMethod end
 
 Abstract interpolator call method.
 """
-function interpolate(::AbstractInterpolationMethod, x) end 
+function interpolate(::AbstractInterpolationMethod, x) end

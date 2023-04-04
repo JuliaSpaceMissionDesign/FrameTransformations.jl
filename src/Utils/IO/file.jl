@@ -2,18 +2,9 @@ abstract type AbstractFile end
 
 using SHA: sha256
 
-const FILE_OPENMODE = Dict([
-    :write => "w",
-    :append => "a+",
-    :read => "r"
-])
+const FILE_OPENMODE = Dict([:write => "w", :append => "a+", :read => "r"])
 
-const FILE_FORMAT = (
-    :TPC, 
-    :JSON,
-    :TXT,
-    :YAML
-)
+const FILE_FORMAT = (:TPC, :JSON, :TXT, :YAML)
 
 for fmt in FILE_FORMAT
     @eval begin
@@ -35,12 +26,12 @@ filepath(file::T) where {T<:AbstractFile} = file.path
 
 Get a unique string descriptor for a file - based on sha256.
 """
-function fileid(file::F) where {F <: AbstractFile}
-    fileid(filepath(file))
+function fileid(file::F) where {F<:AbstractFile}
+    return fileid(filepath(file))
 end
 
 function fileid(file::String)
-    open(file, "r") do file 
+    open(file, "r") do file
         return bytes2hex(sha256(file))
     end
 end

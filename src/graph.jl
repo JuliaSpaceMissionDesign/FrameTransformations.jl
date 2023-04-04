@@ -1,7 +1,6 @@
 # common export
 export find_path, connect!, register!
 
-
 """
     find_path(g::G, from, to)
     find_path(from, to)  # module specific
@@ -11,7 +10,7 @@ Find shortest path in a graph `g` that starts at `from` and ends at `to`.
 !!!! warning 
     This method is abstract!
 """
-function find_path end 
+function find_path end
 
 """
     connect!(g::G, n1, n2)
@@ -33,4 +32,4 @@ Register a new node in the graph `g`.
 !!!! warning 
     This method is abstract!
 """
-function register! end 
+function register! end

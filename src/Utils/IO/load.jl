@@ -14,7 +14,7 @@ function load() end
 Open a JSON file and parse its data in a dictionary.
 """
 function load(file::JSON)
-    open(filepath(file), "r") do f 
+    open(filepath(file), "r") do f
         data = JSON3.read(f)
         return Dict(data)
     end
@@ -26,7 +26,7 @@ end
 Open a TEXT file and parse its data in a list of strings.
 """
 function load(file::TXT)
-    readlines(filepath(file))
+    return readlines(filepath(file))
 end
 
 """
@@ -35,7 +35,7 @@ end
 Open a YAML file and parse its data in a dictionary.
 """
 function load(file::YAML)
-    YAMLLib.load_file(filepath(file); dicttype=Dict{Symbol, Any})
+    return YAMLLib.load_file(filepath(file); dicttype=Dict{Symbol,Any})
 end
 
 """
@@ -44,9 +44,9 @@ end
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
 function load(file::TPC)
-    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Int64, Vector{Float64}}}}()
+    mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     load_tpc!(mapped, filepath(file))
-    sort(mapped)
+    return sort(mapped)
 end
 
 """
@@ -55,19 +55,22 @@ end
 Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
 """
 function load(files::Vector{TPC})
-    mapped = Dict{Int64, Dict{Symbol, Union{Float64, Int64, Vector{Float64}}}}()
+    mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     for file in files
         load_tpc!(mapped, filepath(file))
     end
-    sort(mapped)
+    return sort(mapped)
 end
 
-function load_tpc!(dict::Dict{Int64, Dict{Symbol, 
-    Union{Float64, Int64, Vector{Float64}}}}, filename::String)
+function load_tpc!(
+    dict::Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}, filename::String
+)
     # load and strip lines (remove tabs and spaces)
     # extract lines which are within `\begindata` and `\begintext`
-    parsed = split(join(strip.(readlines(filename)), " "), 
-        r"(?<=\\begintext).*?(?=\\begindata\s*BODY*)") 
+    parsed = split(
+        join(strip.(readlines(filename)), " "),
+        r"(?<=\\begintext).*?(?=\\begindata\s*BODY*)",
+    )
     # extract lines which actually have data using the `BODY**** =` pattern
     # this is useful to filter the header and eventual trailings.
     # This vector contains a list of `BODY******* =` elements which will be 
@@ -88,15 +91,21 @@ function load_tpc!(dict::Dict{Int64, Dict{Symbol,
             prop_idxs = findall.(r"(?<=\d_)(.*?)(?==)", raw_names)
 
             # trasform naifids to integers
-            naif = parse.(Int64, [raw_names[j][ids[1]] for (j, ids) in enumerate(naif_idxs)])
+            naif =
+                parse.(Int64, [raw_names[j][ids[1]] for (j, ids) in enumerate(naif_idxs)])
             # trasform property names to symbols
-            prop = Symbol.(lowercase.(strip.([raw_names[j][ids[1]] for (j, ids) in enumerate(prop_idxs)])))
+            prop =
+                Symbol.(
+                    lowercase.(
+                        strip.([raw_names[j][ids[1]] for (j, ids) in enumerate(prop_idxs)])
+                    )
+                )
             data = split.([replace(parsed[i][idx], "D" => "E") for idx in datas_idx[i]])
 
             for (name, body, value_) in zip(prop, naif, data)
                 # parse a vector of floats, a float or a integer
                 if value_[2] == "("
-                    value = parse.(Float64, value_[3:end-1]) 
+                    value = parse.(Float64, value_[3:(end - 1)])
                 else
                     try
                         value = [parse(Int64, value_[2])]
@@ -110,6 +119,6 @@ function load_tpc!(dict::Dict{Int64, Dict{Symbol,
                 mergewith!(merge!, dict, temp)
             end
         end
-    end 
-    nothing
+    end
+    return nothing
 end

@@ -6,35 +6,19 @@ Abstract type for all epoch origins.
 abstract type AbstractEpochOrigin end
 
 const EPOCH_ORIGIN = (
-    :JulianDate,
-    :ModifiedJulianDate,
-    :JulianDate2000,
-    :ModifiedJulianDate2000,
+    :JulianDate, :ModifiedJulianDate, :JulianDate2000, :ModifiedJulianDate2000
 )
 
-const EPOCH_ORIGIN_ACRONYMS = (
-    :JD,
-    :MJD,
-    :J2000,
-    :MJ2000
-)
+const EPOCH_ORIGIN_ACRONYMS = (:JD, :MJD, :J2000, :MJ2000)
 
 const EPOCH_STARTS = (
-    "-4712-01-01T12:00",
-    "1858-11-17T00:00" ,
-    "2000-01-01T12:00",
-    "2000-01-01T00:00"
+    "-4712-01-01T12:00", "1858-11-17T00:00", "2000-01-01T12:00", "2000-01-01T00:00"
 )
 
-const EPOCH_ORIGIN_TO_J2000 = (
-    DJ2000,
-    DMJD, 
-    0.0, 
-    -0.5,
-)
+const EPOCH_ORIGIN_TO_J2000 = (DJ2000, DMJD, 0.0, -0.5)
 
-for (name, acr, off, start) in zip(EPOCH_ORIGIN, EPOCH_ORIGIN_ACRONYMS, 
-    EPOCH_ORIGIN_TO_J2000, EPOCH_STARTS)
+for (name, acr, off, start) in
+    zip(EPOCH_ORIGIN, EPOCH_ORIGIN_ACRONYMS, EPOCH_ORIGIN_TO_J2000, EPOCH_STARTS)
     acro_str = String(acr)
     name_str = String(name)
     @eval begin

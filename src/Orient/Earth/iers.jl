@@ -3,14 +3,12 @@ export orient_rot3_itrf_to_gcrf
 # Nominal Earth angular velocity  
 const ωₑ = 7.292_115_146_706_979e-5
 
-
 """
     earth_rotation_rate()
     
 Compute the nominal Earth angular velocity. 
 """
 earth_rotation_rate() = earth_rotation_rate(0.0)
-
 
 """ 
     earth_rotation_rate(LOD::Number)
@@ -19,9 +17,8 @@ Compute the true angular velocity of the Earth accounting for the Length of the 
 the instantaneous rate of change of UT1 with respect to a uniform time scale. 
 """
 function earth_rotation_rate(LOD::Number)
-    return ωₑ*(1-LOD/86400)
+    return ωₑ * (1 - LOD / 86400)
 end
-
 
 """
     tio_locator(t::Number)
@@ -40,9 +37,8 @@ drift of ~0.47 μas/century.
   Terrestrial Reference Frame, [DOI: 10.1051/0004-6361:20021139](https://www.aanda.org/articles/aa/pdf/2002/40/aa2747.pdf)
 """
 function tio_locator(t::Number)
-    return -47e-6*t |> arcsec2rad; # arcseconds
+    return arcsec2rad(-47e-6 * t) # arcseconds
 end
-
 
 """ 
     polar_motion(t::Number, xₚ::Number, yₚ::Number)
@@ -56,11 +52,10 @@ respect to the International Celestial Reference Frame (ITFR).
 - Luzum, B. and Petit G. (2012), The IERS Conventions (2010), 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
 """
-function polar_motion(t::Number, xₚ::Number, yₚ::Number,)
+function polar_motion(t::Number, xₚ::Number, yₚ::Number)
     sp = tio_locator(t)
-    angle_to_dcm(yₚ, xₚ, -sp, :XYZ)
+    return angle_to_dcm(yₚ, xₚ, -sp, :XYZ)
 end
-
 
 """
     earth_rotation_angle(t::Number)
@@ -93,10 +88,9 @@ conventions at time `t` expressed as UT1 days since [`J2000`](@ref).
 - Luzum, B. and Petit G. (2012), The IERS Conventions (2010), 
   [IERS Technical Note No. 36](https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html) 
 """
-function era_rotm(t::Number) 
-    angle_to_dcm(-earth_rotation_angle(t), :Z)
+function era_rotm(t::Number)
+    return angle_to_dcm(-earth_rotation_angle(t), :Z)
 end
-
 
 """
     fw2xy(ϵ::Number, ψ::Number, γ::Number, φ::Number)
@@ -118,16 +112,15 @@ function fw2xy(γ::Number, φ::Number, ψ::Number, ϵ::Number)
     sϵ, cϵ = sincos(ϵ)
     sψ, cψ = sincos(ψ)
     sγ, cγ = sincos(γ)
-    sϕ, cϕ = sincos(φ) 
+    sϕ, cϕ = sincos(φ)
 
-    a = (sϵ*cψ*cϕ - cϵ*sϕ)
+    a = (sϵ * cψ * cϕ - cϵ * sϕ)
 
-    X = sϵ*sψ*cγ - a*sγ
-    Y = sϵ*sψ*sγ + a*cγ
+    X = sϵ * sψ * cγ - a * sγ
+    Y = sϵ * sψ * sγ + a * cγ
 
     return X, Y
 end
-
 
 """
     bpn2xy(A::AbstractMatrix)
@@ -143,10 +136,8 @@ bpn2xy(A::AbstractMatrix) = @inbounds A[3, 1], A[3, 2]
 # Generate cip_coords function for the simplified CPNC model! 
 include("constants/cip_cpnc.jl")
 build_cio_series(
-    :cip_coords, :CPNC, 
-    [COEFFS_CPNC_XP, COEFFS_CPNC_YP], [COEFFS_CPNC_X, COEFFS_CPNC_Y]
+    :cip_coords, :CPNC, [COEFFS_CPNC_XP, COEFFS_CPNC_YP], [COEFFS_CPNC_X, COEFFS_CPNC_Y]
 )
-
 
 """
     cip_coords(m::IAUModel, t::Number)
@@ -162,25 +153,24 @@ This function has been implemented for the `IAU2000`, `IAU2006` and the `CPN` mo
 - Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
 """
 function cip_coords(m::IAU2006Model, t::Number)
- 
+
     # Computes Fukushima-Williams angles
     γ, ϕ, ψ, ϵ = fw_angles(m, t)
 
     # Computes IAU 2000 nutation components 
-    Δψ, Δϵ = orient_nutation(m, t) 
+    Δψ, Δϵ = orient_nutation(m, t)
 
     # Retrieves CIP coordinates by applying IAU-2006 compatible nutations 
-    fw2xy(γ, ϕ, ψ + Δψ, ϵ + Δϵ)
-end 
+    return fw2xy(γ, ϕ, ψ + Δψ, ϵ + Δϵ)
+end
 
 function cip_coords(m::IAU2000Model, t::Number)
     # Extract CIP coordinates from the IAU-2000 bias-precession-nutation matrix
-    bpn2xy(orient_bias_precession_nutation(m, t))
-end 
+    return bpn2xy(orient_bias_precession_nutation(m, t))
+end
 
 function cip_coords(::CPND, t::Number)
-
-    μas2rad = 1e-6*π/648000
+    μas2rad = 1e-6 * π / 648000
 
     # Approximated fundamental arguments as linear function of time 
     Ω = 2.182439196616 - 33.7570459536t
@@ -201,22 +191,17 @@ function cip_coords(::CPND, t::Number)
     return X, Y
 end
 
-function cip_coords(m::CPNC, t::N) where {N <: Number}
-    
-    # Computes only Luni-Solar Fundamental Arguments 
-
-    z = N(0) 
+function cip_coords(m::CPNC, t::N) where {N<:Number}
 
     # Computes only Luni-Solar Fundamental Arguments 
-    fa = FundamentalArguments(
-          LuniSolarArguments(t, m)..., z, z, z, z, z, z, z, z, z
-    )
 
+    z = N(0)
 
-    cip_coords(m, t, fa)
+    # Computes only Luni-Solar Fundamental Arguments 
+    fa = FundamentalArguments(LuniSolarArguments(t, m)..., z, z, z, z, z, z, z, z, z)
+
+    return cip_coords(m, t, fa)
 end
-
-
 
 include("constants/cio_locator00.jl")
 include("constants/cio_locator06.jl")
@@ -244,7 +229,7 @@ The function has been implemented for the `IAU2000`, `IAU2006` and the `CPN` mod
 """
 function cio_locator(m::IAUModel, t::Number, x::Number, y::Number)
     fa = FundamentalArguments(t, iau2006a)
-    cio_locator(m, t, fa) - x*y/2
+    return cio_locator(m, t, fa) - x * y / 2
 end
 
 function cio_locator(::CPNC, t::Number, x::Number, y::Number)
@@ -252,17 +237,15 @@ function cio_locator(::CPNC, t::Number, x::Number, y::Number)
     Ω = 2.182439196616 - 33.7570459536t
 
     s = @evalpoly(t, 0.0, 3809, 0.0, -72574.0)
-    s -= 2641*sin(Ω)
+    s -= 2641 * sin(Ω)
 
     # Transform s from μas to radians 
-    s *=  1e-6*π/648000
+    s *= 1e-6 * π / 648000
 
-    return s - x*y/2
-
+    return s - x * y / 2
 end
 
 @inline cio_locator(::CPND, t::Number, x::Number, y::Number) = 0.0
-
 
 """ 
     xys2m(x::Number, y::Number, s::Number)
@@ -279,14 +262,13 @@ locator `s`, all in radians.
 function xys2m(x::Number, y::Number, s::Number)
     # Retrieves spherical angles E and d. 
     r2 = x^2 + y^2
-    E = (r2 > 0) ? atan(y, x) : 0.0 
+    E = (r2 > 0) ? atan(y, x) : 0.0
     d = atan(sqrt(r2 / (1.0 - r2)))
 
     # This formulation (compared to simplified versions) ensures 
     # that the resulting matrix is orthonormal.
-    angle_to_dcm(E+s, -d, -E, :ZYZ)
+    return angle_to_dcm(E + s, -d, -E, :ZYZ)
 end
-
 
 """
     cip_motion(m::IAUModel, t::Number, dx::Number=0.0, dy::Number=0.0)
@@ -306,52 +288,49 @@ function cip_motion(m::IAUModel, t::Number, dx::Number=0.0, dy::Number=0.0)
     x, y = cip_coords(m, t)
 
     # Apply free-core nutation corrections
-    x += dx 
-    y += dy 
+    x += dx
+    y += dy
 
     # Compute CIO Locator
     s = cio_locator(m, t, x, y)
 
     # Form intermediate-to-celestial matrix 
-    xys2m(x, y, s)
+    return xys2m(x, y, s)
 end
-
 
 # General functions to dispatch generic order derivatives!
 function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
-
     utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
-    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1)/Tempo.DAY2SEC
-    
-    utc_d = utc_s/Tempo.DAY2SEC
+    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
+
+    utc_d = utc_s / Tempo.DAY2SEC
 
     # Compute pole coordinates 
-    xₚ = interpolate(IERS_EOP.x, utc_d) |> arcsec2rad
-    yₚ = interpolate(IERS_EOP.y, utc_d) |> arcsec2rad
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x, utc_d))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y, utc_d))
 
     # Compute dX, dY 
-    dX = 1e-3*interpolate(IERS_EOP.dX, utc_d) |> arcsec2rad
-    dY = 1e-3*interpolate(IERS_EOP.dY, utc_d) |> arcsec2rad
+    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX, utc_d))
+    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY, utc_d))
 
     # Compute LOD 
-    LOD = 1e-3*interpolate(IERS_EOP.LOD, utc_d)
+    LOD = 1e-3 * interpolate(IERS_EOP.LOD, utc_d)
 
     return fn(m, t, ut1, xₚ, yₚ, dX, dY, LOD)
-
 end
 
 function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
 
     # Convert TT secs since J2000 to TT days
-    ttd = t/Tempo.DAY2SEC
+    ttd = t / Tempo.DAY2SEC
 
     # Compute pole coordinates 
-    xₚ = interpolate(IERS_EOP.x_TT, ttd) |> arcsec2rad
-    yₚ = interpolate(IERS_EOP.y_TT, ttd) |> arcsec2rad
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
 
     # Transform UT1 to TT
     offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset/Tempo.DAY2SEC
+    ut1 = ttd + offset / Tempo.DAY2SEC
 
     return fn(m, t, ut1, xₚ, yₚ, 0.0, 0.0)
 end
@@ -359,15 +338,14 @@ end
 function _dnd_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
 
     # Convert TT secs since J2000 to TT days
-    ttd = t/Tempo.DAY2SEC
+    ttd = t / Tempo.DAY2SEC
 
     # Transform UT1 to TT
     offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset/Tempo.DAY2SEC
+    ut1 = ttd + offset / Tempo.DAY2SEC
 
     return fn(m, t, ut1, 0.0, 0.0, 0.0, 0.0)
 end
-
 
 """
     orient_rot3_itrf_to_gcrf(m::IAUModel, t::Number)
@@ -407,25 +385,24 @@ TT seconds since [`J2000`](@ref), according to the IAU Model `m`, as follows:
   IAU 2006 resolutions, [DOI: 10.1051/0004-6361:20065897](https://www.aanda.org/articles/aa/abs/2006/45/aa5897-06/aa5897-06.html) 
 - Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
 """
-function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A, <:IAU2006A}, t::Number)
+function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
 
     # Find UT1 and UTC dates
     utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
-    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1)/Tempo.DAY2SEC
+    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
 
-    utc_d = utc_s/Tempo.DAY2SEC
+    utc_d = utc_s / Tempo.DAY2SEC
 
     # Compute pole coordinates 
-    xₚ = interpolate(IERS_EOP.x, utc_d) |> arcsec2rad
-    yₚ = interpolate(IERS_EOP.y, utc_d) |> arcsec2rad
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x, utc_d))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y, utc_d))
 
     # Compute dX, dY 
-    dX = 1e-3*interpolate(IERS_EOP.dX, utc_d) |> arcsec2rad
-    dY = 1e-3*interpolate(IERS_EOP.dY, utc_d) |> arcsec2rad
+    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX, utc_d))
+    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY, utc_d))
 
     return orient_rot3_itrf_to_gcrf(m, t, ut1, xₚ, yₚ, dX, dY)
 end
-
 
 """
     orient_rot6_itrf_to_gcrf(m::IAUModel, t::Number)
@@ -443,7 +420,6 @@ time `t` expressed as TT seconds since [`J2000`](@ref), according to the IAU Mod
 """
 orient_rot9_itrf_to_gcrf
 
-
 """
     orient_rot12_itrf_to_gcrf(m::IAUModel, t::Number)
 
@@ -452,35 +428,32 @@ time `t` expressed as TT seconds since [`J2000`](@ref), according to the IAU Mod
 """
 orient_rot12_itrf_to_gcrf
 
-
 for (i, fun) in enumerate([
-                :orient_rot3_itrf_to_gcrf, :orient_rot6_itrf_to_gcrf,
-                :orient_rot9_itrf_to_gcrf, :orient_rot12_itrf_to_gcrf
-                ])
-
+    :orient_rot3_itrf_to_gcrf,
+    :orient_rot6_itrf_to_gcrf,
+    :orient_rot9_itrf_to_gcrf,
+    :orient_rot12_itrf_to_gcrf,
+])
     if i > 1
-        @eval begin 
-            @inline function ($fun)(m::Union{<:IAU2000A, <:IAU2006A}, t::Number)
-                _dna_itrf_to_gcrf(m, $fun, t)
+        @eval begin
+            @inline function ($fun)(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
+                return _dna_itrf_to_gcrf(m, $fun, t)
             end
         end
-    
     end
 
-    @eval begin 
-        @inline function ($fun)(m::Union{<:IAU2000B, <:IAU2006B, <:CPNC}, t::Number)
-            _dnb_itrf_to_gcrf(m, $fun, t)
+    @eval begin
+        @inline function ($fun)(m::Union{<:IAU2000B,<:IAU2006B,<:CPNC}, t::Number)
+            return _dnb_itrf_to_gcrf(m, $fun, t)
         end
     end
 
-    @eval begin 
+    @eval begin
         @inline function ($fun)(m::CPND, t::Number)
-            _dnd_itrf_to_gcrf(m, $fun, t)
+            return _dnd_itrf_to_gcrf(m, $fun, t)
         end
     end
-
 end
-
 
 """
     orient_rot3_itrf_to_gcrf(m::IAUModel, tt, ut1, xₚ, yₚ, dX=0.0, dY=0.0)
@@ -493,20 +466,25 @@ This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 !!! note 
     All the input quantities `xₚ`, `yₚ`, `dX` and `dY` must be expressed in radians
 """
-function orient_rot3_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number, xₚ::Number, 
-            yₚ::Number, dX::Number=0.0, dY::Number=0.0)
+function orient_rot3_itrf_to_gcrf(
+    m::IAUModel,
+    tt::Number,
+    ut1::Number,
+    xₚ::Number,
+    yₚ::Number,
+    dX::Number=0.0,
+    dY::Number=0.0,
+)
 
     # Convert TT since J2000 from seconds to centuries
-    tt_c = tt/Tempo.CENTURY2SEC
+    tt_c = tt / Tempo.CENTURY2SEC
 
     W = polar_motion(tt_c, xₚ, yₚ)
     R = era_rotm(ut1)
     Q = cip_motion(m, tt_c, dX, dY)
 
-    return Q*R*W 
-
+    return Q * R * W
 end
-
 
 """
     orient_rot6_itrf_to_gcrf(m::IAUModel, tt, ut1, xₚ, yₚ, dX=0.0, dY=0.0, LOD=0.0)
@@ -520,11 +498,19 @@ This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 !!! note 
     All the input quantities `xₚ`, `yₚ`, `dX` and `dY` must be expressed in radians
 """
-function orient_rot6_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number , xₚ::Number, 
-            yₚ::Number, dX::Number=0.0, dY::Number=0.0, LOD::Number=0.0)
+function orient_rot6_itrf_to_gcrf(
+    m::IAUModel,
+    tt::Number,
+    ut1::Number,
+    xₚ::Number,
+    yₚ::Number,
+    dX::Number=0.0,
+    dY::Number=0.0,
+    LOD::Number=0.0,
+)
 
     # Convert TT since J2000 from seconds to centuries
-    tt_c = tt/Tempo.CENTURY2SEC
+    tt_c = tt / Tempo.CENTURY2SEC
 
     W = polar_motion(tt_c, xₚ, yₚ)
     R = era_rotm(ut1)
@@ -533,14 +519,13 @@ function orient_rot6_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number , xₚ::N
     ωe = SVector(0.0, 0.0, earth_rotation_rate(LOD))
     Ω = skew(ωe)
 
-    QR = Q*R
+    QR = Q * R
 
-    D = QR*W
-    δD = QR*Ω*W
+    D = QR * W
+    δD = QR * Ω * W
 
     return D, δD
 end
-
 
 """
     orient_rot9_itrf_to_gcrf(m::IAUModel, tt, ut1, xₚ, yₚ, dX=0.0, dY=0.0, LOD=0.0)
@@ -554,11 +539,19 @@ This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 !!! note 
     All the input quantities `xₚ`, `yₚ`, `dX` and `dY` must be expressed in radians
 """
-function orient_rot9_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number, xₚ::Number, 
-            yₚ::Number, dX::Number=0.0, dY::Number=0.0, LOD::Number=0.0)
+function orient_rot9_itrf_to_gcrf(
+    m::IAUModel,
+    tt::Number,
+    ut1::Number,
+    xₚ::Number,
+    yₚ::Number,
+    dX::Number=0.0,
+    dY::Number=0.0,
+    LOD::Number=0.0,
+)
 
     # Convert TT since J2000 from seconds to centuries
-    tt_c = tt/Tempo.CENTURY2SEC
+    tt_c = tt / Tempo.CENTURY2SEC
 
     W = polar_motion(tt_c, xₚ, yₚ)
     R = era_rotm(ut1)
@@ -567,16 +560,15 @@ function orient_rot9_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number, xₚ::Nu
     ωe = SVector(0.0, 0.0, earth_rotation_rate(LOD))
     Ω = skew(ωe)
 
-    QR = Q*R 
-    QRΩ = QR*Ω
+    QR = Q * R
+    QRΩ = QR * Ω
 
-    D = QR*W
-    δD = QRΩ*W
-    δ²D = QRΩ*Ω*W
+    D = QR * W
+    δD = QRΩ * W
+    δ²D = QRΩ * Ω * W
 
     return D, δD, δ²D
 end
-
 
 """
     orient_rot12_itrf_to_gcrf(m::IAUModel, tt, ut1, xₚ, yₚ, dX=0.0, dY=0.0, LOD=0.0)
@@ -590,11 +582,19 @@ This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 !!! note 
     All the input quantities `xₚ`, `yₚ`, `dX` and `dY` must be expressed in radians
 """
-function orient_rot12_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number, xₚ::Number, 
-            yₚ::Number, dX::Number=0.0, dY::Number=0.0, LOD::Number=0.0)
+function orient_rot12_itrf_to_gcrf(
+    m::IAUModel,
+    tt::Number,
+    ut1::Number,
+    xₚ::Number,
+    yₚ::Number,
+    dX::Number=0.0,
+    dY::Number=0.0,
+    LOD::Number=0.0,
+)
 
     # Convert TT since J2000 from seconds to centuries
-    tt_c = tt/Tempo.CENTURY2SEC
+    tt_c = tt / Tempo.CENTURY2SEC
 
     W = polar_motion(tt_c, xₚ, yₚ)
     R = era_rotm(ut1)
@@ -603,14 +603,14 @@ function orient_rot12_itrf_to_gcrf(m::IAUModel, tt::Number, ut1::Number, xₚ::N
     ωe = SVector(0.0, 0.0, earth_rotation_rate(LOD))
     Ω = skew(ωe)
 
-    QR = Q*R 
-    QRΩ = QR*Ω
-    QRΩ² = QRΩ*Ω
+    QR = Q * R
+    QRΩ = QR * Ω
+    QRΩ² = QRΩ * Ω
 
-    D = QR*W
-    δD = QRΩ*W
-    δ²D = QRΩ²*W
-    δ³D = QRΩ²*Ω*W
+    D = QR * W
+    δD = QRΩ * W
+    δ²D = QRΩ² * W
+    δ³D = QRΩ² * Ω * W
 
     return D, δD, δ²D, δ³D
 end

@@ -1,5 +1,4 @@
-export AstronautGenericError,
-       NotImplementedError
+export AstronautGenericError, NotImplementedError
 
 """
     AstronautGenericException
@@ -14,22 +13,23 @@ abstract type AstronautGenericException <: Exception end
 Create a type representing an error.
 """
 macro create_module_error(name, supertype, descr)
-    return esc(quote
-        """
-            $($(name))
+    return esc(
+        quote
+            """
+                $($(name))
 
-        A type representing $($(descr))
-        """
-        struct $name <: $supertype
-            modl::String 
-            msg::String
-        end
-        function Base.showerror(io::IO, err::$name)
-            print(io, "[", err.modl, "] ", err.msg)
-        end
-    end)
+            A type representing $($(descr))
+            """
+            struct $name <: $supertype
+                modl::String
+                msg::String
+            end
+            function Base.showerror(io::IO, err::$name)
+                return print(io, "[", err.modl, "] ", err.msg)
+            end
+        end,
+    )
 end
-
 
 #
 # error types 

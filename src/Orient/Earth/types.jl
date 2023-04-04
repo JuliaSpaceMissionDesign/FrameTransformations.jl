@@ -2,13 +2,12 @@ export iau2006a, iau2006b, iau2000a, iau2000b, iau1980, CPNc, CPNd
 
 abstract type IAUModel end
 
-
 # ------------
 # --- 1980 ---
 # ------------
-abstract type IAU1980Model <: IAUModel end 
+abstract type IAU1980Model <: IAUModel end
 
-struct IAU1980 <: IAU1980Model end 
+struct IAU1980 <: IAU1980Model end
 
 """ 
     iau1980 
@@ -17,12 +16,11 @@ The singleton instance of type `IAU1980`, representing the IAU 1980 family of mo
 """
 const iau1980 = IAU1980()
 
-
 # ------------
 # --- 2000 ---
 # ------------
 
-abstract type IAU2000Model <: IAUModel end 
+abstract type IAU2000Model <: IAUModel end
 
 struct IAU2000A <: IAU2000Model end
 
@@ -33,7 +31,6 @@ The singleton instance of type `IAU2006a`, representing the IAU 2000B family of 
 """
 const iau2000a = IAU2000A()
 
-
 struct IAU2000B <: IAU2000Model end
 
 """ 
@@ -43,13 +40,11 @@ The singleton instance of type `IAU2006a`, representing the IAU 2000B family of 
 """
 const iau2000b = IAU2000B()
 
-
 # ------------
 # --- 2006 ---
 # ------------
 
 abstract type IAU2006Model <: IAUModel end
-
 
 struct IAU2006A <: IAU2006Model end
 
@@ -72,12 +67,11 @@ The singleton instance of type `IAU2006B`, representing the IAU 2006B family of 
 """
 const iau2006b = IAU2006B()
 
-
 # Approximated concise methods from Capitaine & Wallace: 
 # Concise CIO based precession-nutation formulations)
-abstract type CPNModel <: IAU2006Model end 
+abstract type CPNModel <: IAU2006Model end
 
-struct CPNC <: CPNModel end 
+struct CPNC <: CPNModel end
 
 """
     CPNc
@@ -88,8 +82,7 @@ the X, Y series to deliver an accuracy of few mas.
 """
 const CPNc = CPNC()
 
-
-struct CPND <: CPNModel end 
+struct CPND <: CPNModel end
 
 """
     CPNd
@@ -100,14 +93,11 @@ the X, Y series to deliver an accuracy of few arcseconds.
 """
 const CPNd = CPND()
 
-
-struct IAUSeries{N <: Number}
+struct IAUSeries{N<:Number}
     sc::N # Sin coefficient
     cc::N # Cos coefficient
-    N::SVector{14, Int}
+    N::SVector{14,Int}
 end
-
-
 
 """
     EOPData{T}
@@ -134,9 +124,9 @@ struct EOPData{T}
     # These are parsed automatically in eop.jl to allow direct computation of EOP 
     # without performing many transformations from TT/TDB, which are considered to be equal.
     x_TT::T
-    y_TT::T 
+    y_TT::T
     UT1_TT::T
-    LOD_TT::T 
+    LOD_TT::T
     dX_TT::T
     dY_TT::T
 end
