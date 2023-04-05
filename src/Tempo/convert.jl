@@ -52,11 +52,11 @@ function hms2fd(h::N, m::N, s::T) where {N<:Integer,T<:AbstractFloat}
 end
 
 """
-    fd2hms(fd::T) where {T<:AbstractFloat}
+    fd2hms(fd::Number) 
 
 Convert day fraction to hour, minute, second.
 """
-function fd2hms(fd::T) where {T<:AbstractFloat}
+function fd2hms(fd::Number) 
     secinday = fd * 86400.0
     if secinday < 0 || secinday > 86400
         throw(
@@ -74,11 +74,11 @@ function fd2hms(fd::T) where {T<:AbstractFloat}
 end
 
 """
-    fd2hmsf(fd::T) where {T<:AbstractFloat}
+    fd2hmsf(fd::Number) 
 
 Convert day fraction to hour, minute, second, fraction of seconds.
 """
-function fd2hmsf(fd::T) where {T<:AbstractFloat}
+function fd2hmsf(fd::Number) 
     h, m, sid = fd2hms(fd)
     sec = Integer(sid ÷ 1)
     fsec = sid - sec
