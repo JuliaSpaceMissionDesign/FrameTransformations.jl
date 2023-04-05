@@ -156,7 +156,8 @@ function cal2jd(Y::N, M::N, D::N) where {N<:Integer}
     end
 
     # If February in a leap year, 1, otherwise 0
-    ly = isleapyear(Y)
+    isleap = isleapyear(Y)
+    ly = (M == 2) && isleap
 
     # Validate day, taking into account leap years
     if (D < 1) || (D > (MTAB[M] + ly))
@@ -172,7 +173,7 @@ function cal2jd(Y::N, M::N, D::N) where {N<:Integer}
     # find j2000 day of the year 
     d1 = 365 * Y + Y ÷ 4 - Y ÷ 100 + Y ÷ 400 - 730120
     # find day in the year
-    d2 = find_dayinyear(M, D, ly)
+    d2 = find_dayinyear(M, D, isleap)
     # compute days since 01-01-2000 at noon
     d = d1 + d2
     return DJ2000, d
