@@ -9,9 +9,9 @@ using StaticArrays
 
 using Basic.Ephemeris: AbstractEphemerisProvider, ephem_available_axes, ephem_orient_order!
 using Basic.Tempo
-using Basic.Utils: arcsec2rad
-using Basic.Utils: InterpAkima, interpolate
 using Basic.Utils: skew
+
+using InterfacesUtils.Math: InterpAkima, interpolate, arcsec2rad
 
 # Earth
 include("Earth/Earth.jl")

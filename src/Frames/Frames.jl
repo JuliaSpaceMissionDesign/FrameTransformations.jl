@@ -26,7 +26,6 @@ using Basic.Tempo:
     j2000
 
 using Basic.Utils: light_speed, geod2pos
-using Basic.Utils: format_camelcase
 using Basic.Utils: D¹, D², D³
 
 using Basic.Utils: normalize, δnormalize, δ²normalize, δ³normalize
@@ -34,6 +33,8 @@ using Basic.Utils: cross3, cross6, cross9, cross12
 
 using Basic.Utils: angle_to_δdcm, angle_to_δ²dcm
 using Basic.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
+
+using InterfacesUtils: format_camelcase
 
 using MultiGraphs:
     MappedNodeGraph,

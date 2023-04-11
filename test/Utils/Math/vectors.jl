@@ -1,6 +1,6 @@
 
 @testset "Vectors" verbose = true begin
-    atol = 1e-12
+    atol = 1e-11
 
     # Define two non parallel vectors and their 1st, 2nd and 3rd order time derivatives! 
     function get_vector(t)

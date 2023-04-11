@@ -1,4 +1,4 @@
-using Basic.Utils: interpolate, arcsec2rad
+using InterfacesUtils.Math: interpolate, arcsec2rad
 
 include("iers.jl")
 include("moon.jl")

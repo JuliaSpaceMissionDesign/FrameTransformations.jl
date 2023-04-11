@@ -1,60 +1,24 @@
-export load
+export TPC, load
+
+@filetype TPC AbstractFile
 
 """
-    load(filename::T) where T <: AbstractFile
-    load(filenames::Vector{T}) where T <: AbstractFile
-
-Generic loader of different file/s format.
-"""
-function load() end
-
-"""
-    load(file::JSON)
-
-Open a JSON file and parse its data in a dictionary.
-"""
-function load(file::JSON)
-    open(filepath(file), "r") do f
-        data = JSON3.read(f)
-        return Dict(data)
-    end
-end
-
-"""
-    load(file::TXT)
-
-Open a TEXT file and parse its data in a list of strings.
-"""
-function load(file::TXT)
-    return readlines(filepath(file))
-end
-
-"""
-    load(file::YAML)
-
-Open a YAML file and parse its data in a dictionary.
-"""
-function load(file::YAML)
-    return YAMLLib.load_file(filepath(file); dicttype=Dict{Symbol,Any})
-end
-
-"""
-    load(file::TPC)
+    load(file::TPC{1})
 
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
-function load(file::TPC)
+function InterfacesUtils.load(file::TPC{1})
     mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     load_tpc!(mapped, filepath(file))
     return sort(mapped)
 end
 
 """
-    load(files::Vector{TPC})
+    load(files::TPC)
 
 Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
 """
-function load(files::Vector{TPC})
+function InterfacesUtils.load(files::TPC)
     mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     for file in files
         load_tpc!(mapped, filepath(file))
