@@ -14,12 +14,12 @@ using MultiGraphs:
     AbstractGraphNode,
     SimpleDiGraph,
     has_vertex,
-    add_vertex!,
     add_edge!,
     get_path,
     get_mappedid,
     get_mappednode
-import MultiGraphs: get_node_id
+
+import MultiGraphs: get_node_id, add_vertex!
 
 const DAY2SEC = 86400.0
 const YEAR2SEC = 60.0 * 60.0 * 24.0 * 365.25

@@ -78,11 +78,11 @@ function _zero_offset(seconds::T) where {T}
 end
 
 """
-    register!(s::TimeSystem, ts::TimeScaleNode)
+    add_vertex!(s::TimeSystem, ts::TimeScaleNode)
 
 Register a new node in the `TimeSystem`.
 """
-function Basic.register!(s::TimeSystem{T}, ts::TimeScaleNode{T}) where {T}
+function add_vertex!(s::TimeSystem{T}, ts::TimeScaleNode{T}) where {T}
     return add_vertex!(s.scales, ts)
 end
 
@@ -138,7 +138,7 @@ function add_timescale(
     tsnode = TimeScaleNode{T}(name, id, pid, ffp, isnothing(ftp) ? _zero_offset : ftp)
 
     # Insert the new timescale in the graph
-    register!(scales, tsnode)
+    add_vertex!(scales, tsnode)
 
     # Connect
     if !isnothing(parent)
