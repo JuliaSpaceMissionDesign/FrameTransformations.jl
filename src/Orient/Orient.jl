@@ -4,10 +4,10 @@ using DelimitedFiles
 using LinearAlgebra
 using Logging
 using ReferenceFrameRotations
-using RemoteFiles
+using RemoteFiles: @RemoteFile, download, path
 using StaticArrays
 
-using Basic.Ephemeris: AbstractEphemerisProvider, ephem_available_axes, ephem_orient_order!
+using Basic.Ephemeris: AbstractEphemerisProvider, ephem_available_axes, ephem_orient!
 using Basic.Tempo
 using Basic.Utils: skew
 

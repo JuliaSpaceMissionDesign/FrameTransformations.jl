@@ -1,1 +1,3 @@
-@create_module_error EpochConversionError AstronautGenericException "ephemeris conversion errors"
+@module_error struct EpochConversionError <: AbstractGenericException
+    "ephemeris conversion errors"
+end

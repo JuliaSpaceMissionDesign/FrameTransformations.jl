@@ -120,7 +120,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                         stv = @SVector zeros(T, 3O)
 
                         # Retrieves libration angles for ephemeris kernels 
-                        ephem_orient_order!(
+                        ephem_orient!(
                             axes.angles[tid],
                             frame.eph,
                             DJ2000,

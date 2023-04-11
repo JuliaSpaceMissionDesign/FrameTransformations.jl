@@ -31,7 +31,7 @@ using Basic.Utils: cross3, cross6, cross9, cross12
 using Basic.Utils: angle_to_δdcm, angle_to_δ²dcm
 using Basic.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
-using InterfacesUtils: format_camelcase
+using InterfacesUtils.Utils: format_camelcase
 using InterfacesUtils.Math: D¹, D², D³
 
 using MultiGraphs:

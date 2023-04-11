@@ -7,7 +7,7 @@ export TPC, load
 
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
-function InterfacesUtils.load(file::TPC{1})
+function load(file::TPC{1})
     mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     load_tpc!(mapped, filepath(file))
     return sort(mapped)
@@ -18,7 +18,7 @@ end
 
 Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
 """
-function InterfacesUtils.load(files::TPC)
+function load(files::TPC)
     mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     for file in files
         load_tpc!(mapped, filepath(file))

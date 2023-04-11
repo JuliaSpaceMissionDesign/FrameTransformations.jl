@@ -5,9 +5,9 @@ export CalcephProvider,
     ephem_orient_records,
     ephem_available_points,
     ephem_available_axes,
-    ephem_compute_order!,
-    ephem_orient_order!,
-    ephem_load
+    ephem_compute!,
+    ephem_orient!,
+    load
 
 using CALCEPH:
     Ephem as CalcephEphemHandler,
@@ -22,8 +22,6 @@ using CALCEPH:
     unitKM,
     unitSec,
     unitRad
-
-using Basic: AstronautGenericError, EphemerisError
 
 """
     CalcephProvider(file::String)
@@ -55,7 +53,7 @@ struct CalcephProvider <: AbstractEphemerisProvider
 end
 CalcephProvider(file::AbstractString) = CalcephProvider([file])
 
-function ephem_load(::Type{CalcephProvider}, files::Vector{<:AbstractString})
+function load(::Type{CalcephProvider}, files::Vector{<:AbstractString})
     return CalcephProvider(files)
 end
 
@@ -154,7 +152,7 @@ function ephem_timescale(eph::CalcephProvider)
         return TCB
     else
         throw(
-            AstronautGenericError(
+            GenericError(
                 String(Symbol(@__MODULE__)), "unknown time scale identifier: $tsid"
             ),
         )
@@ -162,7 +160,7 @@ function ephem_timescale(eph::CalcephProvider)
 end
 
 """
-    ephem_compute_order!(res, eph, jd0, time, target, center, order)
+    ephem_compute!(res, eph, jd0, time, target, center, order)
 
 Interpolate the position and/or its derivatives up to `order` for one body `target` relative 
 to another `center` at the time `jd0` + `time`, expressed as a Julian Date. This function reads 
@@ -179,9 +177,9 @@ must be equal to 3*order:
 The values stores in `res` are always returned in km, km/s, km/s², km/s³
 
 ### See also 
-See also [`ephem_orient_order!`](@ref)
+See also [`ephem_orient!`](@ref)
 """
-function ephem_compute_order!(
+function ephem_compute!(
     res,
     eph::CalcephProvider,
     jd0::Float64,
@@ -205,7 +203,7 @@ function ephem_compute_order!(
 end
 
 """
-    ephem_orient_order!(res, eph, jd0, time, target, order)
+    ephem_orient!(res, eph, jd0, time, target, order)
 
 Interpolate the orientation and its derivatives up to `order` for the `target` body at the 
 time `jd0` + `time`, expressed as a Julian Date. This function reads the ephemeris files 
@@ -222,9 +220,9 @@ must be equal to 3*order:
 The values stores in `res` are always returned in rad, rad/s, rad/s², rad/s³
 
 ### See also 
-See also [`ephem_compute_order!`](@ref)
+See also [`ephem_orient!`](@ref)
 """
-function ephem_orient_order!(
+function ephem_orient!(
     res, eph::CalcephProvider, jd0::Float64, time::Float64, target::Int, order::Int
 )
     stat = unsafe_orient!(

@@ -1,15 +1,15 @@
 module Tempo
 
 import FunctionWrappers: FunctionWrapper
-using RemoteFiles
+using RemoteFiles: @RemoteFile, download
 # TODO: remove this dependency - could be handled by Tempo itself?
 using Dates: DateTime as DatesDateTime, datetime2julian, now
 
 using Basic
-using Basic: AstronautGenericException, @create_module_error
 
-using InterfacesUtils: format_camelcase
+using InterfacesUtils.Utils: format_camelcase
 using InterfacesUtils.Math: interpolate
+using InterfacesUtils.Interfaces.Errors: AbstractGenericException, @module_error
 
 using MultiGraphs:
     MappedNodeGraph,

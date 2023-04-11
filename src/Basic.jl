@@ -2,9 +2,9 @@ module Basic
 
 using Reexport
 using Logging
+using InterfacesUtils
 
-# Common 
-include("errors.jl")
+import InterfacesUtils: load
 
 include(joinpath("Utils", "Utils.jl"))
 @reexport using .Utils
