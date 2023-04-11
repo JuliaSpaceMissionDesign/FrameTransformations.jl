@@ -20,17 +20,23 @@ formulation at time `t` expressed in `TT` Julian centuries since [`J2000`](@ref)
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pfw06.c) library
 """
 function fw_angles(::IAU2006Model, t::Number)
-    γ = arcsec2rad(@evalpoly(
-        t, -0.052928, 10.556378, 0.4932044, -0.00031238, -0.000002788, 0.0000000260,
-    ))
+    γ = arcsec2rad(
+        @evalpoly(
+            t, -0.052928, 10.556378, 0.4932044, -0.00031238, -0.000002788, 0.0000000260,
+        )
+    )
 
-    ϕ = arcsec2rad(@evalpoly(
-        t, 84381.412819, -46.811016, 0.0511268, 0.00053289, -0.000000440, -0.0000000176,
-    ))
+    ϕ = arcsec2rad(
+        @evalpoly(
+            t, 84381.412819, -46.811016, 0.0511268, 0.00053289, -0.000000440, -0.0000000176,
+        )
+    )
 
-    ψ = arcsec2rad(@evalpoly(
-        t, -0.041775, 5038.481484, 1.5584175, -0.00018522, -0.000026452, -0.0000000148,
-    ))
+    ψ = arcsec2rad(
+        @evalpoly(
+            t, -0.041775, 5038.481484, 1.5584175, -0.00018522, -0.000026452, -0.0000000148,
+        )
+    )
 
     ϵ = orient_obliquity(iau2006a, t)
     return γ, ϕ, ψ, ϵ

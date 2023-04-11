@@ -15,9 +15,11 @@ in `TT` Julian centuries since [`J2000`](@ref).
   [obl06](https://github.com/liberfa/erfa/blob/master/src/obl06.c) functions.
 """
 function orient_obliquity(::IAU2006Model, t::Number)
-    return arcsec2rad(@evalpoly(
-        t, 84381.406, -46.836769, -0.0001831, 0.00200340, -0.000000576, -0.0000000434
-    ))
+    return arcsec2rad(
+        @evalpoly(
+            t, 84381.406, -46.836769, -0.0001831, 0.00200340, -0.000000576, -0.0000000434
+        )
+    )
 end
 
 function orient_obliquity(::IAU1980Model, t::Number)

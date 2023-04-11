@@ -1,5 +1,3 @@
-using Basic.Utils: interpolate, arcsec2rad
-
 @testset "IERS Transformations" verbose = true begin
     atol, rtol = 1e-11, 1e-11
 

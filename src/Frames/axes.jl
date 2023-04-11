@@ -472,12 +472,12 @@ function add_axes_rotating!(
         # Second derivative 
         if isnothing(δ²fun)
             (
-            if isnothing(δfun)
-                (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t))
-            else
-                (t, x, y) -> Rotation{O}(δfun(t)..., D²(fun, t))
-            end
-        )
+                if isnothing(δfun)
+                    (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t))
+                else
+                    (t, x, y) -> Rotation{O}(δfun(t)..., D²(fun, t))
+                end
+            )
         else
             (t, x, y) -> Rotation{O}(δ²fun(t)...)
         end,
@@ -485,18 +485,19 @@ function add_axes_rotating!(
         # Third derivative 
         if isnothing(δ³fun)
             (
-            if isnothing(δ²fun)
-                (
-                if isnothing(δfun)
-                    (t, x, y) -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t))
+                if isnothing(δ²fun)
+                    (
+                        if isnothing(δfun)
+                            (t, x, y) ->
+                                Rotation{O}(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t))
+                        else
+                            (t, x, y) -> Rotation{O}(δfun(t)..., D²(δfun, t)...)
+                        end
+                    )
                 else
-                    (t, x, y) -> Rotation{O}(δfun(t)..., D²(δfun, t)...)
+                    (t, x, y) -> Rotation{O}(δ²fun(t)..., D³(fun, t))
                 end
             )
-            else
-                (t, x, y) -> Rotation{O}(δ²fun(t)..., D³(fun, t))
-            end
-        )
         else
             (t, x, y) -> Rotation{O}(δ³fun(t)...)
         end,

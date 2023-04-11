@@ -56,7 +56,7 @@ end
 
 Convert day fraction to hour, minute, second.
 """
-function fd2hms(fd::Number) 
+function fd2hms(fd::Number)
     secinday = fd * 86400.0
     if secinday < 0 || secinday > 86400
         throw(
@@ -78,7 +78,7 @@ end
 
 Convert day fraction to hour, minute, second, fraction of seconds.
 """
-function fd2hmsf(fd::Number) 
+function fd2hmsf(fd::Number)
     h, m, sid = fd2hms(fd)
     sec = Integer(sid ÷ 1)
     fsec = sid - sec

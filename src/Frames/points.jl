@@ -662,12 +662,12 @@ function add_point_dynamical!(
         # Second derivative
         if isnothing(δ²fun)
             (
-            if isnothing(δfun)
-                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun)
-            else
-                (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, δfun)
-            end
-        )
+                if isnothing(δfun)
+                    (y, t) -> _tpoint_δ²fun_ad!(y, t, fun)
+                else
+                    (y, t) -> _tpoint_δ²fun_ad!(y, t, fun, δfun)
+                end
+            )
         else
             (y, t) -> _tpoint_δ²fun!(y, t, δ²fun)
         end,
@@ -675,18 +675,18 @@ function add_point_dynamical!(
         # Third derivative 
         if isnothing(δ³fun)
             (
-            if isnothing(δ²fun)
-                (
-                if isnothing(δfun)
-                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun)
+                if isnothing(δ²fun)
+                    (
+                        if isnothing(δfun)
+                            (y, t) -> _tpoint_δ³fun_ad!(y, t, fun)
+                        else
+                            (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun)
+                        end
+                    )
                 else
-                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun)
+                    (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)
                 end
             )
-            else
-                (y, t) -> _tpoint_δ³fun_ad!(y, t, fun, δfun, δ²fun)
-            end
-        )
         else
             (y, t) -> _tpoint_δ³fun!(y, t, δ³fun)
         end,
