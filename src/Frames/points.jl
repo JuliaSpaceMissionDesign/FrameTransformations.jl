@@ -448,14 +448,10 @@ function add_point_ephemeris!(
     end
 
     funs = FramePointFunctions{T,O}(
-        (y, t) ->
-            ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 0),
-        (y, t) ->
-            ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 1),
-        (y, t) ->
-            ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 2),
-        (y, t) ->
-            ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 3),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 0),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 1),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 2),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 3),
     )
 
     return build_point(
