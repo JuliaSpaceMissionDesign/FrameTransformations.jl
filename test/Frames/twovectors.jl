@@ -1,4 +1,3 @@
-import Basic.Utils: D¹, D², D³
 
 @testset "TwoVectors" verbose = true begin
     atol = 1e-8

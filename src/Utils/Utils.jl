@@ -18,7 +18,6 @@ include("constants.jl")
 include("geodesy.jl")
 
 # Math
-include("Math/derivatives.jl")
 include("Math/vectors.jl")
 include("Math/rotation.jl")
 

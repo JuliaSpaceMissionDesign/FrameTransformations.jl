@@ -171,7 +171,7 @@ deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.InterfacesUtils]]
-deps = ["JSON3", "StaticArrays", "YAML"]
+deps = ["ForwardDiff", "JSON3", "StaticArrays", "YAML"]
 path = "/home/andrea/.julia/dev/InterfacesUtils"
 uuid = "a641f28f-8d9e-4160-8071-676a3167f41f"
 version = "0.1.0"
