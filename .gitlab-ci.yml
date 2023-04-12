@@ -28,7 +28,7 @@ before_script:
     # Install Documenter 
     # Other dependecies may be already installed in a project 
     # within the 'docs/' folder
-    - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter");'
+    - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter"); Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/julia/Registry.git"))'
     # Install the current package as 'dev'
     - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
     # Build the documentation
