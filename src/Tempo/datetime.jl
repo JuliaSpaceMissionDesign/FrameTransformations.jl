@@ -1,9 +1,21 @@
-export Date, Time, 
-       year, month, day, 
-       isleapyear, find_dayinyear, cal2jd,
-       j2000, j2000s, j2000c,
-       hour, minute, second, fraction_of_second,
-       fraction_of_day, second_in_day, DateTime
+export Date,
+    Time,
+    year,
+    month,
+    day,
+    isleapyear,
+    find_dayinyear,
+    cal2jd,
+    j2000,
+    j2000s,
+    j2000c,
+    hour,
+    minute,
+    second,
+    fraction_of_second,
+    fraction_of_day,
+    second_in_day,
+    DateTime
 
 function lastj2000dayofyear(year::N) where {N<:Integer}
     return 365 * year + year ÷ 4 - year ÷ 100 + year ÷ 400 - 730120
@@ -19,10 +31,10 @@ function find_year(d::N) where {N<:Integer}
     year = (400 * j2d + 292194288) ÷ 146097
     # The previous estimate is one unit too high in some rare cases
     # (240 days in the 400 years gregorian cycle, about 0.16%)
-    if j2d <= lastj2000dayofyear(year-1)
+    if j2d <= lastj2000dayofyear(year - 1)
         year -= 1
     end
-    return year 
+    return year
 end
 
 """
@@ -46,7 +58,6 @@ function find_day(dayinyear::N, month::N, isleap::Bool) where {N<:Integer}
     previous_days = ifelse(isleap, PREVIOUS_MONTH_END_DAY_LEAP, PREVIOUS_MONTH_END_DAY)
     return dayinyear - previous_days[month]
 end
-
 
 ########
 # DATE #
@@ -77,9 +88,9 @@ Type to represent a calendar date.
 
 - `Date(dt::DateTime)` -- extract date from [`DateTime`](@ref) objects.
 """
-struct Date 
+struct Date
     year::Int
-    month::Int 
+    month::Int
     day::Int
 end
 
@@ -147,7 +158,7 @@ end
 
 function Date(year::N, dayinyear::N) where {N<:Integer}
     if dayinyear <= 0
-        throw(error("[Tempo] day in year must me ≥ than 0! $dayinyear provided.")) 
+        throw(error("[Tempo] day in year must me ≥ than 0! $dayinyear provided."))
     end
     ly = isleapyear(year)
     month = find_month(dayinyear, ly)
@@ -163,9 +174,7 @@ end
 
 # Operations 
 function Base.isapprox(a::Date, b::Date; kwargs...)
-    return a.year == b.year &&
-            a.month == b.month &&
-            a.day == b.day
+    return a.year == b.year && a.month == b.month && a.day == b.day
 end
 Base.:+(d::Date, x::N) where {N<:Integer} = Date(d, x)
 Base.:-(d::Date, x::N) where {N<:Integer} = Date(d, -x)
@@ -203,9 +212,10 @@ struct Time{T}
     hour::Int
     minute::Int
     second::Int
-    fraction::T 
-    function Time(hour::N, minute::N, 
-        second::N, fraction::T) where {N<:Integer, T<:AbstractFloat}
+    fraction::T
+    function Time(
+        hour::N, minute::N, second::N, fraction::T
+    ) where {N<:Integer,T<:AbstractFloat}
         if hour < 0 || hour > 23
             throw(ArgumentError("`hour` must be an integer between 0 and 23."))
         elseif minute < 0 || minute > 59
@@ -219,14 +229,18 @@ struct Time{T}
     end
 end
 
-function Time(hour::N, minute::N, second::T) where {N<:Integer, T<:AbstractFloat}
+function Time(hour::N, minute::N, second::T) where {N<:Integer,T<:AbstractFloat}
     sec, frac = divrem(second, 1)
     return Time(hour, minute, convert(N, sec), frac)
 end
 
 function Time(secondinday::Integer, fraction::T) where {T<:AbstractFloat}
     if secondinday < 0 || secondinday > 86400
-        throw(ArgumentError("[Tempo] seconds are out of range. Must be between 0 and 86400, provided $secondinday."))
+        throw(
+            ArgumentError(
+                "[Tempo] seconds are out of range. Must be between 0 and 86400, provided $secondinday.",
+            ),
+        )
     end
     hour = secondinday ÷ 3600
     secondinday -= 3600 * hour
@@ -268,7 +282,7 @@ function subsecond(fraction, n, r)
 end
 
 function subsecond(fraction, n)
-    r = ifelse(subsecond(fraction, n+3, RoundNearest) == 0, RoundNearest, RoundToZero)
+    r = ifelse(subsecond(fraction, n + 3, RoundNearest) == 0, RoundNearest, RoundToZero)
     return subsecond(fraction, n, r)
 end
 
@@ -391,28 +405,29 @@ struct DateTime{T<:AbstractFloat}
     time::Time{T}
 end
 
-function DateTime(year::N, month::N, day::N, hour::N, min::N, 
-    sec::N, frac::T=0.0) where {N<:Integer, T<:AbstractFloat}
+function DateTime(
+    year::N, month::N, day::N, hour::N, min::N, sec::N, frac::T=0.0
+) where {N<:Integer,T<:AbstractFloat}
     return DateTime(Date(year, month, day), Time(hour, min, sec, frac))
 end
 
 function DateTime(s::AbstractString)
-    length(split(s)) != 1  && throw(error("[Tempo] cannot parse $s as `DateTime`."))
+    length(split(s)) != 1 && throw(error("[Tempo] cannot parse $s as `DateTime`."))
     dy, dm, dd, th, tm, ts, tms = parse_iso(s)
     return DateTime(dy, dm, dd, th, tm, ts, tms)
 end
 
 function DateTime(seconds::T) where {T<:AbstractFloat}
-    y, m, d, H, M, Sf = jd2calhms(DJ2000, seconds/DAY2SEC)
+    y, m, d, H, M, Sf = jd2calhms(DJ2000, seconds / DAY2SEC)
     s = floor(Int64, Sf)
-    DateTime(y, m, d, H, M, s, Sf-s)
-end 
+    return DateTime(y, m, d, H, M, s, Sf - s)
+end
 
 function DateTime(d::Date, sec::T) where {T<:AbstractFloat}
-    jd1 = j2000(d) + sec/DAY2SEC
+    jd1 = j2000(d) + sec / DAY2SEC
     y, m, d, H, M, Sf = jd2calhms(DJ2000, jd1)
     s = floor(Int64, Sf)
-    DateTime(y, m, d, H, M, s, Sf-s)
+    return DateTime(y, m, d, H, M, s, Sf - s)
 end
 
 Date(dt::DateTime) = dt.date
@@ -469,9 +484,7 @@ Base.show(io::IO, dt::DateTime) = print(io, Date(dt), "T", Time(dt))
 Convert `DateTime` in Julian days since J2000
 """
 function j2000(dt::DateTime)
-    jd1, jd2 = calhms2jd(
-        year(dt), month(dt), day(dt), hour(dt), minute(dt), second(dt)
-    )
+    jd1, jd2 = calhms2jd(year(dt), month(dt), day(dt), hour(dt), minute(dt), second(dt))
     return j2000(jd1, jd2)
 end
 
@@ -481,7 +494,7 @@ end
 Convert `DateTime` to seconds since J2000
 """
 function j2000s(dt::DateTime)
-    return j2000(dt::DateTime)*DAY2SEC
+    return j2000(dt::DateTime) * DAY2SEC
 end
 
 """
@@ -490,18 +503,20 @@ end
 Convert `DateTime` in Julian Date since J2000 (centuries)
 """
 function j2000c(dt::DateTime)
-    return j2000(dt)/CENTURY2DAY
+    return j2000(dt) / CENTURY2DAY
 end
 
 Base.isless(d1::DateTime, d2::DateTime) = j2000(d1) < j2000(d2)
 Base.:(==)(d1::DateTime, d2::DateTime) = j2000(d1) == j2000(d2)
 
-Base.isapprox(d1::DateTime, d2::DateTime; kwargs...) = isapprox(j2000(d1), j2000(d2); kwargs...)
+function Base.isapprox(d1::DateTime, d2::DateTime; kwargs...)
+    return isapprox(j2000(d1), j2000(d2); kwargs...)
+end
 
 function Base.:+(d1::DateTime, δs::N) where {N<:Number}
     return DateTime(j2000s(d1) + δs)
-end 
+end
 
 function Base.:-(d1::DateTime, δs::N) where {N<:Number}
     return DateTime(j2000s(d1) - δs)
-end 
+end

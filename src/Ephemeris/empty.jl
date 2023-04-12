@@ -5,6 +5,6 @@
 Empty provider to initialise the frame system without loading 
 ephemeris files. 
 """
-struct NullEphemerisProvider <: AbstractEphemerisProvider end 
+struct NullEphemerisProvider <: AbstractEphemerisProvider end
 
 ephem_timescale(::NullEphemerisProvider) = TDB

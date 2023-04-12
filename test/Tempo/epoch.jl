@@ -3,11 +3,12 @@ function _random_epoch()
     rs = rS + rF
     nscales = length(Tempo.TIMESCALES_ACRONYMS)
     rscale = rand(1:nscales)
-    return "$ry-$rm-$(rd)T$rH:$rM:$rs $(String(Tempo.TIMESCALES_ACRONYMS[rscale]))", ry, rm, rd, rH, rM, rS, rF
+    return "$ry-$rm-$(rd)T$rH:$rM:$rs $(String(Tempo.TIMESCALES_ACRONYMS[rscale]))",
+    ry, rm, rd, rH, rM, rS,
+    rF
 end
 
-@testset "Epoch" verbose=true begin
-   
+@testset "Epoch" verbose = true begin
     @testset "String constructors" begin
         s, ry, rm, rd, rH, rM, rS, rF = _random_epoch()
         e = Epoch(s)
@@ -17,7 +18,7 @@ end
         @test Epoch("JD 2400000.5") ≈ Epoch("1858-11-17T00:00:00.0000 TDB")
         @test Epoch("JD 2400000.5") ≈ Epoch("MJD 0.0")
     end
-    
+
     @testset "DateTime and offset constructors" begin
         s, ry, rm, rd, rH, rM, rS, rF = _random_epoch()
         e = Epoch(s)
@@ -31,9 +32,10 @@ end
 
         rn0 = rand(-2000:2000)
         rn1 = rand(-1000:1000)
-        @test Epoch("$rn0") - Epoch("$rn1") ≈ (rn0 - rn1)*Tempo.DAY2SEC
+        @test Epoch("$rn0") - Epoch("$rn1") ≈ (rn0 - rn1) * Tempo.DAY2SEC
         @test all(
-            collect(Epoch("0"):86400.0:Epoch("2")) .== [Epoch("0"), Epoch("1"), Epoch("2")])
+            collect(Epoch("0"):86400.0:Epoch("2")) .== [Epoch("0"), Epoch("1"), Epoch("2")]
+        )
 
         @test Epoch(0.0, TDB) ≈ Epoch("2000-01-01T12:00:00.0000 TDB")
     end

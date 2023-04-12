@@ -42,7 +42,7 @@ Return the linear offset between [`TT`](@ref) and [`TCG`](@ref) in seconds.
 """
 @inline function offset_tt2tcg(seconds)
     rate = LG_RATE / (1.0 - LG_RATE)
-    δt = seconds - JD77_SEC 
+    δt = seconds - JD77_SEC
     return rate * δt
 end
 
@@ -138,7 +138,7 @@ end
 Return the offset between [`TAI`](@ref) and [`UTC`](@ref) in seconds.
 """
 @inline function offset_tai2utc(seconds)
-    tai = seconds/86400.0
+    tai = seconds / 86400.0
     _, utc = tai2utc(DJ2000, tai)
     return (utc - tai) * 86400
 end
@@ -149,7 +149,7 @@ end
 Return the offset between [`UTC`](@ref) and [`TAI`](@ref) in seconds.
 """
 @inline function offset_utc2tai(seconds)
-    utc = seconds/86400.0 
+    utc = seconds / 86400.0
     _, tai = utc2tai(DJ2000, utc)
     return (tai - utc) * 86400.0
 end
@@ -173,13 +173,13 @@ For even more precise applications, the series expansion by
 """
 @inline function offset_tt2tdbh(seconds)
     T = seconds / CENTURY2SEC
-    return 0.001657*sin(628.3076*T + 6.2401) 
-         + 0.000022*sin(575.3385*T + 4.2970) 
-         + 0.000014*sin(1256.6152*T + 6.1969) 
-         + 0.000005*sin(606.9777*T + 4.0212)
-         + 0.000005*sin(52.9691*T + 0.4444)
-         + 0.000002*sin(21.3299*T + 5.5431)
-         + 0.000010*T*sin(628.3076*T + 4.2490)
+    return 0.001657 * sin(628.3076 * T + 6.2401)
+    +0.000022 * sin(575.3385 * T + 4.2970)
+    +0.000014 * sin(1256.6152 * T + 6.1969)
+    +0.000005 * sin(606.9777 * T + 4.0212)
+    +0.000005 * sin(52.9691 * T + 0.4444)
+    +0.000002 * sin(21.3299 * T + 5.5431)
+    return +0.000010 * T * sin(628.3076 * T + 4.2490)
 end
 
 #######

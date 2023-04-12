@@ -25,12 +25,12 @@
     @test Tempo.find_month(32, true) == 2
     @test Tempo.find_day(32, 2, true) == 1
     @test d + 1 == Date(1)
-    @test Date(1) - 1 == d 
+    @test Date(1) - 1 == d
 end
 
-@testset "Time" begin 
+@testset "Time" begin
     t0 = Time(12, 0, 0.0)
-    @test t0 == Time(86400÷2, 0.0)
+    @test t0 == Time(86400 ÷ 2, 0.0)
 
     t = Time(12, 1, 15.300300300)
     @test Tempo.millisecond(t) == 300
@@ -41,7 +41,7 @@ end
     @test Tempo.fraction_of_second(t) ≈ 0.300300300
 end
 
-@testset "DateTime" begin 
+@testset "DateTime" begin
     d = Date(2000, 1, 1)
     t0 = Time(12, 0, 0.0)
     J2000 = DateTime(d, 0.0)
@@ -52,21 +52,21 @@ end
     @test J2000 == DateTime(s)
     @test J2000 == DateTime(0.0)
 
-    D2 = DateTime(Tempo.DAY2SEC/3)
-    @test Tempo.j2000(D2) ≈ 1/3
-    @test Tempo.j2000s(D2) ≈ 1/3 * Tempo.DAY2SEC
-    @test Tempo.j2000c(D2) ≈ 1/3 / Tempo.CENTURY2DAY
+    D2 = DateTime(Tempo.DAY2SEC / 3)
+    @test Tempo.j2000(D2) ≈ 1 / 3
+    @test Tempo.j2000s(D2) ≈ 1 / 3 * Tempo.DAY2SEC
+    @test Tempo.j2000c(D2) ≈ 1 / 3 / Tempo.CENTURY2DAY
 
     _, ry, rm, rd, rH, rM, rS, rF = _random_datetime_isostr()
     dt = DateTime(ry, rm, rd, rH, rM, rS, rF)
-    @test year(dt) == ry 
+    @test year(dt) == ry
     @test month(dt) == rm
     @test day(dt) == rd
     @test hour(dt) == rH
     @test minute(dt) == rM
     @test second(dt) == rS + rF
 
-    dtr = rand(0.0:1.0:365.25*86400.0)
+    dtr = rand(0.0:1.0:(365.25 * 86400.0))
     dt2 = dt + dtr
     @test Tempo.j2000s(dt2) - Tempo.j2000s(dt) ≈ dtr
 end

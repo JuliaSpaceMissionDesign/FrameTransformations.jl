@@ -1,61 +1,76 @@
 module Tempo
 
-    import FunctionWrappers: FunctionWrapper
-    using RemoteFiles
-    using Dates: DateTime as DatesDateTime, datetime2julian, now
+import FunctionWrappers: FunctionWrapper
+using RemoteFiles: @RemoteFile, download
+# TODO: remove this dependency - could be handled by Tempo itself?
+using Dates: DateTime as DatesDateTime, datetime2julian, now
 
-    using Basic
-    using Basic.MappedGraphs
-    using Basic.Utils: format_camelcase, interpolate
-    using Basic: AstronautGenericException, @create_module_error
+using Basic
 
-    const DAY2SEC = 86400.0
-    const YEAR2SEC = 60.0 * 60.0 * 24.0 * 365.25
-    const CENTURY2SEC = 60.0 * 60.0 * 24.0 * 365.25 * 100.0
-    const CENTURY2DAY = 36525.0
+using InterfacesUtils.Utils: format_camelcase
+using InterfacesUtils.Math: interpolate
+using InterfacesUtils.Interfaces.Errors: AbstractGenericException, @module_error
 
-    """
-        DJ2000
+using MultiGraphs:
+    MappedNodeGraph,
+    MappedDiGraph,
+    AbstractGraphNode,
+    SimpleDiGraph,
+    has_vertex,
+    add_edge!,
+    get_path,
+    get_mappedid,
+    get_mappednode
 
-    Reference epoch (J2000.0), Julian Date (`2451545.0`). 
-    It is `12:00 01-01-2000`.
-    """
-    const DJ2000 = 2451545.0
+import MultiGraphs: get_node_id, add_vertex!
 
-    """
-        DMJD
+const DAY2SEC = 86400.0
+const YEAR2SEC = 60.0 * 60.0 * 24.0 * 365.25
+const CENTURY2SEC = 60.0 * 60.0 * 24.0 * 365.25 * 100.0
+const CENTURY2DAY = 36525.0
 
-    Reference epoch (J2000.0), Modified Julian Date (`51544.5`).
-    """
-    const DMJD = 51544.5
+"""
+    DJ2000
 
-    """
-        DJM0
+Reference epoch (J2000.0), Julian Date (`2451545.0`). 
+It is `12:00 01-01-2000`.
+"""
+const DJ2000 = 2451545.0
 
-    Julian Date of Modified Julian Date zero point (`2400000.5`).
-    It is `00:00 17-11-1858`.
-    """
-    const DJM0 = 2400000.5
+"""
+    DMJD
 
-    """
-    AbstractTimeScale
+Reference epoch (J2000.0), Modified Julian Date (`51544.5`).
+"""
+const DMJD = 51544.5
 
-    All timescales are subtypes of the abstract type `AbstractTimeScale`.
-    """
-    abstract type AbstractTimeScale end
+"""
+    DJM0
 
-    export DJ2000, DMJD, DJM0
+Julian Date of Modified Julian Date zero point (`2400000.5`).
+It is `00:00 17-11-1858`.
+"""
+const DJM0 = 2400000.5
 
-    include("errors.jl")
-    include("convert.jl")
-    include("parse.jl")
+"""
+AbstractTimeScale
 
-    include("leapseconds.jl")
-    include("offset.jl")
-    include("scales.jl")
+All timescales are subtypes of the abstract type `AbstractTimeScale`.
+"""
+abstract type AbstractTimeScale end
 
-    include("datetime.jl")
-    include("origin.jl")
-    include("epoch.jl")
+export DJ2000, DMJD, DJM0
+
+include("errors.jl")
+include("convert.jl")
+include("parse.jl")
+
+include("leapseconds.jl")
+include("offset.jl")
+include("scales.jl")
+
+include("datetime.jl")
+include("origin.jl")
+include("epoch.jl")
 
 end

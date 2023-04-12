@@ -7,9 +7,8 @@ include("constants/nut2000b.jl");
 const ARCSECTURN = 1296000.0
 
 # nutation00(::IAU2000Model, ::Number, ::FundamentalArguments) = () 
-build_nutation_series(:nutation00, :IAU2000A,  NUTATION_2000Aψ, NUTATION_2000Aϵ)
-build_nutation_series(:nutation00, :IAU2000B,  NUTATION_2000Bψ, NUTATION_2000Bϵ)
-
+build_nutation_series(:nutation00, :IAU2000A, NUTATION_2000Aψ, NUTATION_2000Aϵ)
+build_nutation_series(:nutation00, :IAU2000B, NUTATION_2000Bψ, NUTATION_2000Bϵ)
 
 """
     orient_nutation(m::IAUModel, t::Number)
@@ -71,39 +70,31 @@ function orient_nutation(::IAU2006A, t::Number)
     δψₐ, δϵₐ = nutation00(iau2000a, t, fa)
 
     # Factor correcting the secular variation of J2 
-    fj2 = -2.7774e-6*t # t = TT 
+    fj2 = -2.7774e-6 * t # t = TT 
 
     # Applies P03 Nutation Corrections from WC06 (2006)
-    Δψ = (1 + fj2 + 0.4697e-6)*δψₐ
-    Δϵ = (1 + fj2)*δϵₐ
+    Δψ = (1 + fj2 + 0.4697e-6) * δψₐ
+    Δϵ = (1 + fj2) * δϵₐ
 
     return Δψ, Δϵ
 end
 
 @inline function orient_nutation(m::IAU2000A, t::Number)
-    nutation00(m, t, FundamentalArguments(t, m))
+    return nutation00(m, t, FundamentalArguments(t, m))
 end
 
-function orient_nutation(m::Union{<:IAU2006B, <:IAU2000B}, t::N) where {N <: Number}
-
-    z = N(0) 
+function orient_nutation(m::Union{<:IAU2006B,<:IAU2000B}, t::N) where {N<:Number}
+    z = N(0)
 
     # Computes only Luni-Solar Fundamental Arguments 
-    fa = FundamentalArguments(
-          LuniSolarArguments(t, m)..., z, z, z, z, z, z, z, z, z
-    )
+    fa = FundamentalArguments(LuniSolarArguments(t, m)..., z, z, z, z, z, z, z, z, z)
 
     # Computes luni-solar nutation contributions 
     δψ_ls, δϵ_ls = nutation00(iau2000b, t, fa)
 
     # Adds offset to account for truncated planetary contributions 
     δψ_pl = arcsec2rad(-0.135 * 1e-3)
-    δϵ_pl = arcsec2rad( 0.388 * 1e-3)
+    δϵ_pl = arcsec2rad(0.388 * 1e-3)
 
     return δψ_ls + δψ_pl, δϵ_ls + δϵ_pl
-    
 end
-
-
-
-

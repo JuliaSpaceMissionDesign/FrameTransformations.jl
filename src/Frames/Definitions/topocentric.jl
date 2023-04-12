@@ -1,6 +1,4 @@
-export add_axes_topocentric!, 
-       add_point_surface!
-
+export add_axes_topocentric!, add_point_surface!
 
 """
     add_axes_topocentric!(frames, axes, λ::Number, ϕ::Number, type::Symbol, parent)
@@ -23,22 +21,21 @@ and the type `type`, which may be any of the following:
 ### See also 
 See also [`add_axes_fixedoffset!`](@ref) and [`add_point_surface!`](@ref).
 """
-function add_axes_topocentric!(frames::FrameSystem, axes::AbstractFrameAxes, 
-            λ::Number, ϕ::Number, type::Symbol, parent)
-
-    if type == :NED 
-        dcm = angle_to_dcm(λ, -ϕ-π/2, :ZY)
-    elseif type == :SEZ 
-        dcm = angle_to_dcm(λ, π/2-ϕ, :ZY)
-    elseif type == :ENU 
-        dcm = angle_to_dcm(λ+π/2, π/2-ϕ, :ZX)
-    else 
+function add_axes_topocentric!(
+    frames::FrameSystem, axes::AbstractFrameAxes, λ::Number, ϕ::Number, type::Symbol, parent
+)
+    if type == :NED
+        dcm = angle_to_dcm(λ, -ϕ - π / 2, :ZY)
+    elseif type == :SEZ
+        dcm = angle_to_dcm(λ, π / 2 - ϕ, :ZY)
+    elseif type == :ENU
+        dcm = angle_to_dcm(λ + π / 2, π / 2 - ϕ, :ZX)
+    else
         throw(ArgumentError("$type is not a supported topocentric orientation."))
     end
 
-    add_axes_fixedoffset!(frames, axes, parent, dcm)
+    return add_axes_fixedoffset!(frames, axes, parent, dcm)
 end
-
 
 """
     add_point_surface!(frames, point, parent, axes, pck, λ, ϕ, h::Number=0.0)
@@ -56,23 +53,32 @@ parameters are extracted from the input TPC kernel `pck` using the NAIFId associ
 ### See also 
 See also [`add_point_fixed!`](@ref), [`add_axes_topocentric!`](@ref) and [`geod2pos`](@ref).
 """
-function add_point_surface!(frames::FrameSystem, point::AbstractFramePoint, parent, axes, 
-            pck::AbstractDict, λ::Number, ϕ::Number, h::Number=0.0)
-    
+function add_point_surface!(
+    frames::FrameSystem,
+    point::AbstractFramePoint,
+    parent,
+    axes,
+    pck::AbstractDict,
+    λ::Number,
+    ϕ::Number,
+    h::Number=0.0,
+)
     NAIFId = point_alias(point)
 
     # Extract from pck constants the body parameters 
     if !haskey(pck, NAIFId) || !haskey(pck[NAIFId], :radii)
-        throw(ArgumentError(
-            "The PCK data does not contain enough information on body $NAIFId.")
+        throw(
+            ArgumentError(
+                "The PCK data does not contain enough information on body $NAIFId."
+            ),
         )
-    end 
+    end
 
     # Compute flattening and body radius
     a, _, c = pck[NAIFId][:radii]
-    f = (a-c)/a
-    
-    add_point_surface!(frames, point, parent, axes, λ, ϕ, a, f, h)
+    f = (a - c) / a
+
+    return add_point_surface!(frames, point, parent, axes, λ, ϕ, a, f, h)
 end
 
 """
@@ -83,9 +89,17 @@ position is specified by the longitude `λ`, the geodetic latitude `ϕ`, the ref
 of the ellipsoid `R` and its flattening `f`. The altitude over the reference surface of the 
 ellipsoid `h` defaults to 0. 
 """
-function add_point_surface!(frames::FrameSystem, point::AbstractFramePoint, parent, axes, 
-            λ::Number, ϕ::Number, R::Number, f::Number=0.0, h::Number=0.0)
-
+function add_point_surface!(
+    frames::FrameSystem,
+    point::AbstractFramePoint,
+    parent,
+    axes,
+    λ::Number,
+    ϕ::Number,
+    R::Number,
+    f::Number=0.0,
+    h::Number=0.0,
+)
     pos = geod2pos(h, λ, ϕ, R, f)
-    add_point_fixed!(frames, point, parent, axes, pos)
+    return add_point_fixed!(frames, point, parent, axes, pos)
 end

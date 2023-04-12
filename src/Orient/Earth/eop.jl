@@ -20,8 +20,8 @@ A structure [`EOPData`](@ref) with the interpolations of the EOP parameters. Not
 interpolation indexing is set to Julian days since J2000.
 
 """
-function get_iers_eop(; force_download = false)
-    return get_iers_eop_IAU2000A(force_download = force_download)
+function get_iers_eop(; force_download=false)
+    return get_iers_eop_IAU2000A(; force_download=force_download)
 end
 
 """
@@ -46,23 +46,23 @@ The structure `EOPData` with the interpolations of the EOP parameters. Notice th
 interpolation indexing is set to Julian days since J2000.
 """
 function get_iers_eop_IAU2000A(
-    url::String = "https://datacenter.iers.org/data/csv/finals2000A.all.csv";
-    force_download = false
+    url::String="https://datacenter.iers.org/data/csv/finals2000A.all.csv";
+    force_download=false,
 )
     @RemoteFile(
         _eop_iau2000A,
         url,
-        file="eop_iau2000a.txt",
-        dir=joinpath(@__DIR__, "..", "..", "..", "ext"),
-        updates=:fridays,
-        failed=:warn
+        file = "eop_iau2000a.txt",
+        dir = joinpath(@__DIR__, "..", "..", "..", "ext"),
+        updates = :fridays,
+        failed = :warn
     )
 
     # Download the data
-    download(_eop_iau2000A; force = force_download, force_update = true)
+    download(_eop_iau2000A; force=force_download, force_update=true)
 
     # Parse the data removing the header.
-    eop, ~ = readdlm(path(_eop_iau2000A), ';'; header = true)
+    eop, ~ = readdlm(path(_eop_iau2000A), ';'; header=true)
 
     # Obtain the last available index of the field.
     last_id = findlast(!isempty, eop[:, 11])
@@ -73,8 +73,8 @@ function get_iers_eop_IAU2000A(
     # - The interpolation will be linear between two points in the grid.
     # - The extrapolation will be flat, considering the nearest point.
     j2000_utc = Vector{Float64}(eop[1:last_id, 1] .+ 2400000.5 .- DJ2000)
-    j2000_tt = [Tempo.utc2tai(DJ2000, utci)[2] for utci in j2000_utc] 
-        .- Tempo.OFFSET_TAI_TT ./ Tempo.DAY2SEC
+    j2000_tt = [Tempo.utc2tai(DJ2000, utci)[2] for utci in j2000_utc]
+    .-Tempo.OFFSET_TAI_TT ./ Tempo.DAY2SEC
 
     j2000_ut1 = j2000_utc + Vector{Float64}(ut1_utc) ./ Tempo.DAY2SEC  # utc + ut1-utc
     ut1_tt = (j2000_ut1 - j2000_tt) .* Tempo.DAY2SEC .- Tempo.OFFSET_TAI_TT
@@ -86,7 +86,6 @@ function get_iers_eop_IAU2000A(
         _create_iers_eop_interpolation(j2000_utc, eop[:, 13]), # This value is in ms 
         _create_iers_eop_interpolation(j2000_utc, eop[:, 20]), # This value is in mas 
         _create_iers_eop_interpolation(j2000_utc, eop[:, 22]), # This value is in mas
-
         _create_iers_eop_interpolation(j2000_tt, eop[:, 6]),
         _create_iers_eop_interpolation(j2000_tt, eop[:, 8]),
         _create_iers_eop_interpolation(j2000_tt, ut1_tt),
@@ -94,10 +93,9 @@ function get_iers_eop_IAU2000A(
         _create_iers_eop_interpolation(j2000_tt, eop[:, 20]), # This value is in mas
         _create_iers_eop_interpolation(j2000_tt, eop[:, 22]), # This value is in mas
     )
-
 end
 
-function Base.show(io::IO, eop::EOPData{T}) where T
+function Base.show(io::IO, eop::EOPData{T}) where {T}
     # Check if IO has support for colors.
     println(io, " ")
     println(io, "  EOPData ", "│ ", "Timespan (UTC)")
@@ -114,16 +112,15 @@ end
 
 # Get timespan
 function _get_iers_eop_timespan(itp::InterpAkima)
-    str = string(DateTime(first(itp.x)*86400)) * " - " *
-          string(DateTime(last(itp.x)*86400))
+    str =
+        string(DateTime(first(itp.x) * 86400)) *
+        " - " *
+        string(DateTime(last(itp.x) * 86400))
     return str
 end
 
 # Create the interpolation object for the `knots` and `field` from IERS.
-function _create_iers_eop_interpolation(
-    knots::AbstractVector,
-    field::AbstractVector
-)
+function _create_iers_eop_interpolation(knots::AbstractVector, field::AbstractVector)
     # Obtain the last available index of the field.
     last_id = findlast(!isempty, field)
     last_id === nothing && (last_id = length(field))
@@ -133,7 +130,6 @@ function _create_iers_eop_interpolation(
 
     # Create the interpolation object.
     return InterpAkima(knots[1:last_id], field_float)
-
 end
 
 """
@@ -150,8 +146,6 @@ See also: [`get_iers_eop`](@ref)
 """
 const IERS_EOP = get_iers_eop()
 
-
-
 # Adds UT1 Timescale to Tempo!
 # It is defined here because referring the variable IERS_EOP inside Tempo would lead to 
 # allocations! 
@@ -162,8 +156,8 @@ const IERS_EOP = get_iers_eop()
 Return the offset between [`UTC`](@ref) and [`UT1`](@ref) in seconds.
 """
 @inline function offset_utc2ut1(seconds)
-    utc = seconds/86400.0
+    utc = seconds / 86400.0
     return interpolate(IERS_EOP.UT1_UTC, utc)
 end
 
-Tempo.add_timescale(Tempo.TIMESCALES, Tempo.UT1, offset_utc2ut1, parent=Tempo.UTC)
+Tempo.add_timescale(Tempo.TIMESCALES, Tempo.UT1, offset_utc2ut1; parent=Tempo.UTC)

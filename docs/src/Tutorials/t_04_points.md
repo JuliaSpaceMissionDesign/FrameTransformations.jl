@@ -158,19 +158,49 @@ have an error:
 vector3(G, AntennaCenter, UpdatableAppendage, SATF, 0.0)
 ```
 
+
     UpdatablePoint with NAIFId -10003 has not been updated at time 0.0 for order 1
+
+
+    
+
+
     Stacktrace:
+
+
      [1] _compute_vector3(point::Basic.Frames.FramePointNode{2, Float64, 6}, t::Float64)
-       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:273
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:309
+
+
      [2] _compute_vector3
-       @ ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:259 [inlined]
-     [3] _get_vector3_backwards(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, t::Float64, path::Vector{Int64})
-       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:234
+
+
+       @ ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:295 [inlined]
+
+
+     [3] _vector3_backwards(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, t::Float64, path::Vector{Int64}, p1::Basic.Frames.FramePointNode{2, Float64, 6})
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:270
+
+
      [4] _compute_vector3(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, t::Float64, axesid::Int64, path::Vector{Int64})
-       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:195
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:226
+
+
      [5] vector3(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, from::AntennaCenterPoint, to::UpdatableAppendagePoint, axes::SatelliteFrameAxes, t::Float64)
-       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:182
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:205
+
+
      [6] top-level scope
+
+
        @ ~/Documents/Gitlab/Astronaut/Basic/docs/src/Tutorials/t_04_points.ipynb:1
 
 
@@ -283,7 +313,7 @@ In this case we use the `CalcephProvider`:
 
 ```julia
 # Load ephemeris to memory
-eph = ephem_load(CalcephProvider, ["/home/andrea/Documents/Kernels/spk/de440.bsp"])
+eph = load(CalcephProvider, ["/home/andrea/Documents/Kernels/spk/de440.bsp"])
 
 # Create the graph
 G = FrameSystem{2, Float64}(eph)
@@ -333,7 +363,7 @@ G
 
 
     FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x000000000694aae0)),
+      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000062a0210)),
       points: 	 
     	 SSB
     	  ├── EMB 

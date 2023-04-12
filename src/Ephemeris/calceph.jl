@@ -1,24 +1,27 @@
-export CalcephProvider, 
-       ephem_timespan, 
-       ephem_timescale, 
-       ephem_position_records,
-       ephem_orient_records,
-       ephem_available_points, 
-       ephem_available_axes,
-       ephem_compute_order!,
-       ephem_orient_order!,
-       ephem_load
+export CalcephProvider,
+    ephem_timespan,
+    ephem_timescale,
+    ephem_position_records,
+    ephem_orient_records,
+    ephem_available_points,
+    ephem_available_axes,
+    ephem_compute!,
+    ephem_orient!,
+    load
 
-using CALCEPH: Ephem as CalcephEphemHandler, 
-               prefetch, 
-               timespan, 
-               timeScale,
-               positionRecords,
-               orientationRecords,
-               unsafe_compute!, unsafe_orient!,
-               useNaifId, unitKM, unitSec, unitRad
-
-using Basic: AstronautGenericError, EphemerisError
+using CALCEPH:
+    Ephem as CalcephEphemHandler,
+    prefetch,
+    timespan,
+    timeScale,
+    positionRecords,
+    orientationRecords,
+    unsafe_compute!,
+    unsafe_orient!,
+    useNaifId,
+    unitKM,
+    unitSec,
+    unitRad
 
 """
     CalcephProvider(file::String)
@@ -45,12 +48,12 @@ struct CalcephProvider <: AbstractEphemerisProvider
     function CalcephProvider(files::Vector{<:AbstractString})
         ptr = CalcephEphemHandler(unique(files))
         prefetch(ptr)
-        new(ptr)
+        return new(ptr)
     end
 end
 CalcephProvider(file::AbstractString) = CalcephProvider([file])
 
-function ephem_load(::Type{CalcephProvider}, files::Vector{<:AbstractString})
+function load(::Type{CalcephProvider}, files::Vector{<:AbstractString})
     return CalcephProvider(files)
 end
 
@@ -62,24 +65,22 @@ the ephemeris file.
 """
 ephem_position_records(eph::CalcephProvider) = positionRecords(eph.ptr)
 
-
 """
     ephem_available_points(eph::CalcephProvider)
 
 Return a list of NAIFIds representing bodies with available ephemeris data. 
 """
 function ephem_available_points(eph::CalcephProvider)
-    try 
+    try
         rec = ephem_position_records(eph)
-        tids = map(x->x.target, rec)
-        cids = map(x->x.center, rec)
+        tids = map(x -> x.target, rec)
+        cids = map(x -> x.center, rec)
 
         return unique([tids..., cids...])
-    catch 
+    catch
         return Int64[]
     end
 end
-
 
 """
     ephem_orient_records(eph::CalcephProvider)
@@ -89,20 +90,19 @@ informations on the content of the ephemeris file.
 """
 ephem_orient_records(eph::CalcephProvider) = orientationRecords(eph.ptr)
 
-
 """
     ephem_available_points(eph::CalcephProvider)
 
 Return a list of Frame IDs representing axes with available orientation data. 
 """
 function ephem_available_axes(eph::CalcephProvider)
-    try 
+    try
         rec = ephem_orient_records(eph)
-        tids = map(x->x.target, rec)
-        cids = map(x->x.frame, rec)
+        tids = map(x -> x.target, rec)
+        cids = map(x -> x.frame, rec)
 
         return unique([tids..., cids...])
-    catch 
+    catch
         return Int64[]
     end
 end
@@ -144,7 +144,7 @@ ephem_timespan(eph::CalcephProvider) = timespan(eph.ptr)
 
 Retrieve `Basic` timescale associated with ephemeris handler `eph`.
 """
-function ephem_timescale(eph::CalcephProvider) 
+function ephem_timescale(eph::CalcephProvider)
     tsid = timeScale(eph.ptr)
     if tsid == 1
         return TDB
@@ -152,17 +152,15 @@ function ephem_timescale(eph::CalcephProvider)
         return TCB
     else
         throw(
-            AstronautGenericError(
-                String(Symbol(@__MODULE__)),
-                "unknown time scale identifier: $tsid"
-            )
+            GenericError(
+                String(Symbol(@__MODULE__)), "unknown time scale identifier: $tsid"
+            ),
         )
     end
 end
 
-
 """
-    ephem_compute_order!(res, eph, jd0, time, target, center, order)
+    ephem_compute!(res, eph, jd0, time, target, center, order)
 
 Interpolate the position and/or its derivatives up to `order` for one body `target` relative 
 to another `center` at the time `jd0` + `time`, expressed as a Julian Date. This function reads 
@@ -179,20 +177,33 @@ must be equal to 3*order:
 The values stores in `res` are always returned in km, km/s, km/s², km/s³
 
 ### See also 
-See also [`ephem_orient_order!`](@ref)
+See also [`ephem_orient!`](@ref)
 """
-function ephem_compute_order!(res, eph::CalcephProvider, jd0::Float64, time::Float64, 
-            target::Int, center::Int, order::Int)
-    stat = unsafe_compute!(res, eph.ptr, jd0, time, target, center, useNaifId+unitKM+unitSec, order)
-    stat == 0 && throw(EphemerisError(String(Symbol(@__MODULE__)), "ephemeris data for "*
-                    "point with NAIFId $target with respect to point $center is not available "*
-                    "at JD $(jd0+time)"))
-    nothing
+function ephem_compute!(
+    res,
+    eph::CalcephProvider,
+    jd0::Float64,
+    time::Float64,
+    target::Int,
+    center::Int,
+    order::Int,
+)
+    stat = unsafe_compute!(
+        res, eph.ptr, jd0, time, target, center, useNaifId + unitKM + unitSec, order
+    )
+    stat == 0 && throw(
+        EphemerisError(
+            String(Symbol(@__MODULE__)),
+            "ephemeris data for " *
+            "point with NAIFId $target with respect to point $center is not available " *
+            "at JD $(jd0+time)",
+        ),
+    )
+    return nothing
 end
 
-
 """
-    ephem_orient_order!(res, eph, jd0, time, target, order)
+    ephem_orient!(res, eph, jd0, time, target, order)
 
 Interpolate the orientation and its derivatives up to `order` for the `target` body at the 
 time `jd0` + `time`, expressed as a Julian Date. This function reads the ephemeris files 
@@ -209,13 +220,20 @@ must be equal to 3*order:
 The values stores in `res` are always returned in rad, rad/s, rad/s², rad/s³
 
 ### See also 
-See also [`ephem_compute_order!`](@ref)
+See also [`ephem_orient!`](@ref)
 """
-function ephem_orient_order!(res, eph::CalcephProvider, jd0::Float64, time::Float64, 
-            target::Int, order::Int)
-
-    stat = unsafe_orient!(res, eph.ptr, jd0, time, target, useNaifId+unitRad+unitSec, order)
-    stat == 0 && throw(EphemerisError(String(Symbol(@__MODULE__)), "ephemeris data for "*
-                "frame with NAIFId $target is not available at JD $(jd0+time)"))
-    nothing
+function ephem_orient!(
+    res, eph::CalcephProvider, jd0::Float64, time::Float64, target::Int, order::Int
+)
+    stat = unsafe_orient!(
+        res, eph.ptr, jd0, time, target, useNaifId + unitRad + unitSec, order
+    )
+    stat == 0 && throw(
+        EphemerisError(
+            String(Symbol(@__MODULE__)),
+            "ephemeris data for " *
+            "frame with NAIFId $target is not available at JD $(jd0+time)",
+        ),
+    )
+    return nothing
 end

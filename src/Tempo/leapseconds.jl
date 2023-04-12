@@ -9,19 +9,19 @@ The files are downloaded using the `RemoteFile` package with monthly updates. He
 desires to force a download before the scheduled time, then set the keyword `force_download`  
 to `true`. Updates scheduled every month.
 """
-function get_leapseconds(; 
+function get_leapseconds(;
     url::String="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/latest_leapseconds.tls",
-    force_download::Bool=false)
-
+    force_download::Bool=false,
+)
     @RemoteFile(
         _leapseconds,
         url,
-        file="leapseconds_latest.tls",
-        dir=joinpath(@__DIR__, "..", "..", "ext"),
-        updates=:monthly
+        file = "leapseconds_latest.tls",
+        dir = joinpath(@__DIR__, "..", "..", "ext"),
+        updates = :monthly
     )
 
-    download(_leapseconds; force = force_download, force_update = true)
+    download(_leapseconds; force=force_download, force_update=true)
 
     t = Vector{Float64}()
     leap = Vector{Float64}()
@@ -32,7 +32,7 @@ function get_leapseconds(;
         if occursin(re, s)
             m = match(re, s)
             push!(leap, parse(Float64, m["dat"]))
-            push!(t, datetime2julian(DatesDateTime(m["date"], "y-u-d"))-Tempo.DJ2000)
+            push!(t, datetime2julian(DatesDateTime(m["date"], "y-u-d")) - Tempo.DJ2000)
         end
     end
     return Leapseconds(now(), t, leap)
@@ -67,7 +67,7 @@ struct Leapseconds{T}
 end
 
 function Base.show(io::IO, ls::Leapseconds)
-    println(io, "Leapseconds(last_update=$(ls.lastupdate))")
+    return println(io, "Leapseconds(last_update=$(ls.lastupdate))")
 end
 
 """
@@ -95,6 +95,6 @@ For a given UTC date, calculate Delta(AT) = TAI-UTC.
 - `Δt` -- TAI - UTC in seconds
 
 """
-function leapseconds(jd2000::Number) 
+function leapseconds(jd2000::Number)
     return LEAPSECONDS.leap[searchsortedlast(LEAPSECONDS.jd2000, jd2000)]
 end
