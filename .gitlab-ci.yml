@@ -1,58 +1,68 @@
+stages:
+  - build 
+  - deploy
+
 before_script:
-  # check github installation
+  # check git installation
   - which git || (apt-get update -qq && apt-get install --no-install-recommends -qqqy git)
-  # - which git || apk add git
-  # Configure git to use Gitlab deploy keys
-  # These must be created as: https://docs.gitlab.com/ee/user/project/deploy_keys/index.html
+
+  # Configure git to use Gitlab deploy keys instead of ssh/html
+  # These must be created  and added as: https://docs.gitlab.com/ee/user/project/deploy_keys/index.html
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "git@gitlab.com:"
   - git config --global url."https://$DEPLOY_NAME:$DEPLOY_KEY@gitlab.com/".insteadOf "https://gitlab.com/" --add
+
+# -------------------------
+# Documentation
+# -------------------------
+# Build the documentation for the package
+
+"Documentation":
+  image: julia:1.7
+  stage: build   
   
-# Build the documentation for the package 
-Documentation:
-  image: julia:1.7  
+  # ----------------------------------------------------------------
+  # TODO: remove this part once the versioned docs in 'make.jl' works
   artifacts:
-    paths:
-      - documentation   
+    paths: 
+      - documentation
+    expire_in: 2 h
+  # ----------------------------------------------------------------
+
   script:
-    - julia --project=docs/ -e "using Pkg;  pkg\"registry add https://github.com/JuliaRegistries/General\"; pkg\"registry add git@gitlab.com:astronaut-tools/Register.git\"; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()"
-    # Perform doctests 
-    - julia --project=docs/ -e "using Documenter; using Basic; doctest(Basic)"
-    # Render the documentation
-    - julia --project=docs/ docs/make.jl    
-    # Move the rendered documentation to a folder called "documentation" in the root of
-    # the repo which will be saved in an artifact.
-    - mkdir documentation
-    # # make schema
-    # - apt-get -y install python3.6
-    # - apt-get -y install python3-pip
-    # - sh res/schemas/makeschema.sh
-    # move docs
-    - mv docs/build/* documentation/    
+    # Install Documenter 
+    # Other dependecies may be already installed in a project 
+    # within the 'docs/' folder
+    - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter");'
+    # Install the current package as 'dev'
+    - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+    # Build the documentation
+    - julia --project=docs/ docs/make.jl 
+
+    # ----------------------------------------------------------------
+    - mkdir -p documentation
+    - mv docs/build/* documentation/
+    # ----------------------------------------------------------------
+
   only:
     - master
-    - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    - tags
 
-# Use the special job name "pages" to actually trigger deployment of the documentation 
-# on main/master branch.
-# https://docs.gitlab.com/ee/user/project/pages/getting_started_part_four.html#job
-pages:
-  stage: deploy  
-  image: julia:1.7
-  dependencies:
+# Deploy the documentation
+# ----------------------------------------------------------------
+  stage: deploy
+  
+  dependencies: 
     - Documentation
-  script:   
-    # public folder needed for Gitlab Pages to work 
-    # do nothing if already exists
-    - mkdir -p public/
-    - echo "Deploying documentation at public/stable"
-    # create target folder and deploy docs
-    - rm -rf public/stable
-    - mkdir -p public/stable
-    - mv documentation/* public/stable/ 
+
+  script:
+    - mkdir -p public/latest
+    - mv -v documentation/* public/latest/
+
   artifacts:
     paths:
-      # Required to be called public for GitLab Pages
       - public
+
   only:
     - master 
-    - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    - tags
+# ----------------------------------------------------------------
