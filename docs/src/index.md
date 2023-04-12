@@ -14,18 +14,12 @@ Another important feature of Basic is its ability to **read JPL/INPOP ephemeris 
 
 ## Index
 
-### Manual
-
-```@contents
-Pages = ["manual.md"]
-Depth = 2
-```
-
 ### Modules
 
 ```@contents
 Pages = ["Modules/time.md", 
          "Modules/orient.md",
+         "Modules/frames.md",
          "Modules/ephem.md",
          "Modules/utils.md"]
 Depth = 2

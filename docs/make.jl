@@ -1,16 +1,15 @@
 using Documenter, Basic
 
-setup = quote
-    using Basic
-end
-DocMeta.setdocmeta!(Basic, :DocTestSetup, setup; recursive=true)
+DocMeta.setdocmeta!(Basic, :DocTestSetup, :(using Basic); recursive=true)
+
+const CI = get(ENV, "CI", "false") == "true"
 
 makedocs(;
     authors="Astronaut Development Team",
     repo="https://gitlab.com/astronaut-tools/julia/core/Basic/blob/{commit}{path}#{line}",
     sitename="Basic",
     format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
+        prettyurls=CI,
         canonical="https://astronaut-tools.gitlab.io/julia/core/Basic",
         highlights=["yaml"],
         ansicolor=true,
@@ -26,9 +25,6 @@ makedocs(;
             "Axes Graphs" => "Tutorials/t_05_axes.md",
             "Frames" => "Tutorials/t_06_frames.md",
         ],
-        # "Manual" => [
-        #     "Overview" => "manual.md"
-        # ],
         "Modules" => [
             "Tempo" => "Modules/time.md",
             "Ephemeris" => "Modules/ephem.md",
