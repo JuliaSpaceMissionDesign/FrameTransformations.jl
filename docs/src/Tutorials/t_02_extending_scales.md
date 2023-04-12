@@ -21,7 +21,7 @@ const TIMETRANSF = TimeSystem{Float64}()
 ```
 
 
-    TimeSystem{Float64}(Basic.MappedGraphs.MappedNodeGraph{Basic.Tempo.TimeScaleNode{Float64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}}(Graphs.SimpleGraphs.SimpleDiGraph{Int64}(0, Vector{Int64}[], Vector{Int64}[]), Dict{Int64, Int64}(), Basic.Tempo.TimeScaleNode{Float64}[], Dict{Int64, Dict{Int64, Vector{Int64}}}(), Dict{Int64, Dict{Int64, Int64}}()))
+    TimeSystem{Float64}(MultiGraphs.MappedNodeGraph{Basic.Tempo.TimeScaleNode{Float64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}}(Graphs.SimpleGraphs.SimpleDiGraph{Int64}(0, Vector{Int64}[], Vector{Int64}[]), Dict{Int64, Int64}(), Basic.Tempo.TimeScaleNode{Float64}[], Dict{Int64, Dict{Int64, Vector{Int64}}}(), Dict{Int64, Dict{Int64, Int64}}()))
 
 
 This object contains a graph and the properties associated to the new time-system defined in

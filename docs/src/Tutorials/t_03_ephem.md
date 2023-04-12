@@ -30,7 +30,7 @@ Then, they can be loaded to the workspace exploiting the `CalcephProvider` inter
 
 
 ```julia
-eph = ephem_load(
+eph = load(
     CalcephProvider, 
     [
         "/home/andrea/Documents/Kernels/pck/moon_pa_de440_200625.bpc", 
@@ -40,7 +40,7 @@ eph = ephem_load(
 ```
 
 
-    CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000005af1080))
+    CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000007049610))
 
 
 
@@ -90,7 +90,7 @@ which is an in-place method for _arbitrary_ order ephemeris evaluation:
 
 ```julia
 v = zeros(6)
-ephem_compute_order!(v, eph, Basic.Tempo.DJ2000, 0.0, 301, 6, 0)
+ephem_compute!(v, eph, Basic.Tempo.DJ2000, 0.0, 301, 6, 0)
 v[1:3]
 ```
 
@@ -106,7 +106,7 @@ If we want to compute the velocities then we just need to change the order to `1
 
 ```julia
 v = zeros(6)
-ephem_compute_order!(v, eph, Basic.Tempo.DJ2000, 0.0, 301, 6, 1)
+ephem_compute!(v, eph, Basic.Tempo.DJ2000, 0.0, 301, 6, 1)
 v
 ```
 
@@ -130,7 +130,7 @@ similar way:
 
 ```julia
 v = zeros(6)
-ephem_orient_order!(v, eph, Basic.Tempo.DJ2000, 0.0, 31008, 0)
+ephem_orient!(v, eph, Basic.Tempo.DJ2000, 0.0, 31008, 0)
 v[1:3]
 ```
 

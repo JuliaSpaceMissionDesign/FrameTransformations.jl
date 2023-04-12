@@ -82,17 +82,17 @@ via the `Calceph` interface:
 
 ```julia
 # Load ephemeris to memory
-eph = ephem_load(
+eph = load(
     CalcephProvider, 
     [
-        "/home/andrea/Documents/SpiceKernels/spk/de440.bsp", 
-        "/home/andrea/Documents/SpiceKernels/pck/moon_pa_de440_200625.bpc"
+        "/home/andrea/Documents/Kernels/spk/de440.bsp", 
+        "/home/andrea/Documents/Kernels/pck/moon_pa_de440_200625.bpc"
     ]
 )
 ```
 
 
-    CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000019dab00))
+    CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000066dceb0))
 
 
 At this point we are ready to create the empty instance of our `FrameSystem`:
@@ -104,7 +104,7 @@ FRAMES = FrameSystem{2, Float64}(eph)
 
 
     FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000019dab00)),
+      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000066dceb0)),
       points: EMPTY
       axes: EMPTY
     )
@@ -169,7 +169,7 @@ To register such frames, we first need to parse a `.tcp` file with the required 
 
 
 ```julia
-iau = Basic.load(TPC("/home/andrea/Documents/SpiceKernels/pck/pck00010.tpc"));
+iau = Basic.load(TPC("/home/andrea/Documents/Kernels/pck/pck00010.tpc"));
 ```
 
 And then create the new axes. Remember, there shall be associated to a `ICRF` frame from 
@@ -191,9 +191,9 @@ add_axes_bcrtod!(FRAMES, iau, Moon, IAU_MOON, ICRF);
 ```
 
     ┌ Warning: ignoring orient_rot9_icrf_to_bcr_tod_Earth, frame system order is less than 3
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:421
+    └ @ Basic.Frames /home/andrea/Documents/Gitlab/Astronaut/Basic/src/Frames/axes.jl:458
     ┌ Warning: ignoring orient_rot9_icrf_to_bcr_tod_Moon, frame system order is less than 3
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:421
+    └ @ Basic.Frames /home/andrea/Documents/Gitlab/Astronaut/Basic/src/Frames/axes.jl:458
 
 
 Now let us insert also an inertial axes for the Moon, for convenience. This can be done using 
@@ -223,10 +223,10 @@ add_axes_itrf!(FRAMES, ITRF, GCRF) # default IAUModel is iau2006b
 add_axes_pa440!(FRAMES, MOONPA_DE440, ICRF)
 ```
 
-    ┌ Warning: ignoring #160, frame system order is less than 3
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:421
-    ┌ Warning: ignoring #161, frame system order is less than 4
-    └ @ Basic.Frames /home/andrea/.julia/dev/Basic/src/Frames/axes.jl:421
+    ┌ Warning: ignoring #168, frame system order is less than 3
+    └ @ Basic.Frames /home/andrea/Documents/Gitlab/Astronaut/Basic/src/Frames/axes.jl:458
+    ┌ Warning: ignoring #169, frame system order is less than 4
+    └ @ Basic.Frames /home/andrea/Documents/Gitlab/Astronaut/Basic/src/Frames/axes.jl:458
 
 
 ### Using the `FrameSystem`
@@ -254,7 +254,7 @@ FRAMES
 
 
     FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000019dab00)),
+      eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x00000000066dceb0)),
       points: 	 
     	 Earth
     	  ├── Sun 
