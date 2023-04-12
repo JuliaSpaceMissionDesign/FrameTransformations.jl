@@ -1,7 +1,3 @@
-stages:
-  - build 
-  - deploy
-
 before_script:
   # check git installation
   - which git || (apt-get update -qq && apt-get install --no-install-recommends -qqqy git)
@@ -49,6 +45,7 @@ before_script:
 
 # Deploy the documentation
 # ----------------------------------------------------------------
+pages:
   stage: deploy
   
   dependencies: 
