@@ -35,7 +35,6 @@ makedocs(;
             "Orient" => "Modules/orient.md",
             "Frames" => "Modules/frames.md",
             "Utils" => "Modules/utils.md",
-            "Graphs" => "Modules/graph.md",
         ],
     ],
     strict=!("strict=false" in ARGS),

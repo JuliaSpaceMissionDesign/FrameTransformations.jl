@@ -157,7 +157,52 @@ have an error:
 ```julia
 vector3(G, AntennaCenter, UpdatableAppendage, SATF, 0.0)
 ```
+
+
     UpdatablePoint with NAIFId -10003 has not been updated at time 0.0 for order 1
+
+
+    
+
+
+    Stacktrace:
+
+
+     [1] _compute_vector3(point::Basic.Frames.FramePointNode{2, Float64, 6}, t::Float64)
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:309
+
+
+     [2] _compute_vector3
+
+
+       @ ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:295 [inlined]
+
+
+     [3] _vector3_backwards(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, t::Float64, path::Vector{Int64}, p1::Basic.Frames.FramePointNode{2, Float64, 6})
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:270
+
+
+     [4] _compute_vector3(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, t::Float64, axesid::Int64, path::Vector{Int64})
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:226
+
+
+     [5] vector3(frame::FrameSystem{2, Float64, BarycentricDynamicalTime, Basic.Ephemeris.NullEphemerisProvider, 6}, from::AntennaCenterPoint, to::UpdatableAppendagePoint, axes::SatelliteFrameAxes, t::Float64)
+
+
+       @ Basic.Frames ~/Documents/Gitlab/Astronaut/Basic/src/Frames/transform.jl:205
+
+
+     [6] top-level scope
+
+
+       @ ~/Documents/Gitlab/Astronaut/Basic/docs/src/Tutorials/t_04_points.ipynb:1
+
 
 Therefore, we shall first call the `update_point!` method and the evaluate the computational graph:
 
