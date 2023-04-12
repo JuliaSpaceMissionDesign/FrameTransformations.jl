@@ -13,7 +13,7 @@ before_script:
 # Build the documentation for the package
 
 "Documentation":
-  image: julia:1.7
+  image: julia:1.8
   stage: build   
   
   # ----------------------------------------------------------------
@@ -30,7 +30,7 @@ before_script:
     # within the 'docs/' folder
     - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter"); Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/julia/Registry.git"))'
     # Install the current package as 'dev'
-    - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+    - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.precompile();'
     # Build the documentation
     - julia --project=docs/ docs/make.jl 
 
