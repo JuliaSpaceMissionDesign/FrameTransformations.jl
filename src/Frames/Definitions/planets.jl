@@ -173,9 +173,9 @@ function _axes_bci2000!(
 end
 
 function _axes_bci2000(p::Orient.PlanetsPrecessionNutation)
-    Θᵢ = Orient._compute_thetas(:T, p.ra.Θ₁, p.ra.Θ₂)
     angles = Orient._iau_angles(p)
     a, del = angles[1][1], angles[2][1]
+    Θᵢ = angles[1][5]
 
     @eval begin
         T = 0.0
