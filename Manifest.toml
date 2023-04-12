@@ -172,7 +172,7 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.InterfacesUtils]]
 deps = ["ForwardDiff", "JSON3", "StaticArrays", "YAML"]
-path = "/home/andrea/.julia/dev/InterfacesUtils"
+git-tree-sha1 = "951ef7cdeb15a07e75793a8c573d0848b9cb7387"
 uuid = "a641f28f-8d9e-4160-8071-676a3167f41f"
 version = "0.1.0"
 
