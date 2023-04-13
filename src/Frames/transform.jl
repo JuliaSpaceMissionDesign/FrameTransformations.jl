@@ -475,7 +475,7 @@ accepted length for the input vector `stv` are 3, 6, 9 or 12. The order is autom
 inferred from the vector length.
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> FRAMES = FrameSystem{2, Float64}();
   
 julia> @axes ICRF 1  
@@ -490,21 +490,23 @@ julia> add_point_root!(FRAMES, Origin, ICRF)
 
 julia> add_point_updatable!(FRAMES, Satellite, Origin, ICRF)
 
-julia> y = [10000., 200., 300.]
+julia> y = [10000., 200., 300.];
 
 julia> update_point!(FRAMES, Satellite, y, 0.1)
 
 julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.1)
-3-element SVector{3, Float64} with indices SOneTo(3):
+3-element SVector{3, StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
  10000.0
    200.0
    300.0
 
 julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
-ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1 
+[...]
 
 julia> vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
-ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.1 for order 2
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.1 for order 2 
+[...] 
 ```
 ### See also 
 See also [`add_point_updatable!`](@ref)

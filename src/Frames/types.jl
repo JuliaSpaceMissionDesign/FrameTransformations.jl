@@ -43,7 +43,7 @@ that define the observer and target points.
 Only orders between 1 and 3 are supported.
 
 ### Example 
-```jldoctest
+```julia-repl
 julia> @point SSB 0 SolarSystemBarycenter
 
 julia> @point Sun 10 
@@ -298,7 +298,7 @@ with a `NullEphemerisProvider`, which does not allow the computation of transfor
 involve ephemeris files.
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> F = FrameSystem{2, Float64}();
 
 julia> @axes ICRF 1 
@@ -310,7 +310,8 @@ julia> add_axes_inertial!(F, ICRF)
 julia> add_axes_eclipj2000!(F, ECLIPJ2000, ICRF)
 
 julia> rotation6(F, ICRF, ECLIPJ2000, 0.0)
-Rotation{2, Float64}([...])
+Rotation{2, Float64}
+[...]
 
 julia> rotation9(F, ICRF, ECLIPJ2000, 0.0)
 ERROR: Insufficient frame system order: transformation requires at least order 3.
@@ -327,7 +328,7 @@ of transformation that involve ephemeris files.
 
 ### Examples 
 
-```jldoctest
+```julia-repl
 julia> F = FrameSystem{1, Float64, TerrestrialTime}();
 
 julia> @axes ICRF 1 
@@ -342,13 +343,13 @@ julia> ep_tt = Epoch("2023-02-10T12:00:00 TT")
 2023-02-10T12:00:00.000 TT
 
 julia> rotation3(F, ICRF, ECLIPJ2000, ep_tt)
-Rotation{1, Float64}([...])
+Rotation{1,Float64}([...])
 
 julia> ep_tdb = Epoch("2023-02-10T12:00:00 TDB")
 2023-02-10T12:00:00.000 TDB
 
 julia> rotation3(F, ICRF, ECLIPJ2000, ep_tdb)
-ERROR: ArgumentError: Incompatible epoch timescale 
+ERROR: ArgumentError: Incompatible epoch timescale: expected TerrestrialTime, found BarycentricDynamicalTime.
 [...]
 ```
 ---
@@ -365,8 +366,8 @@ to compute transformations that involve ephemeris data.
     has been created, no additional kernel can be added nor removed.
 
 ### Examples 
-```jldoctest
-julia> eph = CalcephProvider("PATH_TO_DE440_KERNEL")
+```julia-repl
+julia> eph = CalcephProvider(DE440_KERNEL_PATH)
 CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0))
 
 julia> F = FrameSystem{2, Float64}(eph)
@@ -375,7 +376,6 @@ FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
   points: EMPTY
   axes: EMPTY
 )
-
 ```
 
 ### See also 

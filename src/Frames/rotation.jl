@@ -25,7 +25,7 @@ A `Rotation` object `R` call always be converted to a `SMatrix` or a `MMatrix` b
 the proper constructor. 
 
 ### Examples 
-```jldoctest 
+```julia-repl 
 julia> A = angle_to_dcm(π/3, :Z)
 DCM{Float64}:
   0.5       0.866025  0.0
@@ -56,7 +56,7 @@ derivatives. The rotation order is inferred from the number of inputs, while the
 type is obtained by promoting the DCMs types.
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> A = angle_to_dcm(π/3, :Z); 
 
 julia> δA = DCM(0.0I); 
@@ -83,7 +83,7 @@ Create an `S`-order identity `Rotation` object of type `N` with identity positio
 and null time derivatives.
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> Rotation{1}(1.0I) 
 Rotation{1, Float64}(([1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0],))
 
@@ -99,7 +99,7 @@ Transform a `Rotation` object of order `S2` to order `S1`. This conversion is on
 if `S1` < `S2`.
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> A = angle_to_dcm(π/3, :Z);
 
 julia> B = angle_to_dcm(π/4, π/6, :XY);

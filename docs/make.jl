@@ -1,6 +1,18 @@
 using Documenter, Basic
 
-DocMeta.setdocmeta!(Basic, :DocTestSetup, :(using Basic); recursive=true)
+setup = quote
+    using ReferenceFrameRotations
+    using Basic
+    using Basic.Tempo
+    using Basic.Ephemeris 
+    using Basic.Orient 
+    using Basic.Frames 
+    using Basic.Utils
+
+    const DE440_KERNEL_PATH = "/home/andrea/Documents/Kernels/spk/de440.bsp"
+end
+
+DocMeta.setdocmeta!(Basic, :DocTestSetup, setup; recursive=true)
 
 const CI = get(ENV, "CI", "false") == "true"
 
@@ -8,6 +20,7 @@ makedocs(;
     authors="Astronaut Development Team",
     repo="https://gitlab.com/astronaut-tools/julia/core/Basic/blob/{commit}{path}#{line}",
     sitename="Basic",
+    modules=[Basic],
     format=Documenter.HTML(;
         prettyurls=CI,
         canonical="https://astronaut-tools.gitlab.io/julia/core/Basic",

@@ -40,7 +40,7 @@ is obtained by appending `Point` to either `name` or `type` (if provided).
 
 ### Examples
 
-```jldoctest
+```julia-repl
 julia> @point Venus 299
 
 julia> typeof(Venus)
@@ -242,8 +242,8 @@ origin, i.e., its position will equal (0., 0., 0.).
     points in the same graph are both inadmissible and meaningless.
 
 ### Examples 
-```jldoctest
-julia> FRAMES = FrameSystem{2, Float64}() 
+```julia-repl
+julia> FRAMES = FrameSystem{2, Float64}();
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
@@ -256,7 +256,7 @@ julia> add_point_root!(FRAMES, SSB, ICRF)
 julia> @point Sun 10
 
 julia> add_point_root!(FRAMES, Sun, ICRF)
-ERROR: A root-point is already registed in the given FrameSystem.
+ERROR: ArgumentError: A root-point is already registed in the given FrameSystem.
 [...]
 ```
 
@@ -307,10 +307,10 @@ is returned if the axes ID is yet to be added to `frames`.
 
 
 ### Examples 
-```jldoctest
-julia> eph = CalcephProvider(".../de440.bsp")
+```julia-repl
+julia> eph = CalcephProvider(DE440_KERNEL_PATH);
 
-julia> FRAMES = FrameSystem{2, Float64}(eph) 
+julia> FRAMES = FrameSystem{2, Float64}(eph);
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
@@ -327,7 +327,8 @@ julia> add_point_ephemeris!(FRAMES, Sun)
 julia> @point Jupiter 599
 
 julia> add_point_ephemeris!(FRAMES, Jupiter)
-ERROR: Ephemeris data for NAIFID 599 is not available in the kernels loaded [...]
+ERROR: ArgumentError: Ephemeris data for NAIFID 599 is not available in the kernels loaded in the given FrameSystem.
+[...]
 ```
 
 ### See also 
@@ -467,8 +468,8 @@ constant `offset` with respect their `parent` points in the given set of `axes`.
 eligible for this class must have null velocity and acceleration with respect to `parent`.
 
 ### Examples 
-```jldoctest
-julia> FRAMES = FrameSystem{2, Float64}() 
+```julia-repl
+julia> FRAMES = FrameSystem{2, Float64}();
 
 julia> @axes SF -3000 SatelliteFrame
 
@@ -480,7 +481,7 @@ julia> @point SolarArrayCenter -10001
 
 julia> add_point_root!(FRAMES, SC, SF)
 
-julia> sa_offset = [0.10, 0.15, 0.30]
+julia> sa_offset = [0.10, 0.15, 0.30];
 
 julia> add_point_fixed!(FRAMES, SolarArrayCenter, SC, SF, sa_offset)
 ```
@@ -528,7 +529,7 @@ updated before being used for other computations.
     e.g., when it is the output of an optimisation process which exploits the frame system.
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> FRAMES = FrameSystem{2, Float64}();
 
 julia> @axes ICRF 1  
@@ -557,7 +558,8 @@ julia> vector3(FRAMES, Origin, Satellite, ICRF, 0.2)
 ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 1
 
 julia> vector6(FRAMES, Origin, Satellite, ICRF, 0.1)
-ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.2 for order 2
+ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.1 for order 2
+[...]
 ```
 
 ### See also 
@@ -599,7 +601,7 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with auto
     dimensions. 
 
 ### Examples 
-```jldoctest
+```julia-repl
 julia> FRAMES = FrameSystem{2, Float64}()
 
 julia> @axes ICRF 1 

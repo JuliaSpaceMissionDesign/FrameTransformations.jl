@@ -97,7 +97,7 @@ is obtained by appending `Axes` to either `name` or `type` (if provided).
 
 ### Examples 
 
-```jldoctest
+```julia-repl
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
 julia> typeof(ICRF)
@@ -278,8 +278,8 @@ become mandatory fields.
     that only have inertial parents are also accepted.
 
 ### Examples 
-```jldoctest 
-julia> FRAMES = FrameSystem{2, Float64}() 
+```julia-repl 
+julia> FRAMES = FrameSystem{2, Float64}();
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame 
 
@@ -288,7 +288,8 @@ julia> add_axes_inertial!(FRAMES, ICRF)
 julia> @axes ECLIPJ2000 17 
 
 julia> add_axes_inertial!(FRAMES, ECLIPJ2000)
-ERROR: A set of parent axes for ECLIPJ2000 is required [...]
+ERROR: A set of parent axes for ECLIPJ2000 is required
+[...]
 
 julia> add_axes_inertial!(FRAMES, ECLIPJ2000; parent=ICRF, dcm=angle_to_dcm(π/3, :Z))
 ```
@@ -364,8 +365,8 @@ orientation with respect to their `parent` axes, represented by `dcm`, a Directi
     inertial axes.
 
 ### Examples 
-```jldoctest 
-julia> FRAMES = FrameSystem{1, Float64}() 
+```julia-repl 
+julia> FRAMES = FrameSystem{1, Float64}();
 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame 
 
@@ -413,8 +414,8 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via autom
     function does not perform any checks on the output types. 
 
 ### Examples 
-```jldoctest 
-julia> FRAMES = FrameSystem{3, Float64}() 
+```julia-repl 
+julia> FRAMES = FrameSystem{3, Float64}();
 
 julia> @axes Inertial 1
 
@@ -422,7 +423,7 @@ julia> add_axes_inertial!(FRAMES, Inertial)
 
 julia> @axes Synodic 2 
 
-julia> fun(t) = angle_to_dcm(t, :Z)
+julia> fun(t) = angle_to_dcm(t, :Z);
 
 julia> add_axes_rotating!(FRAMES, Synodic, Inertial, fun)
 
@@ -547,10 +548,10 @@ velocity direction define the axes orientation.
 
 
 ### Examples 
-```jldoctest 
-julia> eph = CalcephProvider(".../de440.bsp")
+```julia-repl 
+julia> eph = CalcephProvider(DE440_KERNEL_PATH);
 
-julia> FRAMES = FrameSystem{4, Float64}(eph) 
+julia> FRAMES = FrameSystem{4, Float64}(eph);
 
 julia> @point SSB 0 SolarySystemBarycenter 
 

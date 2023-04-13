@@ -12,7 +12,7 @@ to `frames`.
     J2000, ID = 17), otherwise and error is thrown.
 
 ### Examples 
-```jldoctest 
+```julia-repl 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
 julia> @axes MEME2000 22 MeanEquatorMeanEquinoxJ2000 
@@ -65,7 +65,7 @@ The admissed `parent` set of axes are the following:
     MEME2000 (ID = 22), an error is thrown. 
 
 ### Examples
-```jldoctest 
+```julia-repl 
 julia> @axes ICRF 1 InternationalCelestialReferenceFrame
 
 julia> @axes ECLIPJ2000 17 EclipticEquinoxJ2000 

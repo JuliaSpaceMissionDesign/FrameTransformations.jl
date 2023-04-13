@@ -35,7 +35,7 @@ files specified by `files`.
     `CalcephProvider` instance.  
 
 ### Example 
-```jldoctest
+```julia-repl
 julia> eph1 = CalcephProvider("PATH_TO_KERNEL")
 CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} [...]))
 
