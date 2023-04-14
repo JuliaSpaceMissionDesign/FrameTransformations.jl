@@ -30,6 +30,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Contributing" => "todos.md",
         "Tutorials" => [
             "Epochs" => "Tutorials/t_01_epochs.md",
             "Timescales" => "Tutorials/t_02_extending_scales.md",
@@ -46,7 +47,7 @@ makedocs(;
             "Utils" => "Modules/utils.md",
         ],
     ],
-    strict=!("strict=false" in ARGS),
-    doctest=("doctest=only" in ARGS) ? :only : true,
-    # clean = false,
+    # strict=!("strict=false" in ARGS),
+    # doctest=("doctest=only" in ARGS) ? :only : true,
+    clean = true,
 )

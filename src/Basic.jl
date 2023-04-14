@@ -4,7 +4,7 @@ using Reexport
 using Logging
 using InterfacesUtils
 
-import InterfacesUtils: load
+import InterfacesUtils.IO: load
 
 include(joinpath("Utils", "Utils.jl"))
 @reexport using .Utils

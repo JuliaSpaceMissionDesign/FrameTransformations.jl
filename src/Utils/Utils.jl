@@ -7,8 +7,8 @@ using ReferenceFrameRotations: DCM
 using StaticArrays: SMatrix, SA, SVector
 
 using InterfacesUtils
-import InterfacesUtils: load
-using InterfacesUtils: @filetype, AbstractFile
+import InterfacesUtils.IO: load
+using InterfacesUtils.IO: @filetype, AbstractFile
 
 # IO 
 include("IO/tpc.jl")
