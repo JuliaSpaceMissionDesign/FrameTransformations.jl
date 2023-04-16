@@ -188,13 +188,13 @@ this package, together with their development status.
     </td>
     <td class="tg-0pky">Basic</td>
     <td class="tg-0pky">🟡</td>
-    <td class="tg-0pky">Partial compatibility is already available (see dedicated section for details)</td>
+    <td class="tg-0pky">Partial compatibility is already available (see dedicated section in "Contributing" for details)</td>
   </tr>
 </tbody>
 </table>
 ```
 
-Where the color legend used is as follows:
+Where the color legend used is described afterwards:
 
 |    | Description                           |
 |----|-------------------------------------- |
