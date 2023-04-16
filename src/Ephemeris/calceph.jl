@@ -237,3 +237,16 @@ function ephem_orient!(
     )
     return nothing
 end
+
+# Precompilation 
+
+precompile(CalcephProvider, (String, ))
+precompile(load, (Type{CalcephProvider}, Vector{String}))
+precompile(ephem_position_records, (CalcephProvider,))
+precompile(ephem_available_points, (CalcephProvider,))
+precompile(ephem_available_axes, (CalcephProvider, ))
+precompile(ephem_orient_records, (CalcephProvider,))
+precompile(ephem_timespan, (CalcephProvider,))
+precompile(ephem_timescale, (CalcephProvider,))
+precompile(ephem_compute!, (Any, CalcephProvider, Float64, Float64, Int64, Int64, Int64))
+precompile(ephem_orient!, (Any, CalcephProvider, Float64, Float64, Int64, Int64, Int64))
