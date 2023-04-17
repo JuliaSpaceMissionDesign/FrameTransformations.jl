@@ -17,6 +17,7 @@ before_script:
       julia --project=@. -e '
         using Pkg
         Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/julia/Registry.git"))
+        Pkg.Registry.add(Pkg.RegistrySpec(url="https://github.com/JuliaRegistries/General.git"))
         Pkg.add("Coverage")
         Pkg.add("ERFA")
         Pkg.add("ForwardDiff")
