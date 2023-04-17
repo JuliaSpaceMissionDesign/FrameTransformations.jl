@@ -46,17 +46,13 @@ before_script:
 # -------------------------
 # Build the documentation for the package
 
-"Documentation":
+pages:
   image: julia:1.8
   stage: deploy   
   
-  # ----------------------------------------------------------------
-  # TODO: remove this part once the versioned docs in 'make.jl' works
   artifacts:
     paths: 
-      - documentation
-    expire_in: 2 h
-  # ----------------------------------------------------------------
+      - public
 
   script:
     # Install Documenter 
@@ -69,31 +65,10 @@ before_script:
     - julia --project=docs/ docs/make.jl 
 
     # ----------------------------------------------------------------
-    - mkdir -p documentation
-    - mv docs/build/* documentation/
+    - mkdir -p public/latest
+    - mv docs/build/* public/latest/
     # ----------------------------------------------------------------
 
   only:
     - master
     - tags
-
-# Deploy the documentation
-# ----------------------------------------------------------------
-pages:
-  stage: deploy
-  
-  dependencies: 
-    - Documentation
-
-  script:
-    - mkdir -p public/latest
-    - mv -v documentation/* public/latest/
-
-  artifacts:
-    paths:
-      - public
-
-  only:
-    - master 
-    - tags
-# ----------------------------------------------------------------
