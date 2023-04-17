@@ -121,3 +121,8 @@ function parse_iso(s::S) where {S<:AbstractString}
         ),
     )
 end
+
+
+# Precompilation
+
+precompile(parse_iso, (String, ))

@@ -201,3 +201,19 @@ Return the fixed offset between [`TAI`](@ref) and [`GPS`](@ref) in seconds.
 Return the fixed offset between [`GPS`](@ref) and [`TAI`](@ref) in seconds.
 """
 @inline offset_gps2tai(seconds) = -OFFSET_TAI_GPS
+
+# Precompilation
+
+precompile(offset_gps2tai, (Float64, ))
+precompile(offset_tai2gps, (Float64, ))
+precompile(offset_tt2tdbh, (Float64, ))
+precompile(offset_utc2tai, (Float64, ))
+precompile(offset_tai2utc, (Float64, ))
+precompile(offset_tdb2tt, (Float64, ))
+precompile(offset_tt2tdb, (Float64, ))
+precompile(offset_tdb2tcb, (Float64, ))
+precompile(offset_tcb2tdb, (Float64, ))
+precompile(offset_tt2tcg, (Float64, ))
+precompile(offset_tcg2tt, (Float64, ))
+precompile(offset_tt2tai, (Float64, ))
+precompile(offset_tai2tt, (Float64, ))

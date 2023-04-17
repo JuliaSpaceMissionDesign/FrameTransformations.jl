@@ -19,12 +19,12 @@ function find_dayinyear(month::N, day::N, isleap::Bool) where {N<:Integer}
 end
 
 """
-    hms2fd(h::N, m::N, s::T) where {N <: Integer, T <: AbstractFloat}
+    hms2fd(h::Number, m::Number, s::Number)
 
 Convert hours, minutes, seconds to day fraction. The day fraction is returned 
 converted in type `T`.
 """
-function hms2fd(h::N, m::N, s::T) where {N<:Integer,T<:AbstractFloat}
+function hms2fd(h::Number, m::Number, s::Number)
     # Validate arguments
     if h < 0 || h > 23
         throw(
@@ -86,7 +86,7 @@ function fd2hmsf(fd::Number)
 end
 
 """
-    cal2jd(Y::N, M::N, D::N) where {N<:Integer}
+    cal2jd(Y::N, M::N, D::N) where {N<:Number}
 
 This function converts a given date in the Gregorian calendar (year, month, day) to the 
 Julian Date (JD).
@@ -136,7 +136,7 @@ j2000, d = cal2jd(2020, 2, 29)
 
 - [ERFA software library](https://github.com/liberfa/erfa/blob/master/src/cal2jd.c)
 """
-function cal2jd(Y::N, M::N, D::N) where {N<:Integer}
+function cal2jd(Y::Number, M::Number, D::Number)
     # Validate year and month
     if Y < 1583
         throw(
@@ -180,7 +180,7 @@ function cal2jd(Y::N, M::N, D::N) where {N<:Integer}
 end
 
 """
-    calhms2jd(Y::N, M::N, id::N, h::N, m::N, sec::Number) where {N<:Integer}
+    calhms2jd(Y::Number, M::Number, D::Number, h::Number, m::Number, sec::Number) 
 
 Convert Gregorian Calendar date and time to Julian Date.
 
@@ -192,7 +192,8 @@ Convert Gregorian Calendar date and time to Julian Date.
 - `jd1` -- J2000 zero point: always 2451545.0
 - `jd2` -- J2000 Date for 12 hrs
 """
-function calhms2jd(Y::N, M::N, D::N, h::N, m::N, sec::Number) where {N<:Integer}
+function calhms2jd(Y::Number, M::Number, D::Number, 
+    h::Number, m::Number, sec::Number)
     jd1, jd2 = cal2jd(Y, M, D)
     fd = hms2fd(h, m, sec)
     return jd1, jd2 + fd - 0.5
@@ -488,3 +489,30 @@ Convert Julian Date (in days) to Julian Centuries
 """
 @inline j2000c(jd) = j2000(jd) / CENTURY2DAY
 @inline j2000c(jd1, jd2) = j2000(jd1, jd2) / CENTURY2DAY
+
+# Precompilation
+
+precompile(j2000c, (Number,))
+precompile(j2000c, (Float64,))
+precompile(j2000c, (Number, Number))
+precompile(j2000c, (Float64, Float64))
+
+precompile(j2000s, (Number,))
+precompile(j2000s, (Float64,))
+precompile(j2000s, (Number, Number))
+precompile(j2000s, (Float64, Float64))
+
+precompile(j2000, (Number,))
+precompile(j2000, (Float64,))
+precompile(j2000, (Number, Number))
+precompile(j2000, (Float64, Float64))
+
+precompile(tai2utc, (Float64, Float64))
+precompile(utc2tai, (Float64, Float64))
+precompile(jd2calhms, (Float64, Float64))
+precompile(jd2cal, (Float64, Float64))
+precompile(calhms2jd, (Int, Int, Int, Int, Int, Float64))
+precompile(cal2jd, (Int, Int, Int))
+precompile(fd2hmsf, (Float64, ))
+precompile(fd2hms, (Float64, ))
+precompile(hms2fd, (Float64, Float64, Float64))
