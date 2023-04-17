@@ -39,7 +39,7 @@ before_script:
   image: julia:1.8
   extends:
     - .unittests
-    - .coverage
+    # - .coverage
 
 # -------------------------
 # Documentation
