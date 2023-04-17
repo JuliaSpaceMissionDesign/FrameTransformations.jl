@@ -69,6 +69,24 @@ end
     @test sum(Tempo.calhms2jd(1970, 1, 1, 15, 0, 0.0)) ≈ 2440588.125
 end
 
+@testset "Function cal2jd vs ERFA (cal2jd.c)" begin
+    for _ in 1:250
+        y, m, d, _, _, _, _ = _random_datetime()
+        ejd = sum(ERFA.cal2jd(y, m, d))
+        bjd = sum(Tempo.cal2jd(y, m, d))
+        @test ejd+0.5 == bjd
+    end
+end
+
+@testset "Function calhms2jd vs ERFA (dtf2d.c)" begin
+    for _ in 1:250
+        y, m, d, H, M, S, f = _random_datetime()
+        ejd = sum(ERFA.dtf2d("NONE", y, m, d, H, M, S+f))
+        bjd = sum(Tempo.calhms2jd(y, m, d, H, M, S+f))
+        @test ejd == bjd
+    end
+end
+
 @testset "Function utc2tai" begin
     for _ in 1:10
         Y, M, D = rand(1975:2015), rand(1:12), rand(1:28)
@@ -79,6 +97,20 @@ end
             (tai2 - utc2) * 86400 ≈ Tempo.leapseconds(utc1 - Tempo.DJ2000 + utc2),
             (tai2 - utc2) * 86400 ≈ Tempo.leapseconds(utc1 - Tempo.DJ2000 + utc2) + 1,
         ))
+    end
+end
+
+@testset "Function utc2tai vs ERFA (utctai.c)" begin
+    for _ in 1:250
+        Y, M, D = rand(1975:2015), rand(1:12), rand(1:28)
+        h, m, s = rand(0:23), rand(0:59), rand(0.0:59.999)
+        utc1, utc2 = Tempo.calhms2jd(Y, M, D, h, m, s)
+
+        tai1, tai2 = Tempo.utc2tai(utc1, utc2)
+        tai1e, tai2e = ERFA.utctai(utc1, utc2)
+
+        @test tai2 == tai2e
+        @test tai1 == tai1e
     end
 end
 
@@ -102,4 +134,18 @@ end
     u1, u2 = Tempo.tai2utc(tai1, tai2)
 
     @test u2 ≈ utc2
+end
+
+@testset "Function tai2utc vs ERFA (taiutc.c)" begin
+    for _ in 1:250
+        Y, M, D = rand(1975:2015), rand(1:12), rand(1:28)
+        h, m, s = rand(0:23), rand(0:59), rand(0.0:59.999)
+        tai1, tai2 = Tempo.calhms2jd(Y, M, D, h, m, s)
+
+        utc1, utc2 = Tempo.tai2utc(tai1, tai2)
+        utc1e, utc2e = ERFA.taiutc(tai1, tai2)
+
+        @test utc2 == utc2e
+        @test utc1 == utc1e
+    end
 end

@@ -1,12 +1,4 @@
-function _random_epoch()
-    _, ry, rm, rd, rH, rM, rS, rF = _random_datetime_isostr()
-    rs = rS + rF
-    nscales = length(Tempo.TIMESCALES_ACRONYMS)
-    rscale = rand(1:nscales)
-    return "$ry-$rm-$(rd)T$rH:$rM:$rs $(String(Tempo.TIMESCALES_ACRONYMS[rscale]))",
-    ry, rm, rd, rH, rM, rS,
-    rF
-end
+
 
 @testset "Epoch" verbose = true begin
     @testset "String constructors" begin

@@ -51,3 +51,20 @@
         @test -Tempo.offset_tdb2tt(1e6) < 1 / 1000
     end
 end
+
+@testset "Offset function vs ERFA" verbose=true begin
+    @testset "TAI/TT" begin
+        tt1 = Tempo.DJ2000
+        tt2 = rand(0.0:1e6)
+        tdb1, tdb2 = ERFA.tttai(tt1, tt2)
+
+        @test (tt1+tt2-(tdb1+tdb2))*86400.0 ≈ Tempo.OFFSET_TAI_TT atol=1e-4
+    end
+
+    @testset "TT/TGC" begin
+        tt1 = Tempo.DJ2000
+        tt2 = rand(0.0:1e6)
+        tcg1, tcg2 = ERFA.tttcg(tt1, tt2)
+        @test (tt1+tt2-(tcg1+tcg2))*86400.0 ≈ -Tempo.offset_tt2tcg(tt2*86400.0) atol=1e-4
+    end
+end
