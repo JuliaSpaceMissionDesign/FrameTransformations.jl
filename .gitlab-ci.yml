@@ -25,7 +25,6 @@ before_script:
         Pkg.add("RemoteFiles")
         Pkg.add("SPICE")
         Pkg.add("StaticArrays")
-        Pkg.add("Test")
         Pkg.build()
         Pkg.test(coverage = true)'
 
