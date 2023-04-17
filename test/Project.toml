@@ -2,6 +2,7 @@
 Basic = "f7345b97-8646-4350-bca5-2368100b77e2"
 ERFA = "17511681-8477-586a-8d98-4cfd5a1f2ec3"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ReferenceFrameRotations = "74f56ac7-18b3-5285-802d-d4bd4f104033"
 RemoteFiles = "cbe49d4c-5af1-5b60-bb70-0a60aa018e1b"
 SPICE = "5bab7191-041a-5c2e-a744-024b9c3a5062"
