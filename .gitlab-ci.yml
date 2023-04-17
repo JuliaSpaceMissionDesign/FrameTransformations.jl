@@ -16,6 +16,7 @@ before_script:
     - |
       julia --project=@. -e '
         using Pkg
+        Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/julia/Registry.git"))
         Pkg.add("Coverage")
         Pkg.add("ERFA")
         Pkg.add("ForwardDiff")
@@ -23,7 +24,6 @@ before_script:
         Pkg.add("RemoteFiles")
         Pkg.add("SPICE")
         Pkg.add("StaticArrays")
-        Pkg.Registry.add(Pkg.RegistrySpec(url="git@gitlab.com:astronaut-tools/julia/Registry.git"))
         Pkg.build()
         Pkg.test(coverage = true)'
 
