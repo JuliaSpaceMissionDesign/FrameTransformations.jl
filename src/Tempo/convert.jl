@@ -48,7 +48,7 @@ function hms2fd(h::Number, m::Number, s::Number)
             ),
         )
     end
-    return T(((60.0 * (60.0 * h + m)) + s) / 86400.0)
+    return ((60.0 * (60.0 * h + m)) + s) / 86400.0
 end
 
 """

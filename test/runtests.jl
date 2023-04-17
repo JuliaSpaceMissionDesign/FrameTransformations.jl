@@ -43,7 +43,7 @@ import LinearAlgebra: cross, dot, norm
     )
 end;
 
-# download(KERNELS; verbose=true, force=true)
+download(KERNELS; verbose=true, force=true)
 
 @testset "Basic" verbose = true begin
     @eval begin

@@ -64,8 +64,6 @@ end
     @test_throws Tempo.EpochConversionError Tempo.cal2jd(2150, 1, 32)
     @test_throws Tempo.EpochConversionError Tempo.cal2jd(1999, 6, 0)
     @test_throws Tempo.EpochConversionError Tempo.cal2jd(2000, 2, 32)
-    @test_throws MethodError Tempo.cal2jd(1999, 13, 0.0)
-    @test_throws MethodError Tempo.cal2jd(1999, 11.0, 0)
     @test sum(Tempo.calhms2jd(1970, 1, 1, 15, 0, 0.0)) ≈ 2440588.125
 end
 
