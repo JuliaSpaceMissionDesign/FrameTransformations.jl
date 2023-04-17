@@ -72,7 +72,7 @@ end
         y, m, d, _, _, _, _ = _random_datetime()
         ejd = sum(ERFA.cal2jd(y, m, d))
         bjd = sum(Tempo.cal2jd(y, m, d))
-        @test ejd+0.5 ≈ bjd  atpl=1e-4
+        @test ejd+0.5 ≈ bjd  atol=1e-4
     end
 end
 

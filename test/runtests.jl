@@ -45,13 +45,11 @@ end;
 
 download(KERNELS; verbose=true, force=true)
 
-@testset "Basic" verbose = true begin
-    @eval begin
-        modules = [:Utils, :Tempo, :Orient, :Frames]
-        for m in modules
-            @testset "$m" verbose = true begin
-                include("$m/$m.jl")
-            end
+@eval begin
+    modules = [:Utils, :Tempo, :Orient, :Frames]
+    for m in modules
+        @testset "$m" verbose = true begin
+            include("$m/$m.jl")
         end
     end
 end;
