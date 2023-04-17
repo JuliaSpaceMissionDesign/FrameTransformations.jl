@@ -21,7 +21,7 @@ before_script:
         Pkg.add("Coverage")
         Pkg.add("ERFA")
         Pkg.add("ForwardDiff")
-        Pkg.add("ReferenceFramesRotations")
+        Pkg.add("ReferenceFrameRotations")
         Pkg.add("RemoteFiles")
         Pkg.add("SPICE")
         Pkg.add("StaticArrays")
