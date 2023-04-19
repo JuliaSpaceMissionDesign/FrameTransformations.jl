@@ -31,57 +31,53 @@ function load_tpc!(
 )
     # load and strip lines (remove tabs and spaces)
     # extract lines which are within `\begindata` and `\begintext`
-    parsed = split(
-        join(strip.(readlines(filename)), " "),
-        r"(?<=\\begintext).*?(?=\\begindata\s*BODY*)",
-    )
+    file = join(strip.(readlines(filename)), "\n")
+    parsed = findall(r"(?s)(?<=\\begindata).*?(?=\\begintext)", file)
+    substrings = join([replace(file[mi], "\n" => " ") for mi in parsed], "  ")
     # extract lines which actually have data using the `BODY**** =` pattern
     # this is useful to filter the header and eventual trailings.
     # This vector contains a list of `BODY******* =` elements which will be 
     # splitted afterwards
-    names_idx = findall.(r"(BODY\w{1,}\D{1,}=)", parsed)
+    nameidx = findall(r"(BODY\w{1,}\D{1,}=)", substrings)
     # row data are extracted as between square brackets, the `=` 
     # before the brackets is added
-    datas_idx = findall.(r"=\D{1,}\(([^()]*)\)|(=\D{1,}([0-9]*\.?[0-9]*))", parsed)
+    dataidx = findall.(r"=\D{1,}\(([^()]*)\)|(=\D{1,}([0-9]*\.?[0-9]*))", substrings)
 
     # data are mapped to a dictionary
-    for i in range(1, length(names_idx))
-        if length(names_idx[i]) > 0
+    for i in eachindex(nameidx)
+        if length(nameidx[i]) > 0
             # extract names using idx and split to separate the `=` sign.
-            raw_names = [parsed[i][idx] for idx in names_idx[i]]
-            # extract the naif ids
-            naif_idxs = findall.(r"(?<=BODY)(.*?)(?=_)", raw_names)
-            # extract the property name
-            prop_idxs = findall.(r"(?<=\d_)(.*?)(?==)", raw_names)
+            raw_name = substrings[nameidx[i]]
 
-            # trasform naifids to integers
-            naif =
-                parse.(Int64, [raw_names[j][ids[1]] for (j, ids) in enumerate(naif_idxs)])
-            # trasform property names to symbols
-            prop =
-                Symbol.(
-                    lowercase.(
-                        strip.([raw_names[j][ids[1]] for (j, ids) in enumerate(prop_idxs)])
+            # parse naif id 
+            naif = parse(
+                Int, 
+                match(r"(?<=BODY)(.*?)(?=_)", raw_name).match
+            )
+            # parse property name 
+            prop = Symbol(
+                lowercase(
+                    strip(
+                        match(r"(?<=\d_)(.*?)(?==)", raw_name).match
                     )
                 )
-            data = split.([replace(parsed[i][idx], "D" => "E") for idx in datas_idx[i]])
+            )
+            data = split(replace(substrings[dataidx[i]], "D" => "E"))
 
-            for (name, body, value_) in zip(prop, naif, data)
-                # parse a vector of floats, a float or a integer
-                if value_[2] == "("
-                    value = parse.(Float64, value_[3:(end - 1)])
-                else
-                    try
-                        value = [parse(Int64, value_[2])]
-                    catch
-                        value = [parse(Float64, value_[2])]
-                    end
+            if data[2] == "("
+                # data is a vector
+                value = parse.(Float64, data[3:(end-1)])
+            else 
+                try 
+                    value = [parse(Int64, data[2])]
+                catch
+                    value = [parse(Float64, data[2])]
                 end
-                # create a temporary dictionary
-                temp = Dict(body => Dict(name => length(value) > 1 ? value : value[1]))
-                # merge with the global dictionary
-                mergewith!(merge!, dict, temp)
             end
+            # create temporary dictionary
+            temp = Dict(naif => Dict(prop => length(value) > 1 ? value : value[1]))
+            # merge with the input dictionary
+            mergewith!(merge!, dict, temp)
         end
     end
     return nothing
