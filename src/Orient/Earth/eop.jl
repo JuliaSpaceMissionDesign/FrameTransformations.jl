@@ -160,4 +160,6 @@ Return the offset between [`UTC`](@ref) and [`UT1`](@ref) in seconds.
     return interpolate(IERS_EOP.UT1_UTC, utc)
 end
 
-Tempo.add_timescale(Tempo.TIMESCALES, Tempo.UT1, offset_utc2ut1; parent=Tempo.UTC)
+if !Tempo.has_timescale(Tempo.TIMESCALES, Tempo.timescale_id(Tempo.UT1))
+    Tempo.add_timescale(Tempo.TIMESCALES, Tempo.UT1, offset_utc2ut1; parent=Tempo.UTC)
+end

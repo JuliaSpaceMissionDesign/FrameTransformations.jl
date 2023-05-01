@@ -98,9 +98,3 @@ For a given UTC date, calculate Delta(AT) = TAI-UTC.
 function leapseconds(jd2000::Number)
     return LEAPSECONDS.leap[searchsortedlast(LEAPSECONDS.jd2000, jd2000)]
 end
-
-# Precompilation
-
-precompile(leapseconds, (Number, ))
-precompile(leapseconds, (Float64, ))
-precompile(get_leapseconds, (String, Bool))

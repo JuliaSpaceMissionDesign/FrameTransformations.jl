@@ -13,6 +13,8 @@ using Basic.Utils: skew
 
 using InterfacesUtils.Math: InterpAkima, interpolate, arcsec2rad
 
+import PrecompileTools
+
 # Earth
 include("Earth/Earth.jl")
 
@@ -24,5 +26,43 @@ include("planets.jl")
 
 # Ecliptic 
 include("ecliptic.jl")
+
+
+# Precompilation routines 
+PrecompileTools.@setup_workload begin 
+
+    i2000models = [iau2000a, iau2000b]
+    i2006models = [iau2006a, iau2006b]
+
+    PrecompileTools.@compile_workload begin 
+
+        # Precompile Earth/IERS routines
+        for iaumod in i2006models
+            orient_obliquity(iaumod, 0.0)
+            orient_bias_precession(iaumod, 0.0)
+            orient_bias_precession_nutation(iaumod, 0.0)
+            
+            orient_rot3_itrf_to_gcrf(iaumod, 0.0)
+            orient_rot6_itrf_to_gcrf(iaumod, 0.0)
+            orient_rot9_itrf_to_gcrf(iaumod, 0.0)
+            orient_rot12_itrf_to_gcrf(iaumod, 0.0)
+
+        end
+
+        for iaumod in i2000models
+            orient_bias_precession_nutation(iaumod, 0.0)
+
+            orient_rot3_itrf_to_gcrf(iaumod, 0.0)
+            orient_rot6_itrf_to_gcrf(iaumod, 0.0)
+            orient_rot9_itrf_to_gcrf(iaumod, 0.0)
+            orient_rot12_itrf_to_gcrf(iaumod, 0.0)
+
+        end
+
+        # Ecliptic routines
+        orient_rot3_icrf_to_mememod(0.0)
+
+    end
+end
 
 end

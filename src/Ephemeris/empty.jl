@@ -9,6 +9,3 @@ struct NullEphemerisProvider <: AbstractEphemerisProvider end
 
 ephem_timescale(::NullEphemerisProvider) = TDB
 
-# Precompilation 
-
-precompile(ephem_timescale, (NullEphemerisProvider,))

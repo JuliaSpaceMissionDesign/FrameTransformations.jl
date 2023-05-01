@@ -54,7 +54,7 @@ Find day from the day in the year, the month and using if the year is leap or no
 """
 function find_day(dayinyear::N, month::N, isleap::Bool) where {N<:Integer}
     (!isleap && dayinyear > 365) &&
-        throw(ArgumentError("[Tempo] day of year cannot be 366 for a non-leap year."))
+        throw(ArgumentError("[Tempo] day of year cannot greater than 366 for a non-leap year."))
     previous_days = ifelse(isleap, PREVIOUS_MONTH_END_DAY_LEAP, PREVIOUS_MONTH_END_DAY)
     return dayinyear - previous_days[month]
 end
@@ -520,34 +520,3 @@ end
 function Base.:-(d1::DateTime, δs::N) where {N<:Number}
     return DateTime(j2000s(d1) - δs)
 end
-
-# Precompilation
-precompile(lastj2000dayofyear, (Int, ))
-precompile(find_year, (Int, ))
-precompile(find_month, (Int, Bool))
-precompile(find_day, (Int, Int, Bool))
-
-precompile(Date, (Int, Int, Int))
-precompile(year, (Date, ))
-precompile(month, (Date, ))
-precompile(day, (Date, ))
-
-precompile(cal2jd, (Date, ))
-precompile(j2000, (Date, ))
-precompile(Date, (Int, ))
-precompile(Date, (Int, Int))
-precompile(Date, (Date, Int))
-
-precompile(Time, (Int, Int, Int, Float64))
-precompile(Time, (Int, Int, Float64))
-precompile(Time, (Int, Float64))
-precompile(fraction_of_day, (Time, ))
-precompile(fraction_of_second, (Time, ))
-
-precompile(DateTime, (Date, Time))
-precompile(DateTime, (Int, Int, Int, Int, Int, Int, Float64))
-precompile(DateTime, (String, ))
-precompile(DateTime, (Float64, ))
-precompile(j2000, (DateTime, ))
-precompile(j2000s, (DateTime, ))
-precompile(j2000c, (DateTime, ))

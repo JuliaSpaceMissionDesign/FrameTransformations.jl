@@ -489,30 +489,3 @@ Convert Julian Date (in days) to Julian Centuries
 """
 @inline j2000c(jd) = j2000(jd) / CENTURY2DAY
 @inline j2000c(jd1, jd2) = j2000(jd1, jd2) / CENTURY2DAY
-
-# Precompilation
-
-precompile(j2000c, (Number,))
-precompile(j2000c, (Float64,))
-precompile(j2000c, (Number, Number))
-precompile(j2000c, (Float64, Float64))
-
-precompile(j2000s, (Number,))
-precompile(j2000s, (Float64,))
-precompile(j2000s, (Number, Number))
-precompile(j2000s, (Float64, Float64))
-
-precompile(j2000, (Number,))
-precompile(j2000, (Float64,))
-precompile(j2000, (Number, Number))
-precompile(j2000, (Float64, Float64))
-
-precompile(tai2utc, (Float64, Float64))
-precompile(utc2tai, (Float64, Float64))
-precompile(jd2calhms, (Float64, Float64))
-precompile(jd2cal, (Float64, Float64))
-precompile(calhms2jd, (Int, Int, Int, Int, Int, Float64))
-precompile(cal2jd, (Int, Int, Int))
-precompile(fd2hmsf, (Float64, ))
-precompile(fd2hms, (Float64, ))
-precompile(hms2fd, (Float64, Float64, Float64))
