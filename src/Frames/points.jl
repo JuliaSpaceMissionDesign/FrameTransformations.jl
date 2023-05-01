@@ -367,7 +367,7 @@ See also [`add_point_root!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dyna
 and [`add_point_updatable!`](@ref)
 """
 function add_point_ephemeris!(
-    frames::FrameSystem{O,T}, name::Symbol, naifid::Int, parentid=nothing, axesid=nothing
+    frames::FrameSystem{O,T}, name::Symbol, naifid::Int, parentid=nothing, axes=nothing
 ) where {O,T}
 
     # Check that the kernels contain the ephemeris data for the given naifid
