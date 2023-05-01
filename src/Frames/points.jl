@@ -237,6 +237,18 @@ origin, i.e., its position will equal (0., 0., 0.).
 - `point` -- Target point instance
 - `axes` -- ID or instance of the axes where the point state-vector is expressed. 
 
+----
+
+    add_point_root!(frames, name, id, axesid)
+
+Add a root point fo `frames` to initialize the points graphs. 
+
+### Inputs 
+- `frames` -- [`FrameSystem`](@ref) object 
+- `name` -- Name of the root point 
+- `id` -- Id (NAIFId) of the root point 
+- `axesid` -- Id of the axes where the point state-vector is expressed.
+
 !!! note
     This operation can be performed only once per [`FrameSystem`](@ref) object: multiple root 
     points in the same graph are both inadmissible and meaningless.
@@ -265,8 +277,8 @@ See also [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), [`add_point
 and [`add_point_updatable!`](@ref)
 """
 function add_point_root!(
-    frames::FrameSystem{O,T}, point::AbstractFramePoint, axes
-) where {O,T}
+    frames::FrameSystem{O, T}, name::Symbol, id::Int, axes
+) where {O, T}
 
     # Check for root-point existence 
     if !isempty(frames_points(frames))
@@ -274,13 +286,15 @@ function add_point_root!(
     end
 
     return build_point(
-        frames,
-        point_name(point),
-        point_id(point),
-        :RootPoint,
-        axes_alias(axes),
-        FramePointFunctions{T,O}(),
+        frames, name, id, :RootPoint, axes_alias(axes), FramePointFunctions{T, O}()
     )
+end
+
+function add_point_root!(
+    frames::FrameSystem{O,T}, point::AbstractFramePoint, axes
+) where {O,T}
+
+    return add_point_root!(frames, point_name(point), point_id(point), axes)
 end
 
 """ 
@@ -290,6 +304,26 @@ Add `point` as an ephemeris point to `frames`. This function is intended for poi
 state-vector is read from ephemeris kernels (i.e., de440.bsp). If a parent point is not
 specified, it will automatically be assigned to the point with respect to which the ephemeris 
 data is written in the kernels.
+
+### Inputs 
+- `frames` -- [`FrameSystem`](@ref) object 
+- `point` -- [`FramePointNode`](@ref) instance 
+- `parent` -- [`FramePointNode`](@ref) parent instance 
+
+----
+
+    add_point_ephemeris!(frames, name::Symbol, naifid::Int, parentid::Int=nothing, axesid::Int=nothing)
+
+Add a new point called `name` and with id `naifid` to `frames`. If a parentid is not specified,
+it will be automatically assigned depending on the ephemeris kernels.
+
+### Inputs 
+- `frames` -- [`FrameSystem`](@ref) object 
+- `name::Symbol` -- name of the point 
+- `naifid::Int` -- NAIFId associated to the point 
+- `parentid::Int` -- NAIFId associated to the parent point, default is `nothing`
+- `axesid::Int` -- Id associated to the axes in which the states are expressed, default `nothing` 
+    (taken automatically from the ephemeris files).
 
 Ephemeris points only accept as parent points root-points or other ephemeris points.
 
@@ -336,15 +370,14 @@ See also [`add_point_root!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dyna
 and [`add_point_updatable!`](@ref)
 """
 function add_point_ephemeris!(
-    frames::FrameSystem{O,T}, point::AbstractFramePoint, parent=nothing
-) where {O,T}
-    NAIFId = point_id(point)
+    frames::FrameSystem{O, T}, name::Symbol, naifid::Int, parentid=nothing, axesid=nothing
+) where {O, T}
 
-    # Check that the kernels contain the ephemeris data for the given NAIFId
-    if !(NAIFId in ephemeris_points(frames))
+    # Check that the kernels contain the ephemeris data for the given naifid
+    if !(naifid in ephemeris_points(frames))
         throw(
             ArgumentError(
-                "Ephemeris data for NAIFID $NAIFId is not available " *
+                "Ephemeris data for NAIFID $naifid is not available " *
                 "in the kernels loaded in the given FrameSystem.",
             ),
         )
@@ -352,38 +385,35 @@ function add_point_ephemeris!(
 
     pos_records = ephem_position_records(frames.eph)
 
-    if isnothing(parent)
+    if isnothing(parentid)
         # Retrieve the parent from the ephemeris data 
-        parentid = nothing
         for pr in pos_records
-            if pr.target == NAIFId
+            if pr.target == naifid
                 if isnothing(parentid)
                     parentid = pr.center
                 elseif parentid != pr.center
                     throw(
                         ErrorException(
                             "UnambiguityError: at least two set of data " *
-                            "with different centers are available for point with NAIFID $NAIFId.",
+                            "with different centers are available for point with NAIFID $naifid.",
                         ),
                     )
                 end
             end
         end
 
-        # Check that the default parent is available in the FrameSystem
-        if !has_point(frames, parentid)
+         # Check that the default parent is available in the FrameSystem
+         if !has_point(frames, parentid)
             throw(
                 ArgumentError(
-                    "Ephemeris data for point with NAIFID $NAIFId is available " *
+                    "Ephemeris data for point with NAIFID $naifid is available " *
                     "with respect to point with NAIFID $parentid, which has not yet been defined " *
                     "in the given FrameSystem.",
                 ),
             )
         end
 
-    else
-        # Check that the parent point is admissible
-        parentid = point_alias(parent)
+    else 
 
         # Check that the parent is registered! 
         if !has_point(frames, parentid)
@@ -396,6 +426,7 @@ function add_point_ephemeris!(
         end
 
         parentclass = get_node(frames_points(frames), parentid).class
+        
         if !(parentclass in (:RootPoint, :EphemerisPoint))
             throw(
                 ArgumentError(
@@ -412,16 +443,15 @@ function add_point_ephemeris!(
         throw(
             ArgumentError(
                 "Insufficient ephemeris data has been loaded to compute " *
-                "the point with NAIFID $NAIFId with respect to the parent point with " *
+                "the point with NAIFID $naifid with respect to the parent point with " *
                 "NAIFID $parentid",
             ),
         )
     end
 
     # Retrieves the axes stored in the ephemeris kernels for the given point
-    axesid = nothing
     for pr in pos_records
-        if pr.target == NAIFId
+        if pr.target == naifid
             if isnothing(axesid)
                 axesid = pr.frame
             elseif axesid != pr.frame
@@ -441,7 +471,7 @@ function add_point_ephemeris!(
     if !has_axes(frames, axesid)
         throw(
             ArgumentError(
-                "Ephemeris data for point with NAIFID $NAIFId is expressed " *
+                "Ephemeris data for point with NAIFID $naifid is expressed " *
                 "in a set of axes with ID $axesid, which are yet to be defined in the " *
                 "given FrameSystem.",
             ),
@@ -449,15 +479,26 @@ function add_point_ephemeris!(
     end
 
     funs = FramePointFunctions{T,O}(
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 0),
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 1),
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 2),
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, NAIFId, parentid, 3),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 0),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 1),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 2),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 3),
     )
 
     return build_point(
-        frames, point_name(point), NAIFId, :EphemerisPoint, axesid, funs; parentid=parentid
+        frames, name, naifid, :EphemerisPoint, axesid, funs; parentid=parentid
     )
+end
+
+function add_point_ephemeris!(
+    frames::FrameSystem{O,T}, point::AbstractFramePoint, parent=nothing
+) where {O,T}
+
+    return add_point_ephemeris!(
+        frames, point_name(point), point_alias(point), 
+        isnothing(parent) ? nothing : point_alias(parent)
+    )
+
 end
 
 """
@@ -466,6 +507,28 @@ end
 Add `point` as a fixed point to `frames`. Fixed points are those whose positions have a 
 constant `offset` with respect their `parent` points in the given set of `axes`. Thus, points 
 eligible for this class must have null velocity and acceleration with respect to `parent`.
+
+### Inputs 
+- `frames` -- [`FrameSystem`](@ref) object 
+- `point` -- [`FramePointNode`](@ref) instance 
+- `parent` -- [`FramePointNode`](@ref) parent instance 
+- `axes` -- [`FrameAxesNode`](@ref) instance 
+- `offset` -- Offset with respect to the parent
+
+----
+
+    add_point_fixed!(frames, name::Symbol, pointid::Int, parentid::Int, axesid::Int, offset::AbstractVector)
+
+Add a new fixed point called `name` with id `pointid` and parent `parentid` in the axes 
+`axesid` to `frames`.
+
+- `frames` -- [`FrameSystem`](@ref) object 
+- `name::Symbol` -- name of the point 
+- `naifid::Int` -- NAIFId associated to the point 
+- `parentid::Int` -- NAIFId associated to the parent point, default is `nothing`
+- `axesid::Int` -- Id associated to the axes in which the states are expressed, default `nothing` 
+    (taken automatically from the ephemeris files).
+- `offset` -- Offset with respect to the parent
 
 ### Examples 
 ```julia-repl
@@ -491,12 +554,10 @@ See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),
 [`add_point_dynamical!`](@ref) and [`add_point_updatable!`](@ref)
 """
 function add_point_fixed!(
-    frames::FrameSystem{O,T},
-    point::AbstractFramePoint,
-    parent,
-    axes,
-    offset::AbstractVector{T},
-) where {O,T}
+    frames::FrameSystem{O,T}, name::Symbol, pointid::Int, parentid::Int, axesid::Int, 
+    offset::AbstractVector{T}
+) where {O, T}
+
     if length(offset) != 3
         throw(
             DimensionMismatch(
@@ -506,15 +567,22 @@ function add_point_fixed!(
     end
 
     return build_point(
-        frames,
-        point_name(point),
-        point_id(point),
-        :FixedPoint,
-        axes_alias(axes),
-        FramePointFunctions{T,O}();
-        parentid=point_alias(parent),
-        offset=offset,
+        frames, name, pointid, :FixedPoint, axesid, FramePointFunctions{T, O}();
+        parentid=parentid, offset=offset
     )
+
+end
+
+function add_point_fixed!(
+    frames::FrameSystem{O,T},
+    point::AbstractFramePoint,
+    parent,
+    axes,
+    offset::AbstractVector{T},
+) where {O,T}
+    return add_point_fixed!(
+        frames, point_name(point), point_alias(point), point_alias(parent),
+        axes_alias(axes), offset)
 end
 
 """
@@ -523,6 +591,13 @@ end
 Add `point` as an updatable point to `frames`. Differently from all the other classes, the 
 state vector for updatable points (expressed in the set of input `axes`) must be manually 
 updated before being used for other computations.  
+
+----
+
+    add_point_updatable!(frames, name::Symbol, pointid::Int, parentid::Int, axesid::Int)
+
+Add a point called `name` with id `pointid` to `frames` as a state vector with respect to 
+`parentid` in the `axesid` axes.
 
 !!! note 
     This class of points becomes particularly useful if the state vector is not known a-priori, 
@@ -580,6 +655,16 @@ function add_point_updatable!(
     )
 end
 
+function add_point_updatable!(
+    frames::FrameSystem{O,T}, name::Symbol, pointid::Int, parentid::Int, axesid::Int
+) where {O, T}
+    return build_point(
+        frames, name, pointid, :UpdatablePoint, axesid, FramePointFunctions{T, O}();
+        parentid=parentid
+    )
+
+end
+
 """ 
     add_point_dynamical!(frames, point, parent, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing)
 
@@ -632,15 +717,10 @@ See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_f
 and [`add_point_updatable!`](@ref)
 """
 function add_point_dynamical!(
-    frames::FrameSystem{O,T},
-    point::AbstractFramePoint,
-    parent,
-    axes,
-    fun,
-    δfun=nothing,
-    δ²fun=nothing,
-    δ³fun=nothing,
-) where {O,T}
+    frames::FrameSystem{O, T}, name::Symbol, pointid::Int, parentid::Int, axesid::Int,
+    fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing,
+) where {O, T}
+
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
             @warn "ignoring $fcn, frame system order is less than $(order+1)"
@@ -691,13 +771,25 @@ function add_point_dynamical!(
     )
 
     return build_point(
-        frames,
-        point_name(point),
-        point_id(point),
-        :DynamicalPoint,
-        axes_alias(axes),
-        funs;
-        parentid=point_alias(parent),
+        frames, name, pointid, :DynamicalPoint, axesid, funs;
+        parentid=parentid
+    )
+
+end
+function add_point_dynamical!(
+    frames::FrameSystem{O,T},
+    point::AbstractFramePoint,
+    parent,
+    axes,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
+    
+    return add_point_dynamical!(
+        frames, point_name(point), point_alias(point), point_alias(parent), 
+        axes_alias(axes), fun, δfun, δ²fun, δ³fun
     )
 end
 
