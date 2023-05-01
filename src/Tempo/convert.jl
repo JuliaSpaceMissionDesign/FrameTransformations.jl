@@ -192,8 +192,7 @@ Convert Gregorian Calendar date and time to Julian Date.
 - `jd1` -- J2000 zero point: always 2451545.0
 - `jd2` -- J2000 Date for 12 hrs
 """
-function calhms2jd(Y::Number, M::Number, D::Number, 
-    h::Number, m::Number, sec::Number)
+function calhms2jd(Y::Number, M::Number, D::Number, h::Number, m::Number, sec::Number)
     jd1, jd2 = cal2jd(Y, M, D)
     fd = hms2fd(h, m, sec)
     return jd1, jd2 + fd - 0.5

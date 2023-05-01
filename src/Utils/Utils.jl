@@ -10,7 +10,7 @@ using InterfacesUtils
 import InterfacesUtils.IO: load
 using InterfacesUtils.IO: @filetype, AbstractFile
 
-import PrecompileTools
+using PrecompileTools: PrecompileTools
 
 # IO 
 include("IO/tpc.jl")
@@ -23,8 +23,7 @@ include("Math/vectors.jl")
 include("Math/rotation.jl")
 
 # Precompilation routines 
-PrecompileTools.@setup_workload begin 
-
+PrecompileTools.@setup_workload begin
     x3 = rand(3)
     x6 = rand(6)
     x9 = rand(9)
@@ -35,12 +34,16 @@ PrecompileTools.@setup_workload begin
     x9s = SA[rand(9)...]
     x12s = SA[rand(12)...]
 
-    vfcns = ((normalize, cross3), (δnormalize, cross6), 
-            (δ²normalize, cross9), (δ³normalize, cross12))
-    
+    vfcns = (
+        (normalize, cross3),
+        (δnormalize, cross6),
+        (δ²normalize, cross9),
+        (δ³normalize, cross12),
+    )
+
     vects = ((x3, x3s), (x6, x6s), (x9, x9s), (x12, x12s))
 
-    PrecompileTools.@compile_workload begin 
+    PrecompileTools.@compile_workload begin
 
         # Precompile Geodesy routines
         for x in (x3, x3s)
@@ -58,7 +61,7 @@ PrecompileTools.@setup_workload begin
 
         # Precompile vector routines
         for (vfcn, vx) in zip(vfcns, vects)
-            for x in vx 
+            for x in vx
                 vfcn[1](x)
                 vfcn[2](x, x)
             end
@@ -88,7 +91,6 @@ PrecompileTools.@setup_workload begin
 
         _3angles_to_δ³dcm(x12, :ZXZ)
         _3angles_to_δ³dcm(x12s, :ZXZ)
-        
     end
 end
 

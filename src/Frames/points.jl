@@ -276,9 +276,7 @@ ERROR: ArgumentError: A root-point is already registed in the given FrameSystem.
 See also [`add_point_ephemeris!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dynamical!`](@ref)
 and [`add_point_updatable!`](@ref)
 """
-function add_point_root!(
-    frames::FrameSystem{O, T}, name::Symbol, id::Int, axes
-) where {O, T}
+function add_point_root!(frames::FrameSystem{O,T}, name::Symbol, id::Int, axes) where {O,T}
 
     # Check for root-point existence 
     if !isempty(frames_points(frames))
@@ -286,14 +284,13 @@ function add_point_root!(
     end
 
     return build_point(
-        frames, name, id, :RootPoint, axes_alias(axes), FramePointFunctions{T, O}()
+        frames, name, id, :RootPoint, axes_alias(axes), FramePointFunctions{T,O}()
     )
 end
 
 function add_point_root!(
     frames::FrameSystem{O,T}, point::AbstractFramePoint, axes
 ) where {O,T}
-
     return add_point_root!(frames, point_name(point), point_id(point), axes)
 end
 
@@ -370,8 +367,8 @@ See also [`add_point_root!`](@ref), [`add_point_fixed!`](@ref), [`add_point_dyna
 and [`add_point_updatable!`](@ref)
 """
 function add_point_ephemeris!(
-    frames::FrameSystem{O, T}, name::Symbol, naifid::Int, parentid=nothing, axesid=nothing
-) where {O, T}
+    frames::FrameSystem{O,T}, name::Symbol, naifid::Int, parentid=nothing, axesid=nothing
+) where {O,T}
 
     # Check that the kernels contain the ephemeris data for the given naifid
     if !(naifid in ephemeris_points(frames))
@@ -402,8 +399,8 @@ function add_point_ephemeris!(
             end
         end
 
-         # Check that the default parent is available in the FrameSystem
-         if !has_point(frames, parentid)
+        # Check that the default parent is available in the FrameSystem
+        if !has_point(frames, parentid)
             throw(
                 ArgumentError(
                     "Ephemeris data for point with NAIFID $naifid is available " *
@@ -413,7 +410,7 @@ function add_point_ephemeris!(
             )
         end
 
-    else 
+    else
 
         # Check that the parent is registered! 
         if !has_point(frames, parentid)
@@ -426,7 +423,7 @@ function add_point_ephemeris!(
         end
 
         parentclass = get_node(frames_points(frames), parentid).class
-        
+
         if !(parentclass in (:RootPoint, :EphemerisPoint))
             throw(
                 ArgumentError(
@@ -493,12 +490,12 @@ end
 function add_point_ephemeris!(
     frames::FrameSystem{O,T}, point::AbstractFramePoint, parent=nothing
 ) where {O,T}
-
     return add_point_ephemeris!(
-        frames, point_name(point), point_alias(point), 
-        isnothing(parent) ? nothing : point_alias(parent)
+        frames,
+        point_name(point),
+        point_alias(point),
+        isnothing(parent) ? nothing : point_alias(parent),
     )
-
 end
 
 """
@@ -554,10 +551,13 @@ See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),
 [`add_point_dynamical!`](@ref) and [`add_point_updatable!`](@ref)
 """
 function add_point_fixed!(
-    frames::FrameSystem{O,T}, name::Symbol, pointid::Int, parentid::Int, axesid::Int, 
-    offset::AbstractVector{T}
-) where {O, T}
-
+    frames::FrameSystem{O,T},
+    name::Symbol,
+    pointid::Int,
+    parentid::Int,
+    axesid::Int,
+    offset::AbstractVector{T},
+) where {O,T}
     if length(offset) != 3
         throw(
             DimensionMismatch(
@@ -567,10 +567,15 @@ function add_point_fixed!(
     end
 
     return build_point(
-        frames, name, pointid, :FixedPoint, axesid, FramePointFunctions{T, O}();
-        parentid=parentid, offset=offset
+        frames,
+        name,
+        pointid,
+        :FixedPoint,
+        axesid,
+        FramePointFunctions{T,O}();
+        parentid=parentid,
+        offset=offset,
     )
-
 end
 
 function add_point_fixed!(
@@ -581,8 +586,13 @@ function add_point_fixed!(
     offset::AbstractVector{T},
 ) where {O,T}
     return add_point_fixed!(
-        frames, point_name(point), point_alias(point), point_alias(parent),
-        axes_alias(axes), offset)
+        frames,
+        point_name(point),
+        point_alias(point),
+        point_alias(parent),
+        axes_alias(axes),
+        offset,
+    )
 end
 
 """
@@ -657,12 +667,16 @@ end
 
 function add_point_updatable!(
     frames::FrameSystem{O,T}, name::Symbol, pointid::Int, parentid::Int, axesid::Int
-) where {O, T}
+) where {O,T}
     return build_point(
-        frames, name, pointid, :UpdatablePoint, axesid, FramePointFunctions{T, O}();
-        parentid=parentid
+        frames,
+        name,
+        pointid,
+        :UpdatablePoint,
+        axesid,
+        FramePointFunctions{T,O}();
+        parentid=parentid,
     )
-
 end
 
 """ 
@@ -717,10 +731,16 @@ See also [`add_point_root!`](@ref), [`add_point_ephemeris!`](@ref),[`add_point_f
 and [`add_point_updatable!`](@ref)
 """
 function add_point_dynamical!(
-    frames::FrameSystem{O, T}, name::Symbol, pointid::Int, parentid::Int, axesid::Int,
-    fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing,
-) where {O, T}
-
+    frames::FrameSystem{O,T},
+    name::Symbol,
+    pointid::Int,
+    parentid::Int,
+    axesid::Int,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
             @warn "ignoring $fcn, frame system order is less than $(order+1)"
@@ -771,10 +791,8 @@ function add_point_dynamical!(
     )
 
     return build_point(
-        frames, name, pointid, :DynamicalPoint, axesid, funs;
-        parentid=parentid
+        frames, name, pointid, :DynamicalPoint, axesid, funs; parentid=parentid
     )
-
 end
 function add_point_dynamical!(
     frames::FrameSystem{O,T},
@@ -786,10 +804,16 @@ function add_point_dynamical!(
     δ²fun=nothing,
     δ³fun=nothing,
 ) where {O,T}
-    
     return add_point_dynamical!(
-        frames, point_name(point), point_alias(point), point_alias(parent), 
-        axes_alias(axes), fun, δfun, δ²fun, δ³fun
+        frames,
+        point_name(point),
+        point_alias(point),
+        point_alias(parent),
+        axes_alias(axes),
+        fun,
+        δfun,
+        δ²fun,
+        δ³fun,
     )
 end
 

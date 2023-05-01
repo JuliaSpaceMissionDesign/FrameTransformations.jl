@@ -4,9 +4,9 @@ setup = quote
     using ReferenceFrameRotations
     using Basic
     using Basic.Tempo
-    using Basic.Ephemeris 
-    using Basic.Orient 
-    using Basic.Frames 
+    using Basic.Ephemeris
+    using Basic.Orient
+    using Basic.Frames
     using Basic.Utils
 
     const DE440_KERNEL_PATH = "/home/andrea/Documents/Kernels/spk/de440.bsp"
@@ -49,5 +49,5 @@ makedocs(;
     ],
     # strict=!("strict=false" in ARGS),
     # doctest=("doctest=only" in ARGS) ? :only : true,
-    clean = true,
+    clean=true,
 )

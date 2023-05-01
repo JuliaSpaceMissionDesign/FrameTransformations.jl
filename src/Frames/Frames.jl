@@ -50,7 +50,7 @@ using MultiGraphs:
 
 import MultiGraphs: get_node_id
 
-import PrecompileTools
+using PrecompileTools: PrecompileTools
 
 include("rotation.jl")
 
@@ -70,8 +70,7 @@ include("Definitions/earth.jl")
 include("Definitions/moon.jl")
 
 # Precompilation routines 
-PrecompileTools.@setup_workload begin 
-
+PrecompileTools.@setup_workload begin
     x12 = rand(12)
 
     x3s = SA[rand(3)...]
@@ -79,7 +78,7 @@ PrecompileTools.@setup_workload begin
     x9s = SA[rand(9)...]
     x12s = SA[rand(12)...]
 
-    PrecompileTools.@compile_workload begin 
+    PrecompileTools.@compile_workload begin
 
         # Precompile twovectors routines 
         twovectors_to_dcm(x3s, x3s, :XZ)
@@ -99,9 +98,7 @@ PrecompileTools.@setup_workload begin
         _two_vectors_to_rot6(x12, x12, :XZ)
         _two_vectors_to_rot9(x12, x12, :XZ)
         _two_vectors_to_rot12(x12, x12, :XZ)
-
     end
 end
-
 
 end

@@ -72,16 +72,16 @@ end
         y, m, d, _, _, _, _ = _random_datetime()
         ejd = sum(ERFA.cal2jd(y, m, d))
         bjd = sum(Tempo.cal2jd(y, m, d))
-        @test ejd+0.5 ≈ bjd  atol=1e-4
+        @test ejd + 0.5 ≈ bjd atol = 1e-4
     end
 end
 
 @testset "Function calhms2jd vs ERFA (dtf2d.c)" begin
     for _ in 1:250
         y, m, d, H, M, S, f = _random_datetime()
-        ejd = sum(ERFA.dtf2d("NONE", y, m, d, H, M, S+f))
-        bjd = sum(Tempo.calhms2jd(y, m, d, H, M, S+f))
-        @test ejd ≈ bjd     atol=1e-4
+        ejd = sum(ERFA.dtf2d("NONE", y, m, d, H, M, S + f))
+        bjd = sum(Tempo.calhms2jd(y, m, d, H, M, S + f))
+        @test ejd ≈ bjd atol = 1e-4
     end
 end
 

@@ -8,4 +8,3 @@ ephemeris files.
 struct NullEphemerisProvider <: AbstractEphemerisProvider end
 
 ephem_timescale(::NullEphemerisProvider) = TDB
-

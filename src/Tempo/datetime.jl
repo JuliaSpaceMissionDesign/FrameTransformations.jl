@@ -53,8 +53,9 @@ end
 Find day from the day in the year, the month and using if the year is leap or not.
 """
 function find_day(dayinyear::N, month::N, isleap::Bool) where {N<:Integer}
-    (!isleap && dayinyear > 365) &&
-        throw(ArgumentError("[Tempo] day of year cannot greater than 366 for a non-leap year."))
+    (!isleap && dayinyear > 365) && throw(
+        ArgumentError("[Tempo] day of year cannot greater than 366 for a non-leap year."),
+    )
     previous_days = ifelse(isleap, PREVIOUS_MONTH_END_DAY_LEAP, PREVIOUS_MONTH_END_DAY)
     return dayinyear - previous_days[month]
 end

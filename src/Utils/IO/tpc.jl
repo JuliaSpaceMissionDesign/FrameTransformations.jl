@@ -50,25 +50,16 @@ function load_tpc!(
             raw_name = substrings[nameidx[i]]
 
             # parse naif id 
-            naif = parse(
-                Int, 
-                match(r"(?<=BODY)(.*?)(?=_)", raw_name).match
-            )
+            naif = parse(Int, match(r"(?<=BODY)(.*?)(?=_)", raw_name).match)
             # parse property name 
-            prop = Symbol(
-                lowercase(
-                    strip(
-                        match(r"(?<=\d_)(.*?)(?==)", raw_name).match
-                    )
-                )
-            )
+            prop = Symbol(lowercase(strip(match(r"(?<=\d_)(.*?)(?==)", raw_name).match)))
             data = split(replace(substrings[dataidx[i]], "D" => "E"))
 
             if data[2] == "("
                 # data is a vector
-                value = parse.(Float64, data[3:(end-1)])
-            else 
-                try 
+                value = parse.(Float64, data[3:(end - 1)])
+            else
+                try
                     value = [parse(Int64, data[2])]
                 catch
                     value = [parse(Float64, data[2])]

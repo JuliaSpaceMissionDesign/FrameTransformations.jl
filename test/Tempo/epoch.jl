@@ -1,5 +1,4 @@
 
-
 @testset "Epoch" verbose = true begin
     @testset "String constructors" begin
         s, ry, rm, rd, rH, rM, rS, rF = _random_epoch()
