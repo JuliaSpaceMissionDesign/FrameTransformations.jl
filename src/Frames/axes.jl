@@ -273,6 +273,12 @@ to initialise the axes graph. Only after the addition of a set of inertial axes,
 classes may be added aswell. Once a set of root-axes has been added, `parent` and `dcm` 
 become mandatory fields.
 
+----
+
+    add_axes_inertial!(frames, name::Symbol, axesid::Int; parentid=nothing, dcm=nothing)
+
+Add new axes `name` with id `axesid` to `frames`. *Low-level function.*
+
 !!! note
     The parent of a set of inertial axes must also be inertial. FixedOffset axes that are 
     that only have inertial parents are also accepted.
@@ -298,16 +304,12 @@ julia> add_axes_inertial!(FRAMES, ECLIPJ2000; parent=ICRF, dcm=angle_to_dcm(π/3
 See also [`add_axes_rotating!`](@ref), [`add_axes_fixedoffset!`](@ref) and [`add_axes_computable!`](@ref) 
 """
 function add_axes_inertial!(
-    frames::FrameSystem{O,T},
-    axes::AbstractFrameAxes;
-    parent=nothing,
-    dcm::Union{Nothing,DCM{T}}=nothing,
-) where {O,T}
-    name = axes_name(axes)
-    pid = isnothing(parent) ? nothing : axes_alias(parent)
+    frames::FrameSystem{O,T}, name::Symbol, axesid::Int; 
+    parentid=nothing, dcm::Union{Nothing,DCM{T}}=nothing
+) where {O, T}
 
     # Checks for root-axes existence 
-    if isnothing(pid)
+    if isnothing(parentid)
         if !isempty(frames_axes(frames))
             throw(
                 ArgumentError(
@@ -323,34 +325,40 @@ function add_axes_inertial!(
 
     else
         # Check that the parent axes are contained in frames! 
-        if !has_axes(frames, pid)
+        if !has_axes(frames, parentid)
             throw(
                 ArgumentError(
-                    "The parent axes $pid are not present in the given FrameSystem."
+                    "The parent axes $parentid are not present in the given FrameSystem."
                 ),
             )
         end
 
         # Check that the parent axes are inertial\timefixed
-        if !is_timefixed(frames, pid)
+        if !is_timefixed(frames, parentid)
             throw(ArgumentError("The parent axes for inertial axes must also be inertial."))
         end
 
         if isnothing(dcm)
-            throw(ArgumentError("Missing DCM from axes $parent."))
+            throw(ArgumentError("Missing DCM from axes with id $parentid."))
         end
     end
 
-    # construct the axes and insert in the FrameSystem
     return build_axes(
-        frames,
-        name,
-        axes_id(axes),
-        :InertialAxes,
-        FrameAxesFunctions{T,O}();
-        parentid=pid,
-        dcm=dcm,
+        frames, name, axesid, :InertialAxes, FrameAxesFunctions{T, O}(),
+        parentid=parentid, dcm=dcm
     )
+
+end
+
+function add_axes_inertial!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes;
+    parent=nothing,
+    dcm::Union{Nothing,DCM{T}}=nothing,
+) where {O,T}
+    pid = isnothing(parent) ? nothing : axes_alias(parent)
+    return add_axes_inertial!(
+        frames, axes_name(axes), axes_id(axes); parentid=pid, dcm=dcm)
 end
 
 """
@@ -358,6 +366,13 @@ end
 
 Add `axes` as a set of fixed offset axes to `frames`. Fixed offset axes have a constant 
 orientation with respect to their `parent` axes, represented by `dcm`, a Direction Cosine Matrix (DCM).
+
+----
+
+    add_axes_fixedoffset!(frames, name::Symbol, axesid::Int, parentid::Int, dcm:DMC{T}) where {T}
+
+Add new axes `name` with id `axesid` to `frames` with a fixed-offset from `parentid`. 
+*Low-level function.*
 
 !!! note 
     While inertial axes do not rotate with respect to the star background, fixed offset axes are only 
@@ -391,6 +406,15 @@ function add_axes_fixedoffset!(
         FrameAxesFunctions{T,O}();
         parentid=axes_alias(parent),
         dcm=dcm,
+    )
+end
+
+function add_axes_fixedoffset!(
+    frames::FrameSystem{O,T}, name::Symbol, axesid::Int, parentid::Int, dcm::DCM{T}
+) where {O,T}
+    return build_axes(
+        frames, name, axesid, :FixedOffsetAxes, FrameAxesFunctions{T,O}();
+        parentid=parentid, dcm=dcm
     )
 end
 
@@ -447,13 +471,15 @@ See also [`add_axes_fixedoffset!`](@ref), [`add_axes_inertial!`](@ref) and [`add
 """
 function add_axes_rotating!(
     frames::FrameSystem{O,T},
-    axes::AbstractFrameAxes,
-    parent,
+    name, 
+    axesid,
+    parentid,
     fun,
     δfun=nothing,
     δ²fun=nothing,
     δ³fun=nothing,
 ) where {O,T}
+
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
             @warn "ignoring $fcn, frame system order is less than $(order+1)"
@@ -504,14 +530,23 @@ function add_axes_rotating!(
         end,
     )
 
-    return build_axes(
-        frames,
-        axes_name(axes),
-        axes_id(axes),
-        :RotatingAxes,
-        funs;
-        parentid=axes_alias(parent),
-    )
+    return build_axes(frames, name, axesid, :RotatingAxes, funs; parentid=parentid)
+
+end
+
+function add_axes_rotating!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    parent,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
+
+    return add_axes_rotating!(frames, axes_name(axes), axes_id(axes), axes_alias(parent),
+    fun, δfun, δ²fun, δ³fun)
+
 end
 
 """
@@ -583,8 +618,9 @@ and [`add_axes_computable!`](@ref)
 """
 function add_axes_computable!(
     frames::FrameSystem{O,T},
-    axes::AbstractFrameAxes,
-    parent,
+    name, 
+    axesid,
+    parentid,
     v1::ComputableAxesVector,
     v2::ComputableAxesVector,
     seq::Symbol,
@@ -616,13 +652,27 @@ function add_axes_computable!(
 
     return build_axes(
         frames,
-        axes_name(axes),
-        axes_id(axes),
+        name,
+        axesid,
         :ComputableAxes,
         funs;
-        parentid=axes_alias(parent),
+        parentid=parentid,
         cax_prop=ComputableAxesProperties(v1, v2),
     )
+end
+
+function add_axes_computable!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    parent,
+    v1::ComputableAxesVector,
+    v2::ComputableAxesVector,
+    seq::Symbol,
+) where {O,T}
+
+    return add_axes_computable!(frames, axes_name(axes), axes_id(axes), axes_alias(parent),
+    v1, v2, seq)
+
 end
 
 """
@@ -640,7 +690,7 @@ despite the rotation depends on time).
     function does not perform any checks on the output types. 
 """
 function add_axes_projected!(
-    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent, fun
+    frames::FrameSystem{O,T}, name, axesid, parentid, fun
 ) where {O,T}
     funs = FrameAxesFunctions{T,O}(
         (t, x, y) -> Rotation{O}(fun(t)),
@@ -651,12 +701,18 @@ function add_axes_projected!(
 
     return build_axes(
         frames,
-        axes_name(axes),
-        axes_id(axes),
+        name,
+        axesid,
         :ProjectedAxes,
         funs;
-        parentid=axes_alias(parent),
+        parentid=parentid,
     )
+end
+
+function add_axes_projected!(
+    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent, fun
+) where {O,T}
+    return add_axes_projected!(frames, axes_name(axes), axes_id(axes), axes_alias(parent), fun)
 end
 
 """
@@ -692,9 +748,8 @@ and [`add_axes_computable!`](@ref)
 
 """
 function add_axes_ephemeris!(
-    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, rot_seq::Symbol
+    frames::FrameSystem{O,T}, name, axesid, rot_seq::Symbol
 ) where {O,T}
-    axesid = axes_id(axes)
     parentid = _check_axes_ephemeris(frames, axesid)
 
     if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
@@ -710,19 +765,27 @@ function add_axes_ephemeris!(
     end
 
     return build_axes(
-        frames, axes_name(axes), axesid, :EphemerisAxes, funs; parentid=parentid
+        frames, name, axesid, :EphemerisAxes, funs; parentid=parentid
     )
 end
 
 function add_axes_ephemeris!(
+    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, rot_seq::Symbol
+) where {O,T}
+   
+    return add_axes_ephemeris!(
+        frames, axes_name(axes), axes_id(axes), rot_seq)
+end
+
+function add_axes_ephemeris!(
     frames::FrameSystem{O,T},
-    axes::AbstractFrameAxes,
+    name,
+    axesid,
     fun,
     δfun=nothing,
     δ²fun=nothing,
     δ³fun=nothing,
 ) where {O,T}
-    axesid = axes_id(axes)
     parentid = _check_axes_ephemeris(frames, axesid)
 
     if (
@@ -745,7 +808,21 @@ function add_axes_ephemeris!(
     )
 
     return build_axes(
-        frames, axes_name(axes), axesid, :EphemerisAxes, funs; parentid=parentid
+        frames, name, axesid, :EphemerisAxes, funs; parentid=parentid
+    )
+end
+
+function add_axes_ephemeris!(
+    frames::FrameSystem{O,T},
+    axes::AbstractFrameAxes,
+    fun,
+    δfun=nothing,
+    δ²fun=nothing,
+    δ³fun=nothing,
+) where {O,T}
+
+    return add_axes_ephemeris!(
+        frames, axes_name(axes), axes_id(axes), fun, δfun, δ²fun, δ³fun
     )
 end
 
