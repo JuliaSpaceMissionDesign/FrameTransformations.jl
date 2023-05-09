@@ -1,8 +1,5 @@
 export Rotation, order
 
-import LinearAlgebra: matprod, UniformScaling
-import StaticArrays: similar_type, Size, MMatrix, SMatrix
-
 # -------------------------------------
 # TYPES
 # -------------------------------------

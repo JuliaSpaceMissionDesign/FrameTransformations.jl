@@ -1,40 +1,11 @@
 module Frames
 
 using Logging
+using PrecompileTools: PrecompileTools
 using ReferenceFrameRotations
 using StaticArrays
 
-import LinearAlgebra: dot, norm
-import FunctionWrappers: FunctionWrapper
-
-using Basic.Ephemeris
-using Basic.Orient
-using Basic.Tempo
-using Basic.Orient: AXESID_ICRF
-
-using Basic.Ephemeris: AbstractEphemerisProvider, NullEphemerisProvider
-
-using Basic.Tempo:
-    AbstractTimeScale,
-    BarycentricDynamicalTime,
-    Epoch,
-    J2000,
-    DJ2000,
-    CENTURY2DAY,
-    CENTURY2SEC,
-    DAY2SEC,
-    j2000
-
-using Basic.Utils: light_speed, geod2pos
-using Basic.Utils: normalize, δnormalize, δ²normalize, δ³normalize
-using Basic.Utils: cross3, cross6, cross9, cross12
-using Basic.Utils: angle_to_δdcm, angle_to_δ²dcm
-using Basic.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
-
-using InterfacesUtils.Utils: format_camelcase
-using InterfacesUtils.Math: D¹, D², D³
-
-using MultiGraphs:
+using SMDGraphs:
     MappedNodeGraph,
     AbstractGraphNode,
     SimpleGraph,
@@ -48,9 +19,37 @@ using MultiGraphs:
     add_vertex!,
     add_edge!
 
-import MultiGraphs: get_node_id
+using SMDInterfacesUtils.Interfaces.Ephemeris: AbstractEphemerisProvider
+                                               
+using SMDInterfacesUtils.Utils: format_camelcase, NullEphemerisProvider
+using SMDInterfacesUtils.Math: D¹, D², D³
 
-using PrecompileTools: PrecompileTools
+using Tempo
+using Tempo:
+    AbstractTimeScale,
+    BarycentricDynamicalTime,
+    Epoch,
+    J2000,
+    DJ2000,
+    CENTURY2DAY,
+    CENTURY2SEC,
+    DAY2SEC,
+    j2000
+
+using FrameTransformations.Orient
+using FrameTransformations.Orient: AXESID_ICRF
+using FrameTransformations.Utils: light_speed, geod2pos
+using FrameTransformations.Utils: normalize, δnormalize, δ²normalize, δ³normalize
+using FrameTransformations.Utils: cross3, cross6, cross9, cross12
+using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm
+using FrameTransformations.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
+
+import LinearAlgebra: dot, norm, matprod, UniformScaling
+import FunctionWrappers: FunctionWrapper
+import StaticArrays: similar_type, Size, MMatrix, SMatrix
+
+import SMDGraphs: get_node_id
+
 
 include("rotation.jl")
 

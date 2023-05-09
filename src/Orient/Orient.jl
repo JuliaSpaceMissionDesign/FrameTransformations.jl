@@ -7,11 +7,14 @@ using ReferenceFrameRotations
 using RemoteFiles: @RemoteFile, download, path
 using StaticArrays
 
-using Basic.Ephemeris: AbstractEphemerisProvider, ephem_available_axes, ephem_orient!
-using Basic.Tempo
-using Basic.Utils: skew
+using SMDInterfacesUtils.Interfaces.Ephemeris: AbstractEphemerisProvider, 
+                                                ephem_available_axes, 
+                                                ephem_orient!
+                                                
+using Tempo
+using FrameTransformations.Utils: skew
 
-using InterfacesUtils.Math: InterpAkima, interpolate, arcsec2rad
+using SMDInterfacesUtils.Math: InterpAkima, interpolate, arcsec2rad
 
 using PrecompileTools: PrecompileTools
 

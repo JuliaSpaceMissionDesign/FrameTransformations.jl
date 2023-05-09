@@ -58,7 +58,7 @@ function PlanetsPrecessionNutation(
     end
 
     if NAIFId < 9
-        Logging.@warn "[Basic/Orient] IAU frame for point $NAIFId does not exist - IGNORED."
+        Logging.@warn "[FrameTransformations/Orient] IAU frame for point $NAIFId does not exist - IGNORED."
     else
 
         # Get nutation-precession angles, if present

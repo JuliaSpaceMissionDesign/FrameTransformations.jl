@@ -1,14 +1,12 @@
 module Utils
 
-using ForwardDiff
-using ForwardDiff: derivative
 using LinearAlgebra
 using ReferenceFrameRotations: DCM
 using StaticArrays: SMatrix, SA, SVector
 
-using InterfacesUtils
-import InterfacesUtils.IO: load
-using InterfacesUtils.IO: @filetype, AbstractFile
+using SMDInterfacesUtils
+import SMDInterfacesUtils.IO: load
+using SMDInterfacesUtils.IO: @filetype, AbstractFile
 
 using PrecompileTools: PrecompileTools
 

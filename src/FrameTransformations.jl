@@ -2,12 +2,11 @@ module FrameTransformations
 
 using Reexport
 using Logging
+using SMDGraphs
 using SMDInterfacesUtils
-
-using CalcephEphemeris
 using Tempo
 
-import InterfacesUtils.IO: load
+import SMDInterfacesUtils.IO: load
 
 include(joinpath("Utils", "Utils.jl"))
 @reexport using .Utils
