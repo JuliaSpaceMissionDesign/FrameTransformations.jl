@@ -4,7 +4,6 @@ authors = ["Andrea Pasquale <andrea.pasquale@polimi.it> and Michele Ceresoli <mi
 version = "1.0.0"
 
 [deps]
-CalcephEphemeris = "54e8752a-b65a-4aac-bda5-4918ee1e3cc5"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 FunctionWrappers = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
