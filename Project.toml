@@ -19,6 +19,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Tempo = "c33777b2-e695-4fae-9135-aeae8855dd81"
 
 [compat]
+CalcephEphemeris = "1"
 FunctionWrappers = "1"
 PrecompileTools = "1"
 Reexport = "1"
