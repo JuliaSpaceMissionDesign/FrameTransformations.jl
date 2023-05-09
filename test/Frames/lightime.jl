@@ -22,7 +22,7 @@ kclear()
     DCM_ECLIPJ2000 = DCM(pxform("J2000", "ECLIPJ2000", 0.0))
 
     # Load TPC 
-    tpc_constants = Basic.load(TPC(path(KERNELS[:PCK10])))
+    tpc_constants = FrameTransformations.load(TPC(path(KERNELS[:PCK10])))
 
     # Create frame system
     eph = CalcephProvider(path(KERNELS[:DE432]))

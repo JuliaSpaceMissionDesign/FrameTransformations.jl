@@ -1,12 +1,23 @@
-using Basic
+using FrameTransformations
 using Test
 
+using CalcephEphemeris
 using ERFA
 using ForwardDiff
 using ReferenceFrameRotations
 using RemoteFiles
 using SPICE
 using StaticArrays
+using Tempo
+
+using SMDInterfacesUtils.Math: interpolate, arcsec2rad, D¹, D², D³
+using SMDInterfacesUtils.Utils: NullEphemerisProvider
+
+using FrameTransformations.Frames
+using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
+
+import FrameTransformations.Frames:
+    FrameAxesFunctions, FramePointFunctions, _get_fixedrot, _empty_stv_update!
 
 import LinearAlgebra: cross, dot, norm
 
@@ -43,10 +54,10 @@ import LinearAlgebra: cross, dot, norm
     )
 end;
 
-download(KERNELS; verbose=true, force=true)
+# download(KERNELS; verbose=true, force=true)
 
 @eval begin
-    modules = [:Utils, :Tempo, :Orient, :Frames]
+    modules = [:Utils, :Orient, :Frames]
     for m in modules
         @testset "$m" verbose = true begin
             include("$m/$m.jl")

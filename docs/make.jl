@@ -49,8 +49,8 @@ makedocs(;
         "Benchmarks" => [
             "Low-level Routines" => "Benchmarks/lowlevel.md",
             "TimeSystem" => "Benchmarks/time_transform.md",
-            "FrameSystem" => "Benchmarks/frame_transform.md"
-        ]
+            "FrameSystem" => "Benchmarks/frame_transform.md",
+        ],
     ],
     # strict=!("strict=false" in ARGS),
     # doctest=("doctest=only" in ARGS) ? :only : true,

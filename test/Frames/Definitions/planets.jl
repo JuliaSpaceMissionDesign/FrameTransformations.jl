@@ -28,12 +28,14 @@ kclear()
         return angle_to_dcm(π / 2 + ra, π / 2 - dec, w, :ZXZ)
     end
 
-    tpc10_constants = Basic.load(TPC(path(KERNELS[:PCK10])))
+    tpc10_constants = FrameTransformations.load(TPC(path(KERNELS[:PCK10])))
     furnsh(path(KERNELS[:PCK10]))
 
     # Test against manual computation 
-    p = Basic.Orient.PlanetsPrecessionNutation(point_alias(MIMAS), tpc10_constants)
-    f1, f2, f3 = Basic.Orient.orient_planets_angles(p, "mimas")
+    p = FrameTransformations.Orient.PlanetsPrecessionNutation(
+        point_alias(MIMAS), tpc10_constants
+    )
+    f1, f2, f3 = FrameTransformations.Orient.orient_planets_angles(p, "mimas")
 
     @testset "IAU Euler angles" begin
         for _ in 1:50
@@ -86,7 +88,7 @@ kclear()
         # load constants 
         kclear()
 
-        tpc_constants = Basic.load(TPC(path(KERNELS[pckname])))
+        tpc_constants = FrameTransformations.load(TPC(path(KERNELS[pckname])))
         furnsh(path(KERNELS[pckname]))
 
         NAIFIds = []

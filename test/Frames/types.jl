@@ -1,5 +1,3 @@
-import Basic.Frames:
-    FrameAxesFunctions, FramePointFunctions, _get_fixedrot, _empty_stv_update!
 
 @point SSB 0 SolarSystemBarycenter
 @point Sun 10
@@ -127,17 +125,15 @@ import Basic.Frames:
 
         # Default constructors
         fs1 = FrameSystem{1,Int64}()
-        @test typeof(fs1) == FrameSystem{
-            1,Int64,BarycentricDynamicalTime,Basic.Ephemeris.NullEphemerisProvider,3
-        }
+        @test typeof(fs1) ==
+            FrameSystem{1,Int64,BarycentricDynamicalTime,NullEphemerisProvider,3}
 
         @test_throws ArgumentError FrameSystem{0,Float64}()
         @test_throws ArgumentError FrameSystem{5,Float64}()
 
-        fs2 = FrameSystem{3,Float64,Basic.Tempo.InternationalAtomicTime}()
-        @test typeof(fs2) == FrameSystem{
-            3,Float64,InternationalAtomicTime,Basic.Ephemeris.NullEphemerisProvider,9
-        }
+        fs2 = FrameSystem{3,Float64,Tempo.InternationalAtomicTime}()
+        @test typeof(fs2) ==
+            FrameSystem{3,Float64,InternationalAtomicTime,NullEphemerisProvider,9}
 
         # Utilities 
         # ---------

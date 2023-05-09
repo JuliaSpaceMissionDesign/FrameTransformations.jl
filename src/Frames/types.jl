@@ -407,13 +407,23 @@ function FrameSystem{O,T}(eph::E) where {O,T,E}
     points = ephem_available_points(eph)
     axes = ephem_available_axes(eph)
 
-    S = typeof(ephem_timescale(eph))
-    return FrameSystem{O,T,S}(eph, points, axes)
+    tsid = ephem_timescale(eph)
+
+    if tsid == 1
+        S = TDB
+    elseif tsid == 2
+        S = TCB
+    else
+        throw(EphemerisError("Unrecognised ephemeris timescale."))
+    end
+
+    return FrameSystem{O,T,typeof(S)}(eph, points, axes)
 end
 
 function FrameSystem{O,T,S}() where {O,T,S}
     return FrameSystem{O,T,S}(NullEphemerisProvider(), Int64[], Int64[])
 end
+
 FrameSystem{O,T}() where {O,T<:Number} = FrameSystem{O,T,BarycentricDynamicalTime}()
 
 frames_order(::FrameSystem{O}) where {O} = O
@@ -425,6 +435,7 @@ frames_axes(fs::FrameSystem) = fs.axes
 function add_point!(fs::FrameSystem{O,T}, p::FramePointNode{O,T}) where {O,T}
     return add_vertex!(fs.points, p)
 end
+
 function add_axes!(fs::FrameSystem{O,T}, ax::FrameAxesNode{O,T}) where {O,T}
     return add_vertex!(fs.axes, ax)
 end
