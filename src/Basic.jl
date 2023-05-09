@@ -1,19 +1,16 @@
-module Basic
+module FrameTransformations
 
 using Reexport
 using Logging
-using InterfacesUtils
+using SMDInterfacesUtils
+
+using CalcephEphemeris
+using Tempo
 
 import InterfacesUtils.IO: load
 
 include(joinpath("Utils", "Utils.jl"))
 @reexport using .Utils
-
-include(joinpath("Tempo", "Tempo.jl"))
-@reexport using .Tempo
-
-include(joinpath("Ephemeris", "Ephemeris.jl"))
-@reexport using .Ephemeris
 
 include(joinpath("Orient", "Orient.jl"))
 @reexport using .Orient

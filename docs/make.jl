@@ -1,12 +1,12 @@
-using Documenter, Basic
+using Documenter, FrameTransformations
 
 setup = quote
     using ReferenceFrameRotations
-    using Basic
-    using Basic.Tempo
+    using FrameTransformations
+    using Tempo
     using Basic.Ephemeris
-    using Basic.Orient
-    using Basic.Frames
+    using FrameTransformations.Orient
+    using FrameTransformations.Frames
     using Basic.Utils
 
     const DE440_KERNEL_PATH = "/home/andrea/Documents/Kernels/spk/de440.bsp"
