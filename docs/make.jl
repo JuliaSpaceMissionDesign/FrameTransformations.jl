@@ -6,11 +6,7 @@ makedocs(;
     authors="Julia Space Mission Design Development Team",
     sitename="FrameTransformations.jl",
     modules=[FrameTransformations],
-    format=Documenter.HTML(;
-        prettyurls=CI,
-        highlights=["yaml"],
-        ansicolor=true,
-    ),
+    format=Documenter.HTML(; prettyurls=CI, highlights=["yaml"], ansicolor=true),
     pages=[
         "Home" => "index.md",
         "Modules" => [
@@ -22,4 +18,6 @@ makedocs(;
     clean=true,
 )
 
-deploydocs(; repo="github.com/JuliaSpaceMissionDesign/FrameTransformations.jl", branch="gh-pages")
+deploydocs(;
+    repo="github.com/JuliaSpaceMissionDesign/FrameTransformations.jl", branch="gh-pages"
+)
