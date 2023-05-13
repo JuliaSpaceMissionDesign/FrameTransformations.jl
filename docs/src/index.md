@@ -1,19 +1,16 @@
-# Welcome to Basic!
+# Welcome to FrameTransformations.jl!
 
-_Base tools for Mission Analysis, Navigation and Guidance._
+_A modern, high-performance and comprehensive set of tools for transformations between any standard and user-defined reference frame._
 
-Are you in search of fundamental routines to develop your own universe model? 
-If so, `Basic` is the ideal starting point. The package is designed to provide users with 
-the ability to create a customized, efficient, flexible, and extensible model for 
-mission analysis and space mission design purposes. 
-
-!!! compat 
-    This package is still in development, some features may be modified 🙂
+Are you in search of fundamental routines for efficient and extensible frames transformations?  
+If so, `FrameTransformation` is the ideal starting point. The package is designed to 
+provide users with  the ability to create a customized, efficient, flexible, and 
+extensible axes/point graph models for mission analysis and space mission design purposes. 
 
 ## Features 
 
-- Convert between different time scales;
-- Convert between different time representations;
+- Convert between different time scales (via [`Tempo.jl`](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
+- Convert between different time representations (via [`Tempo.jl`](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
 - Read binary ephemeris files;
 - Create a custom reference frame systems with user-defined points and axes.
 - Transform states between different frames.  

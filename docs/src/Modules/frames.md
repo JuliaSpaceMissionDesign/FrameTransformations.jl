@@ -1,35 +1,29 @@
 ## [API](@id basic_frames_api) 
 
-```@meta
-DocTestSetup = quote
-    using Basic
-end
-```
-
 ### Types
 
 ```@autodocs
-Modules = [Basic.Frames]
+Modules = [FrameTranformations.Frames]
 Order = [:type]
 ```
 
 ### Functions
 
 ```@autodocs
-Modules = [Basic.Frames]
+Modules = [FrameTranformations.Frames]
 Order = [:function]
 ```
 
 ### Macros
 
 ```@autodocs
-Modules = [Basic.Frames]
+Modules = [FrameTranformations.Frames]
 Order = [:macro]
 ```
 
 ### Constants
 
 ```@autodocs
-Modules = [Basic.Frames]
+Modules = [FrameTranformations.Frames]
 Order = [:constant]
 ```

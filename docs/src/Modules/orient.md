@@ -4,34 +4,28 @@
 
 ### Types
 
-```@meta
-DocTestSetup = quote
-    using Basic
-end
-```
-
 ```@autodocs
-Modules = [Basic.Orient]
+Modules = [FrameTranformations.Orient]
 Order = [:type]
 ```
 
 ### Functions
 
 ```@autodocs
-Modules = [Basic.Orient]
+Modules = [FrameTranformations.Orient]
 Order = [:function]
 ```
 
 ### Macros
 
 ```@autodocs
-Modules = [Basic.Orient]
+Modules = [FrameTranformations.Orient]
 Order = [:macro]
 ```
 
 ### Constants
 
 ```@autodocs
-Modules = [Basic.Orient]
+Modules = [FrameTranformations.Orient]
 Order = [:constant]
 ```
