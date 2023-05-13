@@ -14,7 +14,7 @@ build_nutation_series(:nutation00, :IAU2000B, NUTATION_2000Bψ, NUTATION_2000Bϵ
     orient_nutation(m::IAUModel, t::Number)
 
 Compute the nutation components in longitude and obliquity for the IAU Model `m`, in radians, 
-at time `t` expressed in `TT` Julian Centuries since [`J2000`](@ref).
+at time `t` expressed in `TT` Julian Centuries since `J2000`.
 
 ### Notes 
 - Due to their theoretical basis, the original developments required `t` expressed as TDB. 

@@ -153,7 +153,7 @@ const IERS_EOP = get_iers_eop()
 """
     offset_utc2ut1(seconds)
 
-Return the offset between [`UTC`](@ref) and [`UT1`](@ref) in seconds.
+Return the offset between `UTC` and `UT1` in seconds.
 """
 @inline function offset_utc2ut1(seconds)
     utc = seconds / 86400.0

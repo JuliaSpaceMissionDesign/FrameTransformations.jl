@@ -94,7 +94,7 @@ const DCM_MOON_PA421_TO_ME421 = angle_to_dcm(
     orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
 
 Compute the rotation matrix from the ICRF to the DE440 Moon's Principal Axes at the given 
-input time `t`, expressed in seconds since [`J2000`](@ref). 
+input time `t`, expressed in seconds since `J2000`. 
 
 !!! warning 
     This function is not optimised for performance (it allocates!). The user is suggested 
@@ -130,7 +130,7 @@ end
     orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
 
 Compute the rotation matrix from the ICRF to the DE421 Moon's Principal Axes at the given 
-input time `t`, expressed in seconds since [`J2000`](@ref). 
+input time `t`, expressed in seconds since `J2000`. 
 
 !!! warning 
     This function is not optimised for performance (it allocates!). The user is suggested 

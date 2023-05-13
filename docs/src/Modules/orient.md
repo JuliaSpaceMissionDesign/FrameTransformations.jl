@@ -5,27 +5,27 @@
 ### Types
 
 ```@autodocs
-Modules = [FrameTranformations.Orient]
+Modules = [Orient]
 Order = [:type]
 ```
 
 ### Functions
 
 ```@autodocs
-Modules = [FrameTranformations.Orient]
+Modules = [Orient]
 Order = [:function]
 ```
 
 ### Macros
 
 ```@autodocs
-Modules = [FrameTranformations.Orient]
+Modules = [Orient]
 Order = [:macro]
 ```
 
 ### Constants
 
 ```@autodocs
-Modules = [FrameTranformations.Orient]
+Modules = [Orient]
 Order = [:constant]
 ```

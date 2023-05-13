@@ -4,7 +4,7 @@ export orient_obliquity
     orient_obliquity(m::IAUModel, t::Number)
 
 Compute the mean obliquity of the ecliptic at epoch, in radians, at time `t` expressed 
-in `TT` Julian centuries since [`J2000`](@ref). 
+in `TT` Julian centuries since `J2000`. 
 
 !!! note 
     This function is implemented only for `IAU1980` and `IAU2006` models. IAU 2000 Models 

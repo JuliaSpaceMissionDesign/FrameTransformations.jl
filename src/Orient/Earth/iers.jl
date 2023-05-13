@@ -44,7 +44,7 @@ end
     polar_motion(t::Number, xₚ::Number, yₚ::Number)
 
 Compute the Polar Motion rotation matrix from ITRF to TIRS, according to the 
-IERS 2010 Conventions, at time `t` expressed in `TT` Julian centuries since [`J2000`](@ref). 
+IERS 2010 Conventions, at time `t` expressed in `TT` Julian centuries since `J2000`. 
 The function requires `xp` and `yp`, the Celestial Intermediate Pole (CIP) coordinates with 
 respect to the International Celestial Reference Frame (ITFR).
 
@@ -62,7 +62,7 @@ end
 
 Compute the Earth Rotation Angle (ERA) in radians, i.e., the angle between the Celestial 
 Intermediate Origin (CIO) and the Terrestrial Intermediate Origin (TIO) at time `t` 
-expressed as UT1 days since [`J2000`](@ref).
+expressed as UT1 days since `J2000`.
 
 !!! note 
     The function uses the fractional UT1 date to gain additional precision in the 
@@ -82,7 +82,7 @@ end
     era_rotm(t::Number)
 
 Compute the TIRS to CIRS Earth Rotation matrix, according to the IERS 2010 
-conventions at time `t` expressed as UT1 days since [`J2000`](@ref).
+conventions at time `t` expressed as UT1 days since `J2000`.
 
 ### References
 - Luzum, B. and Petit G. (2012), The IERS Conventions (2010), 
@@ -143,7 +143,7 @@ build_cio_series(
     cip_coords(m::IAUModel, t::Number)
 
 Computes the CIP X, Y coordinates, in radians, according to the IAU model `m` at time `t` 
-expressed in `TT` Julian Centuries since [`J2000`](@ref).
+expressed in `TT` Julian Centuries since `J2000`.
 
 This function has been implemented for the `IAU2000`, `IAU2006` and the `CPN` models.
 
@@ -214,7 +214,7 @@ build_cio_series(:cio_locator, :IAU2006Model, [COEFFS_CIO2006_SP], [COEFFS_CIO20
     cio_locator(m::IAUModel, t::Number, x::Number, y::Number)
 
 Compute the CIO Locator `s` in radians, according to the IAU Model `m`, given the CIP 
-coordinates `X` and `Y` at time `t` expressed in `TT` Julian centuries since [`J2000`](@ref)
+coordinates `X` and `Y` at time `t` expressed in `TT` Julian centuries since `J2000`
 
 The function has been implemented for the `IAU2000`, `IAU2006` and the `CPN` models.
 
@@ -274,7 +274,7 @@ end
     cip_motion(m::IAUModel, t::Number, dx::Number=0.0, dy::Number=0.0)
 
 Compute the CIRS to GCRS rotation matrix, according to the IAU Model `m`, at time `t`
-expressed in `TT` Julian centuries since [`J2000`](@ref). Optional IERS corrections for 
+expressed in `TT` Julian centuries since `J2000`. Optional IERS corrections for 
 free-core nutation and time depedented effects can be provided through `dx` and `dy`. 
 
 ### References 
@@ -351,7 +351,7 @@ end
     orient_rot3_itrf_to_gcrf(m::IAUModel, t::Number)
 
 Compute the rotation matrix from `ITRF` to `GCRF` at time `t` expressed as 
-TT seconds since [`J2000`](@ref), according to the IAU Model `m`, as follows:
+TT seconds since `J2000`, according to the IAU Model `m`, as follows:
 
 - **IAU2000A**: the pole coordinates (xₚ, yₚ) and the free-core nutation and time corrections 
     to the CIP coordinates (dX, dY) are interpolated from the latest released IERS EOP data. 
@@ -408,7 +408,7 @@ end
     orient_rot6_itrf_to_gcrf(m::IAUModel, t::Number)
 
 Compute the rotation matrix from `ITRF` to `GCRF` and its derivative at time `t` 
-expressed as TT seconds since [`J2000`](@ref), according to the the IAU Model `m`.
+expressed as TT seconds since `J2000`, according to the the IAU Model `m`.
 """
 orient_rot6_itrf_to_gcrf
 
@@ -416,7 +416,7 @@ orient_rot6_itrf_to_gcrf
     orient_rot9_itrf_to_gcrf(m::IAUModel, t::Number)
 
 Compute the rotation matrix from `ITRF` to `GCRF` and its time derivatives up to order 2 at 
-time `t` expressed as TT seconds since [`J2000`](@ref), according to the IAU Model `m`.
+time `t` expressed as TT seconds since `J2000`, according to the IAU Model `m`.
 """
 orient_rot9_itrf_to_gcrf
 
@@ -424,7 +424,7 @@ orient_rot9_itrf_to_gcrf
     orient_rot12_itrf_to_gcrf(m::IAUModel, t::Number)
 
 Compute the rotation matrix from `ITRF` to `GCRF` and its time derivatives up to order 3 at 
-time `t` expressed as TT seconds since [`J2000`](@ref), according to the IAU Model `m`.
+time `t` expressed as TT seconds since `J2000`, according to the IAU Model `m`.
 """
 orient_rot12_itrf_to_gcrf
 
@@ -459,7 +459,7 @@ end
     orient_rot3_itrf_to_gcrf(m::IAUModel, tt, ut1, xₚ, yₚ, dX=0.0, dY=0.0)
 
 Compute the rotation matrix from ITRF to GCRF according to the IAU Model `m`, at time `tt` 
-and `ut1` expressed in TT seconds and `UT1` days since [`J2000`](@ref), respectively.  
+and `ut1` expressed in TT seconds and `UT1` days since `J2000`, respectively.  
 
 This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 
@@ -490,7 +490,7 @@ end
     orient_rot6_itrf_to_gcrf(m::IAUModel, tt, ut1, xₚ, yₚ, dX=0.0, dY=0.0, LOD=0.0)
 
 Compute the rotation matrix from ITRF to GCRF and its derivative, according to the IAU Model 
-`m`, at time `tt` and `ut1` expressed in TT seconds and `UT1` days since [`J2000`](@ref), 
+`m`, at time `tt` and `ut1` expressed in TT seconds and `UT1` days since `J2000`, 
 respectively. 
 
 This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
@@ -532,7 +532,7 @@ end
 
 Compute the rotation matrix from ITRF to GCRF and its derivatives up to order 2, according 
 to the IAU Model `m`, at time `tt` and `ut1` expressed in TT seconds and `UT1` days since 
-[`J2000`](@ref), respectively. 
+`J2000`, respectively. 
 
 This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 
@@ -575,7 +575,7 @@ end
 
 Compute the rotation matrix from ITRF to GCRF and its derivatives up to order 3, according 
 to the IAU Model `m`, at time `tt` and `ut1` expressed in TT seconds and `UT1` days since 
-[`J2000`](@ref), respectively. 
+`J2000`, respectively. 
 
 This function has been implemented for `IAU2000`, `IAU2006` and `CPN` models.
 

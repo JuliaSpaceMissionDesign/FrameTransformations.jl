@@ -46,7 +46,7 @@ end
 	FundamentalArguments(t::Number, m::IAUModel=iau2006a)
 
 Compute the fundamental luni-solar and planetary arguments, in radians, associated to the 
-given IAU model `m`, at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).
+given IAU model `m`, at time `t` expressed in `TDB` Julian centuries since `J2000`.
 
 The available IAU model options are: [`iau2006a`](@ref) and [`iau2000b`](@ref).
 
@@ -61,7 +61,7 @@ end
 	LuniSolarArguments(t::Number, m::IAUModel)
 
 Compute the fundamental (Delaunay) Luni-Solar arguments, in radians, associated to the 
-desired IAU model `m`, at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).
+desired IAU model `m`, at time `t` expressed in `TDB` Julian centuries since `J2000`.
 
 The returned values depend on the input model as follows: 
 
@@ -119,7 +119,7 @@ end
 	PlanetaryArguments(t::Number)
 
 Compute the fundamental planetary arguments and the general precession, in radians, 
-at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).
+at time `t` expressed in `TDB` Julian centuries since `J2000`.
 
 ### Outputs 
 - `λ☿` -- Mercury's mean heliocentric longitude.
@@ -154,7 +154,7 @@ end
 	fa_mano_moon(t::Number) 
 
 Return the mean anomaly of the Moon `Mₐ`, in radians, at time `t` expressed in `TDB` Julian 
-centuries since [`J2000`](@ref).
+centuries since `J2000`.
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -172,7 +172,7 @@ end
 	fa_mano_sun(t::Number) 
 
 Return the mean anomaly of the Sun `Sₐ` in radians, at time `t` expressed in `TDB` Julian 
-centuries since [`J2000`](@ref).
+centuries since `J2000`.
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -190,7 +190,7 @@ end
 	fa_mlon_moon(t::Number) 
 
 Return the mean longitude of the Moon's ascending node `Ω` in radians, at time `t` expressed
-in `TDB` Julian centuries since [`J2000`](@ref).
+in `TDB` Julian centuries since `J2000`.
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -208,7 +208,7 @@ end
 	fa_mlat_moon(t::Number) 
 
 Return the mean longitude of the Moon minus the mean longitude of the ascending node `F` in
-radians, at time `t` expressed in `TDB` Julian centuries since [`J2000`](@ref).  
+radians, at time `t` expressed in `TDB` Julian centuries since `J2000`.  
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -226,7 +226,7 @@ end
 	fa_melo_moon(t::Number) 
 
 Return the mean elongation of the Moon from the Sun `D` in radians, at time `t` expressed in 
-`TDB` Julian centuries since [`J2000`](@ref).
+`TDB` Julian centuries since `J2000`.
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -244,7 +244,7 @@ end
   	fa_precession(t::Number) 
 
 Return the general accumulated precession in longitude `pₐ` in radians, at time `t` 
-expressed in `TDB` Julian centuries since [`J2000`](@ref). 
+expressed in `TDB` Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -259,7 +259,7 @@ end
 	fa_mlon_mercury(t::Number) 
 
 Return the mean heliocentric longitude of Mercury in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -274,7 +274,7 @@ end
 	fa_mlon_venus(t::Number) 
 
 Return the mean heliocentric longitude of Venus in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -289,7 +289,7 @@ end
 	fa_mlon_earth(t::Number) 
 
 Return the mean heliocentric longitude of Earth in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -304,7 +304,7 @@ end
 	fa_mlon_mars(t::Number) 
 
 Return the mean heliocentric longitude of Mars in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -319,7 +319,7 @@ end
 	fa_mlon_jupiter(t::Number) 
 
 Return the mean heliocentric longitude of Jupiter in radians, at time `t` expressed in `TDB`
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -334,7 +334,7 @@ end
 	fa_mlon_saturn(t::Number) 
 
 Return the mean heliocentric longitude of Saturn in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -349,7 +349,7 @@ end
 	fa_mlon_uranus(t::Number) 
 
 Return the mean heliocentric longitude of Uranus in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 
@@ -364,7 +364,7 @@ end
 	fa_mlon_neptune(t::Number) 
 
 Return the mean heliocentric longitude of Neptune in radians, at time `t` expressed in `TDB` 
-Julian centuries since [`J2000`](@ref). 
+Julian centuries since `J2000`. 
 
 ### References 
 - Luzum, B. and Petit G. (2012). The IERS Conventions (2010), 

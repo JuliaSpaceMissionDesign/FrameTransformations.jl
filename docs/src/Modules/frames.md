@@ -3,27 +3,27 @@
 ### Types
 
 ```@autodocs
-Modules = [FrameTranformations.Frames]
+Modules = [Frames]
 Order = [:type]
 ```
 
 ### Functions
 
 ```@autodocs
-Modules = [FrameTranformations.Frames]
+Modules = [Frames]
 Order = [:function]
 ```
 
 ### Macros
 
 ```@autodocs
-Modules = [FrameTranformations.Frames]
+Modules = [Frames]
 Order = [:macro]
 ```
 
 ### Constants
 
 ```@autodocs
-Modules = [FrameTranformations.Frames]
+Modules = [Frames]
 Order = [:constant]
 ```

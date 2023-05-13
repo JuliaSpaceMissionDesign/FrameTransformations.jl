@@ -4,7 +4,7 @@ export orient_bias_precession, orient_bpn
     fw_angles(m::IAU2006Model, t::Number) 
 
 Compute the precession angles in radians, following the IAU 2006 Fukushima-Williams 4-angle 
-formulation at time `t` expressed in `TT` Julian centuries since [`J2000`](@ref).
+formulation at time `t` expressed in `TT` Julian centuries since `J2000`.
 
 ### Outputs
 - `γ` -- F-W 1st angle
@@ -77,7 +77,7 @@ end
     precession_angles(m::IAU1980Model, t::Number)
 
 Compute the precession angles from Lieske et al. 1977 model, in radians, at time `t` 
-expressed in `TT` Julian centuries since [`J2000`](@ref).
+expressed in `TT` Julian centuries since `J2000`.
 
 ### References 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/bp00.c) software library
@@ -95,7 +95,7 @@ end
     precession_rate(m::IAU2000Model, t::Number)
 
 Compute the precession-rate part of the IAU 2000 precession-nutation models, in radians, at 
-time `t` expressed as `TT` Julian centuries since [`J2000`](@ref).
+time `t` expressed as `TT` Julian centuries since `J2000`.
 
 ### References 
 - [ERFA](https://github.com/liberfa/erfa/blob/master/src/pr00.c) software library
@@ -114,7 +114,7 @@ Compute the frame bias components of the IAU 2000 precession-nutation models, in
 
 ### Notes 
 - The frame bias corrections in longitude and obliquity are required to correct for the 
-  offset between the GCRS pole and the mean [`J2000`](@ref) pole. They define, with respect 
+  offset between the GCRS pole and the mean `J2000` pole. They define, with respect 
   to the GCRS axes, a J2000 mean pole that is consistent with teh IAU 2000A precession-nutation 
   model. 
 
@@ -141,7 +141,7 @@ end
 
 Form the precession-frame bias (PB) matrix that transforms vectors from the GCRS to the 
 mean of date, following the IAU Model `m` at time `t` expressed as `TT` Julian centuries 
-since [`J2000`](@ref).
+since `J2000`.
 
 The function has been implemented for the `IAU2000` and `IAU2006` models.
 
@@ -189,7 +189,7 @@ end
     orient_bias_precession_nutation(m::IAUModel, t::Number)
 
 Compute the equinox-based bias-precession-nutation matrix using the IAU Model `m` procedures 
-at time `t` expressed in `TT` Julian centuries since [`J2000`](@ref).
+at time `t` expressed in `TT` Julian centuries since `J2000`.
 
 The function has been implemented for the `IAU2000` and `IAU2006` models.
 

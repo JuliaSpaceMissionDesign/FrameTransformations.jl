@@ -55,7 +55,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
         specified set of axes to another at a given time `t`, expressed in seconds since 
-        [`J2000`](@ref) if ephemerides are used. 
+        `J2000` if ephemerides are used. 
         """
         function ($axfun1)(frame::FrameSystem{O,T}, from, to, t::Number) where {O,T}
             if O < $order
@@ -184,7 +184,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time `t` expressed in 
-        seconds since [`J2000`](@ref) if ephemerides are used. 
+        seconds since `J2000` if ephemerides are used. 
 
         """
         function ($pfun1)(frame::FrameSystem{O,T}, from, to, axes, t::Number) where {O,T}
@@ -408,7 +408,7 @@ for (order, pfun, ltcorr) in
 
         Compute a light-time corrected $(3*$order)-elements state vector of a target point 
         relative to an observing point, in a given set of axes, at the desired time `t`,  
-        expressed in seconds since [`J2000`](@ref), using the aberration flag `ltcorr` and 
+        expressed in seconds since `J2000`, using the aberration flag `ltcorr` and 
         the direction `dir`.
         """
         function ($pfun)(

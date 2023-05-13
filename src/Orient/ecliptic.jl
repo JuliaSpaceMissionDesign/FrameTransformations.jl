@@ -75,7 +75,7 @@ const DCM_ICRF_TO_ECLIPJ2000 = DCM_ICRF_TO_J2000_BIAS * DCM_J2000_TO_ECLIPJ2000
     orient_rot3_icrf_to_mememod(t::Number)
 
 Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
-the Mean Equinox Mean Equator of Date at time `t`, expressed in TT seconds since [`J2000`](@ref).
+the Mean Equinox Mean Equator of Date at time `t`, expressed in TT seconds since `J2000`.
 """
 function orient_rot3_icrf_to_mememod(t::Number)
     # convert TT seconds since J2000 to TT centuries since J2000
