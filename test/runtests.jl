@@ -21,7 +21,7 @@ import FrameTransformations.Frames:
 
 import LinearAlgebra: cross, dot, norm
 
-@RemoteFileSet KERNELS "Generic Spice Kernels" begin
+@RemoteFileSet KERNELS "Spice Kernels Set" begin
     LEAP = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/latest_leapseconds.tls" dir = joinpath(
         @__DIR__, "assets"
     )
@@ -54,7 +54,7 @@ import LinearAlgebra: cross, dot, norm
     )
 end;
 
-# download(KERNELS; verbose=true, force=true)
+download(KERNELS; verbose=true, force=false)
 
 @eval begin
     modules = [:Utils, :Orient, :Frames]
