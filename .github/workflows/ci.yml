@@ -23,8 +23,8 @@ jobs:
           julia --color=yes --project=docs -e '
             import Pkg; Pkg.add("Documenter")
             using Documenter: doctest
-            using Tempo
-            doctest(Tempo)'
+            using FrameTransformations
+            doctest(FrameTransformations)'
       - run: julia --project=docs --color=yes docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
