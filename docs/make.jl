@@ -3,7 +3,7 @@ using Documenter, FrameTransformations
 const CI = get(ENV, "CI", "false") == "true"
 
 makedocs(;
-    authors="Andrea Pasquale, Michele Ceresoli and contributors",
+    authors="Julia Space Mission Design Development Team",
     sitename="FrameTransformations.jl",
     modules=[FrameTransformations],
     format=Documenter.HTML(;
@@ -21,3 +21,5 @@ makedocs(;
     ],
     clean=true,
 )
+
+deploydocs(; repo="github.com/JuliaSpaceMissionDesign/FrameTransformations.jl", branch="gh-pages")
