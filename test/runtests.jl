@@ -10,8 +10,9 @@ using SPICE
 using StaticArrays
 using Tempo
 
-using SMDInterfacesUtils.Math: interpolate, arcsec2rad, D¹, D², D³
-using SMDInterfacesUtils.Utils: NullEphemerisProvider
+using JSMDInterfaces.Math: interpolate
+using JSMDUtils.Math: arcsec2rad, D¹, D², D³
+using JSMDUtils: NullEphemerisProvider
 
 using FrameTransformations.Frames
 using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
