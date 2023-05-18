@@ -1,15 +1,15 @@
 export TPC, load
 
-@filetype TPC AbstractFile
+FilesIO.@filetype TPC FilesIO.AbstractFile
 
 """
     load(file::TPC{1})
 
 Open a JPL ASCII `.tpc` file and parse its data in a dictionary.
 """
-function SMDInterfacesUtils.IO.load(file::TPC{1})
+function FilesIO.load(file::TPC{1})
     mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
-    load_tpc!(mapped, filepath(file))
+    load_tpc!(mapped, FilesIO.filepath(file))
     return sort(mapped)
 end
 
@@ -18,10 +18,10 @@ end
 
 Open a group of JPL ASCII `.tpc` files and parse their data in a dictionary.
 """
-function SMDInterfacesUtils.IO.load(files::TPC)
+function FilesIO.load(files::TPC)
     mapped = Dict{Int64,Dict{Symbol,Union{Float64,Int64,Vector{Float64}}}}()
     for file in files
-        load_tpc!(mapped, filepath(file))
+        load_tpc!(mapped, FilesIO.filepath(file))
     end
     return sort(mapped)
 end

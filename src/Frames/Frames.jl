@@ -18,11 +18,11 @@ using SMDGraphs:
     add_vertex!,
     add_edge!
 
-using SMDInterfacesUtils.Interfaces.Ephemeris
-using SMDInterfacesUtils.Interfaces.Ephemeris: AbstractEphemerisProvider
+using JSMDInterfaces.Ephemeris
+using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider
 
-using SMDInterfacesUtils.Utils: format_camelcase, NullEphemerisProvider
-using SMDInterfacesUtils.Math: D¹, D², D³
+using JSMDUtils: format_camelcase, NullEphemerisProvider
+using JSMDUtils.Math: D¹, D², D³
 
 using Tempo
 using Tempo:

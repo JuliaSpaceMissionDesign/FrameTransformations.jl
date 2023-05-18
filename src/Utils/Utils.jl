@@ -4,9 +4,9 @@ using LinearAlgebra
 using ReferenceFrameRotations: DCM
 using StaticArrays: SMatrix, SA, SVector
 
-using SMDInterfacesUtils
-import SMDInterfacesUtils.IO: load
-using SMDInterfacesUtils.IO: @filetype, AbstractFile
+using JSMDInterfaces
+using JSMDUtils
+using JSMDInterfaces.FilesIO
 
 # IO 
 include("IO/tpc.jl")

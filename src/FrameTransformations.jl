@@ -4,9 +4,10 @@ using PrecompileTools: PrecompileTools
 using Reexport
 using Logging
 using SMDGraphs
-using SMDInterfacesUtils
+using JSMDInterfaces
+using JSMDUtils
 
-import SMDInterfacesUtils.IO: load
+import JSMDInterfaces.FilesIO: load
 
 @reexport using Tempo
 

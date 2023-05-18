@@ -8,10 +8,11 @@ using ReferenceFrameRotations
 using RemoteFiles: @RemoteFile, download, path
 using StaticArrays
 
-using SMDInterfacesUtils.Interfaces.Ephemeris:
+using JSMDInterfaces.Ephemeris:
     AbstractEphemerisProvider, ephem_available_axes, ephem_orient!
 
-using SMDInterfacesUtils.Math: InterpAkima, interpolate, arcsec2rad
+using JSMDInterfaces.Math: interpolate
+using JSMDUtils.Math: InterpAkima, arcsec2rad
 
 using Tempo
 using FrameTransformations.Utils: skew
