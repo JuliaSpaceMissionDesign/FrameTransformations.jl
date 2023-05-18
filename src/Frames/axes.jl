@@ -835,8 +835,8 @@ function _check_axes_ephemeris(frames::FrameSystem, axesid::Int)
     for or in orient_records
         if or.target == axesid
             if isnothing(parentid)
-                parentid = or.frame
-            elseif parentid != or.frame
+                parentid = or.axes
+            elseif parentid != or.axes
                 throw(
                     ErrorException(
                         "UnambiguityError: at least two set of orientation data " *

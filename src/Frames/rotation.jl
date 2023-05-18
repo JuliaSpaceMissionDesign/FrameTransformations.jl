@@ -221,10 +221,10 @@ end
 # Type Conversions and Promotions 
 
 # Static Arrays API 
-Size(::Rotation{S,N}) where {S,N} = Size((3 * S, 3 * S))
+StaticArrays.Size(::Rotation{S,N}) where {S,N} = Size((3 * S, 3 * S))
 
-similar_type(::Rotation{S,N}) where {S,N} = Rotation{S,N}
-similar_type(::Rotation{S,<:Any}, ::Type{N}) where {S,N} = Rotation{S,N}
+StaticArrays.similar_type(::Rotation{S,N}) where {S,N} = Rotation{S,N}
+StaticArrays.similar_type(::Rotation{S,<:Any}, ::Type{N}) where {S,N} = Rotation{S,N}
 
 # Convert a Rotation to a tuple 
 @generated function Base.Tuple(rot::Rotation{S,N}) where {S,N}

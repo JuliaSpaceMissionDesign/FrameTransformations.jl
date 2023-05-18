@@ -19,8 +19,6 @@ using SMDGraphs:
     add_edge!
 
 using JSMDInterfaces.Ephemeris
-using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider
-
 using JSMDUtils: format_camelcase, NullEphemerisProvider
 using JSMDUtils.Math: D¹, D², D³
 

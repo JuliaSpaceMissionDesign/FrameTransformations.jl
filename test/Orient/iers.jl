@@ -274,6 +274,9 @@
                 ERAₑ = era00(DJ2000, ut1_d) .* r2a
 
                 @test ERA ≈ ERAₑ atol = 1e-9 rtol = 1e-9
+
+                # -- Testing Earth velocity 
+                @test Orient.earth_rotation_rate() == Orient.earth_rotation_rate(0)
             end
         end
 

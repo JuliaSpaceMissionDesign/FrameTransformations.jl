@@ -122,7 +122,11 @@
 
         # FrameSystem Constructors 
         # ------------------------
-
+        
+        fsp = FrameTransformations.Frames.FrameSystemProperties()
+        @test FrameTransformations.Frames.ephemeris_points(fsp) == Int64[]
+        @test FrameTransformations.Frames.ephemeris_axes(fsp) == Int64[]
+        
         # Default constructors
         fs1 = FrameSystem{1,Int64}()
         @test typeof(fs1) ==

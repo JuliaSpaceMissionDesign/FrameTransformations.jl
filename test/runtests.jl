@@ -10,6 +10,7 @@ using SPICE
 using StaticArrays
 using Tempo
 
+using JSMDInterfaces.Ephemeris
 using JSMDInterfaces.Math: interpolate
 using JSMDUtils.Math: arcsec2rad, D¹, D², D³
 using JSMDUtils: NullEphemerisProvider

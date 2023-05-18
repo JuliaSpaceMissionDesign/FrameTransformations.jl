@@ -261,7 +261,7 @@ end
 # FRAMES
 # -------------------------------------
 
-struct FrameSystemProperties{T}
+struct FrameSystemProperties
     ebid::Vector{Int}  # ephemeris body ids
     eaid::Vector{Int}  # ephemeris axes ids 
 end
@@ -383,7 +383,7 @@ See also [`add_axes_inertial!`](@ref), [`add_point_root!`](@ref), [`vector3`](@r
 """
 struct FrameSystem{O,T<:Number,S<:AbstractTimeScale,E<:AbstractEphemerisProvider,N}
     eph::E
-    prop::FrameSystemProperties{T}
+    prop::FrameSystemProperties
     points::MappedNodeGraph{FramePointNode{O,T,N},SimpleGraph{Int}}
     axes::MappedNodeGraph{FrameAxesNode{O,T,N},SimpleGraph{Int}}
 end
@@ -397,7 +397,7 @@ function FrameSystem{O,T,S}(
 
     return FrameSystem{O,T,S,E,3 * O}(
         eph,
-        FrameSystemProperties{T}(points, axes),
+        FrameSystemProperties(points, axes),
         MappedGraph(FramePointNode{O,T,3O}),
         MappedGraph(FrameAxesNode{O,T,3O}),
     )

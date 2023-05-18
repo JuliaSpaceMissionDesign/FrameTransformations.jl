@@ -23,6 +23,7 @@ fz = z -> π / 3 * sin(z)
             d = D(t -> getdcm(t, seq, fx), τ)
             E = fun(x, seq)
             @test E ≈ d atol = 1e-10
+            @test_throws ArgumentError fun(x, :A)
         end
     end
 
@@ -32,6 +33,7 @@ fz = z -> π / 3 * sin(z)
             d = D(t -> getdcm(t, seq, fx, fy), τ)
             E = fun(x, y, seq)
             @test E ≈ d atol = 1e-10
+            @test_throws ArgumentError fun(x, y, :XX)
         end
     end
 
@@ -41,6 +43,8 @@ fz = z -> π / 3 * sin(z)
             d = D(t -> getdcm(t, seq, fx, fy, fz), τ)
             E = fun(x, y, z, seq)
             @test E ≈ d atol = 1e-10
+            @test_throws ArgumentError fun(x, y, z, :XXX)
         end
     end
+
 end;

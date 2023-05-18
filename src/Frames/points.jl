@@ -451,8 +451,8 @@ function add_point_ephemeris!(
     for pr in pos_records
         if pr.target == naifid
             if isnothing(axesid)
-                axesid = pr.frame
-            elseif axesid != pr.frame
+                axesid = pr.axes
+            elseif axesid != pr.axes
                 throw(
                     ErrorException(
                         "UnambiguityError: at least two set of data " *
