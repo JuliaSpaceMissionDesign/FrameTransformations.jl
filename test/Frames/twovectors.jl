@@ -25,6 +25,8 @@
     # Function to compute derivatives of DCMs 
     δdcm(t, seq) = Frames.twovectors_to_dcm(get_vector(t)[1:3], get_vector2(t)[1:3], seq)
 
+    @test_throws ArgumentError δdcm(0, :XX)
+    
     @testset "Sequence Assembly" begin
         θ = rand()
         a, b = get_vector(θ)[1:3], get_vector2(θ)[1:3]

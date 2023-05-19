@@ -95,7 +95,9 @@
         @test StaticArrays.Size(R) == (6, 6)
         @test R[1] == R.m[1]
         @test typeof(R) == Rotation{2,Float64}
+
         @test StaticArrays.similar_type(R) == Rotation{2,Float64}
+        @test StaticArrays.similar_type(R, BigFloat) == Rotation{2, BigFloat}
 
         # Convert to tuple
         A = angle_to_dcm(rand(), rand(), rand(), :XYZ)

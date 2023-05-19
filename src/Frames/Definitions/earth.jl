@@ -21,7 +21,7 @@ function add_axes_itrf!(
 
     if !(pname in (:ICRF, :GCRF)) && axes_id(parent) != Orient.AXESID_ICRF
         throw(
-            ErrorException(
+            ArgumentError(
                 "International Terrestrial Reference Frame (ITRF) axes could " *
                 "not be defined w.r.t $pname axes. Only the `ICRF` or `GCRF` are accepted as " *
                 "parent axes.",

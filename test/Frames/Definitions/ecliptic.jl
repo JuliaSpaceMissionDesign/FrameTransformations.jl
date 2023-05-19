@@ -5,6 +5,7 @@
 @axes ECLIPJ2000 17
 @axes ICRF_TEST 1
 @axes MEME_TEST -10000000
+@axes MOD 18
 
 @testset "MEME 2000" verbose = false begin
     v2as = (x, y) -> acosd(max(-1, min(1, dot(x / norm(x), y / norm(y))))) * 3600
@@ -56,7 +57,7 @@ end;
     add_axes_inertial!(frames, MEME_TEST)
 
     # Check that you can't add eclipj2000 to a random axes
-    @test_throws ArgumentError add_axes_meme2000!(frames, ECLIPJ2000, MEME_TEST)
+    @test_throws ArgumentError add_axes_eclipj2000!(frames, ECLIPJ2000, MEME_TEST)
 
     f1 = FrameSystem{3,Float64}()
     f2 = FrameSystem{3,Float64}()
@@ -85,4 +86,31 @@ end;
         @test v2as(R[1:3, 1:3] * v, R_[1] * v) ≈ 0.0 atol = 1e-6
         @test R_[2] ≈ zeros(3, 3) atol = 1e-14
     end
+
+@testset "Mean of Date Ecliptic Equinox" verbose=false begin 
+
+
+    frames = FrameSystem{3,Float64}()
+    add_axes_inertial!(frames, MEME_TEST)
+
+    # Check that you can add MOD only with respect to the ICRF 
+    @test_throws ArgumentError add_axes_mememod!(frames, MOD, MEME_TEST)
+
+    frames = FrameSystem{3,Float64}()
+    add_axes_inertial!(frames, ICRF)
+    add_axes_mememod!(frames, MOD, ICRF)
+
+    # Test that the MEMEMOD transformation is defined correctly 
+    ep = rand(0.0:1e7)
+    R = rotation6(frames, MOD, ICRF, ep)
+    @test R[2] ≈ zeros(3, 3) atol=1e-14
+
+    R_ =  Orient.orient_rot3_icrf_to_mememod(ep);
+
+    v = rand(BigFloat, 3)
+    v /= norm(v)
+
+    @test v2as(R[1] * v, R_' * v) ≈ 0.0 atol = 1e-14 rtol = 1e-14
+end
+
 end;

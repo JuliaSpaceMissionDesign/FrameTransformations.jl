@@ -1,6 +1,7 @@
 kclear()
 
 @axes ICRF 1 InternationalCelestialReferenceFrame
+@axes ECI 200
 @axes ME421 31001
 @axes PA421 31006
 @axes PA440 31008
@@ -55,6 +56,13 @@ kclear()
             @test v2as(Rb[1] * v, Rs[1:3, 1:3] * v) ≤ 1e-6
             @test v2as(Rb[2] * v, Rs[4:6, 1:3] * v) ≤ 1e-6
         end
+
+        # Test that you must add the PA421 with respect to the ICRF 
+        frames = FrameSystem{2,Float64}(eph)
+        add_axes_inertial!(frames, ECI)
+
+        @test_throws ArgumentError add_axes_pa421!(frames, PA421, ECI)
+
     end
 
     @testset "DE440" verbose = false begin
