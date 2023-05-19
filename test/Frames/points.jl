@@ -170,6 +170,11 @@ kclear()
             yy = spkezr("SUN", et, "ECLIPJ2000", "NONE", "EMB")[1]
             @test xx ≈ yy atol = 1e-12 rtol = 1e-12
         end
+        
+        # Check that the epoch must have the same timescale
+        tai = Epoch("$(rand(0.0:1e8)) TAI")
+
+        @test_throws ErrorException vector3(frames, Moon, Sun, ICRF, tai)
 
         frames2 = FrameSystem{3,Float64}(eph)
         add_axes_inertial!(frames2, ICRF)

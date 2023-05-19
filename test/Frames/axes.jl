@@ -50,6 +50,16 @@ kclear()
         # test missing DCM 
         @test_throws ArgumentError add_axes_inertial!(frames, MEME2000; parent=ICRF)
 
+        G = FrameSystem{2, Float64}()
+        add_axes_inertial!(G, ICRF)
+        add_axes_rotating!(G, AXES_ROT, ICRF, t->angle_to_dcm(t, :Z))
+
+        # test insufficient frame system order 
+        @test_throws ErrorException rotation9(G, ICRF, AXES_ROT, 0.0)
+        
+        # test parent must be inertial 
+        @test_throws ArgumentError add_axes_inertial!(G, MEME2000, AXES_ROT, dcm=DCM(1.0I))
+
         add_axes_inertial!(frames, MEME2000; parent=ICRF, dcm=R)
 
         # Test actual rotation 
@@ -166,6 +176,8 @@ kclear()
 
             for _ in 1:5
                 ep = rand()
+                tdb = Epoch("$ep TDB")
+                tai = Epoch("$ep TAI")
 
                 R = node.f.fun[1](ep, x, x)
                 @test typeof(R) == Rotation{4,Float64}
@@ -186,10 +198,17 @@ kclear()
                 @test R[3] ≈ angle_to_δ²dcm([ep, 1, 0], smb) atol = atol rtol = rtol
                 @test R[4] ≈ angle_to_δ³dcm([ep, 1, 0, 0], smb) atol = atol rtol = rtol
 
+                # test throws error for different epoch timescale 
+                @test_throws ArgumentError rotation3(G, AXES_ROT, ICRF, tai)
+                
                 # test transformations 
                 A = rotation6(G, AXES_ROT, ICRF, ep)
+                A2 = rotation6(G, AXES_ROT, ICRF, tdb)
+                
                 @test A[1] ≈ angle_to_dcm(ep, smb)' atol = atol rtol = rtol
                 @test A[2] ≈ angle_to_δdcm([ep, 1], smb)' atol = atol rtol = rtol
+                @test A[1] ≈ A2[1] atol=atol rtol=rtol 
+                @test A[2] ≈ A2[2] atol=atol rtol=rtol
 
                 A = rotation12(G, AXES_ROT, ICRF, ep)
                 @test A[3] ≈ angle_to_δ²dcm([ep, 1, 0], smb)' atol = atol rtol = rtol
