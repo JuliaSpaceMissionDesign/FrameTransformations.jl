@@ -6,4 +6,6 @@
     include("Definitions/planets.jl")
     include("Definitions/ecliptic.jl")
     include("Definitions/moon.jl")
+    include("Definitions/earth.jl")
+    
 end;
