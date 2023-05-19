@@ -58,7 +58,7 @@ kclear()
         @test_throws ErrorException rotation9(G, ICRF, AXES_ROT, 0.0)
         
         # test parent must be inertial 
-        @test_throws ArgumentError add_axes_inertial!(G, MEME2000, AXES_ROT, dcm=DCM(1.0I))
+        @test_throws ArgumentError add_axes_inertial!(G, MEME2000; parent=AXES_ROT, dcm=DCM(1.0I))
 
         add_axes_inertial!(frames, MEME2000; parent=ICRF, dcm=R)
 
@@ -176,7 +176,7 @@ kclear()
 
             for _ in 1:5
                 ep = rand()
-                tdb = Epoch("$ep TDB")
+                tdb = Epoch("$(ep/86400) TDB")
                 tai = Epoch("$ep TAI")
 
                 R = node.f.fun[1](ep, x, x)
