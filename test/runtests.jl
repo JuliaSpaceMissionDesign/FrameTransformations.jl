@@ -39,7 +39,7 @@ import LinearAlgebra: cross, dot, norm
     DE432 = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp" dir = joinpath(
         @__DIR__, "assets"
     )
-    ITRF = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_000101_230424_230129.bpc" dir = joinpath(
+    ITRF = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_000101_231015_230722.bpc" dir = joinpath(
         @__DIR__, "assets"
     )
     PA421 = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de421_1900-2050.bpc" dir = joinpath(
