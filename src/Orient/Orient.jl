@@ -31,7 +31,7 @@ include("ecliptic.jl")
 
 function __init__()
     if !Tempo.has_timescale(TIMESCALES, Tempo.timescale_id(UT1))
-        Tempo.add_timescale(TIMESCALES, UT1, offset_utc2ut1; parent=UTC)
+        Tempo.add_timescale!(TIMESCALES, UT1, offset_utc2ut1; parent=UTC)
     end
 end
 
