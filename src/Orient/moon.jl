@@ -112,7 +112,7 @@ function orient_rot3_icrf_to_pa440(eph::AbstractEphemerisProvider, t::Number)
     end
 
     y = @MVector zeros(3)
-    ephem_orient!(y, eph, DJ2000, t / Tempo.DAY2SEC, AXESID_MOONPA_DE440, 0)
+    ephem_orient!(y, eph, DJ2000, t / Tempo.DAY2SEC, AXESID_MOONPA_DE440, AXESID_ICRF, 0)
     return angle_to_dcm(y[1], y[2], y[3], :ZXZ)
 end
 
@@ -148,7 +148,7 @@ function orient_rot3_icrf_to_pa421(eph::AbstractEphemerisProvider, t::Number)
     end
 
     y = @MVector zeros(3)
-    ephem_orient!(y, eph, DJ2000, t / Tempo.DAY2SEC, AXESID_MOONPA_DE421, 0)
+    ephem_orient!(y, eph, DJ2000, t / Tempo.DAY2SEC, AXESID_MOONPA_DE421, AXESID_ICRF, 0)
     return angle_to_dcm(y[1], y[2], y[3], :ZXZ)
 end
 

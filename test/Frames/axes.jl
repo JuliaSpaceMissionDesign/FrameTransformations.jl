@@ -354,7 +354,7 @@ kclear()
             et = rand(0.0:1e5)
             Rs = sxform("MOON_PA", "J2000", et)
 
-            angles = ephem_orient!(y, eph, DJ2000, et / Tempo.DAY2SEC, 31008, 3)
+            angles = ephem_orient!(y, eph, DJ2000, et / Tempo.DAY2SEC, 31008, 1, 3)
             ddR = Utils._3angles_to_δ²dcm(y, :ZXZ)
             dddR = Utils._3angles_to_δ³dcm(y, :ZXZ)
 
