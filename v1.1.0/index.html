@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · FrameTransformations.jl</title><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="FrameTransformations.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>FrameTransformations.jl</a></span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Features"><span>Features</span></a></li><li><a class="tocitem" href="#Mission"><span>Mission</span></a></li><li><a class="tocitem" href="#basic_design_req"><span>Requirements</span></a></li></ul></li><li><span class="tocitem">Modules</span><ul><li><a class="tocitem" href="Modules/orient/">Orient</a></li><li><a class="tocitem" href="Modules/frames/">Frames</a></li><li><a class="tocitem" href="Modules/utils/">Utils</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl/blob/main/docs/src/index.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Welcome-to-FrameTransformations.jl!"><a class="docs-heading-anchor" href="#Welcome-to-FrameTransformations.jl!">Welcome to FrameTransformations.jl!</a><a id="Welcome-to-FrameTransformations.jl!-1"></a><a class="docs-heading-anchor-permalink" href="#Welcome-to-FrameTransformations.jl!" title="Permalink"></a></h1><p><em>A modern, high-performance and comprehensive set of tools for transformations between any standard and user-defined reference frame.</em></p><p>Are you in search of fundamental routines for efficient and extensible frames transformations?   If so, <code>FrameTransformations</code> is the ideal starting point. The package is designed to  provide users with  the ability to create a customized, efficient, flexible, and  extensible axes/point graph models for mission analysis and space mission design purposes. </p><h2 id="Features"><a class="docs-heading-anchor" href="#Features">Features</a><a id="Features-1"></a><a class="docs-heading-anchor-permalink" href="#Features" title="Permalink"></a></h2><ul><li>Convert between different time scales (via <a href="https://github.com/JuliaSpaceMissionDesign/Tempo.jl"><code>Tempo.jl</code></a>);</li><li>Convert between different time representations (via <a href="https://github.com/JuliaSpaceMissionDesign/Tempo.jl"><code>Tempo.jl</code></a>);</li><li>Read binary ephemeris files;</li><li>Create a custom reference frame systems with user-defined points and axes.</li><li>Transform states between different frames.  </li></ul><p>All of this seamlessly integrated with <code>ForwardDiff.jl</code>.</p><h2 id="Mission"><a class="docs-heading-anchor" href="#Mission">Mission</a><a id="Mission-1"></a><a class="docs-heading-anchor-permalink" href="#Mission" title="Permalink"></a></h2><p>The development of this package has been performed with the following design goals in mind:</p><ol><li><p><strong>Efficiency</strong>: being a base package a particular attention has been   given to the execution time of the different routines as well as most/all of  them have been optimised and deeply benchmarked.</p></li><li><p><strong>Extensibility</strong>: attention has been given also to the definition of the   interfaces, which have been kept the most essential possible, in such a way   their extension can be performed very easily (also thanks to Julia language itself).</p></li><li><p><strong>Single Responsability Principle</strong>: The different modules in this package   have been organized in such a way they are responsible of bringing only <em>one</em>   of the desired features. This results in the possibility to extend and maybe,   in future, detatch some modules to a different package.</p></li><li><p><strong>Automatic Differentiation</strong>: seamless integration with <code>ForwardDiff.jl</code> is targetted   to fully exploit its power in higher-level packages constructed on top of <code>Basic</code>.</p></li></ol><h2 id="basic_design_req"><a class="docs-heading-anchor" href="#basic_design_req">Requirements</a><a id="basic_design_req-1"></a><a class="docs-heading-anchor-permalink" href="#basic_design_req" title="Permalink"></a></h2><p>The following table reports the desired list of features considered in the development of  this package, together with their development status. </p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-fymr{border-color:inherit;font-weight:bold;text-align:left;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-fymr">RID</th>
+    <th class="tg-fymr">Feature</th>
+    <th class="tg-fymr">Module</th>
+    <th class="tg-fymr">Status</th>
+    <th class="tg-fymr">Comment</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">REQ1</td>
+    <td class="tg-0pky">Read binary JPL/INPOP ephemeris files. At least type 1, 2, 3, 21 shall be available.</td>
+    <td class="tg-0pky">Ephemeris</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">
+        The possibility to read binary SPK files is implemented through CALCEPH S/W. 
+    </td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ2</td>
+    <td class="tg-0pky">Read JPL ASCII PCK files (constants).</td>
+    <td class="tg-0pky">Utils</td>
+    <td class="tg-0pky">🟢</td>
+    <td class="tg-0pky">Fully implemented in Basic. Tested on NAIF's pck00010 and pck00011 files.</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ3</td>
+    <td class="tg-0pky">Read NASA JPL frame kernels.</td>
+    <td class="tg-0pky">Utils</td>
+    <td class="tg-0pky">🔴</td>
+    <td class="tg-0pky"></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ4</td>
+    <td class="tg-0pky">Write NASA JPL frame kernels</td>
+    <td class="tg-0pky">Utils</td>
+    <td class="tg-0pky">🔴</td>
+    <td class="tg-0pky"></td>
+  </tr>
+    <tr>
+    <td class="tg-0pky">REQ5</td>
+    <td class="tg-0pky">
+        Fetch automatically IERS EOP.
+    </td>
+    <td class="tg-0pky">Orient</td>
+    <td class="tg-0pky">🟢</td>
+    <td class="tg-0pky"></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ6</td>
+    <td class="tg-0pky">
+        Fetch leapseconds files automatically.
+    </td>
+    <td class="tg-0pky">Orient</td>
+    <td class="tg-0pky">🟢</td>
+    <td class="tg-0pky"></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ7</td>
+    <td class="tg-0pky">Parse epochs in different formats. Shall include ISO and days or seconds since J2000.</td>
+    <td class="tg-0pky">Tempo</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">
+        Deeply tested against other S/W results.
+    </td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ8</td>
+    <td class="tg-0pky">
+        Transform epochs between different timescales, supporting at least: TDB,
+        TCB, TT, TAI, TCG, UTC, UT1, GPS.
+    </td>
+    <td class="tg-0pky">Tempo</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">
+        Deeply tested against ERFA. Extensible structure.
+    </td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ9</td>
+    <td class="tg-0pky">
+        Create IAU standard-based body-fixed rotation matrices.
+    </td>
+    <td class="tg-0pky">Orient</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">Deeply tested against NAIF's SPICE.</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ10</td>
+    <td class="tg-0pky">
+        Create ITRF (IERS-based) rotation matrices.
+    </td>
+    <td class="tg-0pky">Orient</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">Deeply tested against ERFA. Models with different precisions are available.</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ11</td>
+    <td class="tg-0pky">
+        Create a graph of custom points.
+    </td>
+    <td class="tg-0pky">Frames</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">Points could be defined in different ways (not only associated to ephemeris).</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ12</td>
+    <td class="tg-0pky">
+        Create a graph of custom axes.
+    </td>
+    <td class="tg-0pky">Frames</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">Axes models for MEME2000, ITRF, IAU models and many others are already implemented and tested within Basic.</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ13</td>
+    <td class="tg-0pky">
+        Get a state of a point relative to another in a custom frame.
+    </td>
+    <td class="tg-0pky">Frames</td>
+    <td class="tg-0pky">🔵</td>
+    <td class="tg-0pky">Deeply tested against NAIF's SPICE.</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">REQ14</td>
+    <td class="tg-0pky">
+        Full compatibility with ForwardDiff.jl shall be assured.
+    </td>
+    <td class="tg-0pky">Basic</td>
+    <td class="tg-0pky">🟡</td>
+    <td class="tg-0pky">Partial compatibility is already available (see dedicated section in "Contributing" for details)</td>
+  </tr>
+</tbody>
+</table><p>Where the color legend used is described afterwards:</p><table><tr><th style="text-align: right"></th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right">🔵</td><td style="text-align: right">Stable, deeply tested</td></tr><tr><td style="text-align: right">🟢</td><td style="text-align: right">Developed, working, partially tested</td></tr><tr><td style="text-align: right">🟡</td><td style="text-align: right">In development</td></tr><tr><td style="text-align: right">🔴</td><td style="text-align: right">Development not started but planned</td></tr><tr><td style="text-align: right">⚪</td><td style="text-align: right">Outdated/no more supported</td></tr></table></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="Modules/orient/">Orient »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 22 August 2023 23:02">Tuesday 22 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

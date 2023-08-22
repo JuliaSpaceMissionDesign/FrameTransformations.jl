@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Contributing · FrameTransformations.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="FrameTransformations.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">FrameTransformations.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">Modules</span><ul><li><a class="tocitem" href="../Modules/orient/">Orient</a></li><li><a class="tocitem" href="../Modules/frames/">Frames</a></li><li><a class="tocitem" href="../Modules/utils/">Utils</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Contributing</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Contributing</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl/blob/main/docs/src/todos.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h1><p>Although <code>Basic</code> already implements may of its required functionalities, there is still  a lot to do to finish it. </p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-fymr{border-color:inherit;font-weight:bold;text-align:left;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-fymr">ID</th>
+    <th class="tg-fymr">Feature to develop</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">AD1</td>
+    <td class="tg-0pky">
+        <b>Ephemeris</b>: the actual default ephemeris provider for Basic is Calceph. 
+        While it is a very versatile library, there is a inherent issue in that: the 
+        impossibility to perform AD over it. Therefore, within the context of development 
+        of Basic a (full) julia reader for JPL/INPOP ephemeris is foreseen. This package
+        is actually at the early stage of the development at the moment, thus any 
+        contribution would be highly appreciated.
+
+        This is being performed in a separate package called `Ephemeris` within the JSMD
+        environment.
+    </td>
+  </tr>
+    <tr>
+    <td class="tg-0pky">AD2</td>
+    <td class="tg-0pky">
+        <b>Caching</b>: if you have a deep look into the FrameSystem structure, you'll 
+        see that some frames have a dedicated cache. This goes in contrast with the use 
+        of ForwardDiff, since it would require a Dual's compatible cache: there is, then,
+        the need of replacing those caches with a PreallocationTools.DiffCache or something
+        similar.
+    </td>
+  </tr>
+  </tr>
+    <tr>
+    <td class="tg-0pky">AD3</td>
+    <td class="tg-0pky">
+        <b>FunctionWrappers</b>: if you have a deep look into the FrameSystem structure, you'll 
+        see that the actual transformations are stored by means of FunctionWrapper. Again,
+        this goes against the AD integration but was choosen for efficiency reasons.
+        In this case there is the need to introduct FunctionWrappersWrappers dependency to
+        solve the issue. 
+    </td>
+  </tr>
+</tbody>
+</table><p>Write down an <a href="mailto:andrea.pasquale@outlook.it">email</a> if your are interested in  contributing to one of those, we&#39;ll be for welcoming you with some additional guidelines. </p><h2 id="Guidelines"><a class="docs-heading-anchor" href="#Guidelines">Guidelines</a><a id="Guidelines-1"></a><a class="docs-heading-anchor-permalink" href="#Guidelines" title="Permalink"></a></h2><p>This section details the some of the guidelines that should be followed when contributing  to this package.</p><p>Since the package is not consolidated yet, the most straight forward way to contribute is  by creating a branch of the <code>master</code> and develop there the desired feature. To this step,  follows the creation of a PR that will be accepted only if the new feature are <strong>validated</strong>  by tests.</p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 22 August 2023 23:02">Tuesday 22 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
