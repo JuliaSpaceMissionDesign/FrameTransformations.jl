@@ -1,7 +1,7 @@
 
 # FrameTransformations.jl
 
-_A modern, high-performance and comprehensive set of tools for transformations between any standard and user-defined reference frame._
+_A modern high-performance set of tools for transformations between standard and user-defined reference frame._
 
 [![Dev Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaspacemissiondesign.github.io/FrameTransformations.jl/dev/) 
 [![Build Status](https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl/actions/workflows/ci.yml)
