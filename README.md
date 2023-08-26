@@ -16,9 +16,8 @@ extensible axes/point graph models for mission analysis and space mission design
 
 ## Features 
 
-- Convert between different time scales (via [`Tempo.jl`](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
-- Convert between different time representations (via [`Tempo.jl`](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
-- Read binary ephemeris files;
+- Convert between different time scales and representations (via [`Tempo.jl`](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
+- Read binary ephemeris files (via [`Ephemerides.jl`](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl));
 - Create a custom reference frame systems with user-defined points and axes.
 - Transform states between different frames.  
 
