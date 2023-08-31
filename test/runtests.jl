@@ -4,6 +4,7 @@ using Test
 using CalcephEphemeris
 using ERFA
 using ForwardDiff
+using PreallocationTools
 using ReferenceFrameRotations
 using RemoteFiles
 using SPICE
