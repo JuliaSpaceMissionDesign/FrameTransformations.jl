@@ -324,13 +324,13 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         end
 
         # Low-level function to compute the translation of a given point
-        @inbounds function ($pfun2)(point::FramePointNode{O,T}, t::Number) where {O,T}
+        @inbounds function ($pfun2)(point::FramePointNode{O}, t::Number) where {O}
             if point.class in (:RootPoint, :FixedPoint)
-                return SA[point.stv[1].data[1:(3 * $order)]...]
+                return SA[point.stv[1].du.data[1:(3 * $order)]...]
             else
                 tid = Threads.threadid()
 
-                if point.epochs[tid] != t || point.nzo[tid] < $order
+                if point.epochs.du[tid] != t || point.nzo[tid][1] < $order
                     if point.class == :UpdatablePoint
                         # Updatable point has not been updated! 
                         throw(
@@ -340,16 +340,46 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                             ),
                         )
                     else
-                        point.f[$order](point.stv[tid], t)
+                        point.f[$order](point.stv[tid].du, t)
                     end
 
-                    point.epochs[tid] = t
-                    point.nzo[tid] = $order
+                    point.epochs.du[tid] = t
+                    point.nzo[tid][1] = $order
                 end
 
-                return SA[point.stv[tid].data[1:(3 * $order)]...]
+                return SA[point.stv[tid].du.data[1:(3 * $order)]...]
             end
         end
+
+        # Low-level function to compute the translation of a given point when Dual numbers are used
+        @inbounds function ($pfun2)(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
+            if point.class in (:RootPoint, :FixedPoint)
+                return SA{T}[point.stv[1].du.data[1:(3 * $order)]...] 
+            else
+                tid = Threads.threadid()
+                
+                if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < $order
+                    if point.class == :UpdatablePoint
+                        # Updatable point has not been updated! 
+                        throw(
+                            ErrorException(
+                                "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
+                                "updated at time $t for order $($order)",
+                            ),
+                        )
+                    else
+                        point.f[$order](get_tmp(point.stv[tid], t), t)
+                    end
+
+                    get_tmp(point.epochs, t)[tid] = t
+                    point.nzo[tid][2] = $order
+                end
+
+                return SA{T}[get_tmp(point.stv[tid], t)[1:(3 * $order)]...]
+            end
+        end
+
+
     end
 end
 
@@ -555,10 +585,10 @@ ERROR: UpdatablePoint with NAIFId = 1 has not been updated at time 0.1 for order
 ### See also 
 See also [`add_point_updatable!`](@ref)
 """
-function update_point!(
-    frames::FrameSystem{O,T}, point, stv::AbstractVector{T}, time::T
-) where {O,T}
+function update_point!(frames::FrameSystem{O}, point, stv::AbstractVector, time::Number) where {O}
+
     NAIFId = point_alias(point)
+
     # Check that point exists in the frame system
     if !has_point(frames, NAIFId)
         throw(
@@ -588,11 +618,32 @@ function update_point!(
         throw(ArgumentError("Point $(pnt.NAIFId) is not an Updatable Point."))
     end
 
-    id = Threads.threadid()
-    @inbounds pnt.epochs[id] = time
-    @inbounds pnt.nzo[id] = ne ÷ 3
-    @inbounds @views pnt.stv[id][1:ne] .= stv[1:ne]
+    _update_point!(pnt, time, stv, ne)
     return nothing
+end
+
+function _update_point!(pnt::FramePointNode, t::Number, stv::AbstractVector, ne::Int)
+
+    id = Threads.threadid()
+    @inbounds begin 
+        pnt.epochs.du[id] = t
+        pnt.nzo[id][1] = ne ÷ 3
+        @views pnt.stv[id].du[1:ne] .= stv[1:ne]
+    end
+    nothing 
+
+end
+
+function _update_point!(pnt::FramePointNode, t::Autodiff.Dual, stv::AbstractVector)
+
+    id = Threads.threadid()
+    @inbounds begin  
+        get_tmp(pnt.epochs, t)[id] = t
+        pnt.nzo[id][2] = ne ÷ 3
+        @views get_tmp(pnt.stv[id], t)[1:ne] .= stv[1:ne]
+    end 
+    nothing
+
 end
 
 """ 

@@ -192,23 +192,23 @@ function build_point(
 
     # Initialize struct caches 
     @inbounds if class in (:RootPoint, :FixedPoint)
-        nzo = Int[]
-        epochs = T[]
-        stvs = [@MVector zeros(T, 3O)]
+        nzo = [@MVector zeros(Int, 2)]
+        epochs = DiffCache(T[])
+        stvs = [DiffCache(@MVector zeros(T, 3O))]
 
         if class == :FixedPoint
             for i in 1:3
-                stvs[1][i] = offset[i]
+                stvs[1].du[i] = offset[i]
             end
         end
     else
         # This is to handle generic frames in a multi-threading architecture 
         # without having to copy the FrameSystem
         nth = Threads.nthreads()
-        nzo = -ones(Int, nth)
+        nzo = [-@MVector ones(Int, 2) for _ in 1:nth]
 
-        epochs = zeros(T, nth)
-        stvs = [@MVector zeros(T, 3O) for _ in 1:nth]
+        epochs = DiffCache(zeros(T, nth))
+        stvs = [DiffCache(@MVector zeros(T, 3O)) for _ in 1:nth]
     end
 
     # Creates point node 

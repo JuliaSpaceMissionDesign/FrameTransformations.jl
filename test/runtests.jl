@@ -4,6 +4,7 @@ using Test
 using CalcephEphemeris
 using ERFA
 using ForwardDiff
+using PreallocationTools
 using ReferenceFrameRotations
 using RemoteFiles
 using SPICE
@@ -12,6 +13,7 @@ using Tempo
 
 using JSMDInterfaces.Ephemeris
 using JSMDInterfaces.Math: interpolate
+using JSMDUtils.Autodiff
 using JSMDUtils.Math: arcsec2rad, D¹, D², D³
 using JSMDUtils: NullEphemerisProvider
 
@@ -64,6 +66,5 @@ download(KERNELS; verbose=true, force=false)
         @testset "$m" verbose = true begin
             include("$m/$m.jl")
         end
-        
     end
 end;

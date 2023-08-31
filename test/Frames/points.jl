@@ -39,8 +39,8 @@ kclear()
         node = frames_points(frames).nodes[1]
         @test node.class == :RootPoint
         @test length(node.stv) == 1
-        @test length(node.nzo) == 0
-        @test length(node.epochs) == 0
+        @test length(node.nzo) == 1
+
         @test node.name == :SSB
         @test node.axesid == 1
         @test node.NAIFId == 0
@@ -71,8 +71,7 @@ kclear()
         node = frames_points(frames).nodes[2]
         @test node.class == :FixedPoint
         @test length(node.stv) == 1
-        @test length(node.nzo) == 0
-        @test length(node.epochs) == 0
+        @test length(node.nzo) == 1
         @test node.name == :Earth
         @test node.axesid == 1
         @test node.NAIFId == 399
@@ -125,7 +124,7 @@ kclear()
 
         nth = Threads.nthreads()
         @test length(node.nzo) == nth
-        @test length(node.epochs) == nth
+        @test length(node.epochs.du) == nth
         @test length(node.stv) == nth
 
         # test Earth point properties
@@ -237,9 +236,10 @@ kclear()
         @test node.axesid == 1
 
         @test length(node.stv) == nth
-        @test length(node.epochs) == nth
+        @test length(node.epochs.du) == nth
         @test length(node.nzo) == nth
-        @test node.nzo[1] == -1
+        @test node.nzo[1][1] == -1
+        @test node.nzo[1][2] == -1
 
         atol, rtol = 1e-12, 1e-12
         # test AD derivatives for all combinations of specified functions
@@ -303,9 +303,10 @@ kclear()
         @test node.axesid == 17
 
         @test length(node.stv) == nth
-        @test length(node.epochs) == nth
+        @test length(node.epochs.du) == nth
         @test length(node.nzo) == nth
-        @test node.nzo[1] == -1
+        @test node.nzo[1][1] == -1
+        @test node.nzo[1][2] == -1
 
         # test point not updated
         @test_throws ErrorException vector3(frames, Earth, EMB, ICRF, rand())
@@ -322,9 +323,9 @@ kclear()
         rr = rand(6)
 
         update_point!(frames, Earth, r, 0.0)
-        @test node.nzo[tid] == 1
-        @test node.epochs[tid] == 0.0
-        @test node.stv[tid][1:3] == r
+        @test node.nzo[tid][1] == 1
+        @test get_tmp(node.epochs, 0.0)[tid] == 0.0
+        @test get_tmp(node.stv[tid], 0.0)[1:3] == r
 
         # test transformation at different epoch 
         @test_throws ErrorException vector3(frames, Earth, EMB, ECLIPJ2000, 1.0)
@@ -336,8 +337,8 @@ kclear()
 
         update_point!(frames, Earth, rr, 1.0)
 
-        @test node.nzo[tid] == 2
-        @test node.epochs[tid] == 1.0
+        @test node.nzo[tid][1] == 2
+        @test get_tmp(node.epochs, 1.0)[tid] == 1.0
 
         # test epoch has been updated correctly 
         @test_throws ErrorException vector3(frames, EMB, Earth, ICRF, 0.0)

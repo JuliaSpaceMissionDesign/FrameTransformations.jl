@@ -14,6 +14,7 @@
         B = DCM(0.0I)
         C = DCM(1.0I)
         R = Rotation(A, B, C)
+        @test length(R) == 3
 
         @test typeof(R) == Rotation{3,Float64}
         for (i, M) in enumerate([A, B, C])
@@ -25,9 +26,11 @@
         @test typeof(R) == Rotation{2,Float64}
         @test R[1] == A
         @test R[2] == B
+        @test length(R) == 2
 
         R = Rotation{5}(A, B, C)
         @test typeof(R) == Rotation{5,Float64}
+        @test length(R) == 5
         for (i, M) in enumerate([A, B, C, DCM(0.0I), DCM(0.0I)])
             @test R[i] == M
         end

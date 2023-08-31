@@ -210,7 +210,7 @@ struct FrameAxesNode{O,T,N} <: AbstractGraphNode
     R::Rotation{O, T}
     f::FrameAxesFunctions{T,O,N}
     angles::Vector{DiffCache{MVector{N,T}, Vector{T}}}
-end
+end         
 
 get_node_id(ax::FrameAxesNode) = ax.id
 
@@ -225,13 +225,37 @@ end
 # POINTS
 # -------------------------------------
 
-# Frame Point Function signatures 
-_FPointFunIn{N,T} = Tuple{MVector{N,T},T}
-_FPointFunSig{T,N} = FunctionWrapper{Nothing,_FPointFunIn{N,T}}
+# Frame Point Function signatures definition, supporting up to the 2nd derivative 
+# without allocations 
+_FPointFunIn{N, T} = Tuple{MVector{N, T}, T}
+_FPointFunSig{N, T} = FunctionWrapper{Nothing, _FPointFunIn{N, T}}
+
+_FPointWrappers{N, T} = FunctionWrappersWrapper{Tuple{
+    _FPointFunSig{N, T},
+    _FPointFunSig{N, _NodeFunAD1}, 
+    _FPointFunSig{N, _NodeFunAD2}
+}, false}
+
+# This automatically generates the FunctionWrappersWrapper according to the above type 
+# definitions for the given input function
+function _FPointWrappers{N, T}(fun::Function) where {N, T}
+
+    types = (T, _NodeFunAD1{T}, _NodeFunAD2{T})
+    
+    inps = map(x->_FPointFunIn{N, x}, types)
+    outs = map(x->Nothing, types)
+
+    fws = map(inps, outs) do A, R 
+        FunctionWrapper{R, A}(fun)
+    end
+
+    return _FPointWrappers{N, T}(fws)
+
+end
 
 # Container to store frame point update functions 
 struct FramePointFunctions{T,O,N}
-    fun::NTuple{O,_FPointFunSig{T,N}}
+    fun::NTuple{O,_FPointWrappers{N, T}}
 end
 
 Base.getindex(pf::FramePointFunctions, i) = pf.fun[i]
@@ -242,10 +266,17 @@ _empty_stv_update!(::AbstractVector{T}, ::T) where {T} = nothing
 # Constructors for FramePointFunctions 
 @generated function FramePointFunctions{T}(funs::Function...) where {T}
     O = length(funs)
-    expr = :(tuple($([(Expr(:ref, :funs, i)) for i in 1:O]...)))
+
+    expr = :(tuple($([
+        Expr(:call, 
+            Expr(:curly, :_FPointWrappers, Expr(:call, :(*), 3, :O), :T), 
+            Expr(:ref, :funs, i)) for i in 1:O
+        ]...))
+    )
 
     return quote
-        @inbounds FramePointFunctions{T,$O,3 * $O}($(expr))
+        O = length(funs)
+        @inbounds FramePointFunctions{T, $O, 3*$O}($(expr))
     end
 end
 
@@ -253,17 +284,22 @@ end
 @generated function FramePointFunctions{T,O}(funs::Function...) where {T,O}
     O > length(funs) && throw(ArgumentError("required at least $O functions."))
 
-    expr = :(tuple($([Expr(:ref, :funs, i) for i in 1:O]...)))
+    expr = :(tuple($([
+        Expr(:call, 
+            Expr(:curly, :_FPointWrappers, Expr(:call, :(*), 3, :O), :T), 
+            Expr(:ref, :funs, i)) for i in 1:O
+        ]...))
+    )
     return quote
-        @inbounds FramePointFunctions{T,O,3 * O}($(expr))
+        @inbounds FramePointFunctions{T, O, 3*O}($(expr))
     end
 end
 
 # Default constructors for dummy point function updates 
 @generated function FramePointFunctions{T,O}() where {T,O}
-    expr = :(tuple($([_empty_stv_update! for i in 1:O]...)))
+    expr = :(tuple($([_FPointWrappers{3*O, T}(_empty_stv_update!) for i in 1:O]...)))
     return quote
-        FramePointFunctions{T,O,3 * O}($(expr))
+        FramePointFunctions{T, O, 3*O}($(expr))
     end
 end
 
@@ -289,9 +325,9 @@ struct FramePointNode{O,T,N} <: AbstractGraphNode
     axesid::Int
     parentid::Int
     NAIFId::Int
-    stv::Vector{MVector{N,T}}
-    epochs::Vector{T}
-    nzo::Vector{Int}
+    stv::Vector{DiffCache{MVector{N,T}, Vector{T}}}
+    epochs::DiffCache{Vector{T}, Vector{T}}
+    nzo::Vector{MVector{2, Int}}
     f::FramePointFunctions{T,O,N}
 end
 
