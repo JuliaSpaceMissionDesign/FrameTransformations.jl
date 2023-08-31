@@ -64,5 +64,6 @@ download(KERNELS; verbose=true, force=false)
         @testset "$m" verbose = true begin
             include("$m/$m.jl")
         end
+        
     end
 end;

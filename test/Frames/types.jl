@@ -51,7 +51,7 @@
         @test length(funs.fun) == 3
 
         for i in 1:3
-            @test funs.fun[i](0, s3, s3) == Rotation{3}(1I)
+            @test funs.fun[i](0, s3, s3) == Rotation{3}(1.0I)
         end
 
         # Default constructor 

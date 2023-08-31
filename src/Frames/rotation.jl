@@ -161,6 +161,7 @@ order(::Rotation{S,<:Any}) where {S} = S
 # Julia APIs 
 Base.size(::Rotation{S,<:Any}) where {S} = (3S, 3S)
 Base.getindex(R::Rotation, i) = R.m[i]
+Base.length(::Rotation{S}) where S = S
 
 function Base.summary(io::IO, ::Rotation{S,N}) where {S,N}
     return print(io, "Rotation{$S, $N}")
@@ -389,3 +390,14 @@ end
         $retexpr
     end
 end
+
+
+# ---
+# ForwardDiff APIs
+
+# Overload of extract_derivative to allow AD when output types are Rotation instances 
+# rather than subtypes of AbstractArrays
+@inline function Autodiff.ForwardDiff.extract_derivative(::Type{T}, y::Rotation) where {T}
+    return Rotation(map(d -> Autodiff.ForwardDiff.extract_derivative(T, d), y.m))
+end
+

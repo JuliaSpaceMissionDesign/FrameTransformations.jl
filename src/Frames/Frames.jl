@@ -1,6 +1,9 @@
 module Frames
 
+using FunctionWrappersWrappers: FunctionWrappersWrapper, 
+                                FunctionWrappers.FunctionWrapper
 using Logging
+using PreallocationTools
 using ReferenceFrameRotations
 using StaticArrays
 
@@ -21,6 +24,7 @@ using SMDGraphs:
 using JSMDInterfaces.Ephemeris
 using JSMDUtils: format_camelcase, NullEphemerisProvider
 using JSMDUtils.Math: D¹, D², D³
+using JSMDUtils.Autodiff
 
 using Tempo
 using Tempo:
@@ -43,7 +47,6 @@ using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm
 using FrameTransformations.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
 import LinearAlgebra: dot, norm, matprod, UniformScaling
-import FunctionWrappers: FunctionWrapper
 import StaticArrays: similar_type, Size, MMatrix, SMatrix
 
 import SMDGraphs: get_node_id

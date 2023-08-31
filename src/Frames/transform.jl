@@ -61,7 +61,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             if O < $order
                 throw(
                     ErrorException(
-                        "Insufficient frame system order: " *
+                        "insufficient frame system order: " *
                         "transformation requires at least order $($order).",
                     ),
                 )
@@ -72,7 +72,18 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             idto = axes_alias(to)
 
             idfrom == idto && return Rotation{$order}(T(1)I)
+
+            # Check to ensure that the two axes are stored in the frame system
+            for id in (idfrom, idto)
+                if !has_axes(frame, id)
+                    throw(ErrorException(
+                        "axes with ID $id are not registered in the frame system."
+                    ))
+                end 
+            end
+
             return $(axfun2)(frame, t, get_path(frames_axes(frame), idfrom, idto))
+
         end
 
         # Low-level function to parse a path of axes and chain their rotations 
@@ -108,44 +119,41 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::Number
         ) where {O,T}
             @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
-                return $order < O ? Rotation{$order}(axes.R[1]) : axes.R[1]
+                return $order < O ? Rotation{$order}(axes.R) : axes.R
             else
                 tid = Threads.threadid()
-                if axes.epochs[tid] != t || axes.nzo[tid] < $order
-                    if axes.class in (:RotatingAxes, :ProjectedAxes)
-                        stv = @SVector zeros(T, 3O)
-                        axes.R[tid] = axes.f[$order](t, stv, stv)
 
-                    elseif axes.class == :EphemerisAxes
-                        stv = @SVector zeros(T, 3O)
+                if axes.class in (:RotatingAxes, :ProjectedAxes)
+                    stv = @SVector zeros(T, 3O)
+                    R = axes.f[$order](t, stv, stv)
 
-                        # Retrieves libration angles for ephemeris kernels 
-                        ephem_orient!(
-                            axes.angles[tid],
-                            frame.eph,
-                            DJ2000,
-                            t / DAY2SEC,
-                            axes.id,
-                            axes.parentid,
-                            $order - 1,
-                        )
+                elseif axes.class == :EphemerisAxes
+                    stv = @SVector zeros(T, 3O)
 
-                        # Compute rotation matrix
-                        axes.R[tid] = axes.f[$order](t, SA[axes.angles[tid]...], stv)
+                    # Retrieves libration angles for ephemeris kernels 
+                    ephem_orient!(
+                        get_tmp(axes.angles[tid], t),
+                        frame.eph,
+                        DJ2000,
+                        t / DAY2SEC,
+                        axes.id,
+                        axes.parentid,
+                        $order - 1,
+                    )
 
-                    else # Computable axes 
-                        axes.R[tid] = axes.f[$order](
-                            t,
-                            $(compfun)(frame, axes.comp.v1, axes.parentid, t),
-                            $(compfun)(frame, axes.comp.v2, axes.parentid, t),
-                        )
-                    end
+                    # Compute rotation matrix
+                    R = axes.f[$order](t, SA[get_tmp(axes.angles[tid], t)...], stv)
 
-                    axes.epochs[tid] = t
-                    axes.nzo[tid] = $order
+                else # Computable axes 
+                    R = axes.f[$order](
+                        t,
+                        $(compfun)(frame, axes.comp.v1, axes.parentid, t),
+                        $(compfun)(frame, axes.comp.v2, axes.parentid, t),
+                    )
                 end
 
-                return $order < O ? Rotation{$order}(axes.R[tid]) : axes.R[tid]
+                return $order < O ? Rotation{$order}(R) : R
+
             end
         end
 
@@ -192,7 +200,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             if O < $order
                 throw(
                     ErrorException(
-                        "Insufficient frame system order: " *
+                        "insufficient frame system order: " *
                         "transformation requires at least order $($order).",
                     ),
                 )
@@ -203,8 +211,26 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             idto = point_alias(to)
 
             from == to && return @SVector zeros(T, 3 * $order)
+
+            # Check to ensure that the two points are registerd
+            for id in (idfrom, idto)
+                if !has_point(frame, id)
+                    throw(ErrorException(
+                        "point with ID $id is not registered in the frame system."
+                    ))
+                end 
+            end
+
+            # Check that the ouput axes are registered 
+            axid = axes_alias(axes)
+            if !has_axes(frame, axid)
+                throw(ErrorException(
+                    "axes with ID $axid are not registered in the frame system."
+                ))
+            end
+
             return $(pfun2)(
-                frame, t, axes_alias(axes), get_path(frames_points(frame), idfrom, idto)
+                frame, t, axid, get_path(frames_points(frame), idfrom, idto)
             )
         end
 
@@ -426,7 +452,7 @@ for (order, pfun, ltcorr) in
             if O < $order
                 throw(
                     ErrorException(
-                        "Insufficient frame system order: " *
+                        "insufficient frame system order: " *
                         "transformation requires at least order $($order).",
                     ),
                 )
@@ -450,7 +476,24 @@ for (order, pfun, ltcorr) in
             # in absence of a specified axes center, the observer location is used. 
             axc = isnothing(axescenter) ? idfrom : point_alias(axescenter)
 
-            ltp = LTProperties(axes_alias(axes), axc, dir, iters)
+            # Check to ensure that the two points are stored in the frame system
+            for id in (idfrom, idto, axc)
+                if !has_point(frames, id)
+                    throw(ErrorException(
+                        "point with ID $id is not registered in the frame system."
+                    ))
+                end 
+            end
+
+            # Check to ensure that the desired axes exist 
+            axid = axes_alias(axes)
+            if !has_axes(frames, axid)
+                throw(ErrorException(
+                    "axes with ID $axid are not registered in the frame system."
+                ))
+            end
+
+            ltp = LTProperties(axid, axc, dir, iters)
             return $(ltcorr)(frames, ltc, ltp, idfrom, idto, t)
         end
     end

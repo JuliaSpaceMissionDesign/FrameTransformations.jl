@@ -234,26 +234,20 @@ function build_axes(
 
     # Initialize struct caches
     @inbounds if class in (:InertialAxes, :FixedOffsetAxes)
-        nzo = Int[]
-        epochs = T[]
-        angles = [@MVector zeros(T, 3O)]
-
-        R = [!isnothing(dcm) ? Rotation{O}(dcm) : Rotation{O}(T(1)I)]
+        angles = [DiffCache(@MVector zeros(T, 3O))]
+        R = !isnothing(dcm) ? Rotation{O}(dcm) : Rotation{O}(T(1)I)
 
     else
         # This is to handle generic frames in a multi-threading architecture 
         # without having to copy the FrameSystem
-        nth = Threads.nthreads()
-        nzo = -ones(Int, nth)
+        angles = [DiffCache(@MVector zeros(T, 3O)) for _ in 1:Threads.nthreads()]
+        R = Rotation{O}(T(1)I)
 
-        epochs = zeros(T, nth)
-        angles = [@MVector zeros(T, 3O) for _ in 1:nth]
-        R = [Rotation{O}(T(1)I) for _ in 1:nth]
     end
 
     # Creates axes node
     axnode = FrameAxesNode{O,T,3 * O}(
-        name, class, id, parentid, cax_prop, R, epochs, nzo, funs, angles
+        name, class, id, parentid, cax_prop, R, funs, angles
     )
 
     # Insert the new axes in the graph
@@ -331,7 +325,7 @@ function add_axes_inertial!(
         if !has_axes(frames, parentid)
             throw(
                 ArgumentError(
-                    "The parent axes $parentid are not present in the given FrameSystem."
+                    "The parent axes with ID $parentid are not present in the given FrameSystem."
                 ),
             )
         end
@@ -342,7 +336,7 @@ function add_axes_inertial!(
         end
 
         if isnothing(dcm)
-            throw(ArgumentError("Missing DCM from axes with id $parentid."))
+            throw(ArgumentError("Missing DCM from axes with ID $parentid."))
         end
     end
 

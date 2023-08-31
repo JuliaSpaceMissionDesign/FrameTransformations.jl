@@ -93,13 +93,47 @@ function ComputableAxesProperties()
     return ComputableAxesProperties(ComputableAxesVector(), ComputableAxesVector())
 end
 
-# Frame Axes Function signatures 
-_FAxesFunIn{N,T} = Tuple{T,SVector{N,T},SVector{N,T}}
-_FAxesFunSig{O,T,N} = FunctionWrapper{Rotation{O,T},_FAxesFunIn{N,T}}
+# Frame Axes Function signatures definition, supporting up to the 2nd derivative 
+# without allocations 
+_TagAD1{T} = Autodiff.ForwardDiff.Tag{Autodiff.JSMDDiffTag, T}
+_NodeFunAD1{T} = Autodiff.ForwardDiff.Dual{_TagAD1{T}, T, 1}
+
+_TagAD2{T} = Autodiff.ForwardDiff.Tag{Autodiff.JSMDDiffTag, _NodeFunAD1{T}}
+_NodeFunAD2{T} = Autodiff.ForwardDiff.Dual{_TagAD2{T}, _NodeFunAD1{T}, 1}
+
+_FAxesFunIn{N, T, S} = Tuple{T, SVector{N,S}, SVector{N,S}}
+_FAxesFunSig{O, T, S, N} = FunctionWrapper{Rotation{O, T}, _FAxesFunIn{N, T, S}}
+
+_FAxesWrappers{O, T, N} = FunctionWrappersWrapper{Tuple{
+    _FAxesFunSig{O, T, T, N},
+    _FAxesFunSig{O, _NodeFunAD1{T}, T, N},
+    _FAxesFunSig{O, _NodeFunAD1{T}, _NodeFunAD1{T}, N},
+    _FAxesFunSig{O, _NodeFunAD2{T}, T, N}, 
+    _FAxesFunSig{O, _NodeFunAD2{T}, _NodeFunAD2{T}, N}
+}, true}
+
+
+# This automatically generates the FunctionWrappersWrapper according to the above type 
+# definitions for the given input function
+function _FAxesWrappers{O, T, N}(fun::Function) where {O, T, N}
+    
+    typesT = (T, _NodeFunAD1{T}, _NodeFunAD1{T}, _NodeFunAD2{T}, _NodeFunAD2{T})
+    typesS = (T, T, _NodeFunAD1{T}, T, _NodeFunAD2{T})
+
+    inps = map((x,y)->_FAxesFunIn{N, x, y}, typesT, typesS)
+    outs = map(x->Rotation{O, x}, typesT)
+
+    fws = map(inps, outs) do A, R 
+        FunctionWrapper{R, A}(fun)
+    end
+
+    return _FAxesWrappers{O, T, N}(fws)
+
+end
 
 # Container to store frame axes update functions 
 struct FrameAxesFunctions{T,O,N}
-    fun::NTuple{O,_FAxesFunSig{O,T,N}}
+    fun::NTuple{O, _FAxesWrappers{O,T,N}}
 end
 
 Base.getindex(af::FrameAxesFunctions, i) = af.fun[i]
@@ -107,12 +141,23 @@ Base.getindex(af::FrameAxesFunctions, i) = af.fun[i]
 # Default rotation function for axes that do not require updates
 _get_fixedrot(::T, ::SVector{N,T}, ::SVector{N,T}) where {N,T} = Rotation{N / 3}(T(1)I)
 
+function _get_fixedrot(::T, ::SVector{N, S}, ::SVector{N, S}) where {N, S, T}
+    Rotation{N/3}(promote_type(T, S)(1)I)
+end
+
 # Constructors for FrameAxesFunctions 
 @generated function FrameAxesFunctions{T}(funs::Function...) where {T}
     O = length(funs)
-    expr = :(tuple($([Expr(:ref, :funs, i) for i in 1:O]...)))
+
+    expr = :(tuple($([
+        Expr(:call, 
+            Expr(:curly, :_FAxesWrappers, :O, :T, Expr(:call, :(*), 3, :O)), 
+            Expr(:ref, :funs, i)) for i in 1:O
+        ]...))
+    )
 
     return quote
+        O = length(funs)
         @inbounds FrameAxesFunctions{T,$O,3 * $O}($(expr))
     end
 end
@@ -121,7 +166,13 @@ end
 @generated function FrameAxesFunctions{T,O}(funs::Function...) where {T,O}
     O > length(funs) && throw(ArgumentError("required at least $O functions."))
 
-    expr = :(tuple($([Expr(:ref, :funs, i) for i in 1:O]...)))
+    expr = :(tuple($([
+        Expr(:call, 
+            Expr(:curly, :_FAxesWrappers, :O, :T, Expr(:call, :(*), 3, :O)), 
+            Expr(:ref, :funs, i)) for i in 1:O
+        ]...))
+    )
+
     return quote
         @inbounds FrameAxesFunctions{T,O,3 * O}($(expr))
     end
@@ -129,7 +180,7 @@ end
 
 # Default constructors for dummy axes function updates 
 @generated function FrameAxesFunctions{T,O}() where {T,O}
-    expr = :(tuple($([_get_fixedrot for i in 1:O]...)))
+    expr = :(tuple($([_FAxesWrappers{O, T, 3*O}(_get_fixedrot) for i in 1:O]...)))
     return quote
         FrameAxesFunctions{T,O,3 * O}($(expr))
     end
@@ -146,9 +197,7 @@ Define a set of axes.
 - `id` -- axes ID (equivalent of NAIFId for axes)
 - `parentid` -- ID of the parent axes 
 - `comp` -- properties for computable axes 
-- `R` -- vector storing rotation matrices 
-- `epochs` -- vector storing the epochs associated to `R`
-- `nzo` -- last order at which `R` has been computed 
+- `R` -- rotation matrix for fixed relative axes 
 - `f` -- `FrameAxesFunctions` container 
 - `angles` -- vector storing the libration angles retrived from ephemerides
 """
@@ -158,11 +207,9 @@ struct FrameAxesNode{O,T,N} <: AbstractGraphNode
     id::Int
     parentid::Int
     comp::ComputableAxesProperties
-    R::Vector{Rotation{O,T}}
-    epochs::Vector{T}
-    nzo::Vector{Int} # last updated order
+    R::Rotation{O, T}
     f::FrameAxesFunctions{T,O,N}
-    angles::Vector{MVector{N,T}}
+    angles::Vector{DiffCache{MVector{N,T}, Vector{T}}}
 end
 
 get_node_id(ax::FrameAxesNode) = ax.id

@@ -60,6 +60,8 @@ kclear()
         # test parent must be inertial 
         @test_throws ArgumentError add_axes_inertial!(G, MEME2000; parent=AXES_ROT, dcm=DCM(1.0I))
 
+        # Check that if the axes are not registered an error is thrown 
+        @test_throws ErrorException rotation9(frames, ICRF, MEME2000, 0.0)
         add_axes_inertial!(frames, MEME2000; parent=ICRF, dcm=R)
 
         # Test actual rotation 
@@ -75,10 +77,8 @@ kclear()
             node = frames_axes(frames).nodes[i]
 
             @test node.class == :InertialAxes
-            @test length(node.R) == 1
-            @test length(node.epochs) == 0
             @test length(node.angles) == 1
-            @test length(node.nzo) == 0
+
         end
 
         @test is_timefixed(frames, MEME2000)
@@ -149,11 +149,6 @@ kclear()
         @test node.name == :AXES_ROT
         @test node.id == 2
         @test node.parentid == 1
-
-        @test length(node.R) == nth
-        @test length(node.nzo) == nth
-        @test length(node.epochs) == nth
-        @test node.nzo[1] == -1
 
         # Check axes ineritality
         @test is_inertial(G, AXES_ROT) == false
@@ -267,10 +262,7 @@ kclear()
         @test node.parentid == 17
         @test node.class == :ComputableAxes
 
-        @test length(node.nzo) == nth
         @test length(node.angles) == nth
-        @test length(node.epochs) == nth
-        @test length(node.R) == nth
 
         @test is_inertial(F, AXES_COMP) == false
         @test is_timefixed(F, AXES_COMP) == false
@@ -338,10 +330,7 @@ kclear()
         @test node.parentid == 1
         @test node.class == :EphemerisAxes
 
-        @test length(node.nzo) == nth
         @test length(node.angles) == nth
-        @test length(node.epochs) == nth
-        @test length(node.R) == nth
 
         @test is_inertial(G, AXES_EPHEM) == false
         @test is_timefixed(G, AXES_EPHEM) == false
@@ -401,9 +390,6 @@ kclear()
         @test node.id == 22
         @test node.parentid == 1
 
-        @test length(node.R) == nth
-        @test length(node.epochs) == nth
-        @test length(node.nzo) == nth
         @test length(node.angles) == nth
 
         @test is_inertial(G, MEME2000)
@@ -434,3 +420,4 @@ kclear()
 end;
 
 kclear()
+
