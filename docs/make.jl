@@ -13,13 +13,13 @@ if CI
     Conda.add("nbconvert")
 
     const TUTORIAL_PATH = "src/Tutorials"
-    files = readdir(folderpath)
+    files = readdir(TUTORIAL_PATH)
     ipynb_files = filter(file -> endswith(file, ".ipynb"), files)
 
     # Convert
     for file in ipynb_files
         nbconvert = IJulia.find_jupyter_subcommand("nbconvert");
-        append!(nbconvert.exec, ["--to", "markdown", "--execute", joinpath(folderpath, file) ])
+        append!(nbconvert.exec, ["--to", "markdown", "--execute", joinpath(TUTORIAL_PATH, file) ])
         run(nbconvert)
     end
 
