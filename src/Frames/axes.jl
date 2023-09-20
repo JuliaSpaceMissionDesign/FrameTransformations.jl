@@ -234,20 +234,25 @@ function build_axes(
 
     # Initialize struct caches
     @inbounds if class in (:InertialAxes, :FixedOffsetAxes)
+        nzo = Int[]
+        epochs = T[]
         angles = [DiffCache(@MVector zeros(T, 3O))]
-        R = !isnothing(dcm) ? Rotation{O}(dcm) : Rotation{O}(T(1)I)
-
+        R = [!isnothing(dcm) ? Rotation{O}(dcm) : Rotation{O}(T(1)I)]
+    
     else
         # This is to handle generic frames in a multi-threading architecture 
         # without having to copy the FrameSystem
-        angles = [DiffCache(@MVector zeros(T, 3O)) for _ in 1:Threads.nthreads()]
-        R = Rotation{O}(T(1)I)
+        nth = Threads.nthreads()
+        nzo = -ones(Int, nth)
+        epochs = zeros(T, nth)
+        R = [Rotation{O}(T(1)I) for _ in 1:nth]
+        angles = [DiffCache(@MVector zeros(T, 3O)) for _ in 1:nth]
 
     end
 
     # Creates axes node
     axnode = FrameAxesNode{O,T,3 * O}(
-        name, class, id, parentid, cax_prop, R, funs, angles
+        name, class, id, parentid, cax_prop, R, epochs, nzo, funs, angles
     )
 
     # Insert the new axes in the graph

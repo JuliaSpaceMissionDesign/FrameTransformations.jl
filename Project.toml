@@ -22,7 +22,7 @@ Tempo = "c33777b2-e695-4fae-9135-aeae8855dd81"
 [compat]
 DelimitedFiles = "1"
 FunctionWrappersWrappers = "0.1"
-JSMDInterfaces = "1.2"
+JSMDInterfaces = "1.3"
 JSMDUtils = "1"
 PreallocationTools = "0.4"
 PrecompileTools = "1"

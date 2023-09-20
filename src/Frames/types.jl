@@ -207,7 +207,9 @@ struct FrameAxesNode{O,T,N} <: AbstractGraphNode
     id::Int
     parentid::Int
     comp::ComputableAxesProperties
-    R::Rotation{O, T}
+    R::Vector{Rotation{O, T}}
+    epochs::Vector{T}
+    nzo::Vector{Int}
     f::FrameAxesFunctions{T,O,N}
     angles::Vector{DiffCache{MVector{N,T}, Vector{T}}}
 end         

@@ -206,6 +206,20 @@ end
     end
 end
 
+@generated function Rotation{S1, N}(R::Rotation{S2, T}) where {S1, S2, N, T}
+    if S1 > S2 
+        throw(DimensionMismatch("Cannot conver a `Rotation` of order $S2 to order $S1"))
+    end 
+
+    expr = :(tuple(
+        $([(Expr(:., N, Expr(:tuple, Expr(:ref, :R, i)))) for i in 1:S1]...),
+    ))
+    
+    return quote 
+        @inbounds Rotation($(expr))
+    end
+end
+
 # Convert a Rotation to one with a smaller order! 
 function Rotation{S1}(rot::Rotation{S2,N}) where {S1,S2,N}
     S1 > S2 &&

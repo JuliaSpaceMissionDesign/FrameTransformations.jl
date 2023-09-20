@@ -119,16 +119,65 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::Number
         ) where {O,T}
             @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
-                return $order < O ? Rotation{$order}(axes.R) : axes.R
+                return $order < O ? Rotation{$order}(axes.R[1]) : axes.R[1]
             else
                 tid = Threads.threadid()
+                if axes.epochs[tid] != t || axes.nzo[tid] < $order 
+                    if axes.class in (:RotatingAxes, :ProjectedAxes)
+                        stv = @SVector zeros(T, 3O)
+                        axes.R[tid] = axes.f[$order](t, stv, stv)
 
+                    elseif axes.class == :EphemerisAxes
+                        stv = @SVector zeros(T, 3O)
+
+                        # Retrieves libration angles for ephemeris kernels 
+                        ephem_orient!(
+                            axes.angles[tid].du,
+                            frame.eph,
+                            DJ2000,
+                            t / DAY2SEC,
+                            axes.id,
+                            axes.parentid,
+                            $order - 1,
+                        )
+
+                        # Compute rotation matrix
+                        axes.R[tid] = axes.f[$order](t, SA[axes.angles[tid].du...], stv)
+
+                    else # Computable axes 
+                        axes.R[tid] = axes.f[$order](
+                            t,
+                            $(compfun)(frame, axes.comp.v1, axes.parentid, t),
+                            $(compfun)(frame, axes.comp.v2, axes.parentid, t),
+                        )
+                    end
+
+                    axes.epochs[tid] = t 
+                    axes.nzo[tid] = $order 
+
+                end
+
+                return $order < O ? Rotation{$order}(axes.R[tid]) : axes.R[tid]
+
+            end
+        end
+
+        # Dual-number dispatch 
+        function ($axfun2)(
+            frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::V
+        ) where {O, T, V <: Autodiff.Dual}
+
+            @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
+                return Rotation{$order, V}(axes.R[1])
+            else
+                
+                tid = Threads.threadid()
                 if axes.class in (:RotatingAxes, :ProjectedAxes)
-                    stv = @SVector zeros(T, 3O)
+                    stv = @SVector zeros(V, 3O)
                     R = axes.f[$order](t, stv, stv)
 
                 elseif axes.class == :EphemerisAxes
-                    stv = @SVector zeros(T, 3O)
+                    stv = @SVector zeros(V, 3O)
 
                     # Retrieves libration angles for ephemeris kernels 
                     ephem_orient!(
@@ -143,7 +192,9 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
 
                     # Compute rotation matrix
                     R = axes.f[$order](t, SA[get_tmp(axes.angles[tid], t)...], stv)
-
+                
+                # FIXME: in order for these to be type-stable you need to fix and enable 
+                # type-stability on the point transformations
                 else # Computable axes 
                     R = axes.f[$order](
                         t,
@@ -152,7 +203,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     )
                 end
 
-                return $order < O ? Rotation{$order}(R) : R
+                return Rotation{$order, V}(R)
 
             end
         end
@@ -351,37 +402,73 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             end
         end
 
-        # Low-level function to compute the translation of a given point when Dual numbers are used
-        @inbounds function ($pfun2)(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
-            if point.class in (:RootPoint, :FixedPoint)
-                return SA{T}[point.stv[1].du.data[1:(3 * $order)]...] 
-            else
-                tid = Threads.threadid()
+        # # Low-level function to compute the translation of a given point when Dual numbers are used
+        # @inbounds function ($pfun2)(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
+            
+        #     if point.class in (:RootPoint, :FixedPoint)
+        #         return SA{T}[point.stv[1].du.data[1:(3 * $order)]...] 
+        #     else
+        #         tid = Threads.threadid()
                 
-                if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < $order
-                    if point.class == :UpdatablePoint
-                        # Updatable point has not been updated! 
-                        throw(
-                            ErrorException(
-                                "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
-                                "updated at time $t for order $($order)",
-                            ),
-                        )
-                    else
-                        point.f[$order](get_tmp(point.stv[tid], t), t)
-                    end
+        #         if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < $order
+        #             if point.class == :UpdatablePoint
+        #                 # Updatable point has not been updated! 
+        #                 throw(
+        #                     ErrorException(
+        #                         "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
+        #                         "updated at time $t for order $($order)",
+        #                     ),
+        #                 )
+        #             else
+        #                 point.f[$order](get_tmp(point.stv[tid], t), t)
+        #             end
 
-                    get_tmp(point.epochs, t)[tid] = t
-                    point.nzo[tid][2] = $order
-                end
+        #             get_tmp(point.epochs, t)[tid] = t
+        #             point.nzo[tid][2] = $order
+        #         end
 
-                return SA{T}[get_tmp(point.stv[tid], t)[1:(3 * $order)]...]
-            end
-        end
+        #         return SA{T}[get_tmp(point.stv[tid], t)[SA[1, 2, 3]...]]
+        #     end
+        # end
 
 
     end
 end
+
+# Low-level function to compute the translation of a given point when Dual numbers are used
+@inbounds function _compute_vector3(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
+    
+    # if point.class in (:RootPoint, :FixedPoint)
+    #     return SA{T}[point.stv[1].du.data[1:3]...] 
+    # else
+        tid = Threads.threadid()
+        
+    #     if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < 1
+    #         # if point.class == :UpdatablePoint
+    #         #     # Updatable point has not been updated! 
+    #         #     throw(
+    #         #         ErrorException(
+    #         #             "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
+    #         #             "updated at time $t for order 1",
+    #         #         ),
+    #         #     )
+    #         # else
+    #         #     point.f[1](get_tmp(point.stv[tid], t), t)
+    #         # end
+
+    #         get_tmp(point.epochs, t)[tid] = t
+    #         point.nzo[tid][2] = 1
+    #     end
+        
+    #     # return SA{T}[point.stv[1].du.data[1:3]...]
+        get_tmp(point.stv[tid].dual_du, t)[1] = 2
+
+        return SA{T}[1, 2, 3]
+        # return SA{T}[get_tmp(point.stv[tid], t)[1]]
+        # return SA{T}[get_tmp(point.stv[tid], t)[SA[1, 2, 3]]...]
+    # end
+end
+
 
 # ---------------------------------------------
 # LIGHT TIME and STELLAR ABERRATION CORRECTIONS 
