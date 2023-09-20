@@ -35,7 +35,7 @@ The development of this package has been performed with the following design goa
     in future, detatch some modules to a different package.
 
 4. **Automatic Differentiation**: seamless integration with `ForwardDiff.jl` is targetted 
-    to fully exploit its power in higher-level packages constructed on top of `Basic`.
+    to fully exploit its power in higher-level packages constructed on top of `FrameTransformations`.
 
 
 ## [Requirements](@id basic_design_req)
@@ -78,7 +78,7 @@ this package, together with their development status.
     <td class="tg-0pky">Read JPL ASCII PCK files (constants).</td>
     <td class="tg-0pky">Utils</td>
     <td class="tg-0pky">🟢</td>
-    <td class="tg-0pky">Fully implemented in Basic. Tested on NAIF's pck00010 and pck00011 files.</td>
+    <td class="tg-0pky">Fully implemented in FrameTransformations. Tested on NAIF's pck00010 and pck00011 files.</td>
   </tr>
   <tr>
     <td class="tg-0pky">REQ3</td>
@@ -167,7 +167,7 @@ this package, together with their development status.
     </td>
     <td class="tg-0pky">Frames</td>
     <td class="tg-0pky">🔵</td>
-    <td class="tg-0pky">Axes models for MEME2000, ITRF, IAU models and many others are already implemented and tested within Basic.</td>
+    <td class="tg-0pky">Axes models for MEME2000, ITRF, IAU models and many others are already implemented and tested within FrameTransformationsFrameTransformations.</td>
   </tr>
   <tr>
     <td class="tg-0pky">REQ13</td>
@@ -183,7 +183,7 @@ this package, together with their development status.
     <td class="tg-0pky">
         Full compatibility with ForwardDiff.jl shall be assured.
     </td>
-    <td class="tg-0pky">Basic</td>
+    <td class="tg-0pky">FrameTransformations</td>
     <td class="tg-0pky">🟡</td>
     <td class="tg-0pky">Partial compatibility is already available (see dedicated section in "Contributing" for details)</td>
   </tr>
