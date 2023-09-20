@@ -12,7 +12,7 @@ if CI
     using Conda, IJulia
     Conda.add("nbconvert")
 
-    const TUTORIAL_PATH = "src/Tutorials"
+    const TUTORIAL_PATH = "docs/src/Tutorials"
     files = readdir(TUTORIAL_PATH)
     ipynb_files = filter(file -> endswith(file, ".ipynb"), files)
 
