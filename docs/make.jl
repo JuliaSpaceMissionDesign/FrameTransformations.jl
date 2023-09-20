@@ -9,6 +9,7 @@ if CI
 
     Pkg.add("IJulia")
     Pkg.add("Conda") 
+    using Conda, IJulia
     Conda.add("nbconvert")
 
     const TUTORIAL_PATH = "src/Tutorials"
