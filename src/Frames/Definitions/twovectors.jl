@@ -261,8 +261,14 @@ function _two_vectors_to_rot12(a::AbstractVector, b::AbstractVector, seq::Symbol
 end
 
 # These functions are used to guarantee type-stability in the above
-@inbounds _keep3(a)  = SA[a[1], a[2], a[3]]
-@inbounds _keep6(a)  = SA[a[1], a[2], a[3], a[4], a[5], a[6]]
-@inbounds _keep9(a)  = SA[a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]]
-@inbounds _keep12(a) = SA[a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]]
+for (j, name) in enumerate((:_keep3, :_keep6, :_keep9, :_keep12))
+    
+    expr = Expr(:ref, :SA, [Expr(:ref, :a, i) for i in 1:3j]...)
 
+    @eval begin 
+        @inline @inbounds function ($name)(a) 
+            $expr
+        end
+    end
+
+end
