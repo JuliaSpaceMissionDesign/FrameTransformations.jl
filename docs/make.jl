@@ -1,5 +1,4 @@
 using Documenter, FrameTransformations
-using ReferenceFrameRotations
 using Pkg 
 
 const CREATE_TUTORIALS = true;
@@ -12,6 +11,9 @@ if CI
     Pkg.add("Conda") 
     using Conda, IJulia
     Conda.add("nbconvert")
+
+    Pkg.add("ReferenceFrameRotations")
+    using ReferenceFrameRotations
 
     const TUTORIAL_PATH = "docs/src/Tutorials"
     files = readdir(TUTORIAL_PATH)
