@@ -1,4 +1,5 @@
 using Documenter, FrameTransformations
+using ReferenceFrameRotations
 using Pkg 
 
 const CREATE_TUTORIALS = true;
