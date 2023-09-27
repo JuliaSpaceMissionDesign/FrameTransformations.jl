@@ -191,6 +191,20 @@ end
     end
 end
 
+# TODO: missing constructor doc
+@generated function Rotation{S1}(dcms::NTuple{S2, DCM{N}}) where {S1, S2, N}
+
+    expr = :(tuple(
+        $([Expr(:ref, :dcms, i) for i in 1:min(S1, S2)]...),
+        $([DCM(N(0)I) for i in 1:(S1 - S2)]...),
+    ))
+
+    return quote 
+        @inbounds Rotation($(expr))
+    end
+
+end
+
 # Constructor for S-order identity rotations! 
 @generated function Rotation{S}(::UniformScaling{N}) where {S,N}
     expr = :(tuple($([i == 1 ? DCM(N(1)I) : DCM(N(0)I) for i in 1:S]...)))

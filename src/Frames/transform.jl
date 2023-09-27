@@ -153,7 +153,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     end
 
                     axes.epochs[tid] = t 
-                    axes.nzo[tid] = $order 
+                    # axes.nzo[tid] = $order 
 
                 end
 
@@ -162,51 +162,51 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             end
         end
 
-        # Dual-number dispatch 
-        function ($axfun2)(
-            frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::V
-        ) where {O, T, V <: Autodiff.Dual}
+        # # Dual-number dispatch 
+        # function ($axfun2)(
+        #     frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::V
+        # ) where {O, T, V <: Autodiff.Dual}
 
-            @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
-                return Rotation{$order, V}(axes.R[1])
-            else
+        #     @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
+        #         return Rotation{$order, V}(axes.R[1])
+        #     else
                 
-                tid = Threads.threadid()
-                if axes.class in (:RotatingAxes, :ProjectedAxes)
-                    stv = @SVector zeros(V, 3O)
-                    R = axes.f[$order](t, stv, stv)
+        #         tid = Threads.threadid()
+        #         if axes.class in (:RotatingAxes, :ProjectedAxes)
+        #             stv = @SVector zeros(V, 3O)
+        #             R = axes.f[$order](t, stv, stv)
 
-                elseif axes.class == :EphemerisAxes
-                    stv = @SVector zeros(V, 3O)
+        #         elseif axes.class == :EphemerisAxes
+        #             stv = @SVector zeros(V, 3O)
 
-                    # Retrieves libration angles for ephemeris kernels 
-                    ephem_orient!(
-                        get_tmp(axes.angles[tid], t),
-                        frame.eph,
-                        DJ2000,
-                        t / DAY2SEC,
-                        axes.id,
-                        axes.parentid,
-                        $order - 1,
-                    )
+        #             # Retrieves libration angles for ephemeris kernels 
+        #             ephem_orient!(
+        #                 get_tmp(axes.angles[tid], t),
+        #                 frame.eph,
+        #                 DJ2000,
+        #                 t / DAY2SEC,
+        #                 axes.id,
+        #                 axes.parentid,
+        #                 $order - 1,
+        #             )
 
-                    # Compute rotation matrix
-                    R = axes.f[$order](t, SA[get_tmp(axes.angles[tid], t)...], stv)
+        #             # Compute rotation matrix
+        #             R = axes.f[$order](t, SA[get_tmp(axes.angles[tid], t)...], stv)
                 
-                # FIXME: in order for these to be type-stable you need to fix and enable 
-                # type-stability on the point transformations
-                else # Computable axes 
-                    R = axes.f[$order](
-                        t,
-                        $(compfun)(frame, axes.comp.v1, axes.parentid, t),
-                        $(compfun)(frame, axes.comp.v2, axes.parentid, t),
-                    )
-                end
+        #         # FIXME: in order for these to be type-stable you need to fix and enable 
+        #         # type-stability on the point transformations
+        #         else # Computable axes 
+        #             R = axes.f[$order](
+        #                 t,
+        #                 $(compfun)(frame, axes.comp.v1, axes.parentid, t),
+        #                 $(compfun)(frame, axes.comp.v2, axes.parentid, t),
+        #             )
+        #         end
 
-                return Rotation{$order, V}(R)
+        #         return Rotation{$order, V}(R)
 
-            end
-        end
+        #     end
+        # end
 
         # ----------------------------------
         # POINTS TRANSFORMATIONS 
@@ -395,7 +395,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     end
 
                     point.epochs.du[tid] = t
-                    point.nzo[tid][1] = $order
+                    # point.nzo[tid][1] = $order
                 end
 
                 return SA[point.stv[tid].du.data[1:(3 * $order)]...]
@@ -749,19 +749,24 @@ The returned vector depends on the order in `v` as follows:
 @generated function _get_comp_axes_vector3(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
-    expr = :(tuple($([0 for i in 1:(3(O - 1))]...)))
+
+    fills = [0 for _ in 1:(3*(O-1))]
+
+    expr1 = Expr(:ref, :SA, [Expr(:ref, :stv1, i) for i in 1:3]..., fills...)
+    expr2 = Expr(:ref, :SA, [Expr(:ref, :stv2, i) for i in 4:6]..., fills...)
+    expr3 = Expr(:ref, :SA, [Expr(:ref, :stv3, i) for i in 7:9]..., fills...)
 
     return quote
         @inbounds begin
             if v.order == 1
-                stv = vector3(frame, v.from, v.to, axesid, t)
-                return SA[stv..., $(expr)...]
+                stv1 = vector3(frame, v.from, v.to, axesid, t)
+                return $expr1
             elseif v.order == 2
-                stv = vector6(frame, v.from, v.to, axesid, t)
-                return SA[stv[4], stv[5], stv[6], $(expr)...]
+                stv2 = vector6(frame, v.from, v.to, axesid, t)
+                return $expr2
             else
-                stv = vector9(frame, v.from, v.to, axesid, t)
-                return SA[stv[7], stv[8], stv[9], $(expr)...]
+                stv3 = vector9(frame, v.from, v.to, axesid, t)
+                return $expr3
             end
         end
     end
@@ -770,19 +775,24 @@ end
 @generated function _get_comp_axes_vector6(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
-    expr = :(tuple($([0 for i in 1:(3(O - 2))]...)))
+
+    fills = [0 for _ in 1:(3*(O-2))]
+
+    expr1 = Expr(:ref, :SA, [Expr(:ref, :stv1, i) for i in 1:6]..., fills...)
+    expr2 = Expr(:ref, :SA, [Expr(:ref, :stv2, i) for i in 4:9]..., fills...)
+    expr3 = Expr(:ref, :SA, [Expr(:ref, :stv3, i) for i in 7:12]..., fills...)
 
     return quote
         @inbounds begin
             if v.order == 1
-                stv = vector6(frame, v.from, v.to, axesid, t)
-                return SA[stv..., $(expr)...]
+                stv1 = vector6(frame, v.from, v.to, axesid, t)
+                return $expr1
             elseif v.order == 2
-                stv = vector9(frame, v.from, v.to, axesid, t)
-                return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9], $(expr)...]
+                stv2 = vector9(frame, v.from, v.to, axesid, t)
+                return $expr2
             else
-                stv = vector12(frame, v.from, v.to, axesid, t)
-                return SA[stv[7], stv[8], stv[9], stv[10], stv[11], stv[12], $(expr)...]
+                stv3 = vector12(frame, v.from, v.to, axesid, t)
+                return $expr3
             end
         end
     end
@@ -791,28 +801,21 @@ end
 @generated function _get_comp_axes_vector9(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
-    expr = :(tuple($([0 for i in 1:(3(O - 3))]...)))
+
+    fills = [0 for _ in 1:(3*(O-3))]
+
+    expr1 = Expr(:ref, :SA, [Expr(:ref, :stv1, i) for i in 1:9]..., fills...)
+    expr2 = Expr(:ref, :SA, [Expr(:ref, :stv2, i) for i in 4:12]..., fills...)
 
     return quote
         @inbounds begin
             if v.order == 1
-                stv = vector9(frame, v.from, v.to, axesid, t)
-                return SA[stv..., $(expr)...]
+                stv1 = vector9(frame, v.from, v.to, axesid, t)
+                return $expr1
 
             elseif v.order == 2 # v.order = 2
-                stv = vector12(frame, v.from, v.to, axesid, t)
-                return SA[
-                    stv[4],
-                    stv[5],
-                    stv[6],
-                    stv[7],
-                    stv[8],
-                    stv[9],
-                    stv[10],
-                    stv[11],
-                    stv[12],
-                    $(expr)...,
-                ]
+                stv2 = vector12(frame, v.from, v.to, axesid, t)
+                return $expr2
             else
                 throw(ErrorException("unable to compute a vector of order 5 (jounce)."))
             end
@@ -823,6 +826,7 @@ end
 @generated function _get_comp_axes_vector12(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
+
     return quote
         @inbounds begin
             if v.order == 1

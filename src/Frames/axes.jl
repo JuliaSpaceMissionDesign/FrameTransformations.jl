@@ -652,9 +652,9 @@ function add_axes_computable!(
 
     funs = FrameAxesFunctions{T,O}(
         (t, x, y) -> Rotation{O}(twovectors_to_dcm(x, y, seq)),
-        (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)...),
-        (t, x, y) -> Rotation{O}(_two_vectors_to_rot9(x, y, seq)...),
-        (t, x, y) -> Rotation{O}(_two_vectors_to_rot12(x, y, seq)...),
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot6(x, y, seq)),
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot9(x, y, seq)),
+        (t, x, y) -> Rotation{O}(_two_vectors_to_rot12(x, y, seq)),
     )
 
     return build_axes(
