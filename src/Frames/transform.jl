@@ -153,7 +153,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     end
 
                     axes.epochs[tid] = t 
-                    # axes.nzo[tid] = $order 
+                    axes.nzo[tid] = $order 
 
                 end
 
@@ -395,7 +395,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                     end
 
                     point.epochs.du[tid] = t
-                    # point.nzo[tid][1] = $order
+                    point.nzo[tid][1] = $order
                 end
 
                 return SA[point.stv[tid].du.data[1:(3 * $order)]...]
@@ -832,10 +832,10 @@ end
             if v.order == 1
                 return vector12(frame, v.from, v.to, axesid, t)
             elseif v.order == 2 # v.order = 2
-                throw(ErrorException("unable to compute a vector of order 5 (snap)."))
+                throw(ErrorException("unable to compute a vector of order 5 (jounce)."))
 
             else
-                throw(ErrorException("unable to compute a vector of order 6 (crackle)."))
+                throw(ErrorException("unable to compute a vector of order 6 (snap)."))
             end
         end
     end
