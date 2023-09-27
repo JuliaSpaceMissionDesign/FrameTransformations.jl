@@ -73,6 +73,43 @@ Rotation{4, ComplexF64}
 
 ---
 
+    Rotation{S}(dcms::DCM...) where S 
+
+Create a `Rotation` object of order `S`. If the number of `dcms` is smaller than `S`, the 
+remaining slots are filled with null DCMs, otherwise if the number of inputs is greater than 
+`S`, only the first `S` DCMs are used. 
+
+!!! warning 
+    Usage of this constructor is not recommended as it may yield unexpected results to 
+    unexperienced users. 
+    
+---
+
+    Rotation{S1}(dcms::NTuple{S2, DCM{N}}) where {S1, S2, N}
+
+Create a `Rotation` object from a tuple of Direction Cosine Matrix (DCM) and its time 
+derivatives. If `S1` < `S2`, only the first `S1` DCMs are considered, otherwise the 
+remaining orders are filled with null DCMs.
+
+### Examples 
+```julia-repl
+julia> A = angle_to_dcm(π/3, :Z);
+
+julia> B = angle_to_dcm(π/4, π/6, :XY);
+
+julia> R3 = Rotation{3}((A,B));
+
+julia> R3[1] == A
+true 
+
+julia> R3[3] 
+DCM{Float64}:
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+```
+---
+
     Rotation{S}(u::UniformScaling{N}) where {S, N}
     Rotation{S, N}(u::UniformScaling) where {S, N}
 
@@ -91,9 +128,13 @@ Rotation{1, Int64}(([1 0 0; 0 1 0; 0 0 1],))
 ---
 
     Rotation{S1}(rot::Rotation{S2, N}) where {S1, S2, N}
+    Rotation{S1, N}(R::Rotation{S2}) where {S1, S2, N}
 
-Transform a `Rotation` object of order `S2` to order `S1`. This conversion is only possible 
-if `S1` < `S2`.
+Transform a `Rotation` object of order `S2` to order `S1` and type `N`. The behaviour of 
+these functions depends on the values of `S1` and `S2`: 
+
+- `S1` < `S2`: Only the first `S1` components of `rot` are considered.
+- `S1` > `S2`: The missing orders are filled with null DCMs.
 
 ### Examples 
 ```julia-repl
@@ -114,9 +155,13 @@ julia> order(R2)
 julia> R2[1] == A 
 true
 
-julia> R3 = Rotation{3}(R1)
-ERROR: DimensionMismatch: Cannot convert a `Rotation` of order 2 to order 3
-[...]
+julia> R3 = Rotation{3}(R1);
+
+julia> R3[3]
+DCM{Float64}:
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
 ```
 
 ---
@@ -126,18 +171,6 @@ ERROR: DimensionMismatch: Cannot convert a `Rotation` of order 2 to order 3
 Create a 2nd order `Rotation` object of type `N` to rotate between two set of axes `a` and 
 `b` from a Direction Cosine Matrix (DCM) and the angular velocity vector `ω` of `b` with 
 respect to `a`, expressed in `b`
-
----
-
-    Rotation{S}(dcms::DCM...) where S 
-
-Create a `Rotation` object of order `S`. If the number of `dcms` is smaller than `S`, the 
-remaining slots are filled with null DCMs, otherwise if the number of inputs is greater than 
-`S`, only the first `S` DCMs are used. 
-
-!!! warning 
-    Usage of this constructor is not recommended as it may yield unexpected results to 
-    unexperienced users. 
 
 ### See also 
 See also [`rotation3`](@ref), [`rotation6`](@ref) and [`rotation9`](@ref).
@@ -191,7 +224,6 @@ end
     end
 end
 
-# TODO: missing constructor doc
 @generated function Rotation{S1}(dcms::NTuple{S2, DCM{N}}) where {S1, S2, N}
 
     expr = :(tuple(
@@ -220,13 +252,25 @@ end
     end
 end
 
-@generated function Rotation{S1, N}(R::Rotation{S2, T}) where {S1, S2, N, T}
-    if S1 > S2 
-        throw(DimensionMismatch("Cannot conver a `Rotation` of order $S2 to order $S1"))
-    end 
+# Convert a Rotation to a different order
+@generated function Rotation{S1}(rot::Rotation{S2,N}) where {S1,S2,N}
 
     expr = :(tuple(
-        $([(Expr(:., N, Expr(:tuple, Expr(:ref, :R, i)))) for i in 1:S1]...),
+        $([Expr(:ref, :rot, i) for i in 1:min(S1, S2)]...),
+        $([DCM(N(0)I) for _ in 1:(S1 - S2)]...)
+    ))
+
+    return quote 
+        @inbounds Rotation($(expr))
+    end
+end
+
+# Convert a rotation to a different order and type
+@generated function Rotation{S1, N}(rot::Rotation{S2}) where {S1,S2,N}
+
+    expr = :(tuple(
+        $([(Expr(:., N, Expr(:tuple, Expr(:ref, :rot, i)))) for i in 1:min(S1, S2)]...),
+        $([DCM(N(0)I) for _ in 1:(S1 - S2)]...)
     ))
     
     return quote 
@@ -234,12 +278,6 @@ end
     end
 end
 
-# Convert a Rotation to one with a smaller order! 
-function Rotation{S1}(rot::Rotation{S2,N}) where {S1,S2,N}
-    S1 > S2 &&
-        throw(DimensionMismatch("Cannot convert a `Rotation` of order $S2 to order $S1"))
-    return Rotation(rot.m[1:S1])
-end
 
 function Rotation(m::DCM{N}, ω::AbstractVector) where {N}
     dm = DCM(ddcm(m, SVector(ω)))
