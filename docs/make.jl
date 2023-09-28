@@ -15,6 +15,12 @@ if CI
     Pkg.add("ReferenceFrameRotations")
     using ReferenceFrameRotations
 
+    Pkg.add("Ephemerides")
+    using Ephemerides
+
+    Pkg.add("CalcephEphemeris")
+    using CalcephEphemeris
+
     const TUTORIAL_PATH = "docs/src/Tutorials"
     files = readdir(TUTORIAL_PATH)
     ipynb_files = filter(file -> endswith(file, ".ipynb"), files)
