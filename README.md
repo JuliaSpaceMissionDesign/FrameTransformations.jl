@@ -25,12 +25,12 @@ julia> Pkg.add("FrameTransformations.jl");
 
 ## Features 
 
-- Convert between different time scales and representations (via [`Tempo.jl`](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
-- Read binary ephemeris files (via [`Ephemerides.jl`](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) or [`CalcephEphemeris.jl`](https://github.com/JuliaSpaceMissionDesign/CalcephEphemeris.jl))
+- Convert between different time scales and representations (via [Tempo.jl](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
+- Read binary ephemeris files (via [Ephemerides.jl](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) or [CalcephEphemeris.jl](https://github.com/JuliaSpaceMissionDesign/CalcephEphemeris.jl))
 - Create custom reference frame systems with both standard and user-defined points and axes.
 - Transform states and their higher-order derivatives between different frames (up to jerk)
 
-All of this seamlessly integrated with `ForwardDiff.jl`.
+All of this seamlessly integrated with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 
 ## Documentation 
 For further information on this package and its tutorials please refer to the 
