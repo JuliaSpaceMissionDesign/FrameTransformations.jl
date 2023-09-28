@@ -3,7 +3,7 @@ using Pkg
 
 const CREATE_TUTORIALS = true;
 
-const CI = get(ENV, "CI", "false") == "true"
+const CI = get(ENV, "CI", "false") == "false"
 
 if CI
 
