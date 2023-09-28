@@ -236,7 +236,7 @@ _FPointWrappers{N, T} = FunctionWrappersWrapper{Tuple{
     _FPointFunSig{N, T},
     _FPointFunSig{N, _NodeFunAD1}, 
     _FPointFunSig{N, _NodeFunAD2}
-}, false}
+}, true}
 
 # This automatically generates the FunctionWrappersWrapper according to the above type 
 # definitions for the given input function

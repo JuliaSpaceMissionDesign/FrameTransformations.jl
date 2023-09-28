@@ -435,39 +435,39 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
     end
 end
 
-# Low-level function to compute the translation of a given point when Dual numbers are used
-@inbounds function _compute_vector3(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
+# # Low-level function to compute the translation of a given point when Dual numbers are used
+# @inbounds function _compute_vector3(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
     
-    # if point.class in (:RootPoint, :FixedPoint)
-    #     return SA{T}[point.stv[1].du.data[1:3]...] 
-    # else
-        tid = Threads.threadid()
+#     # if point.class in (:RootPoint, :FixedPoint)
+#     #     return SA{T}[point.stv[1].du.data[1:3]...] 
+#     # else
+#         tid = Threads.threadid()
         
-    #     if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < 1
-    #         # if point.class == :UpdatablePoint
-    #         #     # Updatable point has not been updated! 
-    #         #     throw(
-    #         #         ErrorException(
-    #         #             "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
-    #         #             "updated at time $t for order 1",
-    #         #         ),
-    #         #     )
-    #         # else
-    #         #     point.f[1](get_tmp(point.stv[tid], t), t)
-    #         # end
+#     #     if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < 1
+#     #         # if point.class == :UpdatablePoint
+#     #         #     # Updatable point has not been updated! 
+#     #         #     throw(
+#     #         #         ErrorException(
+#     #         #             "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
+#     #         #             "updated at time $t for order 1",
+#     #         #         ),
+#     #         #     )
+#     #         # else
+#     #         #     point.f[1](get_tmp(point.stv[tid], t), t)
+#     #         # end
 
-    #         get_tmp(point.epochs, t)[tid] = t
-    #         point.nzo[tid][2] = 1
-    #     end
+#     #         get_tmp(point.epochs, t)[tid] = t
+#     #         point.nzo[tid][2] = 1
+#     #     end
         
-    #     # return SA{T}[point.stv[1].du.data[1:3]...]
-        get_tmp(point.stv[tid].dual_du, t)[1] = 2
+#     #     # return SA{T}[point.stv[1].du.data[1:3]...]
+#         get_tmp(point.stv[tid].dual_du, t)[1] = 2
 
-        return SA{T}[1, 2, 3]
-        # return SA{T}[get_tmp(point.stv[tid], t)[1]]
-        # return SA{T}[get_tmp(point.stv[tid], t)[SA[1, 2, 3]]...]
-    # end
-end
+#         return SA{T}[1, 2, 3]
+#         # return SA{T}[get_tmp(point.stv[tid], t)[1]]
+#         # return SA{T}[get_tmp(point.stv[tid], t)[SA[1, 2, 3]]...]
+#     # end
+# end
 
 
 # ---------------------------------------------
