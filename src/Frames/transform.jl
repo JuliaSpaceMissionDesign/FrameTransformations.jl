@@ -42,7 +42,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         - `ep` -- `Epoch` of the rotation. Its timescale must match that of the frame system. 
 
         ### Output
-        A `Rotation` object of order $($order).
+        A [`Rotation`](@ref) object of order $($order).
         """
         @inline function ($axfun1)(
             frame::FrameSystem{<:Any,<:Any,S}, from, to, ep::Epoch{S}
@@ -734,12 +734,10 @@ function _update_point!(pnt::FramePointNode, t::Autodiff.Dual, stv::AbstractVect
 end
 
 """ 
-    _get_comp_axes_vector3(frame, v, axesid, t)
+    _get_comp_axes_vector3(frame, v::ComputableAxesVector, axesid, t)
 
-Compute a 3-elements vector in the desired axes at the given time 
-between two points of the frame system 
-
-The returned vector depends on the order in `v` as follows: 
+Compute a 3-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
 
 - **1**: position
 - **2**: velocity
@@ -772,6 +770,17 @@ The returned vector depends on the order in `v` as follows:
     end
 end
 
+""" 
+    _get_comp_axes_vector6(frame, v::ComputableAxesVector, axesid, t)
+
+Compute a 6-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
+
+- **1**: position, velocity
+- **2**: velocity, acceleration
+- **3**: acceleration, jerk
+
+"""
 @generated function _get_comp_axes_vector6(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
@@ -798,6 +807,19 @@ end
     end
 end
 
+""" 
+    _get_comp_axes_vector9(frame, v::ComputableAxesVector, axesid, t)
+
+Compute a 9-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
+
+- **1**: position, velocity, acceleration
+- **2**: velocity, acceleration, jerk
+
+!!! warning 
+    This function does not support orders of `v' higher than 2, because it would 
+    require the computation of vectors of order 5, which is currently not supported.
+"""
 @generated function _get_comp_axes_vector9(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
@@ -823,6 +845,18 @@ end
     end
 end
 
+""" 
+    _get_comp_axes_vector12(frame, v::ComputableAxesVector, axesid, t)
+
+Compute a 12-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
+
+- **1**: position, velocity, acceleration, jerk
+
+!!! warning 
+    This function does not support orders of `v' higher than 1, because it would 
+    require the computation of vectors of order 5 and 6, which are currently not supported.
+"""
 @generated function _get_comp_axes_vector12(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
