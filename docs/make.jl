@@ -1,39 +1,7 @@
 using Documenter, FrameTransformations
 using Pkg 
 
-const CREATE_TUTORIALS = true;
-
-const CI = get(ENV, "CI", "false") == "false"
-
-if CI
-
-    Pkg.add("IJulia")
-    Pkg.add("Conda") 
-    using Conda, IJulia
-    Conda.add("nbconvert")
-
-    Pkg.add("ReferenceFrameRotations")
-    using ReferenceFrameRotations
-
-    Pkg.add("Ephemerides")
-    using Ephemerides
-
-    Pkg.add("CalcephEphemeris")
-    using CalcephEphemeris
-
-    const TUTORIAL_PATH = "docs/src/Tutorials"
-    files = readdir(TUTORIAL_PATH)
-    ipynb_files = filter(file -> endswith(file, ".ipynb"), files)
-
-    # Convert
-    for file in ipynb_files
-        nbconvert = IJulia.find_jupyter_subcommand("nbconvert");
-        append!(nbconvert.exec, ["--to", "markdown", "--execute", joinpath(TUTORIAL_PATH, file) ])
-        run(nbconvert)
-    end
-
-end
-
+const CI = get(ENV, "CI", "false") == "true"
 
 makedocs(;
     authors="Julia Space Mission Design Development Team",
@@ -42,16 +10,38 @@ makedocs(;
     format=Documenter.HTML(; prettyurls=CI, highlights=["yaml"], ansicolor=true),
     pages=[
         "Home" => "index.md",
-        "Modules" => [
-            "Orient" => "Modules/orient.md",
-            "Frames" => "Modules/frames.md",
-            "Utils" => "Modules/utils.md",
-        ],
+
         "Tutorials" => [
-            "Points Graphs" => "Tutorials/t01_points.md",
-            "Axes Graphs" => "Tutorials/t02_axes.md",
-            "Frames Graphs" => "Tutorials/t03_frames.md"
-        ]
+            "01 - Frame System" => "Tutorials/t00_frames.md",
+            "02 - Axes" => "Tutorials/t01_axes.md",
+            "03 - Points" => "Tutorials/t02_points.md",
+            "04 - Use Case: CR3BP" => "Tutorials/t03_cr3bp.md",
+            "05 - Use Case: High Fidelity" => "Tutorials/t04_hifi.md",
+            "06 - Multithreading" => "Tutorials/t05_multithread.md"
+        ],
+
+        "Benchmarks" => "benchmarks.md",
+
+        "Modules" => [
+            "Frames" => [
+                "Public API" => "Modules/frames_api.md",
+                "Low-level API" => "Modules/frames_lapi.md",             
+            ],
+
+            "Orient" => [
+                "Public API" => "Modules/orient_api.md"
+                "Low-level API" => "Modules/orient_lapi.md"
+            ],
+
+            "Utils" => [
+                "Public API" => "Modules/utils_api.md"
+                "Low-level API" => "Modules/utils_lapi.md"
+            ],
+
+        ], 
+
+        "Roadmap" => "roadmap.md"
+
     ],
     clean=true,
 )
