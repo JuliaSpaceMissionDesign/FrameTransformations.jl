@@ -44,13 +44,13 @@ In certain scenarios, the transformations require usage of binary ephemeris kern
 Once the desired ephemeris provider is created, it can be associated to the frame system object. However, in this case the reference timescale is retrieved from the ephemeris kernels and cannot be specified by the user. In this example we begin loading an old DE421 kernerl to pass to the 
 ephemeris reader.
 
-<!-- ```@repl frames
+```@repl frames
 using Ephemerides, Downloads
 
 url = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp";
 eph = EphemerisProvider(Downloads.download(url))
 
 F = FrameSystem{2, Float64}(eph)
-``` -->
+```
 
 As you can see, the default `NullEphemerisProvider` has been replaced by the user-constructed one. 
