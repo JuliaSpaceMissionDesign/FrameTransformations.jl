@@ -260,4 +260,4 @@ vector3(FRAMES, Moon, SC, IAU_MOON, e)
 vector3(FRAMES, Moon, SC, MOONPA_DE421, e)
 ```
 
-These last examples are intended to show how easily the state of a spacecraft with respect to any other body can be retrieved by properly leveraging the [`FrameSystem`] and the high-level routines provided by this package. 
+These last examples are intended to show how easily the state of a spacecraft with respect to any other body can be retrieved by properly leveraging the [`FrameSystem`](@ref) and the high-level routines provided by this package. 
