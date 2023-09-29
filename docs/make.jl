@@ -3,6 +3,11 @@ using Pkg
 
 const CI = get(ENV, "CI", "false") == "true"
 
+if CI 
+    Pkg.add("Ephemerides")
+    Pkg.add("ReferenceFrameRotations")
+end
+
 makedocs(;
     authors="Julia Space Mission Design Development Team",
     sitename="FrameTransformations.jl",
