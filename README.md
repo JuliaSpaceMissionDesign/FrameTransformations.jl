@@ -23,6 +23,15 @@ extensible axes/point graph models for mission analysis and space mission design
 
 All of this seamlessly integrated with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 
+## Installation 
+
+This package can be installed using Julia's package manager: 
+```julia
+julia> import Pkg
+
+julia> Pkg.add("FrameTransformations.jl");
+```
+
 ## Documentation 
 For further information on this package and its tutorials please refer to the 
 [stable documentation](https://juliaspacemissiondesign.github.io/FrameTransformations.jl/stable/).
