@@ -1,4 +1,4 @@
-export orient_bias_precession, orient_bpn
+export orient_bias_precession, orient_bias_precession_nutation
 
 """
     fw_angles(m::IAU2006Model, t::Number) 

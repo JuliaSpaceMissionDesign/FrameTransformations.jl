@@ -1,4 +1,7 @@
-export orient_rot3_itrf_to_gcrf
+export  orient_rot3_itrf_to_gcrf, 
+        orient_rot6_itrf_to_gcrf, 
+        orient_rot9_itrf_to_gcrf, 
+        orient_rot12_itrf_to_gcrf
 
 # Nominal Earth angular velocity  
 const ωₑ = 7.292_115_146_706_979e-5

@@ -4,9 +4,7 @@ export @point,
     add_point_fixed!,
     add_point_updatable!,
     add_point_dynamical!,
-    point_alias,
-    point_name,
-    point_id
+    point_alias
 
 """
     point_name(point::AbstractFramePoint)
@@ -557,7 +555,7 @@ function add_point_fixed!(
     pointid::Int,
     parentid::Int,
     axes,
-    offset::AbstractVector{T},
+    offset::AbstractVector,
 ) where {O,T}
     if length(offset) != 3
         throw(
@@ -580,12 +578,12 @@ function add_point_fixed!(
 end
 
 function add_point_fixed!(
-    frames::FrameSystem{O,T},
+    frames::FrameSystem,
     point::AbstractFramePoint,
     parent,
     axes,
-    offset::AbstractVector{T},
-) where {O,T}
+    offset::AbstractVector,
+)
     return add_point_fixed!(
         frames,
         point_name(point),
