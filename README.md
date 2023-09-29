@@ -9,10 +9,7 @@ _A modern high-performance set of tools for transformations between standard and
 [![codecov](https://codecov.io/gh/JuliaSpaceMissionDesign/FrameTransformations.jl/branch/main/graph/badge.svg?token=7fj9BjJhKF)](https://codecov.io/gh/JuliaSpaceMissionDesign/FrameTransformations.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-Are you in search of fundamental routines for efficient and extensible frames transformations?  
-If so, `FrameTransformations` is the ideal starting point. The package is designed to 
-provide users with the ability to create a customized, efficient, flexible, and 
-extensible axes/point graph models for mission analysis and space mission design purposes. 
+Are you in search of fundamental routines for efficient and extensible frames transformations?  If so, `FrameTransformations` is the ideal starting point. The package is designed to provide users with the ability to create a customized, efficient, flexible, and extensible axes/point graph models for mission analysis and space mission design purposes. 
 
 ## Installation 
 
