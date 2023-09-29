@@ -836,6 +836,12 @@ function angle_to_δ³dcm(θ, ϕ, γ, rot_seq::Symbol)
     )
 end
 
+"""
+    _3angles_to_δ³dcm(θ, rot_seq::Symbol)
+
+Compute the 3rd order time derivative of the DCM with all the angles stored in a single vector 
+to optimise computations. 
+"""
 function _3angles_to_δ³dcm(θ, rot_seq::Symbol)
     s, c = sincos(θ[1])
     b, a = sincos(θ[2])

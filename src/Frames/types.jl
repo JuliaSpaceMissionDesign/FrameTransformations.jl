@@ -207,7 +207,9 @@ struct FrameAxesNode{O,T,N} <: AbstractGraphNode
     id::Int
     parentid::Int
     comp::ComputableAxesProperties
-    R::Rotation{O, T}
+    R::Vector{Rotation{O, T}}
+    epochs::Vector{T}
+    nzo::Vector{Int}
     f::FrameAxesFunctions{T,O,N}
     angles::Vector{DiffCache{MVector{N,T}, Vector{T}}}
 end         
@@ -234,7 +236,7 @@ _FPointWrappers{N, T} = FunctionWrappersWrapper{Tuple{
     _FPointFunSig{N, T},
     _FPointFunSig{N, _NodeFunAD1}, 
     _FPointFunSig{N, _NodeFunAD2}
-}, false}
+}, true}
 
 # This automatically generates the FunctionWrappersWrapper according to the above type 
 # definitions for the given input function
