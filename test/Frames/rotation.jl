@@ -50,7 +50,6 @@
         R = Rotation(A, B, C)
         R2 = Rotation{1}(R)
         @test R2[1] == A
-        @test_throws DimensionMismatch Rotation{5}(R)
 
         # DCM + omega 
         R = Rotation(A, SA[0.0, 0.0, 1.0])

@@ -42,7 +42,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
         - `ep` -- `Epoch` of the rotation. Its timescale must match that of the frame system. 
 
         ### Output
-        A `Rotation` object of order $($order).
+        A [`Rotation`](@ref) object of order $($order).
         """
         @inline function ($axfun1)(
             frame::FrameSystem{<:Any,<:Any,S}, from, to, ep::Epoch{S}
@@ -119,43 +119,94 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::Number
         ) where {O,T}
             @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
-                return $order < O ? Rotation{$order}(axes.R) : axes.R
+                return $order < O ? Rotation{$order}(axes.R[1]) : axes.R[1]
             else
                 tid = Threads.threadid()
+                if axes.epochs[tid] != t || axes.nzo[tid] < $order 
+                    if axes.class in (:RotatingAxes, :ProjectedAxes)
+                        stv = @SVector zeros(T, 3O)
+                        axes.R[tid] = axes.f[$order](t, stv, stv)
 
-                if axes.class in (:RotatingAxes, :ProjectedAxes)
-                    stv = @SVector zeros(T, 3O)
-                    R = axes.f[$order](t, stv, stv)
+                    elseif axes.class == :EphemerisAxes
+                        stv = @SVector zeros(T, 3O)
 
-                elseif axes.class == :EphemerisAxes
-                    stv = @SVector zeros(T, 3O)
+                        # Retrieves libration angles for ephemeris kernels 
+                        ephem_orient!(
+                            axes.angles[tid].du,
+                            frame.eph,
+                            DJ2000,
+                            t / DAY2SEC,
+                            axes.id,
+                            axes.parentid,
+                            $order - 1,
+                        )
 
-                    # Retrieves libration angles for ephemeris kernels 
-                    ephem_orient!(
-                        get_tmp(axes.angles[tid], t),
-                        frame.eph,
-                        DJ2000,
-                        t / DAY2SEC,
-                        axes.id,
-                        axes.parentid,
-                        $order - 1,
-                    )
+                        # Compute rotation matrix
+                        axes.R[tid] = axes.f[$order](t, SA[axes.angles[tid].du...], stv)
 
-                    # Compute rotation matrix
-                    R = axes.f[$order](t, SA[get_tmp(axes.angles[tid], t)...], stv)
+                    else # Computable axes 
+                        axes.R[tid] = axes.f[$order](
+                            t,
+                            $(compfun)(frame, axes.comp.v1, axes.parentid, t),
+                            $(compfun)(frame, axes.comp.v2, axes.parentid, t),
+                        )
+                    end
 
-                else # Computable axes 
-                    R = axes.f[$order](
-                        t,
-                        $(compfun)(frame, axes.comp.v1, axes.parentid, t),
-                        $(compfun)(frame, axes.comp.v2, axes.parentid, t),
-                    )
+                    axes.epochs[tid] = t 
+                    axes.nzo[tid] = $order 
+
                 end
 
-                return $order < O ? Rotation{$order}(R) : R
+                return $order < O ? Rotation{$order}(axes.R[tid]) : axes.R[tid]
 
             end
         end
+
+        # # Dual-number dispatch 
+        # function ($axfun2)(
+        #     frame::FrameSystem{O,T}, axes::FrameAxesNode{O,T}, t::V
+        # ) where {O, T, V <: Autodiff.Dual}
+
+        #     @inbounds if axes.class in (:InertialAxes, :FixedOffsetAxes)
+        #         return Rotation{$order, V}(axes.R[1])
+        #     else
+                
+        #         tid = Threads.threadid()
+        #         if axes.class in (:RotatingAxes, :ProjectedAxes)
+        #             stv = @SVector zeros(V, 3O)
+        #             R = axes.f[$order](t, stv, stv)
+
+        #         elseif axes.class == :EphemerisAxes
+        #             stv = @SVector zeros(V, 3O)
+
+        #             # Retrieves libration angles for ephemeris kernels 
+        #             ephem_orient!(
+        #                 get_tmp(axes.angles[tid], t),
+        #                 frame.eph,
+        #                 DJ2000,
+        #                 t / DAY2SEC,
+        #                 axes.id,
+        #                 axes.parentid,
+        #                 $order - 1,
+        #             )
+
+        #             # Compute rotation matrix
+        #             R = axes.f[$order](t, SA[get_tmp(axes.angles[tid], t)...], stv)
+                
+        #         # FIXME: in order for these to be type-stable you need to fix and enable 
+        #         # type-stability on the point transformations
+        #         else # Computable axes 
+        #             R = axes.f[$order](
+        #                 t,
+        #                 $(compfun)(frame, axes.comp.v1, axes.parentid, t),
+        #                 $(compfun)(frame, axes.comp.v2, axes.parentid, t),
+        #             )
+        #         end
+
+        #         return Rotation{$order, V}(R)
+
+        #     end
+        # end
 
         # ----------------------------------
         # POINTS TRANSFORMATIONS 
@@ -351,37 +402,73 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
             end
         end
 
-        # Low-level function to compute the translation of a given point when Dual numbers are used
-        @inbounds function ($pfun2)(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
-            if point.class in (:RootPoint, :FixedPoint)
-                return SA{T}[point.stv[1].du.data[1:(3 * $order)]...] 
-            else
-                tid = Threads.threadid()
+        # # Low-level function to compute the translation of a given point when Dual numbers are used
+        # @inbounds function ($pfun2)(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
+            
+        #     if point.class in (:RootPoint, :FixedPoint)
+        #         return SA{T}[point.stv[1].du.data[1:(3 * $order)]...] 
+        #     else
+        #         tid = Threads.threadid()
                 
-                if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < $order
-                    if point.class == :UpdatablePoint
-                        # Updatable point has not been updated! 
-                        throw(
-                            ErrorException(
-                                "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
-                                "updated at time $t for order $($order)",
-                            ),
-                        )
-                    else
-                        point.f[$order](get_tmp(point.stv[tid], t), t)
-                    end
+        #         if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < $order
+        #             if point.class == :UpdatablePoint
+        #                 # Updatable point has not been updated! 
+        #                 throw(
+        #                     ErrorException(
+        #                         "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
+        #                         "updated at time $t for order $($order)",
+        #                     ),
+        #                 )
+        #             else
+        #                 point.f[$order](get_tmp(point.stv[tid], t), t)
+        #             end
 
-                    get_tmp(point.epochs, t)[tid] = t
-                    point.nzo[tid][2] = $order
-                end
+        #             get_tmp(point.epochs, t)[tid] = t
+        #             point.nzo[tid][2] = $order
+        #         end
 
-                return SA{T}[get_tmp(point.stv[tid], t)[1:(3 * $order)]...]
-            end
-        end
+        #         return SA{T}[get_tmp(point.stv[tid], t)[SA[1, 2, 3]...]]
+        #     end
+        # end
 
 
     end
 end
+
+# # Low-level function to compute the translation of a given point when Dual numbers are used
+# @inbounds function _compute_vector3(point::FramePointNode, t::T) where {T <: Autodiff.Dual}
+    
+#     # if point.class in (:RootPoint, :FixedPoint)
+#     #     return SA{T}[point.stv[1].du.data[1:3]...] 
+#     # else
+#         tid = Threads.threadid()
+        
+#     #     if get_tmp(point.epochs, t)[tid] != t || point.nzo[tid][2] < 1
+#     #         # if point.class == :UpdatablePoint
+#     #         #     # Updatable point has not been updated! 
+#     #         #     throw(
+#     #         #         ErrorException(
+#     #         #             "UpdatablePoint with NAIFId $(point.NAIFId) has not been " *
+#     #         #             "updated at time $t for order 1",
+#     #         #         ),
+#     #         #     )
+#     #         # else
+#     #         #     point.f[1](get_tmp(point.stv[tid], t), t)
+#     #         # end
+
+#     #         get_tmp(point.epochs, t)[tid] = t
+#     #         point.nzo[tid][2] = 1
+#     #     end
+        
+#     #     # return SA{T}[point.stv[1].du.data[1:3]...]
+#         get_tmp(point.stv[tid].dual_du, t)[1] = 2
+
+#         return SA{T}[1, 2, 3]
+#         # return SA{T}[get_tmp(point.stv[tid], t)[1]]
+#         # return SA{T}[get_tmp(point.stv[tid], t)[SA[1, 2, 3]]...]
+#     # end
+# end
+
 
 # ---------------------------------------------
 # LIGHT TIME and STELLAR ABERRATION CORRECTIONS 
@@ -647,12 +734,10 @@ function _update_point!(pnt::FramePointNode, t::Autodiff.Dual, stv::AbstractVect
 end
 
 """ 
-    _get_comp_axes_vector3(frame, v, axesid, t)
+    _get_comp_axes_vector3(frame, v::ComputableAxesVector, axesid, t)
 
-Compute a 3-elements vector in the desired axes at the given time 
-between two points of the frame system 
-
-The returned vector depends on the order in `v` as follows: 
+Compute a 3-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
 
 - **1**: position
 - **2**: velocity
@@ -662,70 +747,97 @@ The returned vector depends on the order in `v` as follows:
 @generated function _get_comp_axes_vector3(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
-    expr = :(tuple($([0 for i in 1:(3(O - 1))]...)))
+
+    fills = [0 for _ in 1:(3*(O-1))]
+
+    expr1 = Expr(:ref, :SA, [Expr(:ref, :stv1, i) for i in 1:3]..., fills...)
+    expr2 = Expr(:ref, :SA, [Expr(:ref, :stv2, i) for i in 4:6]..., fills...)
+    expr3 = Expr(:ref, :SA, [Expr(:ref, :stv3, i) for i in 7:9]..., fills...)
 
     return quote
         @inbounds begin
             if v.order == 1
-                stv = vector3(frame, v.from, v.to, axesid, t)
-                return SA[stv..., $(expr)...]
+                stv1 = vector3(frame, v.from, v.to, axesid, t)
+                return $expr1
             elseif v.order == 2
-                stv = vector6(frame, v.from, v.to, axesid, t)
-                return SA[stv[4], stv[5], stv[6], $(expr)...]
+                stv2 = vector6(frame, v.from, v.to, axesid, t)
+                return $expr2
             else
-                stv = vector9(frame, v.from, v.to, axesid, t)
-                return SA[stv[7], stv[8], stv[9], $(expr)...]
+                stv3 = vector9(frame, v.from, v.to, axesid, t)
+                return $expr3
             end
         end
     end
 end
 
+""" 
+    _get_comp_axes_vector6(frame, v::ComputableAxesVector, axesid, t)
+
+Compute a 6-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
+
+- **1**: position, velocity
+- **2**: velocity, acceleration
+- **3**: acceleration, jerk
+
+"""
 @generated function _get_comp_axes_vector6(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
-    expr = :(tuple($([0 for i in 1:(3(O - 2))]...)))
+
+    fills = [0 for _ in 1:(3*(O-2))]
+
+    expr1 = Expr(:ref, :SA, [Expr(:ref, :stv1, i) for i in 1:6]..., fills...)
+    expr2 = Expr(:ref, :SA, [Expr(:ref, :stv2, i) for i in 4:9]..., fills...)
+    expr3 = Expr(:ref, :SA, [Expr(:ref, :stv3, i) for i in 7:12]..., fills...)
 
     return quote
         @inbounds begin
             if v.order == 1
-                stv = vector6(frame, v.from, v.to, axesid, t)
-                return SA[stv..., $(expr)...]
+                stv1 = vector6(frame, v.from, v.to, axesid, t)
+                return $expr1
             elseif v.order == 2
-                stv = vector9(frame, v.from, v.to, axesid, t)
-                return SA[stv[4], stv[5], stv[6], stv[7], stv[8], stv[9], $(expr)...]
+                stv2 = vector9(frame, v.from, v.to, axesid, t)
+                return $expr2
             else
-                stv = vector12(frame, v.from, v.to, axesid, t)
-                return SA[stv[7], stv[8], stv[9], stv[10], stv[11], stv[12], $(expr)...]
+                stv3 = vector12(frame, v.from, v.to, axesid, t)
+                return $expr3
             end
         end
     end
 end
 
+""" 
+    _get_comp_axes_vector9(frame, v::ComputableAxesVector, axesid, t)
+
+Compute a 9-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
+
+- **1**: position, velocity, acceleration
+- **2**: velocity, acceleration, jerk
+
+!!! warning 
+    This function does not support orders of `v' higher than 2, because it would 
+    require the computation of vectors of order 5, which is currently not supported.
+"""
 @generated function _get_comp_axes_vector9(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
-    expr = :(tuple($([0 for i in 1:(3(O - 3))]...)))
+
+    fills = [0 for _ in 1:(3*(O-3))]
+
+    expr1 = Expr(:ref, :SA, [Expr(:ref, :stv1, i) for i in 1:9]..., fills...)
+    expr2 = Expr(:ref, :SA, [Expr(:ref, :stv2, i) for i in 4:12]..., fills...)
 
     return quote
         @inbounds begin
             if v.order == 1
-                stv = vector9(frame, v.from, v.to, axesid, t)
-                return SA[stv..., $(expr)...]
+                stv1 = vector9(frame, v.from, v.to, axesid, t)
+                return $expr1
 
             elseif v.order == 2 # v.order = 2
-                stv = vector12(frame, v.from, v.to, axesid, t)
-                return SA[
-                    stv[4],
-                    stv[5],
-                    stv[6],
-                    stv[7],
-                    stv[8],
-                    stv[9],
-                    stv[10],
-                    stv[11],
-                    stv[12],
-                    $(expr)...,
-                ]
+                stv2 = vector12(frame, v.from, v.to, axesid, t)
+                return $expr2
             else
                 throw(ErrorException("unable to compute a vector of order 5 (jounce)."))
             end
@@ -733,18 +845,31 @@ end
     end
 end
 
+""" 
+    _get_comp_axes_vector12(frame, v::ComputableAxesVector, axesid, t)
+
+Compute a 12-elements vector in the desired axes at the given time between two points of the 
+frame system. The returned vector depends on the order in `v` as follows: 
+
+- **1**: position, velocity, acceleration, jerk
+
+!!! warning 
+    This function does not support orders of `v' higher than 1, because it would 
+    require the computation of vectors of order 5 and 6, which are currently not supported.
+"""
 @generated function _get_comp_axes_vector12(
     frame::FrameSystem{O,T}, v::ComputableAxesVector, axesid::Int, t::Number
 ) where {O,T}
+
     return quote
         @inbounds begin
             if v.order == 1
                 return vector12(frame, v.from, v.to, axesid, t)
             elseif v.order == 2 # v.order = 2
-                throw(ErrorException("unable to compute a vector of order 5 (snap)."))
+                throw(ErrorException("unable to compute a vector of order 5 (jounce)."))
 
             else
-                throw(ErrorException("unable to compute a vector of order 6 (crackle)."))
+                throw(ErrorException("unable to compute a vector of order 6 (snap)."))
             end
         end
     end

@@ -1,9 +1,9 @@
 """
-    _two_vectors_basis(a, b, seq::Symbol, fc::Function)
+    _two_vectors_basis(a, b, seq::Symbol, fc::Function, fk::Function)
 
 Generate a 3D right-handed orthogonal vector basis and/or its time derivatives from the 
 vectors `a` and `b`, according to the directions specified in `seq` and the input cross 
-function `fc`.
+function `fc`. `fk` is a function that filters `a` to guarantee type-stability.
 
 The accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 
@@ -12,36 +12,38 @@ passing `cross`, `cross6`, `cross9` or `cross12` to `fc`. The returned vectors w
 a length of 3, 6 or 9, respectively.
 
 """
-function _two_vectors_basis(a::AbstractVector, b::AbstractVector, seq::Symbol, fc::Function)
+function _two_vectors_basis(a::AbstractVector, b::AbstractVector, 
+            seq::Symbol, fc::Function, fk::Function)
+
     if seq == :XY
         w = fc(a, b)
         v = fc(w, a)
-        u = a
+        u = fk(a)
 
     elseif seq == :YX
         w = fc(b, a)
         u = fc(a, w)
-        v = a
+        v = fk(a)
 
     elseif seq == :XZ
         v = fc(b, a)
         w = fc(a, v)
-        u = a
+        u = fk(a)
 
     elseif seq == :ZX
         v = fc(a, b)
         u = fc(v, a)
-        w = a
+        w = fk(a)
 
     elseif seq == :YZ
         u = fc(a, b)
         w = fc(u, a)
-        v = a
+        v = fk(a)
 
     elseif seq == :ZY
         u = fc(b, a)
         v = fc(a, u)
-        w = a
+        w = fk(a)
     else
         throw(ArgumentError("Invalid rotation sequence."))
     end
@@ -50,7 +52,7 @@ function _two_vectors_basis(a::AbstractVector, b::AbstractVector, seq::Symbol, f
 end
 
 """
-    _twovectors_to_dcm(a, b, seq::Symbol, fc::Function, fn::Function)
+    _twovectors_to_dcm(a, b, seq::Symbol, fc::Function, fn::Function, fk::Function)
 
 Generate a direction cosine matrix and/or its time derivatives from the vectors `a` and `b`, 
 according to the directions specifeid in `seq`. 
@@ -60,10 +62,10 @@ according to the directions specifeid in `seq`.
 
 """
 function _twovectors_to_dcm(
-    a::AbstractVector, b::AbstractVector, seq::Symbol, fc::Function, fn::Function
+    a::AbstractVector, b::AbstractVector, seq::Symbol, fc::Function, fn::Function, fk::Function
 )
-    u, v, w = _two_vectors_basis(a, b, seq, fc)
-    u, v, w = fn(u), fn(v), fn(w)
+    ut, vt, wt = _two_vectors_basis(a, b, seq, fc, fk)
+    u, v, w = fn(ut), fn(vt), fn(wt)
 
     @inbounds DCM((u[1], v[1], w[1], u[2], v[2], w[2], u[3], v[3], w[3]))
 end
@@ -90,7 +92,7 @@ following the directions specified in `seq`.
     any check on the angular separation of the two vectors. The user should ensure that the 
     primary and secondary vector differ of at least 1 milliradian.
 """
-twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross3, normalize)
+twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross3, normalize, _keep3)
 
 """
     twovectors_to_δdcm(a, b, seq)
@@ -103,7 +105,7 @@ state vectors `a` and `b`, following the directions specified in `seq`.
 - `seq` -- Accepted sequence directions are: 
        `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
-twovectors_to_δdcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross6, δnormalize)
+twovectors_to_δdcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross6, δnormalize, _keep6)
 
 """
     twovectors_to_δ²dcm(a, b, seq)
@@ -115,7 +117,7 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 - `a` and `b` -- 9-elements state vectors (position velocity and acceleration).
 - `seq` -- Accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
-twovectors_to_δ²dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²normalize)
+twovectors_to_δ²dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²normalize, _keep9)
 
 """
     twovectors_to_δ³dcm(a, b, seq)
@@ -127,13 +129,21 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 - `a` and `b` -- 12-elements state vectors (position, velocity, acceleration and jerk).
 - `seq` -- Accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
-twovectors_to_δ³dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross12, δ³normalize)
+twovectors_to_δ³dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross12, δ³normalize, _keep12)
 
-# Generate a dcm and its derivative
+"""
+    _two_vectors_to_rot6(a, b, seq::Symbol)
+
+Generate a direction cosine matrix and time-derivative, minimising 
+the number of repeated computations. 
+
+### See also 
+See `twovectors_to_dcm` and `twovectors_to_δdcm` for more information. 
+"""
 function _two_vectors_to_rot6(
     a::AbstractVector{T}, b::AbstractVector{T}, seq::Symbol
 ) where {T}
-    u, v, w = _two_vectors_basis(a, b, seq, cross6)
+    u, v, w = _two_vectors_basis(a, b, seq, cross6, _keep6)
 
     @inbounds @fastmath begin
         ru = sqrt(u[1]^2 + u[2]^2 + u[3]^2)
@@ -171,10 +181,10 @@ Generate a direction cosine matrix and its 1st and 2nd-order time-derivatives, m
 the number of repeated computations. 
 
 ### See also 
-See `twovectors_to_dcm` and `twovectors_to_δdcm` for more information. 
+See `twovectors_to_dcm` and `twovectors_to_δ²dcm` for more information. 
 """
 function _two_vectors_to_rot9(a::AbstractVector, b::AbstractVector, seq::Symbol)
-    u, v, w = _two_vectors_basis(a, b, seq, cross9)
+    u, v, w = _two_vectors_basis(a, b, seq, cross9, _keep9)
 
     @inbounds @fastmath begin
         ru = sqrt(u[1]^2 + u[2]^2 + u[3]^2)
@@ -219,7 +229,7 @@ the number of repeated computations.
 See [`twovectors_to_dcm`](@ref) and [`twovectors_to_δdcm`](@ref) for more information. 
 """
 function _two_vectors_to_rot12(a::AbstractVector, b::AbstractVector, seq::Symbol)
-    u, v, w = _two_vectors_basis(a, b, seq, cross12)
+    u, v, w = _two_vectors_basis(a, b, seq, cross12, _keep12)
 
     @inbounds @fastmath begin
         ru = sqrt(u[1]^2 + u[2]^2 + u[3]^2)
@@ -256,4 +266,17 @@ function _two_vectors_to_rot12(a::AbstractVector, b::AbstractVector, seq::Symbol
     end
 
     return dcm, δdcm, δ²dcm, δ³dcm
+end
+
+# These functions are used to guarantee type-stability in the above
+for (j, name) in enumerate((:_keep3, :_keep6, :_keep9, :_keep12))
+    
+    expr = Expr(:ref, :SA, [Expr(:ref, :a, i) for i in 1:3j]...)
+
+    @eval begin 
+        @inline @inbounds function ($name)(a) 
+            $expr
+        end
+    end
+
 end
