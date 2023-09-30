@@ -19,7 +19,11 @@ Before diving into the creation of the axes graph, it is worth highlighting that
 
 A time-fixed rotation between two axes and its derivative can then be expressed as follows: 
 
-```@repl init
+```@setup initAxes
+using FrameTransformations 
+```
+
+```@repl initAxes
 using ReferenceFrameRotations
 
 dcm  = angle_to_dcm(π/3, :Z)
