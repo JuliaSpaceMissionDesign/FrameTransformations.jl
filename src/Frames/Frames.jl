@@ -61,6 +61,7 @@ include("lightime.jl")
 include("transform.jl")
 
 # Rotations definitions 
+include("Definitions/celestial.jl")
 include("Definitions/topocentric.jl")
 include("Definitions/twovectors.jl")
 include("Definitions/ecliptic.jl")

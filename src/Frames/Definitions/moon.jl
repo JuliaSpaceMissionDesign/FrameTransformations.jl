@@ -17,7 +17,28 @@ Celestial Reference Frame), otherwise and error is thrown.
 ### See also 
 See also [`Orient.AXESID_MOONPA_DE440`](@ref), [`Orient.orient_rot3_icrf_to_pa440`](@ref), 
 [`add_axes_pa421!`](@ref), and [`add_axes_me421!`](@ref)
+
+----
+
+    add_axes_pa440!(frames::FrameSystem{O,T}, name::Symbol) where {T,O}
+
+Add a new ephemeris axes representing the DE440 Moon's Principal Axes (PA) giving a custom `name`. 
+The axesid is automatically assigned as [`Orient.AXESID_MOONPA_DE440`](@ref).
+
 """
+function add_axes_pa440!(frames::FrameSystem{O,T}, name::Symbol) where {T,O}
+    if ( has_axes(frames, Orient.AXESID_ICRF) )
+        throw(
+            ErrorException(
+                "The DE440 Moon Principal Axes (PA) can only be defined w.r.t. the" * 
+                " International Celestial Reference Frame (ICRF) which is not defined" *
+                " in the curren frames graph."
+            )
+        )
+    end
+    return add_axes_ephemeris!(frames, name, Orient.AXESID_MOONPA_DE440, :ZXZ)
+end
+
 function add_axes_pa440!(
     frames::FrameSystem, axes::AbstractFrameAxes, parent::AbstractFrameAxes
 )
@@ -60,7 +81,28 @@ Celestial Reference Frame), otherwise and error is thrown.
 ### See also 
 	See also [`Orient.AXESID_MOONPA_DE421`](@ref), [`Orient.orient_icrf_to_pa421`](@ref), 
 	[`add_axes_pa440!`](@ref), and [`add_axes_me421!`](@ref)
+
+----
+
+    add_axes_pa421!(frames::FrameSystem{O,T}, name::Symbol) where {T,O}
+
+Add a new ephemeris axes representing the DE421 Moon's Principal Axes (PA) giving a custom `name`. 
+The axesid is automatically assigned as [`Orient.AXESID_MOONPA_DE421`](@ref).
+
 """
+function add_axes_pa421!(frames::FrameSystem{O,T}, name::Symbol) where {T,O}
+    if ( has_axes(frames, Orient.AXESID_ICRF) )
+        throw(
+            ErrorException(
+                "The DE421 Moon Principal Axes (PA) can only be defined w.r.t. the" * 
+                " International Celestial Reference Frame (ICRF) which is not defined" *
+                " in the curren frames graph."
+            )
+        )
+    end
+    return add_axes_ephemeris!(frames, name, Orient.AXESID_MOONPA_DE421, :ZXZ)
+end
+
 function add_axes_pa421!(
     frames::FrameSystem, axes::AbstractFrameAxes, parent::AbstractFrameAxes
 )
