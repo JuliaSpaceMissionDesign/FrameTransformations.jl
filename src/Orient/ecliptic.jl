@@ -9,6 +9,19 @@ NAIF Axes ID for the International Celestial Reference Frame (ICRF)
 const AXESID_ICRF = 1
 
 """
+    AXESID_GCRF 
+
+Axes ID for the Geocentric Celestial Reference Frame (GCRFF)
+
+!!! note 
+    Although the ICRF and GCRF axes are identical, they are based upon a different 
+    timescale. A different ID is here assigned to provide a robust way of distinguishing 
+    between the two. 23 has been chosen because it is one the unassigned axes ID among the 
+    built-in SPICE frames.
+"""
+const AXESID_GCRF = 23
+
+"""
     AXESID_MEME2000
 
 Axes ID for the Mean Dynamical Equator and Equinox of J2000.0. 

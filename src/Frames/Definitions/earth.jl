@@ -1,12 +1,5 @@
 export add_axes_itrf!
 
-""" 
-    AXESID_ITRF 
-   
-NAIF Axes ID for the International Terrestrial Reference Frame (ITRF)
-"""
-const AXESID_ITRF = 3
-
 """
     add_axes_itrf!(frames, axes, parent, model::Orient.IAU2006Model=Orient.iau2006b) 
 
@@ -25,7 +18,7 @@ See also [`orient_rot3_itrf_to_gcrf`](@ref)
 
 Add a new inertial axes representing the International Terrestrial Reference Frame (ITRF)
 giving a `name` and a `parent`. 
-The axesid is automatically assigned as [`AXESID_ITRF`](@ref).
+The axesid is automatically assigned as [`Orient.AXESID_ITRF`](@ref).
 
 """
 function add_axes_itrf!(
@@ -35,7 +28,7 @@ function add_axes_itrf!(
     model::Orient.IAUModel=Orient.iau2006b,
 ) where {T,O}
 
-    if !(parentid in (Orient.AXESID_ICRF, AXESID_GCRF))
+    if !(parentid in (Orient.AXESID_ICRF, Orient.AXESID_GCRF))
         throw(
             ArgumentError(
                 "International Terrestrial Reference Frame (ITRF) axes could " *
@@ -48,7 +41,7 @@ function add_axes_itrf!(
     return add_axes_rotating!(
         frames,
         name,
-        AXESID_ITRF,
+        Orient.AXESID_ITRF,
         parentid,
         t -> adjoint(Orient.orient_rot3_itrf_to_gcrf(model, t)),
         t -> adjoint.(Orient.orient_rot6_itrf_to_gcrf(model, t)),
