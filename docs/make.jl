@@ -6,6 +6,7 @@ const CI = get(ENV, "CI", "false") == "true"
 if CI 
     Pkg.add("Ephemerides")
     Pkg.add("ReferenceFrameRotations")
+    Pkg.add("JSMDUtils")
 end
 
 makedocs(;

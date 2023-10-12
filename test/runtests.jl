@@ -15,6 +15,7 @@ using JSMDInterfaces.Ephemeris
 using JSMDInterfaces.Math: interpolate
 
 using JSMDUtils.Autodiff
+using JSMDUtils.Math
 using JSMDUtils.Math: arcsec2rad, D¹, D², D³
 using JSMDUtils.Math: angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
 using JSMDUtils: NullEphemerisProvider
