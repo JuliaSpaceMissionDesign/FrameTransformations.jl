@@ -46,8 +46,10 @@ This is a list of NAIF IDs for standard axes that are used in astrodynamic appli
 
 ```@docs 
 Orient.AXESID_ICRF
+Orient.AXESID_GCRF
 Orient.AXESID_ECLIPJ2000
 Orient.AXESID_MEME2000
+Orient.AXESID_ITRF
 Orient.AXESID_MOONME_DE421
 Orient.AXESID_MOONPA_DE421
 Orient.AXESID_MOONPA_DE440
