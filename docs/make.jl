@@ -6,7 +6,6 @@ const CI = get(ENV, "CI", "false") == "true"
 if CI 
     Pkg.add("Ephemerides")
     Pkg.add("ReferenceFrameRotations")
-    Pkg.add("JSMDUtils")
 end
 
 makedocs(;
@@ -37,6 +36,11 @@ makedocs(;
             "Orient" => [
                 "Public API" => "Modules/orient_api.md"
                 "Low-level API" => "Modules/orient_lapi.md"
+            ],
+
+            "Utils" => [
+                "Public API" => "Modules/utils_api.md"
+                "Low-level API" => "Modules/utils_lapi.md"
             ],
 
         ], 

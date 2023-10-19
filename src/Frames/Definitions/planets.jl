@@ -23,41 +23,7 @@ Insert a Body-Centered Rotating (BCR), True-of-Date (TOD) axes to the `frames` s
 !!! warning 
     The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
     If the `parent` set of axes is not ICRF, an error is thrown.
-
-----
-
-    add_axes_bcrtod!(frames::FrameSystem{O,T}, name::Symbol, axesid::Int, 
-        cname::Symbol, center::Int, data::AbstractDict) where {T, O}
-
-Insert a Body-Centered Rotating (BCR), True-of-Date (TOD) axes to the `frames` system associated 
-to the `center` body (`cname` is the body custom name), with a custom `name` and `axesid`.
-
-!!! warning 
-    The parent  axes must be the International Celestial Reference Frame (ICRF). 
-    If ICRF is not in the frames graph, an error is thrown.
-
 """
-function add_axes_bcrtod!(
-    frames::FrameSystem{O,T}, name::Symbol, axesid::Int, cname::Symbol, center::Int, data::AbstractDict
-) where {T, O}
-
-    if ( has_axes(frames, Orient.AXESID_ICRF) )
-        throw(
-            ErrorException(
-                "A Body-Centered Rotating (BCR), True-of-Date (TOD) axes can only be defined" * 
-                " w.r.t. the International Celestial Reference Frame (ICRF) which is not defined" *
-                " in the curren frames graph."
-            )
-        )
-    end
-    # Get nutation - precession angles 
-    p = Orient.PlanetsPrecessionNutation(center, data)
-    # Build transformations 
-    f1, f2, f3 = _axes_bcrtod(p, cname)
-    # Insert new axes in the frame system 
-    return add_axes_rotating!(frames, name, axesid, Orient.AXESID_ICRF, f1, f2, f3)
-end
-
 function add_axes_bcrtod!(
     frames::FrameSystem{O,T},
     data::AbstractDict,
@@ -166,40 +132,7 @@ Insert Body-Centered Inertial (BCI) axes at J2000 relative to the body `center` 
 !!! warning 
     The `parent` set of axes must be the International Celestial Reference Frame (ICRF). 
     If the `parent` set of axes is not ICRF, an error is thrown.
-
-----
-
-    add_axes_bci2000!(frames::FrameSystem{O,T}, name::Symbol, axesid::Int, 
-        cname::Symbol, center::Int, data::AbstractDict) where {T, O}
-
-Insert a Body-Centered Inertial (BCI) axes at J2000 to the `frames` system associated 
-to the `center` body (`cname` is the body custom name), with a custom `name` and `axesid`.
-
-!!! warning 
-    The parent  axes must be the International Celestial Reference Frame (ICRF). 
-    If ICRF is not in the frames graph, an error is thrown.
 """
-function add_axes_bci2000!(
-    frames::FrameSystem{O,T}, name::Symbol, axesid::Int, cname::Symbol, center::Int, data::AbstractDict
-) where {T, O}
-
-    if ( has_axes(frames, Orient.AXESID_ICRF) )
-        throw(
-            ErrorException(
-                "A Body-Centered Rotating (BCR), True-of-Date (TOD) axes can only be defined" * 
-                " w.r.t. the International Celestial Reference Frame (ICRF) which is not defined" *
-                " in the curren frames graph."
-            )
-        )
-    end
-    # Get nutation - precession angles 
-    p = Orient.PlanetsPrecessionNutation(center, data)
-    # Build transformation
-    dcm = _axes_bci2000(p)
-    # Insert new axes in the frame system 
-    return add_axes_fixedoffset!(frames, name, axesid, Orient.AXESID_ICRF, dcm)
-end
-
 function add_axes_bci2000!(
     frames::FrameSystem{O,T},
     data::AbstractDict,

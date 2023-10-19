@@ -1,7 +1,7 @@
 export add_axes_eclipj2000!, add_axes_meme2000!, add_axes_mememod!
 
 """
-    add_axes_meme2000!(frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {O, T}
+    add_axes_meme2000!(frames::, axes, parent::AbstractFrameAxes)
 
 Add `axes` as a set of inertial axes representing the Mean Equator Mean Equinox of J2000 
 to `frames`. 
@@ -26,34 +26,7 @@ julia> add_axes_meme2000!(FRAMES, MEME2000, ICRF)
 
 ### See also 
 See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
-
-----
-
-    add_axes_meme2000!(frames::FrameSystem{O,T}, name::Symbol, parentid::Int) where {T,O}
-
-Add a new inertial axes representing Mean Equator Mean Equinox of J2000 giving a `name` and 
-a `parent`. The id is automatically assigned as [`Orient.AXESID_MEME2000`](@ref).
-
 """
-function add_axes_meme2000!(
-    frames::FrameSystem{O,T}, name::Symbol, parentid::Int
-) where {T,O}
-
-    if parentid == Orient.AXESID_ICRF
-        dcm = Orient.DCM_ICRF_TO_J2000_BIAS
-    elseif parentid == Orient.AXESID_ECLIPJ2000
-        dcm = Orient.DCM_J2000_TO_ECLIPJ2000'
-    else 
-        throw(
-            ArgumentError(
-                "Mean Equator, Mean Equinox of J2000 (MEME2000) axes can only be defined " *
-                "w.r.t. the International Celestial Reference Frame (ICRF).",
-            ),
-        )
-    end
-    return add_axes_inertial!(frames, name, Orient.AXESID_MEME2000; parentid=parentid, dcm=dcm)
-end
-
 function add_axes_meme2000!(
     frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent::AbstractFrameAxes
 ) where {T,O}
@@ -73,6 +46,7 @@ function add_axes_meme2000!(
             ),
         )
     end
+
     return add_axes_inertial!(frames, axes; parent=parent, dcm=dcm)
 end
 
@@ -105,37 +79,7 @@ julia> add_axes_eclipj2000!(FRAMES, ECLIPJ2000, ICRF)
 
 ### See also 
 See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
-
-----
-
-    add_axes_eclipj2000!(frames::FrameSystem{O,T}, name::Symbol, parentid::Int) where {T,O}
-
-Add a new inertial axes representing the Ecliptic Equinox of J2000 giving a `name` and 
-a `parent`. The axesid is automatically assigned as [`Orient.AXESID_ECLIPJ2000`](@ref).
-
 """
-function add_axes_eclipj2000!(
-    frames::FrameSystem{O,T}, name::Symbol, parentid::Int
-) where {T,O}
-
-    j2000_to_eclip = angle_to_dcm(orient_obliquity(iau_model, 0.0), :X)
-
-    if parentid == Orient.AXESID_ICRF
-        dcm = j2000_to_eclip * Orient.DCM_ICRF_TO_J2000_BIAS
-    elseif parentid == Orient.AXESID_MEME2000
-        dcm = j2000_to_eclip
-    else 
-        throw(
-            ArgumentError(
-                "Ecliptic Equinox of J2000 (ECLIPJ2000) axes could not be defined" *
-                " w.r.t. $parentid axes. Only `ICRF` ($(Orient.AXESID_ICRF)) or" * 
-                " `MEME2000`($(Orient.AXESID_MEME2000)) are accepted as parent axes.",
-            ),
-        )
-    end
-    return add_axes_inertial!(frames, name, Orient.AXESID_ECLIPJ2000; parentid=parentid, dcm=dcm)
-end
-
 function add_axes_eclipj2000!(
     frames::FrameSystem{O,T},
     axes::AbstractFrameAxes,
