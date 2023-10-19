@@ -22,14 +22,9 @@ using SMDGraphs:
     add_edge!
 
 using JSMDInterfaces.Ephemeris
-
-using JSMDUtils.Autodiff
-using JSMDUtils.Math: D¹, D², D³
-using JSMDUtils.Math: unitvec, δunitvec, δ²unitvec, δ³unitvec
-using JSMDUtils.Math: cross3, cross6, cross9, cross12
-using JSMDUtils.Math: angle_to_δdcm, angle_to_δ²dcm
-using JSMDUtils.Math: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 using JSMDUtils: format_camelcase, NullEphemerisProvider
+using JSMDUtils.Math: D¹, D², D³
+using JSMDUtils.Autodiff
 
 using Tempo
 using Tempo:
@@ -45,6 +40,11 @@ using Tempo:
 
 using FrameTransformations.Orient
 using FrameTransformations.Orient: AXESID_ICRF
+using FrameTransformations.Utils: light_speed, geod2pos
+using FrameTransformations.Utils: normalize, δnormalize, δ²normalize, δ³normalize
+using FrameTransformations.Utils: cross3, cross6, cross9, cross12
+using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm
+using FrameTransformations.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
 import LinearAlgebra: dot, norm, matprod, UniformScaling
 import StaticArrays: similar_type, Size, MMatrix, SMatrix
@@ -61,7 +61,6 @@ include("lightime.jl")
 include("transform.jl")
 
 # Rotations definitions 
-include("Definitions/celestial.jl")
 include("Definitions/topocentric.jl")
 include("Definitions/twovectors.jl")
 include("Definitions/ecliptic.jl")

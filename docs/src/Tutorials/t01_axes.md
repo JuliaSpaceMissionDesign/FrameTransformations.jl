@@ -229,12 +229,10 @@ R2[2]
 Notice that, although we only provided a function that expresses the relative orientation, the frame system has automatically computed its time-derivative via Automatic Differentiation (AD) of `fun`. This becomes particularly useful for rapid prototyping or when the manual differentiation requires a lot of time. The functions for higher-order derivatives, must return the original DCM and its derivatives up to their orders. For example: 
 
 ```@repl axesFixedOffset2 
-using JSMDUtils.Math
-
 @axes RotAx2 4
 
 fun(t) = angle_to_dcm(-t, :Z)
-dfun(t) = (angle_to_dcm(-t, :Z), Math.angle_to_δdcm([-t, -1], :Z))
+dfun(t) = (angle_to_dcm(-t, :Z), Utils.angle_to_δdcm([-t, -1], :Z))
 
 add_axes_rotating!(G, RotAx2, FO1, fun, dfun)
 

@@ -88,30 +88,7 @@ Add `point` to `frames` as a fixed point on the surface of the `parent` point bo
 position is specified by the longitude `λ`, the geodetic latitude `ϕ`, the reference radius 
 of the ellipsoid `R` and its flattening `f`. The altitude over the reference surface of the 
 ellipsoid `h` defaults to 0. 
-
-----
-
-add_point_surface!(frames::FrameSystem, name::Symbol, pointid::Int, parentid::Int, axesid::Int, 
-    λ::Number, ϕ::Number, R::Number, f::Number=0.0, h::Number=0.0,)
-
-    
 """
-function add_point_surface!(
-    frames::FrameSystem, 
-    name::Symbol,
-    pointid::Int, 
-    parentid::Int, 
-    axesid::Int, 
-    λ::Number,
-    ϕ::Number,
-    R::Number,
-    f::Number=0.0,
-    h::Number=0.0,
-)
-    pos = geod2pos(h, λ, ϕ, R, f)
-    return add_point_fixed!(frames, name, pointid, parentid, axesid, pos)
-end
-
 function add_point_surface!(
     frames::FrameSystem,
     point::AbstractFramePoint,
