@@ -356,22 +356,25 @@
                 tt_c = Tempo.j2000c(ep)
 
                 utc_d = Tempo.j2000(ep_utc)
-                ut1_d = Tempo.j2000(ep_ut1)
+
+                # We pass through this interpolation otherwise some tests fail!
+                offset = interpolate(Orient.IERS_EOP.UT1_TT, tt_d)
+                ut1_d = tt_d + offset / Tempo.DAY2SEC
 
                 v = rand(BigFloat, 3)
                 v /= norm(v)
 
                 # Polar coordinates with UTC 
-                xₚ = arcsec2rad(interpolate(Orient.IERS_EOP.x, utc_d))
-                yₚ = arcsec2rad(interpolate(Orient.IERS_EOP.y, utc_d))
+                xₚ = arcsec2rad(interpolate(Orient.IERS_EOP.x_TT, tt_d))
+                yₚ = arcsec2rad(interpolate(Orient.IERS_EOP.y_TT, tt_d))
 
                 # Polar coordinates with TT 
                 xₚ_TT = arcsec2rad(interpolate(Orient.IERS_EOP.x_TT, tt_d))
                 yₚ_TT = arcsec2rad(interpolate(Orient.IERS_EOP.y_TT, tt_d))
 
                 # CIP Deviations 
-                dX = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dX, utc_d))
-                dY = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dY, utc_d))
+                dX = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dX_TT, tt_d))
+                dY = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dY_TT, tt_d))
 
                 # -- Testing GCRF-to-ITRF Rotation 
                 # IAU 2000A (accurate to ~μas)
