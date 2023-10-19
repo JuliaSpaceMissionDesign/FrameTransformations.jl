@@ -19,6 +19,9 @@ using JSMDUtils.Math: InterpAkima, arcsec2rad, skew
 
 using Tempo
 
+# Topocentric 
+include("geodesy.jl")
+
 # Earth
 include("Earth/Earth.jl")
 

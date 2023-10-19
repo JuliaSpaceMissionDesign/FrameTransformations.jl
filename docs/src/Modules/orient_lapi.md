@@ -70,3 +70,18 @@ Orient.offset_utc2ut1
 ```@docs 
 Orient.orient_rot3_icrf_to_mememod
 ```
+
+## Geodesy 
+
+```@docs 
+Orient.geoc2pv 
+Orient.pv2geoc
+```
+
+## TPC Parsing 
+
+```@docs 
+Orient.TPC
+Orient.FilesIO.load
+
+```
