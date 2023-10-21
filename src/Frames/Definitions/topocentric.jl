@@ -51,7 +51,7 @@ parameters are extracted from the input TPC kernel `pck` using the NAIFId associ
     When this constraint is not satisfied, the results may be fundamentally wrong. 
 
 ### See also 
-See also [`add_point_fixed!`](@ref), [`add_axes_topocentric!`](@ref) and [`geod2pos`](@ref).
+See also [`add_point_fixed!`](@ref), [`add_axes_topocentric!`](@ref).
 """
 function add_point_surface!(
     frames::FrameSystem,

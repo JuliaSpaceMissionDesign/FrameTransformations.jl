@@ -37,6 +37,15 @@ orient_rot3_icrf_to_pa421
 orient_rot3_icrf_to_pa440
 ```
 
+## Geodesy 
+
+```@docs 
+geoc2pos
+pos2geoc
+geod2pos
+pos2geod
+```
+
 ## [Axes ID](@id orient_axesid)
 
 This is a list of NAIF IDs for standard axes that are used in astrodynamic applications. 

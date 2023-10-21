@@ -303,21 +303,24 @@ end
 
 # General functions to dispatch generic order derivatives!
 function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
-    utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
-    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
 
-    utc_d = utc_s / Tempo.DAY2SEC
+    # Convert TT secs since J2000 to TT days
+    ttd = t / Tempo.DAY2SEC
 
     # Compute pole coordinates 
-    xₚ = arcsec2rad(interpolate(IERS_EOP.x, utc_d))
-    yₚ = arcsec2rad(interpolate(IERS_EOP.y, utc_d))
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
 
     # Compute dX, dY 
-    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX, utc_d))
-    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY, utc_d))
+    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX_TT, ttd))
+    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY_TT, ttd))
 
     # Compute LOD 
-    LOD = 1e-3 * interpolate(IERS_EOP.LOD, utc_d)
+    LOD = 1e-3 * interpolate(IERS_EOP.LOD_TT, ttd)
+
+    # Transform UT1 to TT
+    offset = interpolate(IERS_EOP.UT1_TT, ttd)
+    ut1 = ttd + offset / Tempo.DAY2SEC
 
     return fn(m, t, ut1, xₚ, yₚ, dX, dY, LOD)
 end
@@ -390,19 +393,20 @@ TT seconds since `J2000`, according to the IAU Model `m`, as follows:
 """
 function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
 
-    # Find UT1 and UTC dates
-    utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
-    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
-
-    utc_d = utc_s / Tempo.DAY2SEC
+    # Convert TT secs since J2000 to TT days
+    ttd = t / Tempo.DAY2SEC
 
     # Compute pole coordinates 
-    xₚ = arcsec2rad(interpolate(IERS_EOP.x, utc_d))
-    yₚ = arcsec2rad(interpolate(IERS_EOP.y, utc_d))
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
 
     # Compute dX, dY 
-    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX, utc_d))
-    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY, utc_d))
+    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX_TT, ttd))
+    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY_TT, ttd))
+
+    # Transform UT1 to TT
+    offset = interpolate(IERS_EOP.UT1_TT, ttd)
+    ut1 = ttd + offset / Tempo.DAY2SEC
 
     return orient_rot3_itrf_to_gcrf(m, t, ut1, xₚ, yₚ, dX, dY)
 end

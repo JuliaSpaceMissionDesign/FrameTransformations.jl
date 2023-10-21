@@ -101,16 +101,28 @@ end
 
 """
     EOPData{T}
+
 EOP Data for IAU 2000A.
 
 !!! note
     Each field will be an `AbstractInterpolation` indexed by the Julian Day.
+
+!!! note
+    A set of EOP data parameterized as function of the Terrestrial Time (TT) scale is 
+    also provided. These leverage the fact that the difference between `TT` and `UT1` 
+    is a continuous and differentiable function. Passing through `UTC` would introduce 
+    discontinuities across the introduction of leap-seconds, which would in turn cause 
+    numerical issues when the function derivatives are accumulated over time.
 
 ### Fields
 - `x, y`: Polar motion with respect to the crust [arcsec].
 - `UT1_UTC`: Irregularities of the rotation angle [s].
 - `LOD`: Length of day offset [ms].
 - `dX, dY`: Celestial pole offsets referred to the model IAU2000A [milliarcsec].
+- `x_TT, y_TT`: Polar motion parameterized by TT days [arcsec].
+- `UT1_TT`: Irregularities of the rotation angle parameterized by TT days [s].
+- `LOD_TT`: Length of day offset parameterized by TT days [ms].
+- `dX_TT, dY_TT`: Celestial pole offsets parameterized by TT days.
 """
 struct EOPData{T}
     x::T
