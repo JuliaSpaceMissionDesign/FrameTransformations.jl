@@ -15,7 +15,7 @@ kclear()
         # Check that if you haven't loaded the kernel you get an error 
         frames = FrameSystem{2,Float64}()
         add_axes_inertial!(frames, ICRF)
-        @test_throws ArgumentError add_axes_pa421!(frames, PA421, ICRF)
+        @test_throws ArgumentError add_axes_pa421!(frames, PA421)
 
         for kernel in (:LEAP, :PA421, :FK_DE421)
             furnsh(path(KERNELS[kernel]))
@@ -28,10 +28,11 @@ kclear()
         add_axes_inertial!(frames, ICRF)
 
         # Test that you cant add a set of axes with wrong ID
-        @test_throws ArgumentError add_axes_pa421!(frames, PA_TEST, ICRF)
+        @test_throws ArgumentError add_axes_pa421!(frames, PA_TEST)
 
-        add_axes_pa421!(frames, PA421, ICRF)
+        add_axes_pa421!(frames, PA421)
 
+        # Test that you can't add them wrt to the ICRF
         @test_throws ArgumentError add_axes_me421!(frames, ME421, ICRF)
 
         add_axes_me421!(frames, ME421, PA421)
@@ -61,7 +62,7 @@ kclear()
         frames = FrameSystem{2,Float64}(eph)
         add_axes_inertial!(frames, ECI)
 
-        @test_throws ArgumentError add_axes_pa421!(frames, PA421, ECI)
+        @test_throws ErrorException add_axes_pa421!(frames, PA421)
 
     end
 
@@ -70,7 +71,7 @@ kclear()
         # Check that if you haven't loaded the kernel you get an error 
         frames = FrameSystem{2,Float64}()
         add_axes_inertial!(frames, ICRF)
-        @test_throws ArgumentError add_axes_pa440!(frames, PA440, ICRF)
+        @test_throws ArgumentError add_axes_pa440!(frames, PA440)
 
         for kernel in (:LEAP, :PA440, :FK_DE440)
             furnsh(path(KERNELS[kernel]))
@@ -83,10 +84,11 @@ kclear()
         add_axes_inertial!(frames, ICRF)
 
         # Test that you cant add a set of axes with wrong ID
-        @test_throws ArgumentError add_axes_pa440!(frames, PA_TEST, ICRF)
+        @test_throws ArgumentError add_axes_pa440!(frames, PA_TEST)
 
-        add_axes_pa440!(frames, PA440, ICRF)
+        add_axes_pa440!(frames, PA440)
 
+        # Test that you can't add them wrt to the ICRF
         @test_throws ArgumentError add_axes_me421!(frames, ME421, ICRF)
         add_axes_me421!(frames, ME421, PA440)
 

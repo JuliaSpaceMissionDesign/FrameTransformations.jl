@@ -31,7 +31,7 @@ kclear()
     # add axes
     add_axes_inertial!(FRAMES, ICRF)
     add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, DCM_ECLIPJ2000)
-    add_axes_bcrtod!(FRAMES, tpc_constants, Earth, IAU_EARTH, ICRF)
+    add_axes_bcrtod!(FRAMES, IAU_EARTH, Earth, tpc_constants)
 
     # add points
     add_point_root!(FRAMES, SSB, ICRF)

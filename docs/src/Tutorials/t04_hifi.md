@@ -116,8 +116,8 @@ add_point_fixed!(FRAMES, Moon, Earth, ICRF, [0.0, 0.0, 0.0])
 @axes IAU_EARTH 3 
 @axes IAU_MOON 4
 
-add_axes_bcrtod!(FRAMES, iau, Earth, IAU_EARTH, ICRF);
-add_axes_bcrtod!(FRAMES, iau, Moon, IAU_MOON, ICRF);
+add_axes_bcrtod!(FRAMES, IAU_EARTH, Earth, iau);
+add_axes_bcrtod!(FRAMES, IAU_MOON, Moon, iau);
 ```
 
 The registration of this type of axes requires either an alias or the ID of the point associated to the body.
@@ -127,7 +127,7 @@ For convenience, let us also insert a set of inertial axes for the Moon. This ca
 ```@repl iauAxes
 @axes LME2000 5
 
-add_axes_bci2000!(FRAMES, iau, Moon, LME2000, ICRF);
+add_axes_bci2000!(FRAMES, LME2000, Moon, iau);
 ```
 
 Finally, we complete the axes definition by inserting the high-precision Earth and Lunar body-fixed rotation models. 
@@ -139,7 +139,7 @@ For this purpose, `FrameTransformations` provides two high-level functions that 
 @axes MOONPA_DE421 31006 
 
 add_axes_itrf!(FRAMES, ITRF, GCRF)
-add_axes_pa421!(FRAMES, MOONPA_DE421, ICRF)
+add_axes_pa421!(FRAMES, MOONPA_DE421)
 ```
 
 The default ITRF model is the [`iau2006b`](@ref), but other approximations are also [available](@ref iers_models). If one was interested in the Moon's PA440 axes, a similar function named [`add_axes_pa440!`](@ref) is available.
@@ -209,12 +209,12 @@ add_point_ephemeris!(FRAMES, Earth)
 add_point_ephemeris!(FRAMES, Moon)
 add_point_ephemeris!(FRAMES, Sun)
 
-add_axes_bcrtod!(FRAMES, iau, Earth, IAU_EARTH, ICRF);
-add_axes_bcrtod!(FRAMES, iau, Moon, IAU_MOON, ICRF);
-add_axes_bci2000!(FRAMES, iau, Moon, LME2000, ICRF);
+add_axes_bcrtod!(FRAMES, IAU_EARTH, Earth, iau);
+add_axes_bcrtod!(FRAMES, IAU_MOON, Moon, iau);
+add_axes_bci2000!(FRAMES, LME2000, Moon, iau);
 
 add_axes_itrf!(FRAMES, ITRF, GCRF)
-add_axes_pa421!(FRAMES, MOONPA_DE421, ICRF)
+add_axes_pa421!(FRAMES, MOONPA_DE421)
 
 add_point_updatable!(FRAMES, SC, Moon, LME2000)
 
