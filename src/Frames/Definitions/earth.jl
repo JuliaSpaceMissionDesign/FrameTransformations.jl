@@ -20,7 +20,7 @@ Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@
 via the [`@axes`](@ref) macro.
 
 ### See also 
-See also [`add_axes_rotating!](@ref) and [`orient_rot3_itrf_to_gcrf`](@ref).
+See also [`add_axes_rotating!`](@ref) and [`orient_rot3_itrf_to_gcrf`](@ref).
 """
 @inline function add_axes_itrf!(
     frames::FrameSystem,
