@@ -63,6 +63,12 @@ kclear()
 
         # Create dummy frame system 
         FRAMES = FrameSystem{4,Float64}()
+        
+        # Check that you must have already registered the ICRF 
+        add_axes_inertial!(FRAMES, IAU_TEST)
+        @test_throws ErrorException add_axes_bcrtod!(FRAMES, IAU_MIMAS, MIMAS, tpc10_constants)
+        
+        FRAMES = FrameSystem{4,Float64}()
 
         add_axes_inertial!(FRAMES, ICRF)
         add_axes_bcrtod!(FRAMES, IAU_MIMAS, MIMAS, tpc10_constants)

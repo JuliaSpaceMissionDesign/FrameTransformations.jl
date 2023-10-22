@@ -62,7 +62,15 @@ kclear()
         frames = FrameSystem{2,Float64}(eph)
         add_axes_inertial!(frames, ECI)
 
+        # Test that you can only define it with respect to the ICRF (not registered)
         @test_throws ErrorException add_axes_pa421!(frames, PA421)
+
+        frames = FrameSystem{2,Float64}(eph)
+        add_axes_icrf!(frames)
+
+        # Test can you must match the ID of the PA440 axes
+        @test_throws ArgumentError add_axes_pa421!(frames, ME421)
+
 
     end
 
@@ -112,6 +120,20 @@ kclear()
             @test v2as(Rb[1] * v, Rs[1:3, 1:3] * v) ≤ 1e-6
             @test v2as(Rb[2] * v, Rs[4:6, 1:3] * v) ≤ 1e-6
         end
+
+        # Test that you must add the PA440 with respect to the ICRF 
+        frames = FrameSystem{2,Float64}(eph)
+        add_axes_inertial!(frames, ECI)
+
+        # Test that you can only define it with respect to the ICRF (not registered)
+        @test_throws ErrorException add_axes_pa440!(frames, PA421)
+
+        frames = FrameSystem{2,Float64}(eph)
+        add_axes_icrf!(frames)
+
+        # Test can you must match the ID of the PA440 axes
+        @test_throws ArgumentError add_axes_pa440!(frames, ME421)
+
     end
 end;
 
