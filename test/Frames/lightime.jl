@@ -8,6 +8,7 @@ kclear()
 
 # Register points 
 @point SSB 0 SolarSystemBarycenter
+@point EMB 3
 @point Sun 10
 @point Earth 399
 @point SaturnB 6 SaturnBarycenter
@@ -36,8 +37,9 @@ kclear()
     # add points
     add_point_root!(FRAMES, SSB, ICRF)
     add_point_ephemeris!(FRAMES, Sun)
-    add_point_ephemeris!(FRAMES, Earth, SSB)
-    add_point_ephemeris!(FRAMES, SaturnB, SSB)
+    add_point_ephemeris!(FRAMES, EMB)
+    add_point_ephemeris!(FRAMES, Earth)
+    add_point_ephemeris!(FRAMES, SaturnB)
 
     tol = 1e-11
 
