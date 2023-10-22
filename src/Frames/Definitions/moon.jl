@@ -47,8 +47,12 @@ function add_axes_pa440!(
 
     # Throw a warning if the ID does not match the standard one.
     if axesid != Orient.AXESID_MOONPA_DE440
-        @warn "$name is aliasing an ID that is not the standard PA440" * 
-            "ID ($(Orient.AXESID_MOONPA_DE440))."
+        throw(
+            ArgumentError(
+                "$name is aliasing an ID that is not the standard PA440" * 
+                " ID ($(Orient.AXESID_MOONPA_DE440))."
+            )
+        )
     end
 
     return add_axes_ephemeris!(frames, name, axesid, :ZXZ)
@@ -102,8 +106,12 @@ function add_axes_pa421!(
 
     # Throw a warning if the ID does not match the standard one.
     if axesid != Orient.AXESID_MOONPA_DE421
-        @warn "$name is aliasing an ID that is not the standard PA421" * 
-            "ID ($(Orient.AXESID_MOONPA_DE421))."
+        throw(
+            ArgumentError(
+                "$name is aliasing an ID that is not the standard PA421" * 
+                " ID ($(Orient.AXESID_MOONPA_DE421))."
+            )
+        )
     end
 
     return add_axes_ephemeris!(frames, name, axesid, :ZXZ)
