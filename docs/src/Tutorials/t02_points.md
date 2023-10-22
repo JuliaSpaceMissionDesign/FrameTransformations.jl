@@ -252,17 +252,14 @@ We now register some points that are stored in the kernels using the [`add_point
 
 add_axes_inertial!(F, ICRF)
 add_point_root!(F, SSB, ICRF)
-add_point_ephemeris!(F, Sun, SSB)
+add_point_ephemeris!(F, Sun)
 add_point_ephemeris!(F, EMB)
 add_point_ephemeris!(F, Earth)
 
 F
 ```
 
-Notice that this function does not necessarily requires the parent point. Indeed, if no point is specified, the parent is automatically set to those contained in the descriptors of the ephemeris kernels. For instance, in the DE421, the Earth-Moon Barycenter (EMB) is defined with respect to the SSB, which the frame system automatically uses as parent for the EMB. Similarly, the EMB is the default parent point for the Earth.
-
-!!! note 
-    It is always recommended to use as parent of ephemeris points, the point with respect to which its ephemeris data is written in the binary kernels. This becomes mandatory if [`Ephemerides.jl`](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) is used as an ephemeris provider.
+Notice that this function does not requires the parent point. Indeed, the parent is automatically set to those contained in the descriptors of the ephemeris kernels. For instance, in the DE421, the Earth-Moon Barycenter (EMB) is defined with respect to the SSB, which the frame system automatically uses as parent for the EMB. Similarly, the EMB is the default parent point for the Earth.
 
 !!! warning 
     If a parent point is not specified and the point in the kernels has not yet been registered, an error is thrown. 
@@ -285,7 +282,7 @@ F = FrameSystem{2, Float64}(eph)
 
 add_axes_inertial!(F, ICRF)
 add_point_root!(F, SSB, ICRF)
-add_point_ephemeris!(F, Sun, SSB)
+add_point_ephemeris!(F, Sun)
 add_point_ephemeris!(F, EMB)
 add_point_ephemeris!(F, Earth)
 ```

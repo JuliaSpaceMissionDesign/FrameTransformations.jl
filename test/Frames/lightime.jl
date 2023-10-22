@@ -8,6 +8,7 @@ kclear()
 
 # Register points 
 @point SSB 0 SolarSystemBarycenter
+@point EMB 3
 @point Sun 10
 @point Earth 399
 @point SaturnB 6 SaturnBarycenter
@@ -31,13 +32,14 @@ kclear()
     # add axes
     add_axes_inertial!(FRAMES, ICRF)
     add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, DCM_ECLIPJ2000)
-    add_axes_bcrtod!(FRAMES, tpc_constants, Earth, IAU_EARTH, ICRF)
+    add_axes_bcrtod!(FRAMES, IAU_EARTH, Earth, tpc_constants)
 
     # add points
     add_point_root!(FRAMES, SSB, ICRF)
     add_point_ephemeris!(FRAMES, Sun)
-    add_point_ephemeris!(FRAMES, Earth, SSB)
-    add_point_ephemeris!(FRAMES, SaturnB, SSB)
+    add_point_ephemeris!(FRAMES, EMB)
+    add_point_ephemeris!(FRAMES, Earth)
+    add_point_ephemeris!(FRAMES, SaturnB)
 
     tol = 1e-11
 

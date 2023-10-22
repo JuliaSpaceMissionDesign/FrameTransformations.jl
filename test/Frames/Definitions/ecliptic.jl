@@ -48,6 +48,14 @@
     @test v2as(R[1] * v, Orient.DCM_J2000_TO_ECLIPJ2000 * v) ≈ 0.0 atol = 1e-14 rtol = 1e-14
     @test maximum(abs.(R[2])) ≈ 0.0 atol = 1e-14 rtol = 1e-14
     @test maximum(abs.(R[3])) ≈ 0.0 atol = 1e-14 rtol = 1e-14
+
+    frames = FrameSystem{3,Float64}()
+    add_axes_icrf!(frames)
+
+    # Check warning on axesid not being the true MEME2000 ID
+    @test_logs (:warn, "ECLIPJ2000 is aliasing an ID that is not the standard MEME2000 ID" *
+    " ($(Orient.AXESID_MEME2000)).") add_axes_meme2000!(frames, ECLIPJ2000, ICRF)
+
 end;
 
 @testset "Ecliptic Equinox at J2000" verbose = false begin
@@ -87,8 +95,18 @@ end;
         @test R_[2] ≈ zeros(3, 3) atol = 1e-14
     end
 
-@testset "Mean of Date Ecliptic Equinox" verbose=false begin 
+    frames = FrameSystem{3,Float64}()
+    add_axes_icrf!(frames)
 
+    # Check warning on axesid not being the true MEME2000 ID
+    @test_logs (:warn, "MEME2000 is aliasing an ID that is not the standard ECLIPJ2000 ID" *
+    " ($(Orient.AXESID_ECLIPJ2000)).") add_axes_eclipj2000!(frames, MEME2000, ICRF)
+
+end;
+
+@testset "Mean of Date Ecliptic Equinox" verbose=false begin 
+    
+    v2as = (x, y) -> acosd(max(-1, min(1, dot(x / norm(x), y / norm(y))))) * 3600
 
     frames = FrameSystem{3,Float64}()
     add_axes_inertial!(frames, MEME_TEST)
@@ -111,6 +129,5 @@ end;
     v /= norm(v)
 
     @test v2as(R[1] * v, R_' * v) ≈ 0.0 atol = 1e-14 rtol = 1e-14
-end
 
 end;

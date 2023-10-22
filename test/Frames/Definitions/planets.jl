@@ -63,9 +63,15 @@ kclear()
 
         # Create dummy frame system 
         FRAMES = FrameSystem{4,Float64}()
+        
+        # Check that you must have already registered the ICRF 
+        add_axes_inertial!(FRAMES, IAU_TEST)
+        @test_throws ErrorException add_axes_bcrtod!(FRAMES, IAU_MIMAS, MIMAS, tpc10_constants)
+        
+        FRAMES = FrameSystem{4,Float64}()
 
         add_axes_inertial!(FRAMES, ICRF)
-        add_axes_bcrtod!(FRAMES, tpc10_constants, MIMAS, IAU_MIMAS, ICRF)
+        add_axes_bcrtod!(FRAMES, IAU_MIMAS, MIMAS, tpc10_constants)
 
         for _ in 1:50
             e = rand(0.0:1e8)
@@ -106,7 +112,13 @@ kclear()
             @testset "Body with NAIFId $i" for i in NAIFIds
                 FRAMES = FrameSystem{3,Float64}()
                 add_axes_inertial!(FRAMES, ICRF)
-                Frames._axes_bcrtod!(FRAMES, tpc_constants, i, "test", IAU_TEST, ICRF)
+                
+                Frames.add_axes_bcrtod!(
+                    FRAMES, Frames.axes_name(IAU_TEST), Frames.axes_id(IAU_TEST),
+                    :test, i, tpc_constants
+                )
+
+                # Frames._axes_bcrtod!(FRAMES, tpc_constants, i, "test", IAU_TEST, ICRF)
 
                 for _ in 1:25
                     ep = rand(0.0:1e6)

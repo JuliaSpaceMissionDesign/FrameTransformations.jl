@@ -94,8 +94,8 @@ kclear()
         furnsh(path(KERNELS[:LEAP]), path(KERNELS[:DE432]))
 
         frames = FrameSystem{3,Float64}()
-        # test ephemeris ID not available 
-        @test_throws ArgumentError add_point_ephemeris!(frames, Sun)
+        # test ephemeris data is not available 
+        @test_throws ErrorException add_point_ephemeris!(frames, Sun)
 
         eph = CalcephProvider(path(KERNELS[:DE432]))
         frames = FrameSystem{3,Float64}(eph)
@@ -106,10 +106,13 @@ kclear()
         add_point_root!(frames, SSB, ICRF)
         add_point_ephemeris!(frames, Sun)
 
-        @test_throws ArgumentError add_point_ephemeris!(frames, Earth)
+        # test point already registered
+        @test_throws ArgumentError add_point_ephemeris!(frames, Sun)
+        # test cannot add point because Earth is defined wrt the EMB (parent not registered)
+        @test_throws ErrorException add_point_ephemeris!(frames, Earth)
 
         add_point_ephemeris!(frames, EMB)
-        add_point_ephemeris!(frames, Earth, SSB)
+        add_point_ephemeris!(frames, Earth)
         add_point_ephemeris!(frames, Moon)
 
         add_point_fixed!(frames, Jupiter, SSB, ICRF, rand(3))
@@ -131,7 +134,7 @@ kclear()
         node = frames_points(frames).nodes[4]
         @test node.axesid == 1
         @test node.NAIFId == 399
-        @test node.parentid == 0
+        @test node.parentid == 3
         @test node.name == :Earth
 
         # test Moon point properties 
@@ -139,13 +142,6 @@ kclear()
         @test node.axesid == 1
         @test node.parentid == 3
         @test node.name == :Moon
-
-        # test point already registered
-        @test_throws ArgumentError add_point_ephemeris!(frames, Sun)
-        # test parent not yet registered
-        @test_throws ArgumentError add_point_ephemeris!(frames, Moon, Earth)
-        # test parent is not root nor ephemeris point 
-        @test_throws ArgumentError add_point_ephemeris!(frames, Moon, Jupiter)
 
         # test transformation 
         for _ in 1:25
@@ -176,18 +172,11 @@ kclear()
         @test_throws ArgumentError vector3(frames, Moon, Sun, ICRF, tai)
 
         frames2 = FrameSystem{3,Float64}(eph)
-        add_axes_inertial!(frames2, ICRF)
-        add_point_root!(frames2, Jupiter, ICRF)
-
-        # test parent does not have ephemeris data 
-        @test_throws ArgumentError add_point_ephemeris!(frames2, SSB, Jupiter)
-
-        frames2 = FrameSystem{3,Float64}(eph)
         add_axes_inertial!(frames2, MEME2000)
         add_point_root!(frames2, SSB, MEME2000)
 
         # test ephemeris axes have not been registered
-        @test_throws ArgumentError add_point_ephemeris!(frames2, Sun, SSB)
+        @test_throws ErrorException add_point_ephemeris!(frames2, Sun)
 
         # test that derivatives up to order 4 work 
         frames = FrameSystem{4,Float64}(eph)

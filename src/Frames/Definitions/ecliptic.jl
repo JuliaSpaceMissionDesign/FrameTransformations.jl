@@ -1,15 +1,21 @@
 export add_axes_eclipj2000!, add_axes_meme2000!, add_axes_mememod!
 
 """
-    add_axes_meme2000!(frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent::AbstractFrameAxes) where {O, T}
-
+    add_axes_meme2000!(frames, axes::AbstractFrameAxes, parent)
+    
 Add `axes` as a set of inertial axes representing the Mean Equator Mean Equinox of J2000 
 to `frames`. 
 
 !!! warning 
-    The name (or the axes ID) of the parent set of axes must be `ICRF` (i.e., the International 
-    Celestial Reference Frame, ID = 1), or the `ECLIPJ2000` (i.e., the Ecliptic Equinox of 7
-    J2000, ID = 17), otherwise and error is thrown.
+    The the axes ID of the parent set of axes must be $(Orient.AXESID_ICRF) (ICRF) or 
+    $(Orient.AXESID_ECLIPJ2000) (ECLIPJ2000) otherwise and error is thrown.
+
+----
+
+    add_axes_meme2000!(frames, name::Symbol, parentid::Int, axesid::Int = Orient.AXESID_MEME2000)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
 
 ### Examples 
 ```julia-repl 
@@ -26,18 +32,15 @@ julia> add_axes_meme2000!(FRAMES, MEME2000, ICRF)
 
 ### See also 
 See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
-
-----
-
-    add_axes_meme2000!(frames::FrameSystem{O,T}, name::Symbol, parentid::Int) where {T,O}
-
-Add a new inertial axes representing Mean Equator Mean Equinox of J2000 giving a `name` and 
-a `parent`. The id is automatically assigned as [`Orient.AXESID_MEME2000`](@ref).
-
 """
+@inline function add_axes_meme2000!(frames::FrameSystem, axes::AbstractFrameAxes, parent)
+    return add_axes_meme2000!(frames, axes_name(axes), axes_alias(parent), axes_id(axes))
+end
+
+# Low-level function
 function add_axes_meme2000!(
-    frames::FrameSystem{O,T}, name::Symbol, parentid::Int
-) where {T,O}
+    frames::FrameSystem, name::Symbol, parentid::Int, axesid::Int=Orient.AXESID_MEME2000
+)
 
     if parentid == Orient.AXESID_ICRF
         dcm = Orient.DCM_ICRF_TO_J2000_BIAS
@@ -47,48 +50,38 @@ function add_axes_meme2000!(
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (MEME2000) axes can only be defined " *
-                "w.r.t. the International Celestial Reference Frame (ICRF).",
+                "w.r.t. the ICRF (ID = $(Orient.AXESID_ICRF)).",
             ),
         )
     end
-    return add_axes_inertial!(frames, name, Orient.AXESID_MEME2000; parentid=parentid, dcm=dcm)
-end
 
-function add_axes_meme2000!(
-    frames::FrameSystem{O,T}, axes::AbstractFrameAxes, parent::AbstractFrameAxes
-) where {T,O}
-    pname = axes_name(parent)
-    pid = axes_id(parent)
-
-    if pname == :ICRF || pid == Orient.AXESID_ICRF
-        dcm = Orient.DCM_ICRF_TO_J2000_BIAS
-
-    elseif pname == :ECLIPJ2000 || pid == Orient.AXESID_ECLIPJ2000
-        dcm = Orient.DCM_J2000_TO_ECLIPJ2000'
-    else
-        throw(
-            ArgumentError(
-                "Mean Equator, Mean Equinox of J2000 (MEME2000) axes can only be defined " *
-                "w.r.t. the International Celestial Reference Frame (ICRF).",
-            ),
-        )
+    if axesid != Orient.AXESID_MEME2000
+        @warn "$name is aliasing an ID that is not the standard MEME2000 ID" *
+              " ($(Orient.AXESID_MEME2000))."
     end
-    return add_axes_inertial!(frames, axes; parent=parent, dcm=dcm)
+
+    return add_axes_inertial!(frames, name, axesid; parentid = parentid, dcm = dcm)
+
 end
+
 
 """
-    add_axes_eclipj2000!(frames, axes, parent::AbstractFrameAxes, iau_model::IAUModel=iau1980)
+    add_axes_eclipj2000!(frames, axes::AbstractFrameAxes, parent, iau_model::IAUModel=iau1980)
     
 Add `axes` as a set of inertial axes representing the Ecliptic Equinox of J2000 (ECLIPJ2000)
 to `frames`. The obliquity of the ecliptic is computed using the IAU Model `iau_model`.
 
 The admissed `parent` set of axes are the following: 
-- **ICRF**: for the International Celestial Reference Frame, with ID = 1
-- **MEME2000**: the Mean Earth/Moon Ephemeris of J2000, with ID = 22
+- **ICRF**: for the International Celestial Reference Frame, with ID = $(Orient.AXESID_ICRF)
+- **MEME2000**: the Mean Earth/Moon Ephemeris of J2000, with ID = $(Orient.AXESID_MEME2000)
 
-!!! warning 
-    If the name (or the axes ID) of the parent set of `axes` is neither ICRF (ID = 1) nor 
-    MEME2000 (ID = 22), an error is thrown. 
+----
+
+    add_axes_eclipj2000!(frames, name::Symbol, parentid::Int, iau_model::IAUModel=iau1980, 
+        axesid::Int = Orient.AXESID_ECLIPJ2000)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
 
 ### Examples
 ```julia-repl 
@@ -105,67 +98,57 @@ julia> add_axes_eclipj2000!(FRAMES, ECLIPJ2000, ICRF)
 
 ### See also 
 See also [`add_axes_inertial!`](@ref) and [`Orient.DCM_ICRF_TO_J2000_BIAS`](@ref)
-
-----
-
-    add_axes_eclipj2000!(frames::FrameSystem{O,T}, name::Symbol, parentid::Int) where {T,O}
-
-Add a new inertial axes representing the Ecliptic Equinox of J2000 giving a `name` and 
-a `parent`. The axesid is automatically assigned as [`Orient.AXESID_ECLIPJ2000`](@ref).
-
 """
-function add_axes_eclipj2000!(
-    frames::FrameSystem{O,T}, name::Symbol, parentid::Int
-) where {T,O}
+@inline function add_axes_eclipj2000!(
+    frames::FrameSystem,
+    axes::AbstractFrameAxes,
+    parent,
+    iau_model::Orient.IAUModel = Orient.iau1980,
+)
+    return add_axes_eclipj2000!(
+        frames, axes_name(axes), axes_alias(parent), iau_model, axes_id(axes)
+    )
 
-    j2000_to_eclip = angle_to_dcm(orient_obliquity(iau_model, 0.0), :X)
+end
+
+# Low-level function
+function add_axes_eclipj2000!(
+    frames::FrameSystem, 
+    name::Symbol, 
+    parentid::Int, 
+    iau_model::Orient.IAUModel = Orient.iau1980, 
+    axesid::Int = Orient.AXESID_ECLIPJ2000
+)
+
+    # Compute the J2000 to ECLIPJ2000 rotationa ccording to the desired IAU model
+    DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau_model, 0.0), :X)
 
     if parentid == Orient.AXESID_ICRF
-        dcm = j2000_to_eclip * Orient.DCM_ICRF_TO_J2000_BIAS
+        dcm = DCM_J2000_TO_ECLIPJ2000 * Orient.DCM_ICRF_TO_J2000_BIAS
     elseif parentid == Orient.AXESID_MEME2000
-        dcm = j2000_to_eclip
+        dcm = DCM_J2000_TO_ECLIPJ2000
     else 
         throw(
             ArgumentError(
-                "Ecliptic Equinox of J2000 (ECLIPJ2000) axes could not be defined" *
-                " w.r.t. $parentid axes. Only `ICRF` ($(Orient.AXESID_ICRF)) or" * 
-                " `MEME2000`($(Orient.AXESID_MEME2000)) are accepted as parent axes.",
-            ),
-        )
-    end
-    return add_axes_inertial!(frames, name, Orient.AXESID_ECLIPJ2000; parentid=parentid, dcm=dcm)
-end
-
-function add_axes_eclipj2000!(
-    frames::FrameSystem{O,T},
-    axes::AbstractFrameAxes,
-    parent::AbstractFrameAxes,
-    iau_model::Orient.IAUModel=Orient.iau1980,
-) where {T,O}
-    pname = axes_name(parent)
-    pid = axes_id(parent)
-
-    # Compute ecliptic orientation using the specified obliquity model!
-    j2000_to_eclip = angle_to_dcm(orient_obliquity(iau_model, 0.0), :X)
-
-    if pname == :ICRF || pid == Orient.AXESID_ICRF
-        dcm = j2000_to_eclip * Orient.DCM_ICRF_TO_J2000_BIAS
-    elseif pname == :MEME2000 || pid == Orient.AXESID_MEME2000
-        dcm = j2000_to_eclip
-    else
-        throw(
-            ArgumentError(
-                "Ecliptic Equinox of J2000 (ECLIPJ2000) axes could not be defined" *
-                " w.r.t. $pname axes. Only `ICRF` or `MEME2000` are accepted as parent axes.",
+                "Ecliptic Equinox of J2000 (ECLIPJ2000) axes cannot be defined" *
+                " w.r.t. $parentid axes. Only `ICRF` (ID = $(Orient.AXESID_ICRF)) or" * 
+                " `MEME2000` (ID = $(Orient.AXESID_MEME2000)) are accepted as parent axes.",
             ),
         )
     end
 
-    return add_axes_inertial!(frames, axes; parent=parent, dcm=dcm)
+    if axesid != Orient.AXESID_ECLIPJ2000
+        @warn "$name is aliasing an ID that is not the standard ECLIPJ2000 ID" *
+              " ($(Orient.AXESID_ECLIPJ2000))."
+    end
+
+    return add_axes_inertial!(
+        frames, name, axesid; parentid = parentid, dcm = dcm)
+
 end
 
 """
-    add_axes_mememod!(frames, axes, parent::AbstractFrameAxes, model::IAU2006Model=iau2006b)
+    add_axes_mememod!(frames, axes::AbstractFrameAxes, parent)
 
 Add `axes` as a set of projected axes representing the Mean of Date Ecliptic Equinox to 
 `frames`. 
@@ -175,21 +158,36 @@ Add `axes` as a set of projected axes representing the Mean of Date Ecliptic Equ
     are assumed null.
 
 !!! warning 
-    The name of the `parent` set of axes must be the ICRF or have ID = 1 (i.e., the 
-    International Celestial Reference Frame), otherwise an error is thrown. 
+    The ID of the `parent` set of axes must be $(Orient.AXESID_ICRF) (ICRF), 
+    otherwise an error is thrown. 
 
+----
+
+    add_axes_eclipj2000!(frames, name::Symbol, axesid::Int, parentid::Int)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+
+### See also 
+See also [`add_axes_projected!`](@ref) and [`Orient.orient_rot3_icrf_to_mememod`](@ref)
 """
-function add_axes_mememod!(
-    frames::FrameSystem, axes::AbstractFrameAxes, parent::AbstractFrameAxes
-)
-    if axes_name(parent) != :ICRF && axes_id(parent) != Orient.AXESID_ICRF
+@inline function add_axes_mememod!(frames::FrameSystem, axes::AbstractFrameAxes, parent)
+    return add_axes_mememod!(frames, axes_name(axes), axes_id(axes), axes_alias(parent))
+end
+
+# Low-level function
+function add_axes_mememod!(frames::FrameSystem, name::Symbol, axesid::Int, parentid::Int)
+
+    if parentid != Orient.AXESID_ICRF
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of date axes can only be defined " *
-                "w.r.t. the International Celestial Reference Frame (ICRF)",
-            ),
+                "w.r.t. the ICRF (ID = $(Orient.AXESID_ICRF)).",
+            )
         )
     end
 
-    return add_axes_projected!(frames, axes, parent, Orient.orient_rot3_icrf_to_mememod)
+    return add_axes_projected!(
+        frames, name, axesid, parentid, Orient.orient_rot3_icrf_to_mememod
+    )
 end
