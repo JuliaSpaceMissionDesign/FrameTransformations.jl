@@ -303,7 +303,7 @@ add_axes_inertial!(G, ICRF)
 @point Sun 10 SunPoint 
 
 add_point_root!(G, SSB, ICRF)
-add_point_ephemeris!(G, Sun, SSB)
+add_point_ephemeris!(G, Sun)
 
 v1 = ComputableAxesVector(Sun, SSB, 1)
 v2 = ComputableAxesVector(Sun, SSB, 2)
