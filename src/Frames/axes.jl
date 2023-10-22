@@ -188,7 +188,7 @@ function build_axes(
         # the given frame system 
         throw(
             ArgumentError(
-                "Axes with ID $id are already registered in the given FrameSystem."
+                "Axes with ID $id are already registered in the input frame system."
             ),
         )
     end
@@ -197,7 +197,7 @@ function build_axes(
         # Check if axes with the same name also do not already exist
         throw(
             ArgumentError(
-                "Axes with name=$name are already registered in the given FrameSystem."
+                "Axes with name=$name are already registered in the input frame system."
             ),
         )
     end
@@ -212,7 +212,7 @@ function build_axes(
             throw(
                 ArgumentError(
                     "The specified parent axes with ID $parentid are not " *
-                    "registered in the given FrameSystem.",
+                    "registered in the input frame system.",
                 ),
             )
         end
@@ -615,7 +615,7 @@ julia> add_axes_inertial!(FRAMES, ICRF)
 
 julia> add_point_root!(FRAMES, SSB, ICRF)
 
-julia> add_point_ephemeris!(FRAMES, Sun, SSB)
+julia> add_point_ephemeris!(FRAMES, Sun)
 
 julia> @axes SunFrame 2
 
