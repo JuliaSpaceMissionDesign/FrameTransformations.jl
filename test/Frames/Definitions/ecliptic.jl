@@ -105,7 +105,8 @@ end;
 end;
 
 @testset "Mean of Date Ecliptic Equinox" verbose=false begin 
-
+    
+    v2as = (x, y) -> acosd(max(-1, min(1, dot(x / norm(x), y / norm(y))))) * 3600
 
     frames = FrameSystem{3,Float64}()
     add_axes_inertial!(frames, MEME_TEST)
