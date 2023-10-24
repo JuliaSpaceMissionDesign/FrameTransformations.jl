@@ -26,7 +26,7 @@ kclear()
     tpc_constants = FrameTransformations.load(TPC(path(KERNELS[:PCK10])))
 
     # Create frame system
-    eph = CalcephProvider(path(KERNELS[:DE432]))
+    eph = EphemerisProvider(path(KERNELS[:DE432]))
     FRAMES = FrameSystem{3,Float64}(eph)
 
     # add axes

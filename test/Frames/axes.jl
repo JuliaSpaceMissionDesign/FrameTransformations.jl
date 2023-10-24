@@ -227,7 +227,7 @@ kclear()
         afun = t -> SA[-sin(t), -cos(t), 0]
         jfun = t -> SA[-cos(t), sin(t), 0]
 
-        eph = CalcephProvider(path(KERNELS[:DE432]))
+        eph = EphemerisProvider(path(KERNELS[:DE432]))
 
         B = Orient.DCM_J2000_TO_ECLIPJ2000
 
@@ -317,7 +317,7 @@ kclear()
         # Load kernels!
         furnsh(path(KERNELS[:LEAP]), path(KERNELS[:PA440]), path(KERNELS[:FK_DE440]))
 
-        eph = CalcephProvider(path(KERNELS[:PA440]))
+        eph = EphemerisProvider(path(KERNELS[:PA440]))
         G = FrameSystem{4,Float64}(eph)
 
         add_axes_inertial!(G, ICRF)

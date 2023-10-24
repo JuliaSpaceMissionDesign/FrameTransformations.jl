@@ -1,7 +1,7 @@
 using FrameTransformations
 using Test
 
-using CalcephEphemeris
+using Ephemerides
 using ERFA
 using ForwardDiff
 using PreallocationTools
