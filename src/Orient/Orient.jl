@@ -34,6 +34,7 @@ include("planets.jl")
 
 # Ecliptic 
 include("ecliptic.jl")
+include("legacy.jl")
 
 function __init__()
     if !Tempo.has_timescale(TIMESCALES, Tempo.timescale_id(UT1))
