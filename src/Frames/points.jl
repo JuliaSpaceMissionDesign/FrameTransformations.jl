@@ -313,7 +313,9 @@ requiring the creation of an [`AbstractFramePoint`](@ref) type via the [`@point`
 
 ### Examples 
 ```julia-repl
-julia> eph = CalcephProvider(DE440_KERNEL_PATH);
+julia> using Ephemerides 
+
+julia> eph = EphemerisProvider(DE440_KERNEL_PATH);
 
 julia> FRAMES = FrameSystem{2, Float64}(eph);
 

@@ -97,7 +97,7 @@ kclear()
         # test ephemeris data is not available 
         @test_throws ErrorException add_point_ephemeris!(frames, Sun)
 
-        eph = CalcephProvider(path(KERNELS[:DE432]))
+        eph = EphemerisProvider(path(KERNELS[:DE432]))
         frames = FrameSystem{3,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)

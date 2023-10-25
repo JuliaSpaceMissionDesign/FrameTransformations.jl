@@ -2,7 +2,7 @@ kclear()
 
 @axes ICRF 1 InternationalCelestialReferenceFrame
 @axes ECI 200
-@axes ME421 31001
+@axes ME421 31007
 @axes PA421 31006
 @axes PA440 31008
 @axes PA_TEST 23412
@@ -22,7 +22,7 @@ kclear()
         end
 
         # Test orientation between PA421 and ICRF
-        eph = CalcephProvider(path(KERNELS[:PA421]))
+        eph = EphemerisProvider(path(KERNELS[:PA421]))
         frames = FrameSystem{2,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)
@@ -37,7 +37,7 @@ kclear()
 
         add_axes_me421!(frames, ME421, PA421)
 
-        for _ in 1:10
+        for _ in 1:100
             et = rand(0.0:1e8)
 
             v = rand(BigFloat, 3)
@@ -86,7 +86,7 @@ kclear()
         end
 
         # Test orientation between PA440 and ICRF
-        eph = CalcephProvider(path(KERNELS[:PA440]))
+        eph = EphemerisProvider(path(KERNELS[:PA440]))
         frames = FrameSystem{2,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)
@@ -100,7 +100,7 @@ kclear()
         @test_throws ArgumentError add_axes_me421!(frames, ME421, ICRF)
         add_axes_me421!(frames, ME421, PA440)
 
-        for _ in 1:10
+        for _ in 1:100
             et = rand(0.0:1e8)
 
             v = rand(BigFloat, 3)

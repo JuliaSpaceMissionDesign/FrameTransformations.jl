@@ -452,12 +452,13 @@ to compute transformations that involve ephemeris data.
 
 ### Examples 
 ```julia-repl
-julia> eph = CalcephProvider(DE440_KERNEL_PATH)
-CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0))
+julia> using Ephemerides 
+
+julia> eph = EphemerisProvider(DE440_KERNEL_PATH);
 
 julia> F = FrameSystem{2, Float64}(eph)
-FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-  eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0)),
+FrameSystem{2, Float64, BarycentricDynamicalTime, EphemerisProvider}(
+  eph: 1-kernel EphemerisProvider,
   points: EMPTY
   axes: EMPTY
 )
