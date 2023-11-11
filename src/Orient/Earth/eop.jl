@@ -249,11 +249,15 @@ end
 """
     init_eop(filename)  
 
-Initialize Earth Orientation Parameters (EOP) from JSMD `.eop.dat` file.  
+Initialize Earth Orientation Parameters (EOP) from file.  
 
 !!! warn
     This function must be called to initialize the EOP data used by frames, in case 
     Earth-associated frames are used.  
+
+!!! warn 
+    This function accept only `.eop.dat` files. Please use [`prepare_eop`](@ref) to transform 
+    IERS EOP files in this format.
 """
 function init_eop(filename::AbstractString)
     

@@ -60,8 +60,11 @@ Orient.xys2m
 
 ```@docs 
 Orient.EOPData
-Orient.get_iers_eop
-Orient.get_iers_eop_IAU2000A
+Orient.EOPInterpolator
+Orient.prepare_eop 
+Orient.read_eop 
+Orient.init_eop 
+Orient.IERS_EOP
 Orient.offset_utc2ut1
 ```
 
