@@ -20,6 +20,8 @@ CPNd
 
 ```@docs 
 IERS_EOP
+init_eop
+prepare_eop
 orient_rot3_itrf_to_gcrf
 orient_rot6_itrf_to_gcrf
 orient_rot9_itrf_to_gcrf

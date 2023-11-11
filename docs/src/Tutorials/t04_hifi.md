@@ -176,6 +176,13 @@ using Ephemerides, Downloads
 
 url_pck = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de421_1900-2050.bpc";
 url_spk = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp";
+url_eop = "https://datacenter.iers.org/data/csv/finals2000A.data.csv"
+
+let
+    eopfile = "iau2000a.eop.dat"
+    Orient.prepare_eop(Downloads.download(url_eop), eopfile)
+    Orient.init_eop(eopfile)
+end;
 
 eph = EphemerisProvider([Downloads.download(url_spk), Downloads.download(url_pck)])
 
