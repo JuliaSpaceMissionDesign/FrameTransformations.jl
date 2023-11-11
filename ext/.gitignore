@@ -1,6 +1,3 @@
-*.bsp
-*.bpc
-*.csv
-*.txt
-*.json
-*.tls
+*
+!.gitignore
+!README.md

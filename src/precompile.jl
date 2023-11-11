@@ -86,6 +86,8 @@ PrecompileTools.@setup_workload begin
             Orient.orient_bias_precession(iaumod, 0.0)
             Orient.orient_bias_precession_nutation(iaumod, 0.0)
 
+            # TODO: add precompilation of EOP and precompile again rotX 
+
             Orient.orient_rot3_itrf_to_gcrf(iaumod, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
             Orient.orient_rot6_itrf_to_gcrf(iaumod, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
             Orient.orient_rot9_itrf_to_gcrf(iaumod, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)

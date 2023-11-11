@@ -303,6 +303,11 @@ end
 
 # General functions to dispatch generic order derivatives!
 function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
+    !IERS_EOP.init && throw(
+        ErrorException(
+            "EOP not initialized. Please run 'init_eop' before using this function."
+        ))
+
     utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
     ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
 
@@ -323,6 +328,10 @@ function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
 end
 
 function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
+    !IERS_EOP.init && throw(
+        ErrorException(
+            "EOP not initialized. Please run 'init_eop' before using this function."
+        ))
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -339,6 +348,10 @@ function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
 end
 
 function _dnd_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
+    !IERS_EOP.init && throw(
+        ErrorException(
+            "EOP not initialized. Please run 'init_eop' before using this function."
+        ))
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -389,7 +402,11 @@ TT seconds since `J2000`, according to the IAU Model `m`, as follows:
 - Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
 """
 function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
-
+    !IERS_EOP.init && throw(
+        ErrorException(
+            "EOP not initialized. Please run 'init_eop' before using this function."
+        ))
+        
     # Find UT1 and UTC dates
     utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
     ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
