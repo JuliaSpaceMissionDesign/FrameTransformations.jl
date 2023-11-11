@@ -89,23 +89,23 @@ function read_iers_eop_finals(filename::AbstractString)
     dY_raw = @view(data[1:last_id_utc, 26])
 
     # Update predictions
-    # Elements that are not present are filled with zeros
+    # Elements that are not present are filled with the last valid element
     last_id_lod = findlast(!isempty, lod_raw) 
-    lod_raw[last_id_lod:end] .= lod_raw[last_id_lod]
+    lod_raw[last_id_lod:end] .= lod_raw[last_id_lod-1]
     lod = convert(Vector{Float64}, lod_raw)
 
     last_id_dXY = findlast(!isempty, dX_raw)
-    dX_raw[last_id_dXY:end] .= dX_raw[last_id_dXY]
-    dY_raw[last_id_dXY:end] .= dY_raw[last_id_dXY]
+    dX_raw[last_id_dXY:end] .= dX_raw[last_id_dXY-1]
+    dY_raw[last_id_dXY:end] .= dY_raw[last_id_dXY-1]
     dX = convert(Vector{Float64}, dX_raw)
     dY = convert(Vector{Float64}, dY_raw)
 
     # For convenience and to avoid discontinuities, eop are parametrized both in terms of 
     # utc and tt time scales
     j2000_utc = mjd .- Tempo.DMJD
-    j2000_tt = map(t -> Tempo.utc2tai(Tempo.DJ2000, t)[2] - Tempo.OFFSET_TAI_TT/Tempo.DAY2SEC, j2000_utc)
+    j2000_tt = map(t -> Tempo.utc2tai(Tempo.DJ2000, t)[2] + Tempo.OFFSET_TAI_TT/Tempo.DAY2SEC, j2000_utc)
     j2000_ut1 = j2000_utc + ut1_utc./Tempo.DAY2SEC  # utc + ut1-utc
-    ut1_tt = (j2000_ut1 - j2000_tt) .* Tempo.DAY2SEC .- Tempo.OFFSET_TAI_TT
+    ut1_tt = (j2000_ut1 - j2000_tt) .* Tempo.DAY2SEC 
 
     return j2000_utc, j2000_tt, x_pole, y_pole, ut1_utc, ut1_tt, lod, dX, dY  
 end
