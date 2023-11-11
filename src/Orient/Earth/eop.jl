@@ -91,12 +91,12 @@ function read_iers_eop_finals(filename::AbstractString)
     # Update predictions
     # Elements that are not present are filled with zeros
     last_id_lod = findlast(!isempty, lod_raw) 
-    lod_raw[last_id_lod:end] .= 0.
+    lod_raw[last_id_lod:end] .= lod_raw[last_id_lod]
     lod = convert(Vector{Float64}, lod_raw)
 
     last_id_dXY = findlast(!isempty, dX_raw)
-    dX_raw[last_id_dXY:end] .= 0.
-    dY_raw[last_id_dXY:end] .= 0.
+    dX_raw[last_id_dXY:end] .= dX_raw[last_id_dXY]
+    dY_raw[last_id_dXY:end] .= dY_raw[last_id_dXY]
     dX = convert(Vector{Float64}, dX_raw)
     dY = convert(Vector{Float64}, dY_raw)
 

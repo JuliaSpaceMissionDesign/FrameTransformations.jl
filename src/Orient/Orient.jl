@@ -5,7 +5,6 @@ using LinearAlgebra
 using Logging
 
 using ReferenceFrameRotations
-using RemoteFiles: @RemoteFile, download, path
 using StaticArrays
 
 using JSMDInterfaces.Ephemeris:

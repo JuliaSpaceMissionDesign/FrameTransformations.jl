@@ -58,7 +58,19 @@ import LinearAlgebra: cross, dot, norm
     )
 end;
 
+EOP_DATA_FILE = @RemoteFile "https://datacenter.iers.org/data/csv/finals2000A.data.csv" dir = joinpath(
+    @__DIR__, "assets"
+);
+
 download(KERNELS; verbose=true, force=false)
+download(EOP_DATA_FILE; verbose=true, force=false)
+
+@info "Prepare EOP data"
+let
+    eopfile = joinpath(@__DIR__, "assets", "iau2000a.eop.dat")
+    Orient.prepare_eop(path(EOP_DATA_FILE), eopfile)
+    Orient.init_eop(eopfile)
+end;
 
 @eval begin
     modules = [:Utils, :Orient, :Frames]

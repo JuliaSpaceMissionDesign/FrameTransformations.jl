@@ -237,7 +237,7 @@
 
     @testset "ITRF to GCRF Routines" verbose = true begin
         atol, rtol = 1e-12, 1e-12
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:9000, 49)..., 0.0]
 
         @testset "Polar Motion" begin
             for i in eachindex(t)
@@ -410,7 +410,7 @@
                 Rₑ = orient_rot3_itrf_to_gcrf(iau2006a, tt_s)
                 @test v2as(R * v, Rₑ * v) ≤ 1e-1
 
-                # CPNc (accurate to ~1as)
+                # CPNd (accurate to ~1as)
                 R = orient_rot3_itrf_to_gcrf(CPNd, tt_s)
                 Rₑ = orient_rot3_itrf_to_gcrf(iau2006a, tt_s)
                 @test v2as(R * v, Rₑ * v) ≤ 1
