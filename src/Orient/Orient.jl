@@ -32,7 +32,7 @@ include("tpc.jl")
 include("planets.jl")
 
 # Ecliptic 
-include("celestial.jl")
+include("common.jl")
 include("ecliptic.jl")
 include("legacy.jl")
 
