@@ -13,5 +13,5 @@ function gmst(θ::Number, t::Number)
     c₃ = -0.00000044
     c₄ = -0.000029956
     c₅ = -0.0000000368
-    return 86400 * θ + @evalpoly(t, c₀, c₁, c₂, c₃, c₄, c₅)/15
+    return mod(86400 * θ + @evalpoly(t, c₀, c₁, c₂, c₃, c₄, c₅)/15, 86400)
 end
