@@ -26,8 +26,6 @@ import LinearAlgebra: cross, dot, norm
 import FrameTransformations.Frames:
     FrameAxesFunctions, FramePointFunctions, _get_fixedrot, _empty_stv_update!
 
-
-
 @RemoteFileSet KERNELS "Spice Kernels Set" begin
     LEAP = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/latest_leapseconds.tls" dir = joinpath(
         @__DIR__, "assets"
@@ -61,7 +59,19 @@ import FrameTransformations.Frames:
     )
 end;
 
+EOP_DATA_FILE = @RemoteFile "https://datacenter.iers.org/data/csv/finals2000A.data.csv" dir = joinpath(
+    @__DIR__, "assets"
+);
+
 download(KERNELS; verbose=true, force=false)
+download(EOP_DATA_FILE; verbose=true, force=false)
+
+@info "Prepare EOP data"
+let
+    eopfile = joinpath(@__DIR__, "assets", "iau2000a")
+    Orient.prepare_eop(path(EOP_DATA_FILE), eopfile)
+    Orient.init_eop(eopfile * ".eop.dat")
+end;
 
 @eval begin
     modules = [:Orient, :Frames]

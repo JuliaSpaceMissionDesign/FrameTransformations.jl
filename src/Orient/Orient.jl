@@ -5,7 +5,6 @@ using LinearAlgebra
 using Logging
 
 using ReferenceFrameRotations
-using RemoteFiles: @RemoteFile, download, path
 using StaticArrays
 
 using JSMDInterfaces.Ephemeris:
@@ -13,7 +12,7 @@ using JSMDInterfaces.Ephemeris:
 
 using JSMDInterfaces
 using JSMDInterfaces.FilesIO
-using JSMDInterfaces.Math: interpolate
+using JSMDInterfaces.Math: interpolate, AbstractInterpolationMethod
 
 using JSMDUtils.Math: InterpAkima, arcsec2rad, skew
 
