@@ -70,7 +70,7 @@ download(EOP_DATA_FILE; verbose=true, force=false)
 
 @info "Prepare EOP data"
 let
-    eopfile = joinpath(@__DIR__, "assets", "iau2000a.eop.dat")
+    eopfile = joinpath(@__DIR__, "assets", "iau2000a")
     Orient.prepare_eop(path(EOP_DATA_FILE), eopfile)
     Orient.init_eop(eopfile)
 end;

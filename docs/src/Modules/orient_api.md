@@ -16,12 +16,18 @@ CPNc
 CPNd
 ```
 
-## IERS Transformations
+## EOP Data 
 
-```@docs 
-IERS_EOP
+```@docs
 init_eop
 prepare_eop
+eop_data_filename 
+IERS_EOP
+```
+
+## IERS Transformations
+
+```@docs
 orient_rot3_itrf_to_gcrf
 orient_rot6_itrf_to_gcrf
 orient_rot9_itrf_to_gcrf

@@ -1,4 +1,4 @@
-export prepare_eop, read_eop, init_eop, IERS_EOP
+export prepare_eop, read_eop, init_eop, eop_data_filename, IERS_EOP
 
 """
     EOPData{T}
@@ -6,15 +6,17 @@ export prepare_eop, read_eop, init_eop, IERS_EOP
 EOP Data for IAU 2000A.
 
 ### Fields
-- `j2000` : Independent valiable - time - in UTC
-- `j2000_TT` : Independent valiable - time - in TT 
+- `filename` : File where the EOP data are stored. 
+- `j2000` : Independent valiable - time - in UTC.
+- `j2000_TT` : Independent valiable - time - in TT.
 - `x, y`: Polar motion with respect to the crust (arcsec).
 - `UT1_UTC`: Irregularities of the rotation angle (s).
 - `UT1_TT`: Irregularities of the rotation angle (s) w.r.t. TT timescale.
 - `LOD`: Length of day offset (ms).
 - `dX, dY`: Celestial pole offsets referred to the model IAU2000A (milliarcsec).
 """
-struct EOPData{T}
+mutable struct EOPData{T}
+    filename::String
     j2000::Vector{T}
     x::Vector{T}
     y::Vector{T}
@@ -32,7 +34,7 @@ end
 
 function EOPData(::Type{T}=Float64) where T 
     return EOPData(
-        [],[],[],[],[],[],[],
+        "", [],[],[],[],[],[],[],
         [],[]
     )
 end
@@ -42,7 +44,8 @@ function Base.show(io::IO, eop::EOPData{T}) where T
         println(io, "EOPData()")
         return
     end
-    println(io, "EOPData(beg=\"$(eop.j2000[1]) (UTC)\", end=\"$(eop.j2000[end]) (UTC)\")")
+    println(io, "EOPData(filename=\"$(eop.filename), \"beg=\"$(eop.j2000[1]) (UTC)\", "
+        * " end=\"$(eop.j2000[end]) (UTC)\")")
 end
 
 """
@@ -111,14 +114,23 @@ function read_iers_eop_finals(filename::AbstractString)
 end
 
 """
-    prepare_eop(iers_file::AbstractString, output_file::AbstractString="iau2000a.eop.dat")  
+    prepare_eop(iers_file::AbstractString, output_filename::AbstractString="iau2000a")  
 
-Prepare Earth Orientation Parameters (EOP) data from IERS EOP C04 files to JSMD's `.eop.dat` 
-convenience format.
+Prepare Earth Orientation Parameters (EOP) data from IERS EOP C04 files to JSMD's `eop.dat` 
+convenience format. The `output_filename` should not include the file extension, which is 
+automatically added by this function. 
+
+```@raw julia 
+# Save a new file called: test.eop.dat
+prepare_eop("input.csv", "test")
+```
 """
-function prepare_eop(iers_file::AbstractString, output_file::AbstractString="iau2000a.eop.dat")
+function prepare_eop(iers_file::AbstractString, output_filename::AbstractString="iau2000a")
     data = hcat(read_iers_eop_finals(iers_file)...)
-    writedlm(output_file, data)
+    writedlm(output_filename * ".eop.dat", data)
+
+    @info "IERS EOP file '$(iers_file)' converted to '$(output_filename).eop.dat'."
+
     nothing
 end
 
@@ -156,36 +168,37 @@ Set Earth Orientation Parameters (EOP) to be used for frames transformations fro
 """
 function set_eop_data(filename::AbstractString)
 
-    @info "EOP data configured from file '$(filename)'."
+    oldfile = IERS_EOP_DATA.filename
     j2000_utc, j2000_tt, x_pole, y_pole, ut1_utc, ut1_tt, lod, dX, dY = read_eop(filename)
 
     if (!isempty(IERS_EOP_DATA.j2000))
-        @warn "EOP data are already present and will be overwritten."
-
-        empty!(IERS_EOP_DATA.j2000)
-        empty!(IERS_EOP_DATA.x)
-        empty!(IERS_EOP_DATA.y)
-        empty!(IERS_EOP_DATA.UT1_UTC)
-        empty!(IERS_EOP_DATA.LOD)
-        empty!(IERS_EOP_DATA.dX)
-        empty!(IERS_EOP_DATA.dY)
-    
-        empty!(IERS_EOP_DATA.j2000_TT)
-        empty!(IERS_EOP_DATA.UT1_TT)
+        @warn "Existing EOP data from \'$(oldfile)\' will be overwritten by \'$(filename)\'."
     end
 
-    append!(IERS_EOP_DATA.j2000, j2000_utc)
-    append!(IERS_EOP_DATA.x, x_pole)
-    append!(IERS_EOP_DATA.y, y_pole)
-    append!(IERS_EOP_DATA.UT1_UTC, ut1_utc)
-    append!(IERS_EOP_DATA.LOD, lod)
-    append!(IERS_EOP_DATA.dX, dX)
-    append!(IERS_EOP_DATA.dY, dY)
-
-    append!(IERS_EOP_DATA.j2000_TT, j2000_tt)
-    append!(IERS_EOP_DATA.UT1_TT, ut1_tt)
+    IERS_EOP_DATA.filename = filename
+    IERS_EOP_DATA.j2000 = j2000_utc
+    IERS_EOP_DATA.x = x_pole
+    IERS_EOP_DATA.y = y_pole
+    IERS_EOP_DATA.UT1_UTC = ut1_utc
+    IERS_EOP_DATA.LOD = lod
+    IERS_EOP_DATA.dX = dX
+    IERS_EOP_DATA.dY = dY
+    IERS_EOP_DATA.j2000_TT = j2000_tt
+    IERS_EOP_DATA.UT1_TT = ut1_tt
 
     nothing
+end
+
+"""
+    eop_data_filename()  
+
+Get loaded Earth Orientation Parameters (EOP) filename.
+"""
+function eop_data_filename()
+    if isempty(IERS_EOP_DATA.filename) 
+        throw(ErrorException("Unable to retrieve filename, no EOP data has been loaded."))
+    end
+    return IERS_EOP_DATA.filename
 end
 
 """
@@ -207,7 +220,7 @@ EOP Data for IAU 2000A.
 - `LOD_TT`: Length of day offset (ms) parametrized by TT epoch.
 - `dX_TT, dY_TT`: Celestial pole offsets referred to the model IAU2000A (milliarcsec) parametrized by TT epoch.
 """
-mutable struct EOPInterpolator{T}
+mutable struct EOPInterpolator{T<:AbstractInterpolationMethod}
     init::Bool
 
     x::T
@@ -259,26 +272,30 @@ Initialize Earth Orientation Parameters (EOP) from file.
     This function accept only `.eop.dat` files. Please use [`prepare_eop`](@ref) to transform 
     IERS EOP files in this format.
 """
-function init_eop(filename::AbstractString)
+function init_eop(
+    filename::AbstractString, ::Type{INTERP} = InterpAkima) where {INTERP <: AbstractInterpolationMethod}
     
     # Set eop data to gather
     set_eop_data(filename)
 
     # Initialize and set interpolators
     IERS_EOP.init = true
-    IERS_EOP.x = InterpAkima(IERS_EOP_DATA.j2000, IERS_EOP_DATA.x)
-    IERS_EOP.y = InterpAkima(IERS_EOP_DATA.j2000, IERS_EOP_DATA.y)
-    IERS_EOP.UT1_UTC = InterpAkima(IERS_EOP_DATA.j2000, IERS_EOP_DATA.UT1_UTC)
-    IERS_EOP.LOD = InterpAkima(IERS_EOP_DATA.j2000, IERS_EOP_DATA.LOD)
-    IERS_EOP.dX = InterpAkima(IERS_EOP_DATA.j2000, IERS_EOP_DATA.dX)
-    IERS_EOP.dY = InterpAkima(IERS_EOP_DATA.j2000, IERS_EOP_DATA.dY)
+    IERS_EOP.x = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.x)
+    IERS_EOP.y = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.y)
+    IERS_EOP.UT1_UTC = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.UT1_UTC)
+    IERS_EOP.LOD = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.LOD)
+    IERS_EOP.dX = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.dX)
+    IERS_EOP.dY = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.dY)
     
-    IERS_EOP.x_TT = InterpAkima(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.x)
-    IERS_EOP.y_TT = InterpAkima(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.y)
-    IERS_EOP.UT1_TT = InterpAkima(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.UT1_TT)
-    IERS_EOP.LOD_TT = InterpAkima(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.LOD)
-    IERS_EOP.dX_TT = InterpAkima(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.dX)
-    IERS_EOP.dY_TT = InterpAkima(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.dY)
+    IERS_EOP.x_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.x)
+    IERS_EOP.y_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.y)
+    IERS_EOP.UT1_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.UT1_TT)
+    IERS_EOP.LOD_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.LOD)
+    IERS_EOP.dX_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.dX)
+    IERS_EOP.dY_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.dY)
+
+    @info "EOP initialized from file '$(filename)'."
+
     nothing 
 
 end

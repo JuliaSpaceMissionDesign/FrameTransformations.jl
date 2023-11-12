@@ -12,7 +12,7 @@ using JSMDInterfaces.Ephemeris:
 
 using JSMDInterfaces
 using JSMDInterfaces.FilesIO
-using JSMDInterfaces.Math: interpolate
+using JSMDInterfaces.Math: interpolate, AbstractInterpolationMethod
 
 using JSMDUtils.Math: InterpAkima, arcsec2rad, skew
 
