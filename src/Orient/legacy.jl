@@ -1,10 +1,10 @@
 
 """
-    AXESID_MEMEB1950
+    AXESID_B1950
 
 NAIF Axes ID for the Mean Equator and Dynamical Equinox of the Besselian year 1950. 
 """
-const AXESID_MEMEB1950 = 2
+const AXESID_B1950 = 2
 
 """
     AXESID_FK4
@@ -31,7 +31,7 @@ const AXESID_ECLIPB1950 = 18
     DCM_J2000_TO_B1950
 
 DCM for the rotation from the Mean Dynamical Equator and Equinox of J2000.0 (`MEME2000`)
-to the Mean Equator and Dynamical Equinox of B1950 (`MEMEB1950`).
+to the Mean Equator and Dynamical Equinox of B1950 (`B1950`).
 
 !!! note 
     This rotation is obtained by precessing the J2000 frame backwards from Julian year 2000 

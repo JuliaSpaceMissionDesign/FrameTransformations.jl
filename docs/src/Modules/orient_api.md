@@ -54,6 +54,7 @@ This is a list of NAIF IDs for standard axes that are used in astrodynamic appli
     Although they are listed in the public documentation section, these IDs are not directly exported by the package.
 
 ```@docs 
+Orient.AXESID_B1950
 Orient.AXESID_ECLIPB1950
 Orient.AXESID_ECLIPJ2000
 Orient.AXESID_FK4
@@ -62,7 +63,6 @@ Orient.AXESID_GCRF
 Orient.AXESID_ICRF
 Orient.AXESID_ITRF
 Orient.AXESID_MEME2000
-Orient.AXESID_MEMEB1950
 Orient.AXESID_MOONME_DE421
 Orient.AXESID_MOONPA_DE421
 Orient.AXESID_MOONPA_DE440
