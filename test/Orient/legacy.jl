@@ -5,7 +5,7 @@
     @test Orient.AXESID_ECLIPB1950 == 18
     @test Orient.AXESID_FK4 == 3
     @test Orient.AXESID_GALACTIC == 13
-    @test Orient.AXESID_MEMEB1950 == 2
+    @test Orient.AXESID_B1950 == 2
 
     # Function to compute the angle between 2 vectors in arcseconds
     v2as = (x, y) -> acosd(max(-1, min(1, dot(x / norm(x), y / norm(y))))) * 3600
