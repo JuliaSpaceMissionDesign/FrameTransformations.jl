@@ -13,7 +13,7 @@
     v = rand(BigFloat, 3)
     v /= norm(v)
 
-    R = Orient.DCM_J2000_TO_B1950
+    R = Orient.DCM_MEME2000_TO_B1950
     Rₑ = pxform("J2000", "B1950", 0.0)
     @test v2as(R*v, Rₑ*v) ≤ 1e-10
 
