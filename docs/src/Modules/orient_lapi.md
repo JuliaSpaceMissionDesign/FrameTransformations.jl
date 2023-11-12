@@ -51,6 +51,8 @@ Orient.earth_rotation_angle
 Orient.earth_rotation_rate 
 Orient.era_rotm
 Orient.fw2xy
+Orient.gmst 
+Orient.gast
 Orient.tio_locator
 Orient.polar_motion
 Orient.xys2m
@@ -72,6 +74,7 @@ Orient.offset_utc2ut1
 
 ```@docs 
 Orient.orient_rot3_icrf_to_mod
+Orient.orient_rot3_icrf_to_tod
 ```
 
 ## Geodesy 

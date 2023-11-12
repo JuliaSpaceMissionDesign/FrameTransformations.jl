@@ -34,6 +34,7 @@ add_axes_pa421!
 add_axes_pa440!
 add_axes_projected!
 add_axes_rotating!
+add_axes_tod!
 add_axes_topocentric!
 
 ```
