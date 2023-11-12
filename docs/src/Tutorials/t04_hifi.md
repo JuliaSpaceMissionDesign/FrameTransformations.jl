@@ -179,9 +179,9 @@ url_spk = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_
 url_eop = "https://datacenter.iers.org/data/csv/finals2000A.data.csv"
 
 let
-    eopfile = "iau2000a.eop.dat"
+    eopfile = "iau2000a"
     Orient.prepare_eop(Downloads.download(url_eop), eopfile)
-    Orient.init_eop(eopfile)
+    Orient.init_eop(eopfile * ".eop.dat")
 end;
 
 eph = EphemerisProvider([Downloads.download(url_spk), Downloads.download(url_pck)])
