@@ -332,6 +332,6 @@ function build_nutation_series(
 
     # Assembles the function
     fcn = _assemble_function(iau_model, fname, fbody)
-    # return eval(fcn)
+    return eval(fcn)
 
 end
