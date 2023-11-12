@@ -101,7 +101,7 @@ kclear()
         frames = FrameSystem{3,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)
-        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, Orient.DCM_J2000_TO_ECLIPJ2000)
+        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, Orient.DCM_MEME2000_TO_ECLIPJ2000)
 
         add_point_root!(frames, SSB, ICRF)
         add_point_ephemeris!(frames, Sun)
@@ -182,7 +182,7 @@ kclear()
         frames = FrameSystem{4,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)
-        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, Orient.DCM_J2000_TO_ECLIPJ2000)
+        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, Orient.DCM_MEME2000_TO_ECLIPJ2000)
 
         add_point_root!(frames, SSB, ICRF)
         add_point_ephemeris!(frames, Sun)
@@ -193,7 +193,7 @@ kclear()
 
     # -- Testing Dynamical points!
     @testset "Dynamical" verbose = false begin
-        R = Orient.DCM_J2000_TO_ECLIPJ2000
+        R = Orient.DCM_MEME2000_TO_ECLIPJ2000
 
         nth = Threads.nthreads()
         tid = Threads.threadid()
@@ -270,7 +270,7 @@ kclear()
 
     # -- Testing Updatable points!
     @testset "Updatable" verbose = false begin
-        R = Orient.DCM_J2000_TO_ECLIPJ2000
+        R = Orient.DCM_MEME2000_TO_ECLIPJ2000
 
         frames = FrameSystem{3,Float64}()
         add_axes_inertial!(frames, ICRF)

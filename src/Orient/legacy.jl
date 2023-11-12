@@ -28,9 +28,9 @@ NAIF Axes ID for the Mean Ecliptic Equinox of B1950.
 const AXESID_ECLIPB1950 = 18
 
 """
-    DCM_J2000_TO_B1950
+    DCM_MEME2000_TO_B1950
 
-DCM for the rotation from the Mean Dynamical Equator and Equinox of J2000.0 (`MEME2000`)
+DCM for the rotation from the Mean Equator and Equinox of J2000.0 (`MEME2000`)
 to the Mean Equator and Dynamical Equinox of B1950 (`B1950`).
 
 !!! note 
@@ -41,7 +41,7 @@ to the Mean Equator and Dynamical Equinox of B1950 (`B1950`).
 ### References 
 - SPICE [Library](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/chgirf.html)
 """
-const DCM_J2000_TO_B1950 = angle_to_dcm(
+const DCM_MEME2000_TO_B1950 = angle_to_dcm(
     deg2rad(1153.04066200330/3600), -deg2rad(1002.26108439117/3600), 
     deg2rad(1152.84248596724/3600), :ZYZ
 )

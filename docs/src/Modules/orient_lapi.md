@@ -71,7 +71,7 @@ Orient.offset_utc2ut1
 ## Transformations
 
 ```@docs 
-Orient.orient_rot3_icrf_to_mememod
+Orient.orient_rot3_icrf_to_mod
 ```
 
 ## Geodesy 

@@ -156,7 +156,7 @@ kclear()
         @test is_timefixed(G, AXES_ROT) == false
         @test is_timefixed(G, 2) == false
 
-        B = Orient.DCM_J2000_TO_ECLIPJ2000
+        B = Orient.DCM_MEME2000_TO_ECLIPJ2000
 
         atol, rtol = 1e-12, 1e-12
         # test AD derivatives for all combinations of specified functions
@@ -229,7 +229,7 @@ kclear()
 
         eph = EphemerisProvider(path(KERNELS[:DE432]))
 
-        B = Orient.DCM_J2000_TO_ECLIPJ2000
+        B = Orient.DCM_MEME2000_TO_ECLIPJ2000
 
         F = FrameSystem{4,Float64}(eph)
         add_axes_inertial!(F, ICRF)
