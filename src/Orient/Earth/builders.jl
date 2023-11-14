@@ -22,9 +22,6 @@ function build_series(
         throw(ArgumentError("`trig` and `poly` must have the same length."))
     end
 
-    # Generates ad-hoc functions to compute the IAU Series including only 
-    # the non-null coefficients. 
-
     # The elements of cpoly must always be >= ctrig
     fbody = Expr(:block)
 
@@ -65,7 +62,6 @@ function build_series(
             push!(pcall[j].args[2].args[2].args, Symbol("x$(j)x$i"))
         end
     end
-
 
     # For each unique ARGUMENT expression 
     for fa_set in fa_list 
