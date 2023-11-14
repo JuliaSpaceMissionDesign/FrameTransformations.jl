@@ -138,8 +138,8 @@ bpn2xy(A::AbstractMatrix) = @inbounds A[3, 1], A[3, 2]
 
 # Generate cip_coords function for the simplified CPNC model! 
 include("constants/cip_cpnc.jl")
-build_cio_series(
-    :cip_coords, :CPNC, [COEFFS_CPNC_XP, COEFFS_CPNC_YP], [COEFFS_CPNC_X, COEFFS_CPNC_Y]
+build_series(
+    :cip_coords, :CPNC, [COEFFS_CPNC_X, COEFFS_CPNC_Y], [COEFFS_CPNC_XP, COEFFS_CPNC_YP]
 )
 
 """
@@ -210,8 +210,8 @@ include("constants/cio_locator00.jl")
 include("constants/cio_locator06.jl")
 
 # cio_locator(::IAUModel, ::Number, ::FundamentalArguments) = ()
-build_cio_series(:cio_locator, :IAU2000Model, [COEFFS_CIO2000_SP], [COEFFS_CIO2000_S])
-build_cio_series(:cio_locator, :IAU2006Model, [COEFFS_CIO2006_SP], [COEFFS_CIO2006_S])
+build_series(:cio_locator, :IAU2000Model, [COEFFS_CIO2000_S], [COEFFS_CIO2000_SP])
+build_series(:cio_locator, :IAU2006Model, [COEFFS_CIO2006_S], [COEFFS_CIO2006_SP])
 
 """
     cio_locator(m::IAUModel, t::Number, x::Number, y::Number)
