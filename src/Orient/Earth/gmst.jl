@@ -1,8 +1,8 @@
 export gmst
 
+# Build the function to compute the EE complementary terms
 include("constants/eq_origins.jl");
-
-# build_cio_series(:ee_complementary, ::IAU2006Model, SVector(), COEFFS_EECT)
+build_series(:ee_complementary, :IAU2000Model, [COEFFS_EECT])
 
 """
     gmst(m::IAUModel, t::Number, θ::Number)
@@ -142,38 +142,47 @@ end
 # Time expressed in TT julian centuries since J2000
 function equinoxes_equation(m::IAU2000Model, t::Number)
 
+    # we neglect the difference between TT and TDB for the FAs...
+
     # Compute precession-rate adjustments 
+    _, Δϵₚ = precession_rate(m, t)
 
     # Compute the mean obliquity 
-    ϵₐ = orient_obliquity(m, t)
+    ϵₐ = orient_obliquity(iau1980, t) + Δϵₚ
 
     # Nutation in logitutude 
+    Δψ, _ = orient_nutation(m, t)
+
+    # Compute the Fundamental Arguments using the IAU2000A model because we need 
+    # the associated expressions for the Luni-solar arguments
+    fa = FundamentalArguments(t, iau2000a)
 
     # Equation of the equinoxes
-    # TODO: here you have to implemetn a damned series 
-    return Δψ*cos(ϵₐ)
+    return Δψ*cos(ϵₐ) + ee_complementary(m, t, fa)
 
 end
 
-# Time expressed in TDB julian centuries since J2000
-function equinoxes_equation(m::IAU1980Model, t::Number)
+# # Time expressed in TDB julian centuries since J2000
+# function equinoxes_equation(m::IAU1980Model, t::Number)
 
-    # Longitude of the mean ascending node of the lunar orbit on the ecliptic, 
-    # measured from the mean equinox of date, in radians
-    ω = mod2pi(arcsec2rad(@evalpoly(t, -482890.539, 7.455, 0.008)) + 2π*mod(-5t, 1))
+#     # Longitude of the mean ascending node of the lunar orbit on the ecliptic, 
+#     # measured from the mean equinox of date, in radians
+#     ω = mod2pi(arcsec2rad(@evalpoly(t, -482890.539, 7.455, 0.008)) + 2π*mod(-5t, 1))
 
-    # Compute the nutation components in longitude and obliquity
-    # TODO: missing orient_nutation per il 1980 missa 
+#     # Compute the nutation components in longitude and obliquity
+#     # TODO: missing orient_nutation per il 1980 missa 
 
-    # Compute the mean obliquity 
-    ϵₐ = orient_obliquity(m, t)
+#     # Compute the mean obliquity 
+#     ϵₐ = orient_obliquity(m, t)
 
-    # Equations of the equinoxes 
-    return Δψ*cos(ϵₐ) + arcsec2rad(0.00264*sin(ω) + 0.000063*sin(2ω))
+#     # Equations of the equinoxes 
+#     return Δψ*cos(ϵₐ) + arcsec2rad(0.00264*sin(ω) + 0.000063*sin(2ω))
 
-end
+# end
 
 
 function origins_equation(::IAU2006Model, t::Number)
 
+    
 end
+
