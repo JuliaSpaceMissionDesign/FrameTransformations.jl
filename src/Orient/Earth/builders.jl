@@ -64,7 +64,7 @@ function build_series(
     end
 
     # For each unique ARGUMENT expression 
-    for fa_set in fa_list 
+    for fa_set in reverse(fa_list) 
 
         # Stores the expressions for this FA set
         setₑ = Vector{Expr}()
