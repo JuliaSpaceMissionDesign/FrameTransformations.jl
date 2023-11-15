@@ -303,10 +303,14 @@ end
 
 # General functions to dispatch generic order derivatives!
 function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
-    !IERS_EOP.init && throw(
-        ErrorException(
-            "EOP not initialized. Please run 'init_eop' before using this function."
-        ))
+
+    if !IERS_EOP.init 
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -322,18 +326,21 @@ function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
     # Compute LOD 
     LOD = 1e-3 * interpolate(IERS_EOP.LOD_TT, ttd)
 
-    # Transform UT1 to TT
-    offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset / Tempo.DAY2SEC
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return fn(m, t, ut1, xₚ, yₚ, dX, dY, LOD)
 end
 
 function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
-    !IERS_EOP.init && throw(
-        ErrorException(
-            "EOP not initialized. Please run 'init_eop' before using this function."
-        ))
+
+    if !IERS_EOP.init 
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -342,25 +349,27 @@ function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
     xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
     yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
 
-    # Transform UT1 to TT
-    offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset / Tempo.DAY2SEC
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return fn(m, t, ut1, xₚ, yₚ, 0.0, 0.0)
 end
 
 function _dnd_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
-    !IERS_EOP.init && throw(
-        ErrorException(
-            "EOP not initialized. Please run 'init_eop' before using this function."
-        ))
+    
+    if !IERS_EOP.init 
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
 
-    # Transform UT1 to TT
-    offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset / Tempo.DAY2SEC
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return fn(m, t, ut1, 0.0, 0.0, 0.0, 0.0)
 end
@@ -404,10 +413,14 @@ TT seconds since `J2000`, according to the IAU Model `m`, as follows:
 - Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
 """
 function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
-    !IERS_EOP.init && throw(
-        ErrorException(
-            "EOP not initialized. Please run 'init_eop' before using this function."
-        ))
+    
+    if !IERS_EOP.init 
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -420,9 +433,8 @@ function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
     dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX_TT, ttd))
     dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY_TT, ttd))
 
-    # Transform UT1 to TT
-    offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset / Tempo.DAY2SEC
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return orient_rot3_itrf_to_gcrf(m, t, ut1, xₚ, yₚ, dX, dY)
 end

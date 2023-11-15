@@ -334,3 +334,16 @@ Return the offset between `UTC` and `UT1` in seconds.
         ))
     return interpolate(IERS_EOP.UT1_UTC, utc)
 end
+
+
+# Convert time `ttd` expressed as `TT` days since J2000 to `UT1` days since J2000, 
+# without passing from UTC, allowing to have a continuous timescale.
+function iers_tt_to_ut1(ttd)
+
+    # Transform UT1 to TT
+    offset = interpolate(IERS_EOP.UT1_TT, ttd)
+
+    # Transform TT days to UT1 days 
+    return ttd + offset / Tempo.DAY2SEC
+
+end
