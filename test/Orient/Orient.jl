@@ -1,5 +1,5 @@
 
 include("iers.jl")
-include("gmst.jl")
+include("sidereal.jl")
 include("moon.jl")
 include("legacy.jl")

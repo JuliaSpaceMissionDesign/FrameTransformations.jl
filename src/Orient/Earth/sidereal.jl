@@ -17,7 +17,7 @@ The function has been implemented for the IAU2000 and IAU2006 models.
 - [ERFA gmst00](https://github.com/liberfa/erfa/blob/master/src/gmst00.c) routine.
 - [ERFA gmst06](https://github.com/liberfa/erfa/blob/master/src/gmst06.c) routine.
 """
-function gmst(::IAU2006Model, tt::Number, θ::Number)
+function orient_gmst(::IAU2006Model, tt::Number, θ::Number)
 
     # Evaluate interpolating series
     p = @evalpoly(
@@ -35,7 +35,7 @@ function gmst(::IAU2006Model, tt::Number, θ::Number)
 
 end
 
-function gmst(::IAU2000Model, tt::Number, θ::Number)
+function orient_gmst(::IAU2000Model, tt::Number, θ::Number)
 
     # Evaluate interpolating series
     p = @evalpoly(
@@ -59,7 +59,7 @@ models, given time `t` expressed in `UT1` Julian centuries since `J2000`.
 ### References 
 - [ERFA gmst82](https://github.com/liberfa/erfa/blob/master/src/gmst82.c) routine.
 """
-function gmst(::IAU1980Model, ut1::Number)
+function orient_gmst(::IAU1980Model, ut1::Number)
 
     # Coefficients for the IAU 1982 GMST-UT1 model. The first component has been adjusted 
     # of 12 hours because UT1 starts at noon.
@@ -84,7 +84,7 @@ end
 Compute the Greenwich Apparent Sidereal Time (GAST), in radians, given time `t` as `TT` 
 Julian centuries since `J2000`
 """
-function gast(m::IAU2006Model, t::Number, θ::Number)
+function orient_gast(m::IAU2006Model, t::Number, θ::Number)
 
     # TODO: or maybe its the transpose?
     NPB = orient_bias_precession_nutation(m, t)
@@ -99,10 +99,13 @@ function gast(m::IAU2006Model, t::Number, θ::Number)
 end
 
 
-function gast(m::IAU2000Model, t::Number, θ::Number)
+function orient_gast(m::IAU2000Model, t::Number, θ::Number)
+
+    # TODO: add in doc that for the IAU2000B model, ERFA uses UT1 instead of TT 
+    # resulting in a loss of accuracy of 0.1mas 
 
     # Compute the Greenwich Mean Sidereal time 
-    gmst = gmst(m, θ, t)
+    gmst = orient_gmst(m, t, θ)
 
     # Compute the equations of the equinoxes
     ee = equinoxes_equation(m, t)
@@ -113,52 +116,52 @@ function gast(m::IAU2000Model, t::Number, θ::Number)
 end
 
 
-function gast(::IAU1980Model)
+# function orient_gast(::IAU1980Model)
 
-    # Compute the Greenwich Mean Sidereal time 
-    gmst = gmst(m, t)
+#     # Compute the Greenwich Mean Sidereal time 
+#     gmst = orient_gmst(m, t)
 
-    # Compute the equations of the equinoxes
-    ee = equinoxes_equation(m, t)
+#     # Compute the equations of the equinoxes
+#     ee = equinoxes_equation(m, t)
 
-    # Comput GAST, in radians
-    return mod2pi(gmst + ee)
+#     # Comput GAST, in radians
+#     return mod2pi(GMST + ee)
 
-end
+# end
 
 
 # Time expressed in TDB julian centuries since J2000
-function equinoxes_equation(m::IAU2006Model, t::Number)
+function equinoxes_equation(m::IAU2006Model, tt::Number)
 
     # Compute GMST and GAST, in radians 
-    gmst = gmst(m, t, θ)
-    gast = gast(m, t, θ)
+    gmst = orient_gmst(m, tt, θ)
+    gast = orient_gast(m, tt, θ)
 
     # Equation of the equinoxes
-    return mod2pi(gast - gmst)
+    return mod2pi(GAST - GMST)
 
 end
 
 # Time expressed in TT julian centuries since J2000
-function equinoxes_equation(m::IAU2000Model, t::Number)
+function equinoxes_equation(m::IAU2000Model, tt::Number)
 
     # we neglect the difference between TT and TDB for the FAs...
 
     # Compute precession-rate adjustments 
-    _, Δϵₚ = precession_rate(m, t)
+    _, Δϵₚ = precession_rate(m, tt)
 
     # Compute the mean obliquity 
-    ϵₐ = orient_obliquity(iau1980, t) + Δϵₚ
+    ϵₐ = orient_obliquity(iau1980, tt) + Δϵₚ
 
     # Nutation in logitutude 
-    Δψ, _ = orient_nutation(m, t)
+    Δψ, _ = orient_nutation(m, tt)
 
     # Compute the Fundamental Arguments using the IAU2000A model because we need 
     # the associated expressions for the Luni-solar arguments
-    fa = FundamentalArguments(t, iau2000a)
+    fa = FundamentalArguments(tt, iau2000a)
 
     # Equation of the equinoxes
-    return Δψ*cos(ϵₐ) + ee_complementary(m, t, fa)
+    return Δψ*cos(ϵₐ) + ee_complementary(m, tt, fa)
 
 end
 

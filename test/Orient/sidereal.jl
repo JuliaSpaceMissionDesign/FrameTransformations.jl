@@ -6,8 +6,7 @@
 
     @testset "GMST" verbose=true begin 
 
-        for _ in 1:50 
-
+        for _ in 1:50
             ep = Epoch("$(rand(0.0:20000))")
             ep_ut1 = convert(UT1, ep)
 
@@ -23,25 +22,53 @@
             # Test GMST with IAU2006 models
             b = gmst06(DJ2000, ut1_d, DJ2000, tt_d)
             for m in (iau2006a, iau2006b)
-                a = Orient.gmst(m, tt_c, θ)
+                a = Orient.orient_gmst(m, tt_c, θ)
                 @test a ≈ b atol=1e-12 rtol=1e-12
             end 
 
             # Test GMST with IAU2000 models
             b = gmst00(DJ2000, ut1_d, DJ2000, tt_d)
             for m in (iau2000a, iau2000b)
-                a = Orient.gmst(m, tt_c, θ)
+                a = Orient.orient_gmst(m, tt_c, θ)
                 @test a ≈ b atol=1e-12 rtol=1e-12
             end 
 
             # Test GMST with IAU1980 model 
             # TODO: small loss of accuracy here, why?
-            a = Orient.gmst(iau1980, ut1_c)
+            a = Orient.orient_gmst(iau1980, ut1_c)
             b = gmst82(DJ2000, ut1_d)
             @test a ≈ b atol=1e-10 rtol=1e-10
 
         end
 
+    end
+
+    @testset "GAST" verbose=true begin 
+        for _ in 1:50
+            ep_tt = Epoch("$(rand(0.0:20000))")
+            ep_ut1 = convert(UT1, ep_tt)
+
+            tt_d = Tempo.j2000(ep_tt)
+            tt_c = Tempo.j2000c(ep_tt)
+
+            ut1_d = Tempo.j2000(ep_ut1)
+            ut1_c = Tempo.j2000c(ep_ut1)
+
+            # Compute ERA 
+            θ = Orient.earth_rotation_angle(ut1_d)
+
+            # Test GAST with IAU 2000A Models
+            a = Orient.orient_gast(iau2000a, tt_c, θ)
+            b = gst00a(DJ2000, ut1_d, DJ2000, tt_d)
+            @test a ≈ b atol=1e-12 rtol=1e-12
+
+            # Test GAST with IAU 2000B Models
+            # In this case, like in ERFA, TT is replaced by UT1
+            a = Orient.orient_gast(iau2000b, ut1_c, θ)
+            b = gst00b(DJ2000, ut1_d)
+            @test a ≈ b atol=1e-12 rtol=1e-12
+
+        end
 
     end
 
