@@ -34,6 +34,8 @@ orient_rot9_itrf_to_gcrf
 orient_rot12_itrf_to_gcrf
 orient_bias_precession
 orient_bias_precession_nutation
+orient_gast 
+orient_gmst
 orient_nutation
 orient_obliquity
 ```

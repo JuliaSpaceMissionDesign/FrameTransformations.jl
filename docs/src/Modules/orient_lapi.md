@@ -49,10 +49,10 @@ Orient.cio_locator
 Orient.cip_motion
 Orient.earth_rotation_angle
 Orient.earth_rotation_rate 
+Orient.equinoxes_equation
 Orient.era_rotm
 Orient.fw2xy
-Orient.gmst 
-Orient.gast
+Orient.origins_equation
 Orient.tio_locator
 Orient.polar_motion
 Orient.xys2m
