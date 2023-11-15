@@ -5,10 +5,10 @@ include("constants/eq_origins.jl");
 build_series(:ee_complementary, :IAU2000Model, [COEFFS_EECT])
 
 """
-    gmst(m::IAUModel, t::Number, θ::Number)
+    gmst(m::IAUModel, tt::Number, θ::Number)
 
 Compute the Greenwich Mean Sidereal Time (GMST), in radians, according to the IAU Model `m`, 
-given the Earth Rotation Angle (ERA) `θ`, in radians and the time `t` expressed in `TT` 
+given the Earth Rotation Angle (ERA) `θ`, in radians and the time `tt` expressed in `TT` 
 Julian centuries since `J2000`. 
 
 The function has been implemented for the IAU2000 and IAU2006 models.
@@ -17,11 +17,11 @@ The function has been implemented for the IAU2000 and IAU2006 models.
 - [ERFA gmst00](https://github.com/liberfa/erfa/blob/master/src/gmst00.c) routine.
 - [ERFA gmst06](https://github.com/liberfa/erfa/blob/master/src/gmst06.c) routine.
 """
-function gmst(::IAU2006Model, t::Number, θ::Number, )
+function gmst(::IAU2006Model, tt::Number, θ::Number)
 
     # Evaluate interpolating series
     p = @evalpoly(
-        t, 
+        tt, 
         0.014506, 
      4612.156534,   
         1.3915817, 
@@ -35,16 +35,16 @@ function gmst(::IAU2006Model, t::Number, θ::Number, )
 
 end
 
-function gmst(::IAU2000Model, t::Number, θ::Number, )
+function gmst(::IAU2000Model, tt::Number, θ::Number)
 
     # Evaluate interpolating series
     p = @evalpoly(
-        t, 
+        tt, 
         0.014506, 
      4612.15739966,   
         1.39667721, 
        -0.00009344,
-       -0.00001882
+        0.00001882
     )
 
     # Compute GMST 
@@ -54,12 +54,12 @@ end
 
 """
 Compute the Greenwich Mean Sidereal Time (GMST), in radians, according to the IAU 1980 
-models, given time `t` expressed in `TT` Julian centuries since `J2000`. 
+models, given time `t` expressed in `UT1` Julian centuries since `J2000`. 
 
 ### References 
 - [ERFA gmst82](https://github.com/liberfa/erfa/blob/master/src/gmst82.c) routine.
 """
-function gmst(::IAU1980Model, t::Number)
+function gmst(::IAU1980Model, ut1::Number)
 
     # Coefficients for the IAU 1982 GMST-UT1 model. The first component has been adjusted 
     # of 12 hours because UT1 starts at noon.
@@ -69,13 +69,13 @@ function gmst(::IAU1980Model, t::Number)
     D = -6.2e-6
 
     # Fractional part of UT1, in seconds
-    f = Tempo.CENTURY2SEC*mod(t, 1)
+    f = Tempo.DAY2SEC*mod(ut1*Tempo.CENTURY2DAY, 1)
 
     # seconds to radians conversion 
     s2r = 7.272205216643039903848712e-5
-    
+
     # Compute GMST
-    return mod2pi(s2r*(@evalpoly(t, A, B, C, D) + f))
+    return mod2pi(s2r*(@evalpoly(ut1, A, B, C, D) + f))
 
 end
 
