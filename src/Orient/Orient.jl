@@ -14,7 +14,7 @@ using JSMDInterfaces
 using JSMDInterfaces.FilesIO
 using JSMDInterfaces.Math: interpolate, AbstractInterpolationMethod
 
-using JSMDUtils.Math: InterpAkima, arcsec2rad, skew
+using JSMDUtils.Math: InterpAkima, arcsec2rad, skew, unitvec
 
 using Tempo
 
