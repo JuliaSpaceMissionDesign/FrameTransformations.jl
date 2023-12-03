@@ -346,6 +346,15 @@
         end
 
         @testset "Full Rotation" verbose = true begin
+
+            # Test thrown errors 
+            Orient.IERS_EOP.init = false
+            @test_throws ErrorException Orient.orient_rot3_itrf_to_gcrf(iau2006a, 0.0)
+            @test_throws ErrorException Orient.orient_rot6_itrf_to_gcrf(iau2006a, 0.0)
+            @test_throws ErrorException Orient.orient_rot9_itrf_to_gcrf(iau2000b, 0.0)
+            @test_throws ErrorException Orient.orient_rot12_itrf_to_gcrf(CPNd, 0.0)
+            Orient.IERS_EOP.init = true 
+
             for i in eachindex(t)
                 ep = Epoch("$(t[i]) TT")
                 ep_utc = convert(UTC, ep)
