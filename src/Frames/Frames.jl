@@ -1,5 +1,8 @@
 module Frames
 
+# External dependencies
+# ===========================
+
 using FunctionWrappersWrappers: 
     FunctionWrappersWrapper, 
     FunctionWrappers.FunctionWrapper
@@ -9,32 +12,47 @@ using PreallocationTools
 using ReferenceFrameRotations
 using StaticArrays
 
+
+# JSMD ecosystem dependencies 
+# ===========================
+
+using JSMDInterfaces.Ephemeris
+using JSMDInterfaces.Graph: 
+    AbstractJSMDGraphNode,
+    add_edge!, 
+    add_vertex!, 
+    get_path,
+    has_vertex
+
+using JSMDUtils.Autodiff
+using JSMDUtils.Math: 
+    D¹, 
+    D², 
+    D³, 
+    unitvec, 
+    δunitvec, 
+    δ²unitvec, 
+    δ³unitvec, 
+    cross3, 
+    cross6, 
+    cross9, 
+    cross12, 
+    angle_to_δdcm, 
+    angle_to_δ²dcm, 
+    _3angles_to_δdcm, 
+    _3angles_to_δ²dcm, 
+    _3angles_to_δ³dcm
+
+using JSMDUtils: format_camelcase, NullEphemerisProvider
+
 using SMDGraphs:
     MappedNodeGraph,
-    AbstractGraphNode,
     SimpleGraph,
     MappedGraph,
     get_mappedid,
     get_mappednode,
     get_node,
     get_node_id
-
-using JSMDInterfaces.Ephemeris
-using JSMDInterfaces.Graph: 
-    add_vertex!, 
-    add_edge, 
-    get_path,
-    has_vertex
-
-using JSMDUtils: format_camelcase, NullEphemerisProvider
-using JSMDUtils.Math: D¹, D², D³
-using JSMDUtils.Autodiff
-using JSMDUtils.Math: D¹, D², D³
-using JSMDUtils.Math: unitvec, δunitvec, δ²unitvec, δ³unitvec
-using JSMDUtils.Math: cross3, cross6, cross9, cross12
-using JSMDUtils.Math: angle_to_δdcm, angle_to_δ²dcm
-using JSMDUtils.Math: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
-using JSMDUtils: format_camelcase, NullEphemerisProvider
 
 using Tempo
 using Tempo:
