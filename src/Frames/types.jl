@@ -187,7 +187,7 @@ end
 end
 
 """
-    FrameAxesNode{O, T, N} <: AbstractGraphNode
+    FrameAxesNode{O, T, N} <: AbstractJSMDGraphNode
 
 Define a set of axes.
 
@@ -201,7 +201,7 @@ Define a set of axes.
 - `f` -- `FrameAxesFunctions` container 
 - `angles` -- vector storing the libration angles retrived from ephemerides
 """
-struct FrameAxesNode{O,T,N} <: AbstractGraphNode
+struct FrameAxesNode{O,T,N} <: AbstractJSMDGraphNode
     name::Symbol
     class::Symbol
     id::Int
@@ -306,7 +306,7 @@ end
 end
 
 """
-    FramePointNode{O, T, N} <: AbstractGraphNode
+    FramePointNode{O, T, N} <: AbstractJSMDGraphNode
 
 Define a frame system point.
 
@@ -321,7 +321,7 @@ Define a frame system point.
 - `nzo` -- last order at which `stv` has been computed 
 - `f` -- `FramePointFunctions` container 
 """
-struct FramePointNode{O,T,N} <: AbstractGraphNode
+struct FramePointNode{O,T,N} <: AbstractJSMDGraphNode
     name::Symbol
     class::Symbol
     axesid::Int

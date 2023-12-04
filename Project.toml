@@ -27,9 +27,10 @@ PreallocationTools = "0.4"
 PrecompileTools = "1"
 Reexport = "1"
 ReferenceFrameRotations = "3"
+RemoteFiles = "0.5"
 SMDGraphs = "0.2"
 StaticArrays = "1"
-Tempo = "1.2"
+Tempo = "1"
 julia = "1.8"
 
 [extras]
