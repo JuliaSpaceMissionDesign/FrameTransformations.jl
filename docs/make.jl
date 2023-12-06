@@ -21,9 +21,14 @@ makedocs(;
             "01 - Frame System" => "Tutorials/t00_frames.md",
             "02 - Axes" => "Tutorials/t01_axes.md",
             "03 - Points" => "Tutorials/t02_points.md",
-            "04 - Use Case: CR3BP" => "Tutorials/t03_cr3bp.md",
-            "05 - Use Case: High Fidelity" => "Tutorials/t04_hifi.md",
+            "04 - Loading EOP Data" => "Tutorials/t03_eop.md",
+            "05 - Light Time Corrections" => "Tutorials/t04_lighttime.md",
             "06 - Multithreading" => "Tutorials/t05_multithread.md"
+        ],
+        
+        "Use Case Examples" => [
+            "CR3BP" => "Examples/e01_cr3bp.md",
+            "High-Fidelity Earth-Moon Environment" => "Examples/e02_hifi.md"
         ],
 
         "Benchmarks" => "benchmarks.md",
