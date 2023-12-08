@@ -61,11 +61,6 @@ function orient_rot3_icrf_to_mod(tt::Number)
     return R
 end
 
-function ecliptic_pole(m::IAU2006Model, t::Number)
-    γ, ϕ, _, _ = fw_angles(m, t)
-    return SVector{3}(sin(ϕ)*sin(γ), -sin(ϕ)*cos(γ), cos(ϕ))
-end
-
 """
     orient_rot3_icrf_to_tod(tt::Number; [m]::IAUModel=iau2006a)
 
@@ -79,7 +74,7 @@ function orient_rot3_icrf_to_tod(tt::Number; m::IAUModel=iau2006a)
     t = tt / Tempo.CENTURY2SEC
 
     # Compute CIP vector 
-    xs, ys = Orient.cip_coords(m, t)
+    xs, ys = cip_coords(m, t)
     Ĉ = SVector{3}(xs, ys, sqrt(1 -(xs^2 + ys^2)))
 
     # Compute ecliptic pole 
