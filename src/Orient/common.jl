@@ -60,3 +60,33 @@ function orient_rot3_icrf_to_mod(tt::Number)
     R = fw_matrix(γ, ϕ, ψ, ε)
     return R
 end
+
+function ecliptic_pole(m::IAU2006Model, t::Number)
+    γ, ϕ, _, _ = fw_angles(m, t)
+    return SVector{3}(sin(ϕ)*sin(γ), -sin(ϕ)*cos(γ), cos(ϕ))
+end
+
+"""
+    orient_rot3_icrf_to_tod(tt::Number; [m]::IAUModel=iau2006a)
+
+Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
+the True Equator of Date at time `tt`, expressed in TT seconds since `J2000`.
+
+True Equator of Date is obtained applying frame bias, precession and nutation to the ICRF 
+pole and origin.
+"""
+function orient_rot3_icrf_to_tod(tt::Number; m::IAUModel=iau2006a)
+    t = tt / Tempo.CENTURY2SEC
+
+    # Compute CIP vector 
+    xs, ys = Orient.cip_coords(m, t)
+    Ĉ = SVector{3}(xs, ys, sqrt(1 -(xs^2 + ys^2)))
+
+    # Compute ecliptic pole 
+    K = ecliptic_pole(iau2006a, t)
+    
+    # Compute rotation matrix 
+    X̂ = unitvec(cross(Ĉ, K))
+    return hcat(X̂, cross(Ĉ, X̂), Ĉ)
+
+end

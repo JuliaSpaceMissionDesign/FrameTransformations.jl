@@ -43,3 +43,29 @@
     @test all(m0 .≈ Orient.orient_rot3_icrf_to_mod(j2000s(e)))
 
 end
+
+@testset "TOD" begin
+    # Performed against GODOT v1.4.0
+
+    e = Epoch("2026-11-10T22:14:26.196000 TT")
+    m0 = DCM(
+        9.99978303e-01, -6.04182243e-03, -2.62493419e-03,
+        6.04172827e-03,  9.99981748e-01, -4.38006829e-05,
+        2.62515091e-03,  2.79405935e-05,  9.99996554e-01)
+    @test all( isapprox.(m0, Orient.orient_rot3_icrf_to_tod(j2000s(e)), atol=1e-8) )
+    
+    e = Epoch("2015-01-19T17:05:52.332000 TT")
+    m0 = DCM(
+        9.99993168e-01, -3.39019667e-03, -1.47294334e-03,
+        3.39026374e-03,  9.99994252e-01,  4.30407853e-05,
+        1.47278896e-03, -4.80341577e-05,  9.99998914e-01)
+    @test all( isapprox.(m0, Orient.orient_rot3_icrf_to_tod(j2000s(e)), atol=1e-8) )
+    
+    e = Epoch("2002-02-06T04:42:39.600000 TT")
+    m0 = DCM(
+        9.99999905e-01, -3.99160254e-04, -1.73409774e-04,
+        3.99159426e-04,  9.99999920e-01, -4.80651508e-06,
+        1.73411679e-04,  4.73729648e-06,  9.99999985e-01)
+    @test all( isapprox.(m0, Orient.orient_rot3_icrf_to_tod(j2000s(e)), atol=1e-8) )
+    
+end
