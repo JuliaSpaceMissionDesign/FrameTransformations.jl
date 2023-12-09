@@ -42,6 +42,111 @@ const DCM_ICRF_TO_MEME2000 = orient_bias_precession(iau2006a, 0.0)
 # --------------------------------------------------------
 
 """
+    orient_rot3_itrf_to_pef(tt::Number)
+
+Compute the rotation matrix from the International Terrestrial Reference Frame (ITRF) to 
+the Pseudo-Earth Fixed Frame at time `tt`, expressed in TT seconds since `J2000`.
+
+This is using IAU-76/FK5 Reduction. This is a polar motion only rotation.
+Eq. 3-78, Sec. 3.7.3 of Vallado (2013).
+
+### See also 
+See also [`IERS_EOP`](@ref).
+"""
+function orient_rot3_itrf_to_pef(tt::Number)
+
+    if !IERS_EOP.init 
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
+
+    ttd = tt / Tempo.DAY2SEC
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
+
+    return DCM(
+        1.0,    0.0,   -xₚ,
+        0.0,    1.0,    yₚ,
+         xₚ,    -yₚ,   1.0
+    )'
+
+end
+
+"""
+    orient_rot3_pef_to_tod(tt::Number; [m]::IAUModel=iau2006a)
+
+Compute the rotation matrix from the Pseudo-Earth Fixed (PEF) to the True Equator of Date 
+(TOD) Frame at time `tt`, expressed in TT seconds since `J2000`.
+
+This is using IAU-76/FK5 Reduction. This is a sidereal time only rotation.
+Eq. 3-80, Sec. 3.7.3 of Vallado (2013).
+
+### See also 
+See also [`orient_gast`](@ref).
+"""
+function orient_rot3_pef_to_tod(tt::Number; m::IAUModel=iau2006a)
+    # TODO: this should use 1980 convention which is not available!
+    GAST = orient_gast(m, tt/Tempo.CENTURY2SEC)
+    return angle_to_dcm(-GAST, :Z)
+end
+
+"""
+    orient_rot6_pef_to_tod(tt::Number; [m]::IAUModel=iau2006a)
+
+Compute the rotation matrix and the derivative of the transformation from the Pseudo-Earth 
+Fixed (PEF) to the True Equator of Date (TOD) Frame at time `tt`, expressed in TT seconds 
+since `J2000`.
+
+This is using IAU-76/FK5 Reduction. This is a sidereal time only rotation.
+Eq. 3-80, Sec. 3.7.3 of Vallado (2013).
+
+### See also 
+See also [`orient_rot3_pef_to_tod`](@ref), [`orient_gast`](@ref) and [`IERS_EOP`](@ref).
+"""
+function orient_rot6_pef_to_tod(tt::Number; m::IAUModel=iau2006a)
+
+    if !IERS_EOP.init 
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
+
+    R = orient_rot3_pef_to_tod(tt; m=m)
+
+    ttd = tt / Tempo.DAY2SEC
+    LOD = 1e-3 * interpolate(IERS_EOP.LOD_TT, ttd)
+    Rω = skew( SVector{3}(0.0, 0.0, earth_rotation_rate(LOD)) )
+
+    return R, R*Rω
+end
+
+"""
+    orient_rot3_tod_to_mod(tt::Number; [m]::IAU2006Model=iau2006a)
+
+Compute the rotation matrix from the True Equator of Date (TOD) to the Mean Equator of Date
+(MOD)  Frame at time `tt`, expressed in TT seconds since `J2000`.
+
+This is using IAU-76/FK5 Reduction. This is a nutation only rotation.
+Eq. 3-86, Sec. 3.7.3 of Vallado (2013).
+"""
+function orient_rot3_tod_to_mod(tt::Number; m::IAU2006Model=iau2006a)
+    # TODO: this should use 1980 convention which is not available!
+    t = tt/Tempo.CENTURY2SEC
+    Δψ, Δϵ = orient_nutation(m, t)
+    ϵ = orient_obliquity(m, t)
+    return angle_to_dcm(-ϵ, Δψ, ϵ+Δϵ, :XZX)
+end
+
+# --------------------------------------------------------
+# I(G)CRF-based transformations
+# --------------------------------------------------------
+
+"""
     orient_rot3_icrf_to_mod(tt::Number)
 
 Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
@@ -87,6 +192,38 @@ function orient_rot3_icrf_to_tod(tt::Number; m::IAU2006Model=iau2006a)
 end
 
 """
+    orient_rot3_icrf_to_pef(tt::Number; [m]::IAU2006Model=iau2006a)
+
+Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
+the Pseudo Earth Fixed (PEF) Frame at time `tt`, expressed in TT seconds since `J2000`.
+
+### See also 
+See also [`orient_rot3_icrf_to_tod`](@ref), [`orient_rot3_pef_to_tod`](@ref) and 
+[`orient_rot6_icrf_to_pef`](@ref).
+"""
+function orient_rot3_icrf_to_pef(tt::Number; m::IAU2006Model=iau2006a)
+    R_icrf2tod = orient_rot3_icrf_to_tod(tt; m=m)
+    R_tod2pef = orient_rot3_pef_to_tod(tt; m=m)'
+    return R_tod2pef * R_icrf2tod
+end
+
+"""
+    orient_rot6_icrf_to_pef(tt::Number; [m]::IAU2006Model=iau2006a)
+
+Compute the rotation matrix the derivative of the transformation from the International 
+Celestial Reference Frame (ICRF) to the Pseudo Earth Fixed (PEF) Frame at time `tt`, 
+expressed in TT seconds since `J2000`.
+
+### See also 
+See also [`orient_rot3_icrf_to_pef`](@ref).
+"""
+function orient_rot6_icrf_to_pef(tt::Number; m::IAU2006Model=iau2006a)
+    R_icrf2tod = orient_rot3_icrf_to_tod(tt; m=m)
+    R_p2t, Ṙ_p2t = orient_rot6_pef_to_tod(tt; m=m)
+    return R_p2t' * R_icrf2tod, Ṙ_p2t' * R_icrf2tod
+end
+
+"""
     orient_rot3_mod_to_teme(tt::Number; [m]::IAU2006Model=iau2006a)
 
 Compute the rotation matrix from the Mean Equator of Date (MOD) frame to the True Equator, 
@@ -115,6 +252,7 @@ end
 Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
 the True Equator, Mean Equinox of date at time `tt`, expressed in TT seconds since `J2000`.
 
+### See also 
 See also [`@orient_rot3_mod_to_teme`](@ref) and [`orient_rot3_icrf_to_mod`](@ref).
 """
 function orient_rot3_icrf_to_teme(tt::Number;  m::IAU2006Model=iau2006a)

@@ -79,6 +79,12 @@ Orient.orient_rot3_icrf_to_mod
 Orient.orient_rot3_icrf_to_tod
 Orient.orient_rot3_icrf_to_teme
 Orient.orient_rot3_mod_to_teme
+Orient.orient_rot3_itrf_to_pef
+Orient.orient_rot3_pef_to_tod
+Orient.orient_rot6_pef_to_tod
+Orient.orient_rot3_tod_to_mod
+Orient.orient_rot3_icrf_to_pef
+Orient.orient_rot6_icrf_to_pef
 ```
 
 ## Geodesy 

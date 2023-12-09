@@ -260,3 +260,51 @@ function add_axes_teme!(frames::FrameSystem, name::Symbol, axesid::Int,
         frames, name, axesid, parentid, Orient.orient_rot3_icrf_to_teme
     )
 end
+
+"""
+    add_axes_pef!(frames, axes::AbstractFrameAxes, parent)
+
+Add `axes` as a set of rotating axes representing the Pseudo Earth Fixed (PEF) axes
+to `frames`. 
+
+!!! warning 
+    The ID of the `parent` set of axes must be $(Orient.AXESID_ICRF) (ICRF), 
+    otherwise an error is thrown. 
+
+----
+
+    add_axes_pef!(frames, name::Symbol, axesid::Int, parentid::Int)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+
+### See also 
+See also [`add_axes_rotating!`](@ref), [`Orient.orient_rot3_icrf_to_pef`](@ref) and 
+[`Orient.orient_rot6_icrf_to_pef`](@ref).
+"""
+@inline function add_axes_pef!(frames::FrameSystem, axes::AbstractFrameAxes, parent)
+    return add_axes_pef!(frames, axes_name(axes), axes_id(axes), axes_alias(parent))
+end
+
+# Low-level function
+function add_axes_pef!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=Orient.AXESID_ICRF)
+
+    if parentid != Orient.AXESID_ICRF
+        throw(
+            ArgumentError(
+                "Pseudo Earth Fixed (PEF) axes can only be defined " *
+                "w.r.t. the ICRF (ID = $(Orient.AXESID_ICRF)).",
+            )
+        )
+    end
+
+    return add_axes_rotating!(
+        frames,
+        name,
+        axesid,
+        parentid,
+        t -> Orient.orient_rot3_icrf_to_pef(t),
+        t -> Orient.orient_rot6_icrf_to_pef(t),
+    )
+end
