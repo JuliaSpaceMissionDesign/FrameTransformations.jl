@@ -1,4 +1,9 @@
-export add_axes_icrf!, add_axes_gcrf!, add_axes_meme2000!, add_axes_mod!, add_axes_tod!
+export add_axes_icrf!, 
+       add_axes_gcrf!, 
+       add_axes_meme2000!, 
+       add_axes_mod!, 
+       add_axes_tod!,
+       add_axes_teme!
 
 """
     add_axes_icrf!(frames::FrameSystem)
@@ -92,7 +97,8 @@ end
 
 # Low-level function
 function add_axes_meme2000!(
-    frames::FrameSystem, name::Symbol, parentid::Int, axesid::Int=Orient.AXESID_MEME2000
+    frames::FrameSystem, name::Symbol, parentid::Int=Orient.AXESID_ICRF, 
+    axesid::Int=Orient.AXESID_MEME2000
 )
 
     if parentid == Orient.AXESID_ICRF
@@ -146,7 +152,8 @@ See also [`add_axes_projected!`](@ref) and [`Orient.orient_rot3_icrf_to_mod`](@r
 end
 
 # Low-level function
-function add_axes_mod!(frames::FrameSystem, name::Symbol, axesid::Int, parentid::Int)
+function add_axes_mod!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=Orient.AXESID_ICRF)
 
     if parentid != Orient.AXESID_ICRF
         throw(
@@ -191,7 +198,8 @@ See also [`add_axes_projected!`](@ref) and [`Orient.orient_rot3_icrf_to_tod`](@r
 end
 
 # Low-level function
-function add_axes_tod!(frames::FrameSystem, name::Symbol, axesid::Int, parentid::Int)
+function add_axes_tod!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=Orient.AXESID_ICRF)
 
     if parentid != Orient.AXESID_ICRF
         throw(
@@ -204,5 +212,51 @@ function add_axes_tod!(frames::FrameSystem, name::Symbol, axesid::Int, parentid:
 
     return add_axes_projected!(
         frames, name, axesid, parentid, Orient.orient_rot3_icrf_to_tod
+    )
+end
+
+"""
+    add_axes_teme!(frames, axes::AbstractFrameAxes, parent)
+
+Add `axes` as a set of projected axes representing the True Equator, Mean Equinox (TEME)
+to `frames`. 
+
+!!! note
+    Despite this class of axes has a rotation matrix that depends on time, its derivatives 
+    are assumed null.
+
+!!! warning 
+    The ID of the `parent` set of axes must be $(Orient.AXESID_ICRF) (ICRF), 
+    otherwise an error is thrown. 
+
+----
+
+    add_axes_teme!(frames, name::Symbol, axesid::Int, parentid::Int)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+
+### See also 
+See also [`add_axes_projected!`](@ref) and [`Orient.orient_rot3_icrf_to_teme`](@ref)
+"""
+@inline function add_axes_teme!(frames::FrameSystem, axes::AbstractFrameAxes, parent)
+    return add_axes_teme!(frames, axes_name(axes), axes_id(axes), axes_alias(parent))
+end
+
+# Low-level function
+function add_axes_teme!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=Orient.AXESID_ICRF)
+
+    if parentid != Orient.AXESID_ICRF
+        throw(
+            ArgumentError(
+                "True Equator, Mean Equinox (TEME) axes can only be defined " *
+                "w.r.t. the ICRF (ID = $(Orient.AXESID_ICRF)).",
+            )
+        )
+    end
+
+    return add_axes_projected!(
+        frames, name, axesid, parentid, Orient.orient_rot3_icrf_to_teme
     )
 end

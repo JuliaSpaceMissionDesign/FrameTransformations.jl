@@ -77,6 +77,8 @@ Orient.offset_utc2ut1
 ```@docs 
 Orient.orient_rot3_icrf_to_mod
 Orient.orient_rot3_icrf_to_tod
+Orient.orient_rot3_icrf_to_teme
+Orient.orient_rot3_mod_to_teme
 ```
 
 ## Geodesy 

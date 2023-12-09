@@ -62,7 +62,7 @@ function orient_rot3_icrf_to_mod(tt::Number)
 end
 
 """
-    orient_rot3_icrf_to_tod(tt::Number; [m]::IAUModel=iau2006a)
+    orient_rot3_icrf_to_tod(tt::Number; [m]::IAU2006Model=iau2006a)
 
 Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
 the True Equator of Date at time `tt`, expressed in TT seconds since `J2000`.
@@ -70,7 +70,7 @@ the True Equator of Date at time `tt`, expressed in TT seconds since `J2000`.
 True Equator of Date is obtained applying frame bias, precession and nutation to the ICRF 
 pole and origin.
 """
-function orient_rot3_icrf_to_tod(tt::Number; m::IAUModel=iau2006a)
+function orient_rot3_icrf_to_tod(tt::Number; m::IAU2006Model=iau2006a)
     t = tt / Tempo.CENTURY2SEC
 
     # Compute CIP vector 
@@ -84,4 +84,41 @@ function orient_rot3_icrf_to_tod(tt::Number; m::IAUModel=iau2006a)
     X̂ = unitvec(cross(Ĉ, K))
     return DCM(hcat(X̂, cross(Ĉ, X̂), Ĉ)')
 
+end
+
+"""
+    orient_rot3_mod_to_teme(tt::Number; [m]::IAU2006Model=iau2006a)
+
+Compute the rotation matrix from the Mean Equator of Date (MOD) frame to the True Equator, 
+Mean Equinox of date at time `tt`, expressed in TT seconds since `J2000`.
+
+This is implemented with a small angle approx of Eq. 4 of Vallado, "Coordinate Frames of the 
+US Space Object Catalogs." 
+"""
+function orient_rot3_mod_to_teme(tt::Number; m::IAU2006Model=iau2006a)
+    t = tt / Tempo.CENTURY2SEC 
+    Δψ, Δϵ = orient_nutation(m, t)
+    ϵ = orient_obliquity(m, t)
+
+    sδϵ = sin(ϵ + Δϵ)
+
+    return DCM(
+        1.,      0.,   -Δψ*sδϵ,
+        0.,      1.,       -Δϵ,
+        Δψ*sδϵ,  Δϵ,        1.
+    )
+end
+
+"""
+    orient_rot3_icrf_to_tod(tt::Number; [m]::IAUModel=iau2006a)
+
+Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
+the True Equator, Mean Equinox of date at time `tt`, expressed in TT seconds since `J2000`.
+
+See also [`@orient_rot3_mod_to_teme`](@ref) and [`orient_rot3_icrf_to_mod`](@ref).
+"""
+function orient_rot3_icrf_to_teme(tt::Number;  m::IAU2006Model=iau2006a)
+    Ricrf2mod = orient_rot3_icrf_to_mod(tt)
+    Rmod2teme = orient_rot3_mod_to_teme(tt; m=m)
+    return Ricrf2mod * Rmod2teme
 end

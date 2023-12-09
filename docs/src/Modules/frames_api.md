@@ -31,6 +31,7 @@ add_axes_me421!
 add_axes_meme2000!
 add_axes_mod!
 add_axes_tod!
+add_axes_teme!
 add_axes_pa421!
 add_axes_pa440!
 add_axes_projected!
