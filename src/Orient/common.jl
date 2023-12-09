@@ -82,6 +82,6 @@ function orient_rot3_icrf_to_tod(tt::Number; m::IAUModel=iau2006a)
     
     # Compute rotation matrix 
     X̂ = unitvec(cross(Ĉ, K))
-    return hcat(X̂, cross(Ĉ, X̂), Ĉ)
+    return DCM(hcat(X̂, cross(Ĉ, X̂), Ĉ)')
 
 end
