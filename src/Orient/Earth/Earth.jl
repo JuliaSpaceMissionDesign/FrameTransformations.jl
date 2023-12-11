@@ -22,4 +22,8 @@ include("precession.jl")
 
 include("iers.jl")
 include("sidereal.jl")
+
+# TODO: remove this file
 include("additional.jl")
+
+include("terrestrial.jl")
