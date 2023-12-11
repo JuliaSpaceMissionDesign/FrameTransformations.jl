@@ -37,43 +37,12 @@ the SPICE toolkit.
 """
 const DCM_ICRF_TO_MEME2000 = orient_bias_precession(iau2006a, 0.0)
 
+
 # --------------------------------------------------------
 # TRANSFORMATIONS
 # --------------------------------------------------------
 
-"""
-    orient_rot3_itrf_to_pef(tt::Number)
 
-Compute the rotation matrix from the International Terrestrial Reference Frame (ITRF) to 
-the Pseudo-Earth Fixed Frame at time `tt`, expressed in TT seconds since `J2000`.
-
-This is using IAU-76/FK5 Reduction. This is a polar motion only rotation.
-Eq. 3-78, Sec. 3.7.3 of Vallado (2013).
-
-### See also 
-See also [`IERS_EOP`](@ref).
-"""
-function orient_rot3_itrf_to_pef(tt::Number)
-
-    if !IERS_EOP.init 
-        throw(
-            ErrorException(
-                "EOP not initialized. Please run 'init_eop' before using this function."
-            )
-        )
-    end
-
-    ttd = tt / Tempo.DAY2SEC
-    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
-    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
-
-    return DCM(
-        1.0,    0.0,   -xₚ,
-        0.0,    1.0,    yₚ,
-         xₚ,    -yₚ,   1.0
-    )'
-
-end
 
 """
     orient_rot3_pef_to_tod(tt::Number; [m]::IAUModel=iau2006a)
@@ -108,14 +77,7 @@ See also [`orient_rot3_pef_to_tod`](@ref), [`orient_gast`](@ref) and [`IERS_EOP`
 """
 function orient_rot6_pef_to_tod(tt::Number; m::IAUModel=iau2006a)
 
-    if !IERS_EOP.init 
-        throw(
-            ErrorException(
-                "EOP not initialized. Please run 'init_eop' before using this function."
-            )
-        )
-    end
-
+    check_eop_init()
     R = orient_rot3_pef_to_tod(tt; m=m)
 
     ttd = tt / Tempo.DAY2SEC
@@ -142,8 +104,9 @@ function orient_rot3_tod_to_mod(tt::Number; m::IAU2006Model=iau2006a)
     return angle_to_dcm(-ϵ, Δψ, ϵ+Δϵ, :XZX)
 end
 
+
 # --------------------------------------------------------
-# I(G)CRF-based transformations
+# GCRF-based transformations
 # --------------------------------------------------------
 
 """
@@ -156,11 +119,11 @@ Mean Equator Of Date is obtained applying frame bias and precession to the ICRF 
 Fukushima-Williams parametrization for the equator and ecliptic precession is used. 
 Consistent with the IAU2006 precession model.
 """
-function orient_rot3_icrf_to_mod(tt::Number)
-    # convert TT seconds since J2000 to TT centuries since J2000
+function orient_rot3_icrf_to_mod(tt::Number, m::IAUModel=iau2006a)
+    # Convert TT seconds since J2000 to TT centuries since J2000
     T = tt / Tempo.CENTURY2SEC
 
-    # fw_angles holds independent on the IAU Model! 
+    # fw_angles hold independent on the IAU Model! 
     γ, ϕ, ψ, ε = fw_angles(iau2006b, T)
     R = fw_matrix(γ, ϕ, ψ, ε)
     return R
@@ -247,7 +210,7 @@ function orient_rot3_mod_to_teme(tt::Number; m::IAU2006Model=iau2006a)
 end
 
 """
-    orient_rot3_icrf_to_tod(tt::Number; [m]::IAUModel=iau2006a)
+    orient_rot3_icrf_to_teme(tt::Number; [m]::IAUModel=iau2006a)
 
 Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
 the True Equator, Mean Equinox of date at time `tt`, expressed in TT seconds since `J2000`.
@@ -255,7 +218,7 @@ the True Equator, Mean Equinox of date at time `tt`, expressed in TT seconds sin
 ### See also 
 See also [`@orient_rot3_mod_to_teme`](@ref) and [`orient_rot3_icrf_to_mod`](@ref).
 """
-function orient_rot3_icrf_to_teme(tt::Number;  m::IAU2006Model=iau2006a)
+function orient_rot3_icrf_to_teme(tt::Number; m::IAU2006Model=iau2006a)
     Ricrf2mod = orient_rot3_icrf_to_mod(tt)
     Rmod2teme = orient_rot3_mod_to_teme(tt; m=m)
     return Ricrf2mod * Rmod2teme
