@@ -133,7 +133,7 @@ function build_series(
     end
 
     # Assembles the function
-    fcn = Orient._assemble_function(iau_model, fname, fbody)
+    fcn = _assemble_function(iau_model, fname, fbody)
     return eval(fcn)
 end
 
