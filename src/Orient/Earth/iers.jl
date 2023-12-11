@@ -304,13 +304,8 @@ end
 # General functions to dispatch generic order derivatives!
 function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
 
-    if !IERS_EOP.init 
-        throw(
-            ErrorException(
-                "EOP not initialized. Please run 'init_eop' before using this function."
-            )
-        )
-    end
+    # Check that EOP data has been initialised
+    check_eop_init()
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -334,13 +329,8 @@ end
 
 function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
 
-    if !IERS_EOP.init 
-        throw(
-            ErrorException(
-                "EOP not initialized. Please run 'init_eop' before using this function."
-            )
-        )
-    end
+    # Check that EOP data has been initialised
+    check_eop_init()
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -357,13 +347,8 @@ end
 
 function _dnd_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
     
-    if !IERS_EOP.init 
-        throw(
-            ErrorException(
-                "EOP not initialized. Please run 'init_eop' before using this function."
-            )
-        )
-    end
+    # Check that EOP data has been initialised
+    check_eop_init()
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -414,13 +399,8 @@ TT seconds since `J2000`, according to the IAU Model `m`, as follows:
 """
 function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
     
-    if !IERS_EOP.init 
-        throw(
-            ErrorException(
-                "EOP not initialized. Please run 'init_eop' before using this function."
-            )
-        )
-    end
+    # Check that EOP data has been initialised
+    check_eop_init()
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
