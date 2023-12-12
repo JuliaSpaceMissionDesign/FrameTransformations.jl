@@ -105,7 +105,7 @@
     @testset "Obliquity" verbose = true begin
         atol, rtol = 1e-8, 1e-8
 
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:0.1:20000, 49)..., 0.0]
 
         for i in eachindex(t)
             ep = Epoch("$(t[i]) TT")
@@ -128,7 +128,7 @@
         atol, rtol = 1e-7, 1e-7
 
         for _ in 1:50
-            ep = Epoch("$(rand(0.0:20000)) TT")
+            ep = Epoch("$(rand(0.0:0.1:20000)) TT")
 
             tt_d = Tempo.j2000(ep)
             tt_c = Tempo.j2000c(ep)
@@ -162,7 +162,7 @@
 
     @testset "Precession" verbose = true begin
         atol, rtol = 1e-9, 1e-9
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:0.1:20000, 49)..., 0.0]
 
         # -- Testing Frame Bias IAU 2000 (does not depend on t)
         Δψb, Δϵb, Δα₀ = Orient.frame_bias(iau2000a) .* r2a
@@ -237,7 +237,7 @@
 
     @testset "ITRF to GCRF Routines" verbose = true begin
         atol, rtol = 1e-12, 1e-12
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:0.1:20000, 49)..., 0.0]
 
         @testset "Polar Motion" begin
             for i in eachindex(t)
@@ -346,6 +346,15 @@
         end
 
         @testset "Full Rotation" verbose = true begin
+
+            # Test thrown errors 
+            Orient.IERS_EOP.init = false
+            @test_throws ErrorException Orient.orient_rot3_itrf_to_gcrf(iau2006a, 0.0)
+            @test_throws ErrorException Orient.orient_rot6_itrf_to_gcrf(iau2006a, 0.0)
+            @test_throws ErrorException Orient.orient_rot9_itrf_to_gcrf(iau2000b, 0.0)
+            @test_throws ErrorException Orient.orient_rot12_itrf_to_gcrf(CPNd, 0.0)
+            Orient.IERS_EOP.init = true 
+
             for i in eachindex(t)
                 ep = Epoch("$(t[i]) TT")
                 ep_utc = convert(UTC, ep)

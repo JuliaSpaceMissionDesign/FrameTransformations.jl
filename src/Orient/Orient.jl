@@ -14,7 +14,7 @@ using JSMDInterfaces
 using JSMDInterfaces.FilesIO
 using JSMDInterfaces.Math: interpolate, AbstractInterpolationMethod
 
-using JSMDUtils.Math: InterpAkima, arcsec2rad, skew
+using JSMDUtils.Math: InterpAkima, arcsec2rad, skew, unitvec
 
 using Tempo
 
@@ -32,7 +32,9 @@ include("tpc.jl")
 include("planets.jl")
 
 # Ecliptic 
+include("common.jl")
 include("ecliptic.jl")
+include("legacy.jl")
 
 function __init__()
     if !Tempo.has_timescale(TIMESCALES, Tempo.timescale_id(UT1))

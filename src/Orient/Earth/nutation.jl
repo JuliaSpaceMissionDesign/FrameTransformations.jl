@@ -7,8 +7,8 @@ include("constants/nut2000b.jl");
 const ARCSECTURN = 1296000.0
 
 # nutation00(::IAU2000Model, ::Number, ::FundamentalArguments) = () 
-build_nutation_series(:nutation00, :IAU2000A, NUTATION_2000Aψ, NUTATION_2000Aϵ)
-build_nutation_series(:nutation00, :IAU2000B, NUTATION_2000Bψ, NUTATION_2000Bϵ)
+build_series(:nutation00, :IAU2000A, [NUTATION_2000Aψ, NUTATION_2000Aϵ])
+build_series(:nutation00, :IAU2000B, [NUTATION_2000Bψ, NUTATION_2000Bϵ])
 
 """
     orient_nutation(m::IAUModel, t::Number)
