@@ -30,7 +30,7 @@ PrecompileTools.@setup_workload begin
         end
 
         # Ecliptic routines
-        Orient.orient_rot3_icrf_to_mememod(0.0)
+        Orient.orient_rot3_icrf_to_mod(0.0)
     end
 end
 

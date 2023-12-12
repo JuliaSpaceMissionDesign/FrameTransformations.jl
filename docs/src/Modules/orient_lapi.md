@@ -49,11 +49,15 @@ Orient.cio_locator
 Orient.cip_motion
 Orient.earth_rotation_angle
 Orient.earth_rotation_rate 
+Orient.equinoxes_equation
 Orient.era_rotm
 Orient.fw2xy
+Orient.origins_equation
 Orient.tio_locator
 Orient.polar_motion
 Orient.xys2m
+Orient.ecliptic_pole
+Orient.cip
 ```
 
 ## EOP Data
@@ -71,7 +75,16 @@ Orient.offset_utc2ut1
 ## Transformations
 
 ```@docs 
-Orient.orient_rot3_icrf_to_mememod
+Orient.orient_rot3_icrf_to_mod
+Orient.orient_rot3_icrf_to_tod
+Orient.orient_rot3_icrf_to_teme
+Orient.orient_rot3_mod_to_teme
+Orient.orient_rot3_itrf_to_pef
+Orient.orient_rot3_pef_to_tod
+Orient.orient_rot6_pef_to_tod
+Orient.orient_rot3_tod_to_mod
+Orient.orient_rot3_icrf_to_pef
+Orient.orient_rot6_icrf_to_pef
 ```
 
 ## Geodesy 

@@ -324,13 +324,34 @@ const IERS_EOP = EOPInterpolator();
 """
     offset_utc2ut1(seconds)
 
-Return the offset between `UTC` and `UT1` in seconds.
+Return the offset, in seconds, between `UTC` and `UT1`.
 """
-@inline function offset_utc2ut1(seconds)
-    utc = seconds / 86400.0
-    !IERS_EOP.init && throw(
-        ErrorException(
-            "EOP not initialized. Please run 'init_eop' before using this function."
-        ))
-    return interpolate(IERS_EOP.UT1_UTC, utc)
+function offset_utc2ut1(seconds)
+    check_eop_init()
+    return interpolate(IERS_EOP.UT1_UTC, seconds / 86400)
+end
+
+# Checks whether EOP data has been initialised successfully
+function check_eop_init()
+    if !IERS_EOP.init
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
+    nothing
+end
+
+
+# Convert time `ttd` expressed as `TT` days since J2000 to `UT1` days since J2000, 
+# without passing from UTC, allowing to have a continuous timescale.
+function iers_tt_to_ut1(ttd)
+
+    # Transform UT1 to TT
+    offset = interpolate(IERS_EOP.UT1_TT, ttd)
+
+    # Transform TT days to UT1 days 
+    return ttd + offset / Tempo.DAY2SEC
+
 end

@@ -12,7 +12,6 @@ Frames.build_axes
 
 Frames.ComputableAxesProperties
 
-
 ```
 
 ## Points
@@ -31,7 +30,6 @@ Frames._get_comp_axes_vector6
 Frames._get_comp_axes_vector9
 Frames._get_comp_axes_vector12
 
-
 ```
 
 ## Two Vectors
@@ -47,4 +45,5 @@ Frames._two_vectors_to_rot6
 Frames._two_vectors_to_rot9
 Frames._two_vectors_to_rot12
 Frames._two_vectors_basis
+
 ```
