@@ -56,7 +56,7 @@ Orient.origins_equation
 Orient.tio_locator
 Orient.polar_motion
 Orient.xys2m
-Orient.ecliplic_pole
+Orient.ecliptic_pole
 Orient.cip
 ```
 
