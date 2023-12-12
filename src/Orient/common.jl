@@ -216,7 +216,7 @@ Compute the rotation matrix from the International Celestial Reference Frame (IC
 the True Equator, Mean Equinox of date at time `tt`, expressed in TT seconds since `J2000`.
 
 ### See also 
-See also [`@orient_rot3_mod_to_teme`](@ref) and [`orient_rot3_icrf_to_mod`](@ref).
+See also [`orient_rot3_mod_to_teme`](@ref) and [`orient_rot3_icrf_to_mod`](@ref).
 """
 function orient_rot3_icrf_to_teme(tt::Number; m::IAU2006Model=iau2006a)
     Ricrf2mod = orient_rot3_icrf_to_mod(tt)
