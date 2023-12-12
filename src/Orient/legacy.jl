@@ -85,18 +85,3 @@ DCM for the rotation from the FK4 frame to the Galactic System II reference fram
 - SPICE [Library](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/chgirf.html)
 """
 const DCM_FK4_TO_GALACTIC = angle_to_dcm(deg2rad(282.25), deg2rad(62.6), deg2rad(327), :ZXZ)
-
-
-"""
-    DCM_FK5_TO_GCRF
-
-DCM for the rotation from the FK5 to the GCRF axes. 
-    
-### References 
-- Seago J. and Vallado D. (2000), [Coordinate Frames of the U.S. Space Object Catalogs](https://arc.aiaa.org/doi/10.2514/6.2000-4025) 
-"""
-const DCM_FK5_TO_GCRF = DCM(
-               1, 0.000274e-8, -9.790527e-8,
-    -0.000274e-8,           1, -1.147780e-8,
-     9.790527e-8,  1.14778e-8,            1
-)

@@ -119,7 +119,7 @@ Mean Equator Of Date is obtained applying frame bias and precession to the ICRF 
 Fukushima-Williams parametrization for the equator and ecliptic precession is used. 
 Consistent with the IAU2006 precession model.
 """
-function orient_rot3_icrf_to_mod(tt::Number, m::IAUModel=iau2006a)
+function orient_rot3_icrf_to_mod(tt::Number)
     # Convert TT seconds since J2000 to TT centuries since J2000
     T = tt / Tempo.CENTURY2SEC
 
@@ -203,9 +203,9 @@ function orient_rot3_mod_to_teme(tt::Number; m::IAU2006Model=iau2006a)
     sδϵ = sin(ϵ + Δϵ)
 
     return DCM(
-        1.,      0.,   -Δψ*sδϵ,
-        0.,      1.,       -Δϵ,
-        Δψ*sδϵ,  Δϵ,        1.
+        1,      0,   -Δψ*sδϵ,
+        0,      1,       -Δϵ,
+        Δψ*sδϵ,  Δϵ,       1
     )
 end
 
