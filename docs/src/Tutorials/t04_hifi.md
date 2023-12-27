@@ -145,6 +145,23 @@ add_axes_pa421!(FRAMES, MOONPA_DE421)
 The default ITRF model is the [`iau2006b`](@ref), but other approximations are also [available](@ref iers_models). If one was interested in the Moon's PA440 axes, a similar function named [`add_axes_pa440!`](@ref) is available.
 
 !!! note 
+    In order to use `IERS` associated reference frames, EOP must be loaded. 
+    See also [`Orient.prepare_eop`](@ref), [`Orient.init_eop`](@ref).
+
+    ```julia 
+    eop_url = "https://datacenter.iers.org/data/csv/finals2000A.data.csv"
+    # Download eop file 
+    download(eop_url, "data.csv")
+
+    # EOP data shall be transformed to FrameTransformations compatible format:
+    Orient.prepare_eop("data.csv", "iau2000a")
+
+    # Once transformed, before creating any IERS-associated frame the previously created 
+    # file must be loaded:
+    Orient.init_eop("iau2000a.eop.dat")
+    ```
+
+!!! note 
     To correctly use the [`add_axes_pa421!`](@ref) function, the frame system must contain an ephemeris provider that has loaded the necessary PCK kernels with the DE421 data.
 
 ### Using the `FrameSystem`
