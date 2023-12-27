@@ -10,6 +10,8 @@ For a more detailed overview of this concepts, please refer to the original [SPI
 
 ## One-way Light Time 
 
+!!! note 
+    Work in progress
 
 ## Stellar Aberration 
 
