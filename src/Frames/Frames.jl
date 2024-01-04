@@ -54,6 +54,7 @@ using SMDGraphs:
     get_node,
     get_node_id
 
+
 using Tempo
 using Tempo:
     AbstractTimeScale,
@@ -68,6 +69,11 @@ using Tempo:
 
 using FrameTransformations.Orient
 using FrameTransformations.Orient: AXESID_ICRF
+using FrameTransformations.Utils: light_speed, geod2pos
+using FrameTransformations.Utils: normalize, δnormalize, δ²normalize, δ³normalize
+using FrameTransformations.Utils: cross3, cross6, cross9, cross12
+using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm
+using FrameTransformations.Utils: _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
 import LinearAlgebra: dot, norm, matprod, UniformScaling
 import StaticArrays: similar_type, Size, MMatrix, SMatrix

@@ -71,7 +71,5 @@ function load_tpc!(
             mergewith!(merge!, dict, temp)
         end
     end
-
     return nothing
-    
 end
