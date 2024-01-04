@@ -13,17 +13,18 @@ using Tempo
 
 using JSMDInterfaces.Ephemeris
 using JSMDInterfaces.Math: interpolate
+
 using JSMDUtils.Autodiff
+using JSMDUtils.Math
 using JSMDUtils.Math: arcsec2rad, D¹, D², D³
+using JSMDUtils.Math: angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
 using JSMDUtils: NullEphemerisProvider
 
 using FrameTransformations.Frames
-using FrameTransformations.Utils: angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
-
-import FrameTransformations.Frames:
-    FrameAxesFunctions, FramePointFunctions, _get_fixedrot, _empty_stv_update!
 
 import LinearAlgebra: cross, dot, norm
+import FrameTransformations.Frames:
+    FrameAxesFunctions, FramePointFunctions, _get_fixedrot, _empty_stv_update!
 
 @RemoteFileSet KERNELS "Spice Kernels Set" begin
     LEAP = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/latest_leapseconds.tls" dir = joinpath(
@@ -73,7 +74,7 @@ let
 end;
 
 @eval begin
-    modules = [:Utils, :Orient, :Frames]
+    modules = [:Orient, :Frames]
     for m in modules
         @testset "$m" verbose = true begin
             include("$m/$m.jl")

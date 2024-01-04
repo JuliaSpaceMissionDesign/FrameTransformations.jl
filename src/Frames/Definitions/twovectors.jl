@@ -92,7 +92,7 @@ following the directions specified in `seq`.
     any check on the angular separation of the two vectors. The user should ensure that the 
     primary and secondary vector differ of at least 1 milliradian.
 """
-twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross3, normalize, _keep3)
+twovectors_to_dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross3, unitvec, _keep3)
 
 """
     twovectors_to_δdcm(a, b, seq)
@@ -105,7 +105,7 @@ state vectors `a` and `b`, following the directions specified in `seq`.
 - `seq` -- Accepted sequence directions are: 
        `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
-twovectors_to_δdcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross6, δnormalize, _keep6)
+twovectors_to_δdcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross6, δunitvec, _keep6)
 
 """
     twovectors_to_δ²dcm(a, b, seq)
@@ -117,7 +117,7 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 - `a` and `b` -- 9-elements state vectors (position velocity and acceleration).
 - `seq` -- Accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
-twovectors_to_δ²dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²normalize, _keep9)
+twovectors_to_δ²dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross9, δ²unitvec, _keep9)
 
 """
     twovectors_to_δ³dcm(a, b, seq)
@@ -129,7 +129,7 @@ time-dependent state vectors `a` and `b`, following the directions specified in 
 - `a` and `b` -- 12-elements state vectors (position, velocity, acceleration and jerk).
 - `seq` -- Accepted sequence directions are: `:XY`, `:YX`, `:XZ`, `:ZX`, `:YZ`, `:ZY`
 """
-twovectors_to_δ³dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross12, δ³normalize, _keep12)
+twovectors_to_δ³dcm(a, b, seq) = _twovectors_to_dcm(a, b, seq, cross12, δ³unitvec, _keep12)
 
 """
     _two_vectors_to_rot6(a, b, seq::Symbol)
@@ -151,9 +151,9 @@ function _two_vectors_to_rot6(
         rw = sqrt(w[1]^2 + w[2]^2 + w[3]^2)
     end
 
-    δu = δnormalize(u)
-    δv = δnormalize(v)
-    δw = δnormalize(w)
+    δu = δunitvec(u)
+    δv = δunitvec(v)
+    δw = δunitvec(w)
 
     @inbounds begin
         dcm = DCM((
@@ -192,9 +192,9 @@ function _two_vectors_to_rot9(a::AbstractVector, b::AbstractVector, seq::Symbol)
         rw = sqrt(w[1]^2 + w[2]^2 + w[3]^2)
     end
 
-    δu, δ²u = δnormalize(u), δ²normalize(u)
-    δv, δ²v = δnormalize(v), δ²normalize(v)
-    δw, δ²w = δnormalize(w), δ²normalize(w)
+    δu, δ²u = δunitvec(u), δ²unitvec(u)
+    δv, δ²v = δunitvec(v), δ²unitvec(v)
+    δw, δ²w = δunitvec(w), δ²unitvec(w)
 
     @inbounds begin
         dcm = DCM((
@@ -237,9 +237,9 @@ function _two_vectors_to_rot12(a::AbstractVector, b::AbstractVector, seq::Symbol
         rw = sqrt(w[1]^2 + w[2]^2 + w[3]^2)
     end
 
-    δu, δ²u, δ³u = δnormalize(u), δ²normalize(u), δ³normalize(u)
-    δv, δ²v, δ³v = δnormalize(v), δ²normalize(v), δ³normalize(v)
-    δw, δ²w, δ³w = δnormalize(w), δ²normalize(w), δ³normalize(w)
+    δu, δ²u, δ³u = δunitvec(u), δ²unitvec(u), δ³unitvec(u)
+    δv, δ²v, δ³v = δunitvec(v), δ²unitvec(v), δ³unitvec(v)
+    δw, δ²w, δ³w = δunitvec(w), δ²unitvec(w), δ³unitvec(w)
 
     @inbounds begin
         dcm = DCM((

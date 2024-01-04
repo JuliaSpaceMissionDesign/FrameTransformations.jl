@@ -12,7 +12,7 @@ an error is thrown if such orientation data is not available.
     axes are not registered in the frame system, an error is thrown.
 
 !!! warning
-	To properly read the ephemeris kernels, the ID associated to the input `axes` must 
+	To properly read the ephemeris kernels, the ID associated to the input `axes` must match 
 	NAIF's FRAME ID for the Moon PA DE440 axes ($(Orient.AXESID_MOONPA_DE440)).
     
 ----

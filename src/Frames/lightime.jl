@@ -1,5 +1,13 @@
 export LightTime, PlanetaryAberration
 
+""" 
+    light_speed 
+
+Official light speed constant value used in CSPICE 
+"""
+
+const light_speed = 299792.458;
+
 # Abstract types definition
 abstract type AbstractLightTimeCorrection end
 struct LightTimeCorrection <: AbstractLightTimeCorrection end
@@ -350,8 +358,8 @@ function _stellar_aberration_correction(
     uᵣ = pos / dᵣ
 
     δdᵣ = dot(vel, uᵣ)
-    δuᵣ = δnormalize(xrel)
-
+    δuᵣ = δunitvec(xrel)
+    
     # Compute sine and cosine of aberration angle! 
     B = dot(vobs, uᵣ)
 
@@ -365,7 +373,7 @@ function _stellar_aberration_correction(
     δp = A * dᵣ
 
     δvₚ = aobs - (dot(aobs, uᵣ) + dot(vobs, δuᵣ)) * uᵣ - B * δuᵣ
-    δuᵥ = δnormalize(vcat(vₚ, δvₚ))
+    δuᵥ = δunitvec(vcat(vₚ, δvₚ))
 
     # Compute derivative of aberration angle
     δϕ = 1 / (light_speed * cₐ) * dot(δvₚ, uᵥ)

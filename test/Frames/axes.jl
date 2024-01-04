@@ -118,21 +118,21 @@ kclear()
         smb = rand([:X, :Y, :Z])
         f = t -> angle_to_dcm(t, smb)
 
-        df = t -> (angle_to_dcm(t, smb), Utils.angle_to_δdcm([t, 1], smb))
+        df = t -> (angle_to_dcm(t, smb), angle_to_δdcm([t, 1], smb))
 
         ddf =
             t -> (
                 angle_to_dcm(t, smb),
-                Utils.angle_to_δdcm([t, 1], smb),
-                Utils.angle_to_δ²dcm([t, 1, 0], smb),
+                angle_to_δdcm([t, 1], smb),
+                angle_to_δ²dcm([t, 1, 0], smb),
             )
 
         dddf =
             t -> (
                 angle_to_dcm(t, smb),
-                Utils.angle_to_δdcm([t, 1], smb),
-                Utils.angle_to_δ²dcm([t, 1, 0], smb),
-                Utils.angle_to_δ³dcm([t, 1, 0, 0], smb),
+                angle_to_δdcm([t, 1], smb),
+                angle_to_δ²dcm([t, 1, 0], smb),
+                angle_to_δ³dcm([t, 1, 0, 0], smb),
             )
 
         nth = Threads.nthreads()
@@ -344,8 +344,8 @@ kclear()
             Rs = sxform("MOON_PA", "J2000", et)
 
             angles = ephem_orient!(y, eph, DJ2000, et / Tempo.DAY2SEC, 31008, 1, 3)
-            ddR = Utils._3angles_to_δ²dcm(y, :ZXZ)
-            dddR = Utils._3angles_to_δ³dcm(y, :ZXZ)
+            ddR = Math._3angles_to_δ²dcm(y, :ZXZ)
+            dddR = Math._3angles_to_δ³dcm(y, :ZXZ)
 
             R3 = rotation3(G, AXES_EPHEM, ICRF, et)
             @test R3[1] ≈ Rs[1:3, 1:3] atol = atol rtol = rtol
