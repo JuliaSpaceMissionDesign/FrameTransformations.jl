@@ -23,11 +23,16 @@ add_axes_computable!
 add_axes_eclipj2000!
 add_axes_ephemeris!
 add_axes_fixedoffset!
+add_axes_gcrf!
 add_axes_inertial!
+add_axes_icrf!
 add_axes_itrf!
 add_axes_me421!
 add_axes_meme2000!
-add_axes_mememod!
+add_axes_mod!
+add_axes_tod!
+add_axes_teme!
+add_axes_pef!
 add_axes_pa421!
 add_axes_pa440!
 add_axes_projected!

@@ -1,161 +1,357 @@
-export get_iers_eop, IERS_EOP
+export prepare_eop, read_eop, init_eop, eop_data_filename, IERS_EOP
 
 """
-    get_iers_eop(; force_download = false)
+    EOPData{T}
 
-Download and parse the IERS EOP C04 data. 
+EOP Data for IAU 2000A.
 
-The files are downloaded using the `RemoteFile` package with weekly updates. Hence, if one 
-desires to force a download before the scheduled time, then set the keyword `force_download`  
-to `true`.
-
-!!! note
-    The files will be downloaded from the default URL. If the user want to use
-    another one, then use the specialized function [`get_iers_eop_IAU2000A`](@ref)
-
-    See also: [`get_iers_eop_IAU2000A`](@ref)
-
-### Returns
-A structure [`EOPData`](@ref) with the interpolations of the EOP parameters. Notice that the
-interpolation indexing is set to Julian days since J2000.
-
+### Fields
+- `filename` : File where the EOP data are stored. 
+- `j2000` : Independent valiable - time - in UTC.
+- `j2000_TT` : Independent valiable - time - in TT.
+- `x, y`: Polar motion with respect to the crust (arcsec).
+- `UT1_UTC`: Irregularities of the rotation angle (s).
+- `UT1_TT`: Irregularities of the rotation angle (s) w.r.t. TT timescale.
+- `LOD`: Length of day offset (ms).
+- `dX, dY`: Celestial pole offsets referred to the model IAU2000A (milliarcsec).
 """
-function get_iers_eop(; force_download=false)
-    return get_iers_eop_IAU2000A(; force_download=force_download)
+mutable struct EOPData{T}
+    filename::String
+    j2000::Vector{T}
+    x::Vector{T}
+    y::Vector{T}
+    UT1_UTC::Vector{T}
+    LOD::Vector{T}
+    dX::Vector{T}
+    dY::Vector{T}
+
+    # EOP data parametrized by TT epoch
+    # These are parsed automatically in eop.jl to allow direct computation of EOP 
+    # without performing many transformations from TT/TDB, which are considered to be equal.
+    j2000_TT::Vector{T}
+    UT1_TT::Vector{T}
 end
 
-"""
-    get_iers_eop_iau_2000A(url::String="https://datacenter.iers.org/data/csv/finals2000A.all.csv"; 
-        force_download = false)
-
-Get the IERS EOP C04 IAU2000A data from the URL `url`.
-
-If `url` is omitted, then it defaults to https://datacenter.iers.org/data/csv/finals2000A.all.csv.
-The file is downloaded using the `RemoteFile` package with weekly updates. Hence, if one desires 
-to force a download before the scheduled time, then set the keyword `force_download` to `true`.
-
-!!! note
-    The interpolation of every field in [`EOPData`](@ref) between two
-    points in the grid is linear. If extrapolation is needed, then if will use
-    the nearest value (flat extrapolation).
-
-See also: [`get_iers_eop`](@ref)
-
-### Returns
-The structure `EOPData` with the interpolations of the EOP parameters. Notice that the 
-interpolation indexing is set to Julian days since J2000.
-"""
-function get_iers_eop_IAU2000A(
-    url::String="https://datacenter.iers.org/data/csv/finals2000A.all.csv";
-    force_download=false,
-)
-    @RemoteFile(
-        _eop_iau2000A,
-        url,
-        file = "eop_iau2000a.txt",
-        dir = joinpath(@__DIR__, "..", "..", "..", "ext"),
-        updates = :fridays,
-        failed = :warn
-    )
-
-    # Download the data
-    download(_eop_iau2000A; force=force_download, force_update=true)
-
-    # Parse the data removing the header.
-    eop, ~ = readdlm(path(_eop_iau2000A), ';'; header=true)
-
-    # Obtain the last available index of the field.
-    last_id = findlast(!isempty, eop[:, 11])
-    last_id === nothing && (last_id = length(eop[:, 11]))
-    ut1_utc::Vector{Float64} = Vector{Float64}(eop[1:last_id, 11])
-
-    # Create the EOP Data structure by creating the interpolations:
-    # - The interpolation will be linear between two points in the grid.
-    # - The extrapolation will be flat, considering the nearest point.
-    j2000_utc = Vector{Float64}(eop[1:last_id, 1] .+ 2400000.5 .- DJ2000)
-    j2000_tt = [Tempo.utc2tai(DJ2000, utci)[2] for utci in j2000_utc]
-    .-Tempo.OFFSET_TAI_TT ./ Tempo.DAY2SEC
-
-    j2000_ut1 = j2000_utc + Vector{Float64}(ut1_utc) ./ Tempo.DAY2SEC  # utc + ut1-utc
-    ut1_tt = (j2000_ut1 - j2000_tt) .* Tempo.DAY2SEC .- Tempo.OFFSET_TAI_TT
-
+function EOPData(::Type{T}=Float64) where T 
     return EOPData(
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 6]),
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 8]),
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 11]),
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 13]), # This value is in ms 
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 20]), # This value is in mas 
-        _create_iers_eop_interpolation(j2000_utc, eop[:, 22]), # This value is in mas
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 6]),
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 8]),
-        _create_iers_eop_interpolation(j2000_tt, ut1_tt),
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 13]), # This value is in ms 
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 20]), # This value is in mas
-        _create_iers_eop_interpolation(j2000_tt, eop[:, 22]), # This value is in mas
+        "", [],[],[],[],[],[],[],
+        [],[]
     )
 end
 
-function Base.show(io::IO, eop::EOPData{T}) where {T}
-    # Check if IO has support for colors.
-    println(io, " ")
-    println(io, "  EOPData ", "│ ", "Timespan (UTC)")
-    println(io, " ─────────┼──────────────────────────────────────────────────")
-    println(io, "        x ", "│ ", _get_iers_eop_timespan(eop.x))
-    println(io, "        y ", "│ ", _get_iers_eop_timespan(eop.y))
-    println(io, "  UT1-UTC ", "│ ", _get_iers_eop_timespan(eop.UT1_UTC))
-    println(io, "      LOD ", "│ ", _get_iers_eop_timespan(eop.LOD))
-    println(io, "       dX ", "│ ", _get_iers_eop_timespan(eop.dX))
-    println(io, "       dY ", "│ ", _get_iers_eop_timespan(eop.dY))
-
-    return nothing
+function Base.show(io::IO, eop::EOPData{T}) where T 
+    if isempty(eop.j2000)
+        println(io, "EOPData()")
+        return
+    end
+    println(io, "EOPData(filename=\"$(eop.filename), \"beg=\"$(eop.j2000[1]) (UTC)\", "
+        * " end=\"$(eop.j2000[end]) (UTC)\")")
 end
 
-# Get timespan
-function _get_iers_eop_timespan(itp::InterpAkima)
-    str =
-        string(DateTime(first(itp.x) * 86400)) *
-        " - " *
-        string(DateTime(last(itp.x) * 86400))
-    return str
+"""
+    read_iers_eop_finals(filename::AbstractString)
+
+Read IERS EOP C04 files in csv format.
+
+
+### Returns
+- `j2000_utc`: Julian days since J2000 in UTC.
+- `j2000_tt`: Julian days since J2000 in TT (Terrestrial Time).
+- `x_pole`: Celestial pole offset in the X direction (arcsec).
+- `y_pole`: Celestial pole offset in the Y direction (arcsec).
+- `ut1_utc`: UT1-UTC time difference (s).
+- `ut1_tt`: UT1-TT time difference (s).
+- `lod`: Length of Day (s).
+- `dX`: Celestial pole offset rate in the X direction (milliarcsec).
+- `dY`: Celestial pole offset rate in the Y direction (milliarcsec).
+
+The function reads IERS EOP C04 files in CSV format and extracts relevant Earth Orientation 
+Parameters (EOP) data. It then updates predictions, filling missing values with zeros for 
+LOD, dX, and dY. 
+Finally, the function parametrizes EOP with respect to both UTC and TT time scales for 
+convenience.
+
+### References
+- https://maia.usno.navy.mil/ser7/readme.finals2000A
+- http://hpiers.obspm.fr/eoppc/bul/bulb/explanatory.html
+- https://maia.usno.navy.mil
+"""
+function read_iers_eop_finals(filename::AbstractString)
+
+    data, ~ = readdlm(filename, ';'; header=true)
+
+    last_id_utc = findlast(!isempty, @view(data[:, 15]))
+    ut1_utc  = convert(Vector{Float64},  @view(data[1:last_id_utc, 15]))
+
+    mjd = convert(Vector{Float64},  @view(data[1:last_id_utc, 1])) 
+    x_pole = convert(Vector{Float64}, @view(data[1:last_id_utc, 6]))
+    y_pole = convert(Vector{Float64}, @view(data[1:last_id_utc, 8]))
+
+    lod_raw = @view(data[1:last_id_utc, 17])
+    dX_raw = @view(data[1:last_id_utc, 24])
+    dY_raw = @view(data[1:last_id_utc, 26])
+
+    # Update predictions
+    # Elements that are not present are filled with the last valid element
+    last_id_lod = findlast(!isempty, lod_raw) 
+    lod_raw[last_id_lod:end] .= lod_raw[last_id_lod-1]
+    lod = convert(Vector{Float64}, lod_raw)
+
+    last_id_dXY = findlast(!isempty, dX_raw)
+    dX_raw[last_id_dXY:end] .= dX_raw[last_id_dXY-1]
+    dY_raw[last_id_dXY:end] .= dY_raw[last_id_dXY-1]
+    dX = convert(Vector{Float64}, dX_raw)
+    dY = convert(Vector{Float64}, dY_raw)
+
+    # For convenience and to avoid discontinuities, eop are parametrized both in terms of 
+    # utc and tt time scales
+    j2000_utc = mjd .- Tempo.DMJD
+    j2000_tt = map(t -> Tempo.utc2tai(Tempo.DJ2000, t)[2] + Tempo.OFFSET_TAI_TT/Tempo.DAY2SEC, j2000_utc)
+    j2000_ut1 = j2000_utc + ut1_utc./Tempo.DAY2SEC  # utc + ut1-utc
+    ut1_tt = (j2000_ut1 - j2000_tt) .* Tempo.DAY2SEC 
+
+    return j2000_utc, j2000_tt, x_pole, y_pole, ut1_utc, ut1_tt, lod, dX, dY  
 end
 
-# Create the interpolation object for the `knots` and `field` from IERS.
-function _create_iers_eop_interpolation(knots::AbstractVector, field::AbstractVector)
-    # Obtain the last available index of the field.
-    last_id = findlast(!isempty, field)
-    last_id === nothing && (last_id = length(field))
+"""
+    prepare_eop(iers_file::AbstractString, output_filename::AbstractString="iau2000a")  
 
-    # Convert the field to a `Vector{Float64}`.
-    field_float::Vector{Float64} = Vector{Float64}(field[1:last_id])
+Prepare Earth Orientation Parameters (EOP) data from IERS EOP C04 files to JSMD's `eop.dat` 
+convenience format. The `output_filename` should not include the file extension, which is 
+automatically added by this function. 
 
-    # Create the interpolation object.
-    return InterpAkima(knots[1:last_id], field_float)
+```@raw julia 
+# Save a new file called: test.eop.dat
+prepare_eop("input.csv", "test")
+```
+"""
+function prepare_eop(iers_file::AbstractString, output_filename::AbstractString="iau2000a")
+    data = hcat(read_iers_eop_finals(iers_file)...)
+    writedlm(output_filename * ".eop.dat", data)
+
+    @info "IERS EOP file '$(iers_file)' converted to '$(output_filename).eop.dat'."
+
+    nothing
 end
+
+"""
+    read_eop(filename)  
+
+Read Earth Orientation Parameters (EOP) from JSMD `.eop.dat` file.  
+"""
+function read_eop(filename)
+    !endswith(filename, "eop.dat") && throw(
+        ArgumentError("EOP reader support only '.eop.dat' files! Please prepare " * 
+                       "the data with \'prepare_eop\' and retry."))
+
+    # Load the file
+    data = readdlm(filename; header=false)
+    
+    j2000_utc = @view(data[:, 1])
+    j2000_tt = @view(data[:, 2])
+    x_pole = @view(data[:, 3])
+    y_pole = @view(data[:, 4])
+    ut1_utc = @view(data[:, 5])
+    ut1_tt = @view(data[:, 6])
+    lod = @view(data[:, 7])
+    dX = @view(data[:, 8])
+    dY = @view(data[:, 9])
+
+    return j2000_utc, j2000_tt, x_pole, y_pole, ut1_utc, ut1_tt, lod, dX, dY  
+end
+
+"""
+    set_eop_data(filename)  
+
+Set Earth Orientation Parameters (EOP) to be used for frames transformations from JSMD 
+`.eop.dat` file.  
+"""
+function set_eop_data(filename::AbstractString)
+
+    oldfile = IERS_EOP_DATA.filename
+    j2000_utc, j2000_tt, x_pole, y_pole, ut1_utc, ut1_tt, lod, dX, dY = read_eop(filename)
+
+    if (!isempty(IERS_EOP_DATA.j2000))
+        @warn "Existing EOP data from \'$(oldfile)\' will be overwritten by \'$(filename)\'."
+    end
+
+    IERS_EOP_DATA.filename = filename
+    IERS_EOP_DATA.j2000 = j2000_utc
+    IERS_EOP_DATA.x = x_pole
+    IERS_EOP_DATA.y = y_pole
+    IERS_EOP_DATA.UT1_UTC = ut1_utc
+    IERS_EOP_DATA.LOD = lod
+    IERS_EOP_DATA.dX = dX
+    IERS_EOP_DATA.dY = dY
+    IERS_EOP_DATA.j2000_TT = j2000_tt
+    IERS_EOP_DATA.UT1_TT = ut1_tt
+
+    nothing
+end
+
+"""
+    eop_data_filename()  
+
+Get loaded Earth Orientation Parameters (EOP) filename.
+"""
+function eop_data_filename()
+    if isempty(IERS_EOP_DATA.filename) 
+        throw(ErrorException("Unable to retrieve filename, no EOP data has been loaded."))
+    end
+    return IERS_EOP_DATA.filename
+end
+
+"""
+    EOPInterpolator{T}
+
+EOP Data for IAU 2000A.
+
+### Fields
+- `init`: A flag indicating whether the EOPInterpolator has been initialized.
+- `j2000`: Independent variable (time), in UTC.
+- `j2000_TT`: Independent variable (time), in TT.
+- `x, y`: Polar motion with respect to the crust (arcsec).
+- `UT1_UTC`: Irregularities of the rotation angle (s).
+- `UT1_TT`: Irregularities of the rotation angle (s) with respect to TT timescale.
+- `LOD`: Length of day offset (ms).
+- `dX, dY`: Celestial pole offsets referred to the model IAU2000A (milliarcsec).
+- `x_TT, y_TT`: Polar motion with respect to the crust (arcsec) parametrized by TT epoch.
+- `UT1_TT`: Irregularities of the rotation angle (s) parametrized by TT epoch.
+- `LOD_TT`: Length of day offset (ms) parametrized by TT epoch.
+- `dX_TT, dY_TT`: Celestial pole offsets referred to the model IAU2000A (milliarcsec) parametrized by TT epoch.
+"""
+mutable struct EOPInterpolator{T<:AbstractInterpolationMethod}
+    init::Bool
+
+    x::T
+    y::T
+    UT1_UTC::T
+    LOD::T
+    dX::T
+    dY::T
+
+    # EOP data parametrized by TT epoch
+    # These are parsed automatically in eop.jl to allow direct computation of EOP 
+    # without performing many transformations from TT/TDB, which are considered to be equal.
+    x_TT::T
+    y_TT::T
+    UT1_TT::T
+    LOD_TT::T
+    dX_TT::T
+    dY_TT::T
+end 
+
+function Base.show(io::IO, s::EOPInterpolator{T}) where T 
+    println(io, "EOPInterpolator(init=$(s.init))")
+end
+
+function _eop_spline_initializer(::Type{T}=Float64) where T
+    return InterpAkima([-100005.0, -100004.0, -100003.0, -100002.0, -100001.0, -100000.0], zeros(6))
+end
+
+function EOPInterpolator(::Type{T}=Float64) where T
+    EOPInterpolator(
+        false, 
+        _eop_spline_initializer(), _eop_spline_initializer(), _eop_spline_initializer(),
+        _eop_spline_initializer(), _eop_spline_initializer(), _eop_spline_initializer(),
+        _eop_spline_initializer(), _eop_spline_initializer(), _eop_spline_initializer(),
+        _eop_spline_initializer(), _eop_spline_initializer(), _eop_spline_initializer()
+    )
+end
+
+"""
+    init_eop(filename)  
+
+Initialize Earth Orientation Parameters (EOP) from file.  
+
+!!! warn
+    This function must be called to initialize the EOP data used by frames, in case 
+    Earth-associated frames are used.  
+
+!!! warn 
+    This function accept only `.eop.dat` files. Please use [`prepare_eop`](@ref) to transform 
+    IERS EOP files in this format.
+"""
+function init_eop(
+    filename::AbstractString, ::Type{INTERP} = InterpAkima) where {INTERP <: AbstractInterpolationMethod}
+    
+    # Set eop data to gather
+    set_eop_data(filename)
+
+    # Initialize and set interpolators
+    IERS_EOP.init = true
+    IERS_EOP.x = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.x)
+    IERS_EOP.y = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.y)
+    IERS_EOP.UT1_UTC = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.UT1_UTC)
+    IERS_EOP.LOD = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.LOD)
+    IERS_EOP.dX = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.dX)
+    IERS_EOP.dY = INTERP(IERS_EOP_DATA.j2000, IERS_EOP_DATA.dY)
+    
+    IERS_EOP.x_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.x)
+    IERS_EOP.y_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.y)
+    IERS_EOP.UT1_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.UT1_TT)
+    IERS_EOP.LOD_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.LOD)
+    IERS_EOP.dX_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.dX)
+    IERS_EOP.dY_TT = INTERP(IERS_EOP_DATA.j2000_TT, IERS_EOP_DATA.dY)
+
+    @info "EOP initialized from file '$(filename)'."
+
+    nothing 
+
+end
+
+"""
+    IERS_EOP_DATA
+
+Earth Orientation Parameters Data: x/y pole, UT1-UTC, LOD, dX, dY (smoothed values at 1-day 
+intervals) with respect to IAU 2006/2000A precession-nutation model and consistent with ITRF2014.
+
+See also: [`EOPData`](@ref)
+"""
+const IERS_EOP_DATA = EOPData();
 
 """
     IERS_EOP 
 
-Earth orientation parameters: x/y pole, UT1-UTC, LOD, dX, dY (smoothed values at 1-day intervals) 
-with respect to IAU 2006/2000A precession-nutation model and consistent with ITRF2014.
+Earth Orientation Parameters interpolators: x/y pole, UT1-UTC, LOD, dX, dY (smoothed values 
+at 1-day intervals) with respect to IAU 2006/2000A precession-nutation model and consistent 
+with ITRF2014.
 
-EOP 14 C04 is updated two times per week.
-
-Here the files are downloaded using the `RemoteFile` package with weekly updates.
-
-See also: [`get_iers_eop`](@ref)
+See also: [`EOPInterpolator`](@ref)
 """
-const IERS_EOP = get_iers_eop()
-
-# Adds UT1 Timescale to Tempo!
-# It is defined here because referring the variable IERS_EOP inside Tempo would lead to 
-# allocations! 
+const IERS_EOP = EOPInterpolator();
 
 """
     offset_utc2ut1(seconds)
 
-Return the offset between `UTC` and `UT1` in seconds.
+Return the offset, in seconds, between `UTC` and `UT1`.
 """
-@inline function offset_utc2ut1(seconds)
-    utc = seconds / 86400.0
-    return interpolate(IERS_EOP.UT1_UTC, utc)
+function offset_utc2ut1(seconds)
+    check_eop_init()
+    return interpolate(IERS_EOP.UT1_UTC, seconds / 86400)
+end
+
+# Checks whether EOP data has been initialised successfully
+function check_eop_init()
+    if !IERS_EOP.init
+        throw(
+            ErrorException(
+                "EOP not initialized. Please run 'init_eop' before using this function."
+            )
+        )
+    end
+    nothing
+end
+
+
+# Convert time `ttd` expressed as `TT` days since J2000 to `UT1` days since J2000, 
+# without passing from UTC, allowing to have a continuous timescale.
+function iers_tt_to_ut1(ttd)
+
+    # Transform UT1 to TT
+    offset = interpolate(IERS_EOP.UT1_TT, ttd)
+
+    # Transform TT days to UT1 days 
+    return ttd + offset / Tempo.DAY2SEC
+
 end

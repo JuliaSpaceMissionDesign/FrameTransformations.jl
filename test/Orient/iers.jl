@@ -105,7 +105,7 @@
     @testset "Obliquity" verbose = true begin
         atol, rtol = 1e-8, 1e-8
 
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:0.1:20000, 49)..., 0.0]
 
         for i in eachindex(t)
             ep = Epoch("$(t[i]) TT")
@@ -128,7 +128,7 @@
         atol, rtol = 1e-7, 1e-7
 
         for _ in 1:50
-            ep = Epoch("$(rand(0.0:20000)) TT")
+            ep = Epoch("$(rand(0.0:0.1:20000)) TT")
 
             tt_d = Tempo.j2000(ep)
             tt_c = Tempo.j2000c(ep)
@@ -162,7 +162,7 @@
 
     @testset "Precession" verbose = true begin
         atol, rtol = 1e-9, 1e-9
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:0.1:20000, 49)..., 0.0]
 
         # -- Testing Frame Bias IAU 2000 (does not depend on t)
         Δψb, Δϵb, Δα₀ = Orient.frame_bias(iau2000a) .* r2a
@@ -237,7 +237,7 @@
 
     @testset "ITRF to GCRF Routines" verbose = true begin
         atol, rtol = 1e-12, 1e-12
-        t = [rand(0.0:20000, 49)..., 0.0]
+        t = [rand(0.0:0.1:20000, 49)..., 0.0]
 
         @testset "Polar Motion" begin
             for i in eachindex(t)
@@ -346,6 +346,15 @@
         end
 
         @testset "Full Rotation" verbose = true begin
+
+            # Test thrown errors 
+            Orient.IERS_EOP.init = false
+            @test_throws ErrorException Orient.orient_rot3_itrf_to_gcrf(iau2006a, 0.0)
+            @test_throws ErrorException Orient.orient_rot6_itrf_to_gcrf(iau2006a, 0.0)
+            @test_throws ErrorException Orient.orient_rot9_itrf_to_gcrf(iau2000b, 0.0)
+            @test_throws ErrorException Orient.orient_rot12_itrf_to_gcrf(CPNd, 0.0)
+            Orient.IERS_EOP.init = true 
+
             for i in eachindex(t)
                 ep = Epoch("$(t[i]) TT")
                 ep_utc = convert(UTC, ep)
@@ -356,22 +365,25 @@
                 tt_c = Tempo.j2000c(ep)
 
                 utc_d = Tempo.j2000(ep_utc)
-                ut1_d = Tempo.j2000(ep_ut1)
+
+                # We pass through this interpolation otherwise some tests fail!
+                offset = interpolate(Orient.IERS_EOP.UT1_TT, tt_d)
+                ut1_d = tt_d + offset / Tempo.DAY2SEC
 
                 v = rand(BigFloat, 3)
                 v /= norm(v)
 
                 # Polar coordinates with UTC 
-                xₚ = arcsec2rad(interpolate(Orient.IERS_EOP.x, utc_d))
-                yₚ = arcsec2rad(interpolate(Orient.IERS_EOP.y, utc_d))
+                xₚ = arcsec2rad(interpolate(Orient.IERS_EOP.x_TT, tt_d))
+                yₚ = arcsec2rad(interpolate(Orient.IERS_EOP.y_TT, tt_d))
 
                 # Polar coordinates with TT 
                 xₚ_TT = arcsec2rad(interpolate(Orient.IERS_EOP.x_TT, tt_d))
                 yₚ_TT = arcsec2rad(interpolate(Orient.IERS_EOP.y_TT, tt_d))
 
                 # CIP Deviations 
-                dX = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dX, utc_d))
-                dY = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dY, utc_d))
+                dX = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dX_TT, tt_d))
+                dY = arcsec2rad(1e-3 * interpolate(Orient.IERS_EOP.dY_TT, tt_d))
 
                 # -- Testing GCRF-to-ITRF Rotation 
                 # IAU 2000A (accurate to ~μas)

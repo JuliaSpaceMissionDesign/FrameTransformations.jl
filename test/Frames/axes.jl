@@ -118,21 +118,21 @@ kclear()
         smb = rand([:X, :Y, :Z])
         f = t -> angle_to_dcm(t, smb)
 
-        df = t -> (angle_to_dcm(t, smb), Utils.angle_to_δdcm([t, 1], smb))
+        df = t -> (angle_to_dcm(t, smb), angle_to_δdcm([t, 1], smb))
 
         ddf =
             t -> (
                 angle_to_dcm(t, smb),
-                Utils.angle_to_δdcm([t, 1], smb),
-                Utils.angle_to_δ²dcm([t, 1, 0], smb),
+                angle_to_δdcm([t, 1], smb),
+                angle_to_δ²dcm([t, 1, 0], smb),
             )
 
         dddf =
             t -> (
                 angle_to_dcm(t, smb),
-                Utils.angle_to_δdcm([t, 1], smb),
-                Utils.angle_to_δ²dcm([t, 1, 0], smb),
-                Utils.angle_to_δ³dcm([t, 1, 0, 0], smb),
+                angle_to_δdcm([t, 1], smb),
+                angle_to_δ²dcm([t, 1, 0], smb),
+                angle_to_δ³dcm([t, 1, 0, 0], smb),
             )
 
         nth = Threads.nthreads()
@@ -156,7 +156,7 @@ kclear()
         @test is_timefixed(G, AXES_ROT) == false
         @test is_timefixed(G, 2) == false
 
-        B = Orient.DCM_J2000_TO_ECLIPJ2000
+        B = Orient.DCM_MEME2000_TO_ECLIPJ2000
 
         atol, rtol = 1e-12, 1e-12
         # test AD derivatives for all combinations of specified functions
@@ -227,9 +227,9 @@ kclear()
         afun = t -> SA[-sin(t), -cos(t), 0]
         jfun = t -> SA[-cos(t), sin(t), 0]
 
-        eph = CalcephProvider(path(KERNELS[:DE432]))
+        eph = EphemerisProvider(path(KERNELS[:DE432]))
 
-        B = Orient.DCM_J2000_TO_ECLIPJ2000
+        B = Orient.DCM_MEME2000_TO_ECLIPJ2000
 
         F = FrameSystem{4,Float64}(eph)
         add_axes_inertial!(F, ICRF)
@@ -317,7 +317,7 @@ kclear()
         # Load kernels!
         furnsh(path(KERNELS[:LEAP]), path(KERNELS[:PA440]), path(KERNELS[:FK_DE440]))
 
-        eph = CalcephProvider(path(KERNELS[:PA440]))
+        eph = EphemerisProvider(path(KERNELS[:PA440]))
         G = FrameSystem{4,Float64}(eph)
 
         add_axes_inertial!(G, ICRF)
@@ -344,8 +344,8 @@ kclear()
             Rs = sxform("MOON_PA", "J2000", et)
 
             angles = ephem_orient!(y, eph, DJ2000, et / Tempo.DAY2SEC, 31008, 1, 3)
-            ddR = Utils._3angles_to_δ²dcm(y, :ZXZ)
-            dddR = Utils._3angles_to_δ³dcm(y, :ZXZ)
+            ddR = Math._3angles_to_δ²dcm(y, :ZXZ)
+            dddR = Math._3angles_to_δ³dcm(y, :ZXZ)
 
             R3 = rotation3(G, AXES_EPHEM, ICRF, et)
             @test R3[1] ≈ Rs[1:3, 1:3] atol = atol rtol = rtol

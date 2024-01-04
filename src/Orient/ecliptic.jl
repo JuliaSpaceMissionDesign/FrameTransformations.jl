@@ -1,5 +1,5 @@
 
-export DCM_ICRF_TO_J2000_BIAS, DCM_ICRF_TO_ECLIPJ2000, DCM_J2000_TO_ECLIPJ2000
+export DCM_ICRF_TO_ECLIPJ2000, DCM_MEME2000_TO_ECLIPJ2000
 
 """ 
     AXESID_ICRF 
@@ -9,16 +9,17 @@ NAIF Axes ID for the International Celestial Reference Frame (ICRF)
 const AXESID_ICRF = 1
 
 """
-    AXESID_MEME2000
+    AXESID_GCRF 
 
-Axes ID for the Mean Dynamical Equator and Equinox of J2000.0. 
+Axes ID for the Geocentric Celestial Reference Frame (GCRFF)
 
 !!! note 
-    In SPICE the J2000 and ICRF axes are considered equal, thus there exist no 
-    specific NAIF ID for the MEME2000 axes. 22 has been chosen because it is the 
-    first unassigned axes ID among the built-in SPICE frames. 
+    Although the ICRF and GCRF axes are identical, they are based upon a different 
+    timescale. A different ID is here assigned to provide a robust way of distinguishing 
+    between the two. 23 has been chosen because it is one the unassigned axes ID among the 
+    built-in SPICE frames.
 """
-const AXESID_MEME2000 = 22
+const AXESID_GCRF = 23
 
 """ 
     AXESID_ECLIPJ2000 
@@ -32,32 +33,13 @@ const AXESID_ECLIPJ2000 = 17
 # --------------------------------------------------------
 
 """
-    DCM_ICRF_TO_J2000_BIAS
+    DCM_MEME2000_TO_ECLIPJ2000
 
-DCM for the rotation from the International Celestial Reference Frame (`ICRF`) and the 
-Mean Dynamical Equator and Equinox of J2000.0 (`MEME2000`).
-
-!!! note 
-    The frame bias is here computed using the IAU 2006 Precession model, similarly to ESA's 
-    GODOT. Some other software libraries, such as Orekit, use the frame bias of the IAU 2000 
-    precession model. The two definitions differ of about 1 arcsecond.
-
-### References
-- Hilton, James L., and Catherine Y. Hohenkerk. -- Rotation matrix from the mean 
-    dynamical equator and equinox at J2000. 0 to the ICRS. -- Astronomy & Astrophysics 
-    513.2 (2004): 765-770. DOI: [10.1051/0004-6361:20031552](https://www.aanda.org/articles/aa/pdf/2004/02/aa3851.pdf)
-- [SOFA docs](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
-"""
-const DCM_ICRF_TO_J2000_BIAS = orient_bias_precession(iau2006a, 0.0)
-
-"""
-    DCM_J2000_TO_ECLIPJ2000
-
-DCM for the rotation from the Mean Dynamical Equator of J2000 (`MEME2000`) to the 
+DCM for the rotation from the Mean Equator and Equinox of J2000 (`MEME2000`) to the 
 Mean Ecliptic Equinox. This corresponds to the transformation `J2000 -> ECLIPJ2000` 
 in the SPICE toolkit, and uses the mean obliquity of the ecliptic from the IAU 1976 theory.
 """
-const DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau1980, 0.0), :X)
+const DCM_MEME2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau1980, 0.0), :X)
 
 """
     DCM_ICRF_TO_ECLIPJ2000
@@ -65,24 +47,4 @@ const DCM_J2000_TO_ECLIPJ2000 = angle_to_dcm(orient_obliquity(iau1980, 0.0), :X)
 DCM for the rotation from the International Celestial Reference Frame (`ICRF`) to the 
 Mean Ecliptic Equinox of J2000 (`ECLIPJ2000`).
 """
-const DCM_ICRF_TO_ECLIPJ2000 = DCM_ICRF_TO_J2000_BIAS * DCM_J2000_TO_ECLIPJ2000
-
-# --------------------------------------------------------
-# TRANSFORMATIONS
-# --------------------------------------------------------
-
-"""
-    orient_rot3_icrf_to_mememod(t::Number)
-
-Compute the rotation matrix from the International Celestial Reference Frame (ICRF) to 
-the Mean Equinox Mean Equator of Date at time `t`, expressed in TT seconds since `J2000`.
-"""
-function orient_rot3_icrf_to_mememod(t::Number)
-    # convert TT seconds since J2000 to TT centuries since J2000
-    T = t / Tempo.CENTURY2SEC
-
-    # fw_angles holds independent on the IAU Model! 
-    γ, ϕ, ψ, ε = fw_angles(iau2006b, T)
-    R = fw_matrix(γ, ϕ, ψ, ε)
-    return R
-end
+const DCM_ICRF_TO_ECLIPJ2000 = DCM_ICRF_TO_MEME2000 * DCM_MEME2000_TO_ECLIPJ2000

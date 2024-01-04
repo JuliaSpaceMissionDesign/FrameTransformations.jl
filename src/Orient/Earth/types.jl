@@ -98,35 +98,3 @@ struct IAUSeries{N<:Number}
     cc::N # Cos coefficient
     N::SVector{14,Int}
 end
-
-"""
-    EOPData{T}
-EOP Data for IAU 2000A.
-
-!!! note
-    Each field will be an `AbstractInterpolation` indexed by the Julian Day.
-
-### Fields
-- `x, y`: Polar motion with respect to the crust [arcsec].
-- `UT1_UTC`: Irregularities of the rotation angle [s].
-- `LOD`: Length of day offset [ms].
-- `dX, dY`: Celestial pole offsets referred to the model IAU2000A [milliarcsec].
-"""
-struct EOPData{T}
-    x::T
-    y::T
-    UT1_UTC::T
-    LOD::T
-    dX::T
-    dY::T
-
-    # EOP data parametrized by TT epoch
-    # These are parsed automatically in eop.jl to allow direct computation of EOP 
-    # without performing many transformations from TT/TDB, which are considered to be equal.
-    x_TT::T
-    y_TT::T
-    UT1_TT::T
-    LOD_TT::T
-    dX_TT::T
-    dY_TT::T
-end

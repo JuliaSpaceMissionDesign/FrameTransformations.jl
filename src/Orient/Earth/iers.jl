@@ -138,8 +138,8 @@ bpn2xy(A::AbstractMatrix) = @inbounds A[3, 1], A[3, 2]
 
 # Generate cip_coords function for the simplified CPNC model! 
 include("constants/cip_cpnc.jl")
-build_cio_series(
-    :cip_coords, :CPNC, [COEFFS_CPNC_XP, COEFFS_CPNC_YP], [COEFFS_CPNC_X, COEFFS_CPNC_Y]
+build_series(
+    :cip_coords, :CPNC, [COEFFS_CPNC_X, COEFFS_CPNC_Y], [COEFFS_CPNC_XP, COEFFS_CPNC_YP]
 )
 
 """
@@ -210,8 +210,8 @@ include("constants/cio_locator00.jl")
 include("constants/cio_locator06.jl")
 
 # cio_locator(::IAUModel, ::Number, ::FundamentalArguments) = ()
-build_cio_series(:cio_locator, :IAU2000Model, [COEFFS_CIO2000_SP], [COEFFS_CIO2000_S])
-build_cio_series(:cio_locator, :IAU2006Model, [COEFFS_CIO2006_SP], [COEFFS_CIO2006_S])
+build_series(:cio_locator, :IAU2000Model, [COEFFS_CIO2000_S], [COEFFS_CIO2000_SP])
+build_series(:cio_locator, :IAU2006Model, [COEFFS_CIO2006_S], [COEFFS_CIO2006_SP])
 
 """
     cio_locator(m::IAUModel, t::Number, x::Number, y::Number)
@@ -303,26 +303,9 @@ end
 
 # General functions to dispatch generic order derivatives!
 function _dna_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
-    utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
-    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
 
-    utc_d = utc_s / Tempo.DAY2SEC
-
-    # Compute pole coordinates 
-    xₚ = arcsec2rad(interpolate(IERS_EOP.x, utc_d))
-    yₚ = arcsec2rad(interpolate(IERS_EOP.y, utc_d))
-
-    # Compute dX, dY 
-    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX, utc_d))
-    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY, utc_d))
-
-    # Compute LOD 
-    LOD = 1e-3 * interpolate(IERS_EOP.LOD, utc_d)
-
-    return fn(m, t, ut1, xₚ, yₚ, dX, dY, LOD)
-end
-
-function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
+    # Check that EOP data has been initialised
+    check_eop_init()
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
@@ -331,21 +314,47 @@ function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
     xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
     yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
 
-    # Transform UT1 to TT
-    offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset / Tempo.DAY2SEC
+    # Compute dX, dY 
+    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX_TT, ttd))
+    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY_TT, ttd))
+
+    # Compute LOD 
+    LOD = 1e-3 * interpolate(IERS_EOP.LOD_TT, ttd)
+
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
+
+    return fn(m, t, ut1, xₚ, yₚ, dX, dY, LOD)
+end
+
+function _dnb_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
+
+    # Check that EOP data has been initialised
+    check_eop_init()
+
+    # Convert TT secs since J2000 to TT days
+    ttd = t / Tempo.DAY2SEC
+
+    # Compute pole coordinates 
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
+
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return fn(m, t, ut1, xₚ, yₚ, 0.0, 0.0)
 end
 
 function _dnd_itrf_to_gcrf(m::IAUModel, fn::Function, t::Number)
+    
+    # Check that EOP data has been initialised
+    check_eop_init()
 
     # Convert TT secs since J2000 to TT days
     ttd = t / Tempo.DAY2SEC
 
-    # Transform UT1 to TT
-    offset = interpolate(IERS_EOP.UT1_TT, ttd)
-    ut1 = ttd + offset / Tempo.DAY2SEC
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return fn(m, t, ut1, 0.0, 0.0, 0.0, 0.0)
 end
@@ -389,20 +398,23 @@ TT seconds since `J2000`, according to the IAU Model `m`, as follows:
 - Capitaine N. and Wallace P. T. (2008), Concise CIO based precession-nutation formulations
 """
 function orient_rot3_itrf_to_gcrf(m::Union{<:IAU2000A,<:IAU2006A}, t::Number)
+    
+    # Check that EOP data has been initialised
+    check_eop_init()
 
-    # Find UT1 and UTC dates
-    utc_s = Tempo.apply_offsets(Tempo.TIMESCALES, t, TT, UTC)
-    ut1 = Tempo.apply_offsets(Tempo.TIMESCALES, utc_s, UTC, UT1) / Tempo.DAY2SEC
-
-    utc_d = utc_s / Tempo.DAY2SEC
+    # Convert TT secs since J2000 to TT days
+    ttd = t / Tempo.DAY2SEC
 
     # Compute pole coordinates 
-    xₚ = arcsec2rad(interpolate(IERS_EOP.x, utc_d))
-    yₚ = arcsec2rad(interpolate(IERS_EOP.y, utc_d))
+    xₚ = arcsec2rad(interpolate(IERS_EOP.x_TT, ttd))
+    yₚ = arcsec2rad(interpolate(IERS_EOP.y_TT, ttd))
 
     # Compute dX, dY 
-    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX, utc_d))
-    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY, utc_d))
+    dX = arcsec2rad(1e-3 * interpolate(IERS_EOP.dX_TT, ttd))
+    dY = arcsec2rad(1e-3 * interpolate(IERS_EOP.dY_TT, ttd))
+
+    # Transform TT days to UT1 days
+    ut1 = iers_tt_to_ut1(ttd)
 
     return orient_rot3_itrf_to_gcrf(m, t, ut1, xₚ, yₚ, dX, dY)
 end

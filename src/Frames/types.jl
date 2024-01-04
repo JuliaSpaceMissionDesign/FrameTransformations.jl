@@ -187,7 +187,7 @@ end
 end
 
 """
-    FrameAxesNode{O, T, N} <: AbstractGraphNode
+    FrameAxesNode{O, T, N} <: AbstractJSMDGraphNode
 
 Define a set of axes.
 
@@ -201,7 +201,7 @@ Define a set of axes.
 - `f` -- `FrameAxesFunctions` container 
 - `angles` -- vector storing the libration angles retrived from ephemerides
 """
-struct FrameAxesNode{O,T,N} <: AbstractGraphNode
+struct FrameAxesNode{O,T,N} <: AbstractJSMDGraphNode
     name::Symbol
     class::Symbol
     id::Int
@@ -306,7 +306,7 @@ end
 end
 
 """
-    FramePointNode{O, T, N} <: AbstractGraphNode
+    FramePointNode{O, T, N} <: AbstractJSMDGraphNode
 
 Define a frame system point.
 
@@ -321,7 +321,7 @@ Define a frame system point.
 - `nzo` -- last order at which `stv` has been computed 
 - `f` -- `FramePointFunctions` container 
 """
-struct FramePointNode{O,T,N} <: AbstractGraphNode
+struct FramePointNode{O,T,N} <: AbstractJSMDGraphNode
     name::Symbol
     class::Symbol
     axesid::Int
@@ -452,12 +452,13 @@ to compute transformations that involve ephemeris data.
 
 ### Examples 
 ```julia-repl
-julia> eph = CalcephProvider(DE440_KERNEL_PATH)
-CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0))
+julia> using Ephemerides 
+
+julia> eph = EphemerisProvider(DE440_KERNEL_PATH);
 
 julia> F = FrameSystem{2, Float64}(eph)
-FrameSystem{2, Float64, BarycentricDynamicalTime, CalcephProvider}(
-  eph: CalcephProvider(CALCEPH.Ephem(Ptr{Nothing} @0x0000000009e210c0)),
+FrameSystem{2, Float64, BarycentricDynamicalTime, EphemerisProvider}(
+  eph: 1-kernel EphemerisProvider,
   points: EMPTY
   axes: EMPTY
 )

@@ -6,7 +6,12 @@ const CI = get(ENV, "CI", "false") == "true"
 if CI 
     Pkg.add("Ephemerides")
     Pkg.add("ReferenceFrameRotations")
+    Pkg.add("JSMDUtils")
+    Pkg.add("Literate")
+    Pkg.add("Dates")
 end
+
+include("generate.jl")
 
 makedocs(;
     authors="Julia Space Mission Design Development Team",
@@ -17,12 +22,17 @@ makedocs(;
         "Home" => "index.md",
 
         "Tutorials" => [
-            "01 - Frame System" => "Tutorials/t00_frames.md",
-            "02 - Axes" => "Tutorials/t01_axes.md",
-            "03 - Points" => "Tutorials/t02_points.md",
-            "04 - Use Case: CR3BP" => "Tutorials/t03_cr3bp.md",
-            "05 - Use Case: High Fidelity" => "Tutorials/t04_hifi.md",
-            "06 - Multithreading" => "Tutorials/t05_multithread.md"
+            "01 - Frame System" => "Tutorials/gen/t00_frames.md",
+            "02 - Axes" => "Tutorials/gen/t01_axes.md",
+            "03 - Points" => "Tutorials/gen/t02_points.md",
+            "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
+            "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
+            "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
+        ],
+
+        "Use Cases" => [
+            "CR3BP" => "Examples/gen/e01_cr3bp.md",
+            "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md"
         ],
 
         "Benchmarks" => "benchmarks.md",
@@ -36,11 +46,6 @@ makedocs(;
             "Orient" => [
                 "Public API" => "Modules/orient_api.md"
                 "Low-level API" => "Modules/orient_lapi.md"
-            ],
-
-            "Utils" => [
-                "Public API" => "Modules/utils_api.md"
-                "Low-level API" => "Modules/utils_lapi.md"
             ],
 
         ], 

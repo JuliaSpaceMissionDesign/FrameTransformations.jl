@@ -109,13 +109,6 @@ are currently foreseen.
     <td class="tg-0pky">🔵</td>
     <td class="tg-0pky">Deeply tested against ERFA. Models with different precisions are available.</td>
   </tr>
-    <tr>
-    <td class="tg-0pky">
-        Fetch automatically IERS EOP.
-    </td>
-    <td class="tg-0pky">🟢</td>
-    <td class="tg-0pky"></td>
-  </tr>
   <tr>
     <td class="tg-0pky">
         Fetch leapseconds files automatically.
@@ -123,55 +116,6 @@ are currently foreseen.
     <td class="tg-0pky">🟢</td>
     <td class="tg-0pky"></td>
   </tr>
-</tbody>
-</table>
-```
-
-
-## Utils 
-
-The initial development plan foresaw the possibility to automatically generate a frame system by parsing NASA JPL frame kernels. Although this capability is still desired within the JSMD ecosystem, we are currently re-evaluating whether it should be implemented within this package. Additionally, part of the math routines that are here available will be moved in the dedicated [JSMDUtils.jl](https://github.com/JuliaSpaceMissionDesign/JSMDUtils.jl) package.
-
-```@raw html
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-fymr{border-color:inherit;font-weight:bold;text-align:left;vertical-align:top}
-.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-</style>
-<table class="tg">
-<thead>
-  <tr>
-    <th class="tg-fymr" style="width:40%">Feature</th>
-    <th class="tg-fymr" style="width:10%">Status</th>
-    <th class="tg-fymr" style="width:50%">Comment</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td class="tg-0pky">Read JPL ASCII PCK files (constants).</td>
-    <td class="tg-0pky">🟢</td>
-    <td class="tg-0pky">Fully implemented in FrameTransformations. Tested on NAIF's pck00010 and pck00011 files.</td>
-  </tr>
-    <tr>
-    <td class="tg-0pky">Refactor math functions in JSMDUtils.</td>
-    <td class="tg-0pky">🔴</td>
-    <td class="tg-0pky">Soon planned.</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">Read NASA JPL frame kernels.</td>
-    <td class="tg-0pky">⚪</td>
-    <td class="tg-0pky">Might be implemented in a different package.</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">Write NASA JPL frame kernels</td>
-    <td class="tg-0pky">⚪</td>
-    <td class="tg-0pky">Might be implemented in a different package.</td>
-  </tr>
-
 </tbody>
 </table>
 ```
