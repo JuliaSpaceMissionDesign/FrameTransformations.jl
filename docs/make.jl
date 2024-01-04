@@ -48,11 +48,6 @@ makedocs(;
                 "Low-level API" => "Modules/orient_lapi.md"
             ],
 
-            "Utils" => [
-                "Public API" => "Modules/utils_api.md"
-                "Low-level API" => "Modules/utils_lapi.md"
-            ],
-
         ], 
 
         "Roadmap" => "roadmap.md"
