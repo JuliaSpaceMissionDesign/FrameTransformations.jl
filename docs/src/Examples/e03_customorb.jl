@@ -42,7 +42,6 @@ add_point_root!(G, :Earth, 399, 1)
 using JSMDInterfaces.Math: interpolate
 using JSMDUtils.Math: InterpCubicSplines
 
-# Create dummy orbits
 c = 2π/86400
 de = 0:3600:2*86400;
 fv(t) = [cos(c*t), sin(c*t), 0, -c*sin(c*t), c*cos(c*t), 0];
