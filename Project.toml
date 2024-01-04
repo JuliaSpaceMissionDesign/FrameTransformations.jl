@@ -1,7 +1,7 @@
 name = "FrameTransformations"
 uuid = "5be70612-1674-42c4-a038-c376b6dc81ed"
 authors = ["JSMD Team"]
-version = "1.3.0"
+version = "1.3.1"
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
