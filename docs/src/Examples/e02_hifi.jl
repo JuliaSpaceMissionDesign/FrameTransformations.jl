@@ -1,4 +1,4 @@
-# # [Use Case: High Fidelity](@id tutorial_04_hifi)
+# # [Use Case: High Fidelity](@id example_02_hifi)
 # _This example was generated on DATEOFTODAY._
 
 # Once the general structure of the [`FrameSystem`](@ref) is understood, we can pass to 

@@ -32,7 +32,8 @@ makedocs(;
 
         "Use Cases" => [
             "CR3BP" => "Examples/gen/e01_cr3bp.md",
-            "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md"
+            "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md",
+            "Custom Orbit Representation" => "Examples/gen/e03_customorb.md"
         ],
 
         "Benchmarks" => "benchmarks.md",
