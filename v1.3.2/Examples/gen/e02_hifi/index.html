@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>High-Fidelity Earth-Moon Environment · FrameTransformations.jl</title><meta name="title" content="High-Fidelity Earth-Moon Environment · FrameTransformations.jl"/><meta property="og:title" content="High-Fidelity Earth-Moon Environment · FrameTransformations.jl"/><meta property="twitter:title" content="High-Fidelity Earth-Moon Environment · FrameTransformations.jl"/><meta name="description" content="Documentation for FrameTransformations.jl."/><meta property="og:description" content="Documentation for FrameTransformations.jl."/><meta property="twitter:description" content="Documentation for FrameTransformations.jl."/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../../"><img src="../../../assets/logo.png" alt="FrameTransformations.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">FrameTransformations.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../../../Tutorials/gen/t00_frames/">01 - Frame System</a></li><li><a class="tocitem" href="../../../Tutorials/gen/t01_axes/">02 - Axes</a></li><li><a class="tocitem" href="../../../Tutorials/gen/t02_points/">03 - Points</a></li><li><a class="tocitem" href="../../../Tutorials/gen/t03_eop/">04 - Loading EOP Data</a></li><li><a class="tocitem" href="../../../Tutorials/gen/t04_lighttime/">05 - Light Time Corrections</a></li><li><a class="tocitem" href="../../../Tutorials/gen/t05_multithread/">06 - Multithreading</a></li></ul></li><li><span class="tocitem">Use Cases</span><ul><li><a class="tocitem" href="../e01_cr3bp/">CR3BP</a></li><li class="is-active"><a class="tocitem" href>High-Fidelity Earth-Moon Environment</a></li><li><a class="tocitem" href="../e03_customorb/">Custom Orbit Representation</a></li></ul></li><li><a class="tocitem" href="../../../benchmarks/">Benchmarks</a></li><li><span class="tocitem">Modules</span><ul><li><input class="collapse-toggle" id="menuitem-5-1" type="checkbox"/><label class="tocitem" for="menuitem-5-1"><span class="docs-label">Frames</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../../Modules/frames_api/">Public API</a></li><li><a class="tocitem" href="../../../Modules/frames_lapi/">Low-level API</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-2" type="checkbox"/><label class="tocitem" for="menuitem-5-2"><span class="docs-label">Orient</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../../Modules/orient_api/">Public API</a></li><li><a class="tocitem" href="../../../Modules/orient_lapi/">Low-level API</a></li></ul></li></ul></li><li><a class="tocitem" href="../../../roadmap/">Roadmap</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Use Cases</a></li><li class="is-active"><a href>High-Fidelity Earth-Moon Environment</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>High-Fidelity Earth-Moon Environment</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaSpaceMissionDesign/FrameTransformations.jl/blob/main/docs/src/Examples/e02_hifi.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="example_02_hifi"><a class="docs-heading-anchor" href="#example_02_hifi">Use Case: High Fidelity</a><a id="example_02_hifi-1"></a><a class="docs-heading-anchor-permalink" href="#example_02_hifi" title="Permalink"></a></h1><p><em>This example was generated on 2024-01-05T20:08:57.824.</em></p><p>Once the general structure of the <a href="../../../Modules/frames_api/#FrameTransformations.Frames.FrameSystem"><code>FrameSystem</code></a> is understood, we can pass to a use case in which we want to build and exploit our frame system to perform computations in a high-fidelity environment.</p><h3 id="Frame-system-setup"><a class="docs-heading-anchor" href="#Frame-system-setup">Frame system setup</a><a id="Frame-system-setup-1"></a><a class="docs-heading-anchor-permalink" href="#Frame-system-setup" title="Permalink"></a></h3><p>In this example, we plan on using ephemeris data to retrieve accurate positions of the planets and the orientation of certain reference frames. Therefore, we create an ephemeris provider object leveraging our own <a href="https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl"><code>Ephemerides.jl</code></a> package and use it to generate a frame system instance:</p><pre><code class="language-julia hljs">using FrameTransformations
+using Ephemerides
+using LinearAlgebra
+using ReferenceFrameRotations
+
+url_pck = &quot;https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de421_1900-2050.bpc&quot;;
+url_spk = &quot;https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp&quot;;
+
+eph = EphemerisProvider([download(url_spk), download(url_pck)])
+
+FRAMES = FrameSystem{3, Float64}(eph)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">FrameSystem{3, Float64, BarycentricDynamicalTime, Ephemerides.EphemerisProvider}(
+  eph: 2-kernel EphemerisProvider,
+  points: EMPTY
+  axes: EMPTY
+)
+</code></pre><p>Once the graph is created, we assign the <code>GCRF</code> (Geocentric Celestial Reference Frame) as our set of inertial root-axes:</p><pre><code class="language-julia hljs">@axes GCRF 1 GeocentricCelestialReferenceFrame
+
+add_axes_inertial!(FRAMES, GCRF)</code></pre><p>These axes are practically coincident with the <code>ICRF</code>.</p><p>In this scenario, we will be working within the Cislunar environment, therefore we will need the major bodies that influence this dynamic regime, i..e, the Earth, the Moon and the Sun. To do so, we also define the Solar System Barycenter (SSB) and the Earth-Moon Barycenter (EMB) as the ephemeris data of the remaining bodies is expressed with respect to those.</p><p>For this example, we will assume the SSB is our root point:</p><pre><code class="language-julia hljs">@point SSB 0
+@point EMB 3
+@point Sun 10
+@point Earth 399
+@point Moon 301
+
+add_point_root!(FRAMES, SSB, GCRF)
+add_point_ephemeris!(FRAMES, EMB)
+add_point_ephemeris!(FRAMES, Earth)
+add_point_ephemeris!(FRAMES, Moon)
+add_point_ephemeris!(FRAMES, Sun)</code></pre><h3 id="Registering-body-fixed-axes"><a class="docs-heading-anchor" href="#Registering-body-fixed-axes">Registering body-fixed axes</a><a id="Registering-body-fixed-axes-1"></a><a class="docs-heading-anchor-permalink" href="#Registering-body-fixed-axes" title="Permalink"></a></h3><p>At this point, we want to be able to transform back and forth from body-fixed axes of the Earth and the Moon to the <code>GCRF</code>. The Earth and the Moon cases are actually <em>special cases</em> because they have both high-accuracy and low-precision body-fixed rotation models.</p><p>Let&#39;s start with the low precision ones: <code>IAU_EARTH</code> and <code>IAU_MOON</code>. To register such frames, we first need to parse a <a href="../../../Modules/orient_lapi/#FrameTransformations.Orient.TPC"><code>TPC</code></a> file with the required constants:</p><pre><code class="language-julia hljs">tpc = &quot;https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00011.tpc&quot;
+iau = load(TPC(download(tpc)));
+
+@axes IAU_EARTH 3
+@axes IAU_MOON 4
+
+add_axes_bcrtod!(FRAMES, IAU_EARTH, Earth, iau)
+add_axes_bcrtod!(FRAMES, IAU_MOON, Moon, iau)</code></pre><p>The registration of this type of axes requires either an alias or the ID of the point associated to the body.</p><p>For convenience, let us also insert a set of inertial axes for the Moon. This can be done using the IAU-based Body-Centric Inertial J2000 axes available through the <a href="../../../Modules/frames_api/#FrameTransformations.Frames.add_axes_bci2000!"><code>add_axes_bci2000!</code></a> function, which defines a rotation from the <code>ICRF</code> to the local equatorial plane of the body at the J2000 epoch.</p><pre><code class="language-julia hljs">@axes LME2000 5
+
+add_axes_bci2000!(FRAMES, LME2000, Moon, iau);</code></pre><p>Finally, we complete the axes definition by inserting the high-precision Earth and Lunar body-fixed rotation models.</p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>In order to use <code>IERS</code> associated reference frames, EOP must be loaded. See also <a href="../../../Modules/orient_api/#FrameTransformations.Orient.prepare_eop"><code>Orient.prepare_eop</code></a>, <a href="../../../Modules/orient_api/#FrameTransformations.Orient.init_eop"><code>Orient.init_eop</code></a>.</p></div></div><pre><code class="language-julia hljs">url_eop = &quot;https://datacenter.iers.org/data/csv/finals2000A.data.csv&quot;
+eopfile = &quot;iau2000a&quot;
+
+Orient.prepare_eop(download(url_eop), eopfile)
+Orient.init_eop(eopfile * &quot;.eop.dat&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>IERS EOP file &#39;/tmp/jl_RKlw9EX4Tw&#39; converted to &#39;iau2000a.eop.dat&#39;.
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>EOP initialized from file &#39;iau2000a.eop.dat&#39;.</code></pre><p>For this purpose, <code>FrameTransformations</code> provides two  high-level functions that can be used to ease these definitions: <a href="../../../Modules/frames_api/#FrameTransformations.Frames.add_axes_itrf!"><code>add_axes_itrf!</code></a> and <a href="../../../Modules/frames_api/#FrameTransformations.Frames.add_axes_pa421!"><code>add_axes_pa421!</code></a>.</p><pre><code class="language-julia hljs">@axes ITRF 6
+@axes MOONPA_DE421 31006
+
+add_axes_itrf!(FRAMES, ITRF, GCRF)
+add_axes_pa421!(FRAMES, MOONPA_DE421)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>ignoring #223, frame system order is less than 4
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ FrameTransformations.Frames ~/work/FrameTransformations.jl/FrameTransformations.jl/src/Frames/axes.jl:512</span></code></pre><p>The default ITRF model is the <a href="../../../Modules/orient_api/#FrameTransformations.Orient.iau2006b"><code>iau2006b</code></a>, but other approximations are also <a href="../../../Modules/orient_api/#iers_models">available</a>. If one was interested in the Moon&#39;s PA440 axes, a similar function named <a href="../../../Modules/frames_api/#FrameTransformations.Frames.add_axes_pa440!"><code>add_axes_pa440!</code></a> is available.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>To correctly use the <a href="../../../Modules/frames_api/#FrameTransformations.Frames.add_axes_pa421!"><code>add_axes_pa421!</code></a> function, the frame system must contain an ephemeris provider that has loaded the necessary PCK kernels with the DE421 data.</p></div></div><pre><code class="language-julia hljs">FRAMES</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">FrameSystem{3, Float64, BarycentricDynamicalTime, Ephemerides.EphemerisProvider}(
+  eph: 2-kernel EphemerisProvider,
+  points: 	 
+	 SSB
+	  ├── EMB 
+	   ├── Earth 
+	   ├── Moon 
+	  ├── Sun 
+	 
+  axes: 	
+	GCRF
+	 ├── IAU_EARTH 
+	 ├── IAU_MOON 
+	 ├── LME2000 
+	 ├── ITRF 
+	 ├── MOONPA_DE421 
+	
+)
+</code></pre><p>To begin exploiting our newly completed frame system, we assumed that our <code>SC</code> is on a circular equatorial orbit around the Moon at an altitude of 500 km, so that at the epoch <code>e</code>, the spacecraft state vector is updated as:</p><pre><code class="language-julia hljs">@point SC -1_900_000
+
+add_point_updatable!(FRAMES, SC, Moon, LME2000)
+
+e = Epoch(&quot;2020-01-01T12:45:30.0 TDB&quot;);
+x = [2274.0, 0.0, 0.0, 0.0, sqrt(4904.87/2274.0), 0.0];
+
+update_point!(FRAMES, SC, x, e)</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The timescale used for the <code>Epoch</code> must be the same used in the <code>FrameSystem</code>.</p></div></div><p>At this point, we are completely free to compute the state of the spacecraft with respect to any other point registered in the frame system with respect to any known set of axes at the epoch <code>e</code>. For example, the state in the <code>LME2000</code> is:</p><pre><code class="language-julia hljs">vector6(FRAMES, Moon, SC, LME2000, e)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
+ 2274.0
+    0.0
+    0.0
+    0.0
+    1.4686507128813133
+    0.0</code></pre><p>The spacecraft state with respect to the Earth in the <code>GCRF</code>, <code>IAU_EARTH</code> and <code>ITRF</code> is instead:</p><pre><code class="language-julia hljs">vector6(FRAMES, Earth, SC, GCRF, e)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
+ 401327.3105864163
+ -36183.16662923372
+ -54688.10779533886
+      0.21054873609459027
+      2.2235437514768055
+      0.9632321086029556</code></pre><pre><code class="language-julia hljs">vector6(FRAMES, Earth, SC, IAU_EARTH, e)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
+ 180191.3156429707
+ 360539.43900980003
+ -53907.54668349596
+     24.296925172130727
+    -12.133987802430006
+      0.9636312214363585</code></pre><pre><code class="language-julia hljs">vector6(FRAMES, Earth, SC, ITRF, e)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element StaticArraysCore.SVector{6, Float64} with indices SOneTo(6):
+ 180632.14381592075
+ 360316.9074399868
+ -53920.08658587134
+     24.281930057066063
+    -12.16366463518875
+      0.9635795943144946</code></pre><p>while the position with respect to the Moon in the <code>IAU_MOON</code> and <code>PA421</code> axes:</p><pre><code class="language-julia hljs">vector3(FRAMES, Moon, SC, IAU_MOON, e)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
+ -2265.003321467859
+  -201.71716040981087
+   -12.088876530484503</code></pre><pre><code class="language-julia hljs">vector3(FRAMES, Moon, SC, MOONPA_DE421, e)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
+ -2265.0607532005547
+  -201.0240734585426
+   -12.84936576926891</code></pre><p>These last examples are intended to show how easily the state of a spacecraft with respect to any other body can be retrieved by properly leveraging the <a href="../../../Modules/frames_api/#FrameTransformations.Frames.FrameSystem"><code>FrameSystem</code></a> and the high-level routines provided by this package.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../e01_cr3bp/">« CR3BP</a><a class="docs-footer-nextpage" href="../e03_customorb/">Custom Orbit Representation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Friday 5 January 2024 20:10">Friday 5 January 2024</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
