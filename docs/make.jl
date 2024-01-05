@@ -7,6 +7,7 @@ if CI
     Pkg.add("Ephemerides")
     Pkg.add("ReferenceFrameRotations")
     Pkg.add("JSMDUtils")
+    Pkg.add("JSMDInterfaces")
     Pkg.add("Literate")
     Pkg.add("Dates")
 end
