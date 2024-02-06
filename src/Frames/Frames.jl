@@ -12,7 +12,6 @@ using PreallocationTools
 using ReferenceFrameRotations
 using StaticArrays
 
-
 # JSMD ecosystem dependencies 
 # ===========================
 
@@ -55,24 +54,20 @@ using SMDGraphs:
     get_node_id
 
 using Tempo
-using Tempo:
-    AbstractTimeScale,
-    BarycentricDynamicalTime,
-    Epoch,
-    J2000,
-    DJ2000,
-    CENTURY2DAY,
-    CENTURY2SEC,
-    DAY2SEC,
-    j2000
+using Tempo: AbstractTimeScale
 
 using FrameTransformations.Orient
 using FrameTransformations.Orient: AXESID_ICRF
+
+# Imports
+# ===========================
 
 import LinearAlgebra: dot, norm, matprod, UniformScaling
 import StaticArrays: similar_type, Size, MMatrix, SMatrix
 
 import SMDGraphs: get_node_id
+
+# ===========================
 
 include("rotation.jl")
 
@@ -83,13 +78,7 @@ include("points.jl")
 include("lightime.jl")
 include("transform.jl")
 
-# Rotations definitions 
-include("Definitions/common.jl")
-include("Definitions/topocentric.jl")
-include("Definitions/twovectors.jl")
-include("Definitions/ecliptic.jl")
-include("Definitions/planets.jl")
-include("Definitions/earth.jl")
+# Frames definitions
 include("Definitions/moon.jl")
 
 end
