@@ -123,8 +123,8 @@ macro axes(name::Symbol, id::Int, type::Union{Symbol,Nothing}=nothing)
     typ_str = String(type)
     name_str = String(name)
 
-    axesid_expr = :(@inline Frames.axes_id(::$type) = $id)
-    name_expr = :(Frames.axes_name(::$type) = Symbol($name_str))
+    axesid_expr = :(@inline FrameTransformations.axes_id(::$type) = $id)
+    name_expr = :(FrameTransformations.axes_name(::$type) = Symbol($name_str))
 
     return quote
         """

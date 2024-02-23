@@ -135,7 +135,7 @@ for (order, axfun1, axfun2, pfun1, pfun2, compfun, vfwd, vbwd) in zip(
                             axes.angles[tid].du,
                             frame.eph,
                             DJ2000,
-                            t / DAY2SEC,
+                            t / Tempo.DAY2SEC,
                             axes.id,
                             axes.parentid,
                             $order - 1,

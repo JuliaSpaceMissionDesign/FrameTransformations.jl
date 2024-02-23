@@ -3,8 +3,7 @@ kclear()
 
 # Register axes
 @axes ICRF 1 InternationalCelestialReferenceFrame
-@axes ECLIPJ2000 17
-@axes IAU_EARTH 10013
+@axes EME2000 17
 
 # Register points 
 @point SSB 0 SolarSystemBarycenter
@@ -19,11 +18,8 @@ kclear()
     # load spice kernels 
     furnsh(path(KERNELS[:DE432]), path(KERNELS[:PCK10]), path(KERNELS[:LEAP]))
 
-    # Spice ECLIPJ2000 has an older orientation!
+    # Spice EME2000 has an older orientation!
     DCM_ECLIPJ2000 = DCM(pxform("J2000", "ECLIPJ2000", 0.0))
-
-    # Load TPC 
-    tpc_constants = FrameTransformations.load(TPC(path(KERNELS[:PCK10])))
 
     # Create frame system
     eph = EphemerisProvider(path(KERNELS[:DE432]))
@@ -31,8 +27,7 @@ kclear()
 
     # add axes
     add_axes_inertial!(FRAMES, ICRF)
-    add_axes_fixedoffset!(FRAMES, ECLIPJ2000, ICRF, DCM_ECLIPJ2000)
-    add_axes_bcrtod!(FRAMES, IAU_EARTH, Earth, tpc_constants)
+    add_axes_fixedoffset!(FRAMES, EME2000, ICRF, DCM_ECLIPJ2000)
 
     # add points
     add_point_root!(FRAMES, SSB, ICRF)
@@ -66,7 +61,7 @@ kclear()
                         @test x ≈ s atol = tol rtol = tol
 
                         # Corrections with inertial rotations
-                        x = bfun(FRAMES, Sun, SaturnB, ECLIPJ2000, et, bcorr, bdir)
+                        x = bfun(FRAMES, Sun, SaturnB, EME2000, et, bcorr, bdir)
                         s = sfun("6", et, "ECLIPJ2000", sdir * scorr, "SUN")[1]
                         @test x ≈ s atol = tol rtol = tol
 
@@ -75,20 +70,20 @@ kclear()
                             FRAMES,
                             Sun,
                             SaturnB,
-                            IAU_EARTH,
+                            ICRF,
                             et,
                             bcorr,
                             bdir;
                             axescenter=Earth,
                         )
-                        s = sfun("6", et, "IAU_EARTH", sdir * scorr, "SUN")[1]
+                        s = sfun("6", et, "J2000", sdir * scorr, "SUN")[1]
                         @test x ≈ s atol = tol rtol = tol
 
                         # # Corrections with time rotations (AXESCENTER = TO)
                         x = bfun(
-                            FRAMES, Sun, Earth, IAU_EARTH, et, bcorr, bdir; axescenter=Earth
+                            FRAMES, Sun, Earth, ICRF, et, bcorr, bdir; axescenter=Earth
                         )
-                        s = sfun("EARTH", et, "IAU_EARTH", sdir * scorr, "SUN")[1]
+                        s = sfun("EARTH", et, "J2000", sdir * scorr, "SUN")[1]
                         @test x ≈ s atol = tol rtol = tol
 
                         # # Corrections with time rotations (AXESCENTER = FROM)
@@ -96,13 +91,13 @@ kclear()
                             FRAMES,
                             Earth,
                             SaturnB,
-                            IAU_EARTH,
+                            ICRF,
                             et,
                             bcorr,
                             bdir;
                             axescenter=Earth,
                         )
-                        s = sfun("6", et, "IAU_EARTH", sdir * scorr, "EARTH")[1]
+                        s = sfun("6", et, "J2000", sdir * scorr, "EARTH")[1]
                         @test x ≈ s atol = tol rtol = tol
                     end
                 end
@@ -130,7 +125,7 @@ kclear()
                         @test x ≈ s atol = tol rtol = tol
 
                         # Corrections with inertial rotations
-                        x = bfun(FRAMES, Sun, SaturnB, ECLIPJ2000, et, bcorr, bdir; iters=3)
+                        x = bfun(FRAMES, Sun, SaturnB, EME2000, et, bcorr, bdir; iters=3)
                         s = sfun("6", et, "ECLIPJ2000", sdir * scorr, "SUN")[1]
                         @test x ≈ s atol = tol rtol = tol
 
@@ -139,7 +134,7 @@ kclear()
                             FRAMES,
                             Sun,
                             SaturnB,
-                            IAU_EARTH,
+                            ICRF,
                             et,
                             bcorr,
                             bdir;
@@ -147,7 +142,7 @@ kclear()
                             iters=3,
                         )
 
-                        s = sfun("6", et, "IAU_EARTH", sdir * scorr, "SUN")[1]
+                        s = sfun("6", et, "J2000", sdir * scorr, "SUN")[1]
                         @test x ≈ s atol = tol rtol = tol
 
                         # # Corrections with time rotations (AXESCENTER = TO)
@@ -155,7 +150,7 @@ kclear()
                             FRAMES,
                             Sun,
                             Earth,
-                            IAU_EARTH,
+                            ICRF,
                             et,
                             bcorr,
                             bdir;
@@ -163,7 +158,7 @@ kclear()
                             iters=3,
                         )
 
-                        s = sfun("EARTH", et, "IAU_EARTH", sdir * scorr, "SUN")[1]
+                        s = sfun("EARTH", et, "J2000", sdir * scorr, "SUN")[1]
                         @test x ≈ s atol = tol rtol = tol
 
                         # # Corrections with time rotations (AXESCENTER = FROM)
@@ -171,7 +166,7 @@ kclear()
                             FRAMES,
                             Earth,
                             SaturnB,
-                            IAU_EARTH,
+                            ICRF,
                             et,
                             bcorr,
                             bdir;
@@ -179,7 +174,7 @@ kclear()
                             iters=3,
                         )
 
-                        s = sfun("6", et, "IAU_EARTH", sdir * scorr, "EARTH")[1]
+                        s = sfun("6", et, "J2000", sdir * scorr, "EARTH")[1]
                         @test x ≈ s atol = tol rtol = tol
                     end
                 end

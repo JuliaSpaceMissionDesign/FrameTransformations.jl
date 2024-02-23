@@ -20,12 +20,12 @@
     add_axes_icrf!(frames)
 
     node = frames_axes(frames).nodes[1]
-    @test node.id == Orient.AXESID_ICRF
+    @test node.id == AXESID_ICRF
     @test node.name == :ICRF
 
     add_axes_gcrf!(frames)
     node = frames_axes(frames).nodes[2]
-    @test node.id == Orient.AXESID_GCRF
+    @test node.id == AXESID_GCRF
     @test node.name == :GCRF 
 
     # Test they have an identity rotation
@@ -38,7 +38,7 @@
     add_axes_gcrf!(frames)
 
     node = frames_axes(frames).nodes[1]
-    @test node.id == Orient.AXESID_GCRF
+    @test node.id == AXESID_GCRF
     @test node.name == :GCRF 
 
 end;

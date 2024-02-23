@@ -1,4 +1,9 @@
 
+export AXESID_ICRF, AXESID_GCRF, 
+       AXESID_ECL2000, AXESID_EME2000, 
+       AXESID_MOONME_DE421, AXESID_MOONPA_DE421, AXESID_MOONPA_DE440
+
+
 """ 
     AXESID_ICRF 
    
@@ -20,11 +25,11 @@ Axes ID for the Geocentric Celestial Reference Frame (GCRFF)
 const AXESID_GCRF = 23
 
 """ 
-    AXESID_MEC2000 
+    AXESID_MEME2000 
    
-NAIF Axes ID for the Mean Ecliptic Equinox of J2000 (MEC2000) 
+NAIF Axes ID for the Mean Ecliptic Equinox of J2000 (ECL2000).
 """
-const AXESID_MEC2000 = 17
+const AXESID_ECL2000 = 17
 
 """
     AXESID_EME2000

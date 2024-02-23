@@ -388,17 +388,17 @@ julia> F = FrameSystem{2, Float64}();
 
 julia> @axes ICRF 1 
 
-julia> @axes ECLIPJ2000 17 
+julia> @axes MEME2000 17 
 
 julia> add_axes_inertial!(F, ICRF)
 
-julia> add_axes_eclipj2000!(F, ECLIPJ2000, ICRF)
+julia> add_axes_MEME2000!(F, MEME2000, ICRF)
 
-julia> rotation6(F, ICRF, ECLIPJ2000, 0.0)
+julia> rotation6(F, ICRF, MEME2000, 0.0)
 Rotation{2, Float64}
 [...]
 
-julia> rotation9(F, ICRF, ECLIPJ2000, 0.0)
+julia> rotation9(F, ICRF, MEME2000, 0.0)
 ERROR: Insufficient frame system order: transformation requires at least order 3.
 
 ```
@@ -418,22 +418,22 @@ julia> F = FrameSystem{1, Float64, TerrestrialTime}();
 
 julia> @axes ICRF 1 
 
-julia> @axes ECLIPJ2000 17 
+julia> @axes MEME2000 17 
 
 julia> add_axes_inertial!(F, ICRF)
 
-julia> add_axes_eclipj2000!(F, ECLIPJ2000, ICRF)
+julia> add_axes_MEME2000!(F, MEME2000, ICRF)
 
 julia> ep_tt = Epoch("2023-02-10T12:00:00 TT")
 2023-02-10T12:00:00.000 TT
 
-julia> rotation3(F, ICRF, ECLIPJ2000, ep_tt)
+julia> rotation3(F, ICRF, MEME2000, ep_tt)
 Rotation{1,Float64}([...])
 
 julia> ep_tdb = Epoch("2023-02-10T12:00:00 TDB")
 2023-02-10T12:00:00.000 TDB
 
-julia> rotation3(F, ICRF, ECLIPJ2000, ep_tdb)
+julia> rotation3(F, ICRF, MEME2000, ep_tdb)
 ERROR: ArgumentError: Incompatible epoch timescale: expected TerrestrialTime, found BarycentricDynamicalTime.
 [...]
 ```

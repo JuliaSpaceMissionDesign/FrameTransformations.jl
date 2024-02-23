@@ -67,12 +67,12 @@
         # Compose rotation
         @test_throws DimensionMismatch R * R₂
         @test (R * Ri)[1] ≈ Rotation{1}(1.0I)[1]
-        @test Frames._compose_rot(R, Ri)[1] ≈ (R * Ri)[1]
+        @test FrameTransformations._compose_rot(R, Ri)[1] ≈ (R * Ri)[1]
 
         # Apply rotation
-        @test Frames._apply_rot(R, [1.0, 0.0, 0.0]) ≈ SA[cos(θ), -sin(θ), 0.0]
-        @test Frames._apply_rot(R, SA[1.0, 0.0, 0.0]) ≈ R * SA[1.0, 0.0, 0.0]
-        @test Frames._apply_rot(R, [1.0, 0.0, 0.0]) ≈ R * [1.0, 0.0, 0.0]
+        @test FrameTransformations._apply_rot(R, [1.0, 0.0, 0.0]) ≈ SA[cos(θ), -sin(θ), 0.0]
+        @test FrameTransformations._apply_rot(R, SA[1.0, 0.0, 0.0]) ≈ R * SA[1.0, 0.0, 0.0]
+        @test FrameTransformations._apply_rot(R, [1.0, 0.0, 0.0]) ≈ R * [1.0, 0.0, 0.0]
 
         # 2nd order rotations
         A = angle_to_dcm(rand(), :Z)
@@ -92,7 +92,7 @@
 
     @testset "Utility functions" begin
         R = Rotation((DCM(1I), DCM(0.0I)))
-        @test Frames.order(R) == 2
+        @test FrameTransformations.order(R) == 2
         @test size(R) == (6, 6)
         @test StaticArrays.Size(R) == (6, 6)
         @test R[1] == R.m[1]
@@ -115,6 +115,6 @@
         A = angle_to_dcm(π / 3, :Z)
         R = Rotation(A)
         @test inv(R)[1] ≈ A'
-        @test Frames._inverse_rot(R) == inv(R)
+        @test FrameTransformations._inverse_rot(R) == inv(R)
     end
 end;

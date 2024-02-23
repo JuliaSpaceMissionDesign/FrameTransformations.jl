@@ -23,7 +23,7 @@
     get_vector2(t) = SA[t^3, t^2, t, 3t^2, 2t, 1, 6t, 2, 0, 6, 0, 0]
 
     # Function to compute derivatives of DCMs 
-    δdcm(t, seq) = Frames.twovectors_to_dcm(get_vector(t)[1:3], get_vector2(t)[1:3], seq)
+    δdcm(t, seq) = FrameTransformations.twovectors_to_dcm(get_vector(t)[1:3], get_vector2(t)[1:3], seq)
 
     @test_throws ArgumentError δdcm(0, :XX)
     
@@ -35,42 +35,42 @@
         aᵤ, bᵤ, cᵤ = a / norm(a), b / norm(b), c / norm(c)
 
         # XY 
-        R = Frames.twovectors_to_dcm(a, b, :XY)
+        R = FrameTransformations.twovectors_to_dcm(a, b, :XY)
 
         @test R' * [1, 0, 0] ≈ aᵤ atol = atol
         @test R' * [0, 0, 1] ≈ cᵤ atol = atol
         @test dot(R' * [0, 1, 0], aᵤ) ≈ 0 atol = atol
 
         # YX 
-        R = Frames.twovectors_to_dcm(a, b, :YX)
+        R = FrameTransformations.twovectors_to_dcm(a, b, :YX)
 
         @test R' * [0, 1, 0] ≈ aᵤ atol = atol
         @test R' * [0, 0, 1] ≈ -cᵤ atol = atol
         @test dot(R' * [1, 0, 0], aᵤ) ≈ 0 atol = atol
 
         # XZ 
-        R = Frames.twovectors_to_dcm(a, b, :XZ)
+        R = FrameTransformations.twovectors_to_dcm(a, b, :XZ)
 
         @test R' * [1, 0, 0] ≈ aᵤ atol = atol
         @test R' * [0, 1, 0] ≈ -cᵤ atol = atol
         @test dot(R' * [0, 1, 0], aᵤ) ≈ 0 atol = atol
 
         # ZX 
-        R = Frames.twovectors_to_dcm(a, b, :ZX)
+        R = FrameTransformations.twovectors_to_dcm(a, b, :ZX)
 
         @test R' * [0, 0, 1] ≈ aᵤ atol = atol
         @test R' * [0, 1, 0] ≈ cᵤ atol = atol
         @test dot(R' * [1, 0, 0], aᵤ) ≈ 0 atol = atol
 
         # YZ 
-        R = Frames.twovectors_to_dcm(a, b, :YZ)
+        R = FrameTransformations.twovectors_to_dcm(a, b, :YZ)
 
         @test R' * [0, 1, 0] ≈ aᵤ atol = atol
         @test R' * [1, 0, 0] ≈ cᵤ atol = atol
         @test dot(R' * [0, 0, 1], aᵤ) ≈ 0 atol = atol
 
         # ZY
-        R = Frames.twovectors_to_dcm(a, b, :ZY)
+        R = FrameTransformations.twovectors_to_dcm(a, b, :ZY)
 
         @test R' * [0, 0, 1] ≈ aᵤ atol = atol
         @test R' * [1, 0, 0] ≈ -cᵤ atol = atol
@@ -87,32 +87,32 @@
         dfun(t) = δdcm(t, seq)
 
         # 1st order DCM derivative
-        B = Frames.twovectors_to_δdcm(a, b, seq)
+        B = FrameTransformations.twovectors_to_δdcm(a, b, seq)
         @test B ≈ D¹(dfun, θ) atol = atol
 
         # 2nd order DCM derivative
-        C = Frames.twovectors_to_δ²dcm(a, b, seq)
+        C = FrameTransformations.twovectors_to_δ²dcm(a, b, seq)
         @test C ≈ D²(dfun, θ) atol = atol
 
         # 3rd order DCM derivative
-        D = Frames.twovectors_to_δ³dcm(a, b, seq)
+        D = FrameTransformations.twovectors_to_δ³dcm(a, b, seq)
         @test D ≈ D³(dfun, θ) atol = atol
 
-        A = Frames.twovectors_to_dcm(a, b, seq)
+        A = FrameTransformations.twovectors_to_dcm(a, b, seq)
 
         # Assembly of Rotation 6
-        R, dR = Frames._two_vectors_to_rot6(a, b, seq)
+        R, dR = FrameTransformations._two_vectors_to_rot6(a, b, seq)
         @test R ≈ A atol = atol
         @test dR ≈ B atol = atol
 
         # Assembly of Rotation 9
-        R, dR, ddR = Frames._two_vectors_to_rot9(a, b, seq)
+        R, dR, ddR = FrameTransformations._two_vectors_to_rot9(a, b, seq)
         @test R ≈ A atol = atol
         @test dR ≈ B atol = atol
         @test ddR ≈ C atol = atol
 
         # Assembly of Rotation 12
-        R, dR, ddR, dddR = Frames._two_vectors_to_rot12(a, b, seq)
+        R, dR, ddR, dddR = FrameTransformations._two_vectors_to_rot12(a, b, seq)
         @test R ≈ A atol = atol
         @test dR ≈ B atol = atol
         @test ddR ≈ C atol = atol

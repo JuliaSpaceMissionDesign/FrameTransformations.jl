@@ -67,8 +67,8 @@ macro point(name::Symbol, id::Int, type::Union{Symbol,Nothing}=nothing)
     typ_str = String(type)
     name_str = String(name)
 
-    pointid_expr = :(@inline Frames.point_id(::$type) = $id)
-    name_expr = :(Frames.point_name(::$type) = Symbol($name_str))
+    pointid_expr = :(@inline FrameTransformations.point_id(::$type) = $id)
+    name_expr = :(FrameTransformations.point_name(::$type) = Symbol($name_str))
 
     return quote
         """
@@ -429,10 +429,10 @@ function add_point_ephemeris!(frames::FrameSystem{O,T}, name::Symbol, naifid::In
     end
 
     funs = FramePointFunctions{T,O}(
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 0),
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 1),
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 2),
-        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / DAY2SEC, naifid, parentid, 3),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / Tempo.DAY2SEC, naifid, parentid, 0),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / Tempo.DAY2SEC, naifid, parentid, 1),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / Tempo.DAY2SEC, naifid, parentid, 2),
+        (y, t) -> ephem_compute!(y, frames.eph, DJ2000, t / Tempo.DAY2SEC, naifid, parentid, 3),
     )
 
     return build_point(

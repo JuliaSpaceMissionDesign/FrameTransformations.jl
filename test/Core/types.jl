@@ -1,3 +1,4 @@
+using FrameTransformations: FramePointFunctions, FrameAxesFunctions, _empty_stv_update!, _get_fixedrot
 
 @point SSB 0 SolarSystemBarycenter
 @point Sun 10
@@ -10,26 +11,26 @@
 
         # ComputableAxesVector 
         # ------------------------ 
-        x = Frames.ComputableAxesVector(Earth, Sun, 1)
+        x = FrameTransformations.ComputableAxesVector(Earth, Sun, 1)
         @test x.from == 399
         @test x.to == 10
         @test x.order == 1
 
-        x = Frames.ComputableAxesVector(20, 10, 3)
+        x = FrameTransformations.ComputableAxesVector(20, 10, 3)
         @test x.from == 20
         @test x.to == 10
         @test x.order == 3
 
-        @test_throws ArgumentError Frames.ComputableAxesVector(1, 2, 4)
-        @test_throws ArgumentError Frames.ComputableAxesVector(1, 2, 0)
-        @test_throws ArgumentError Frames.ComputableAxesVector(1, 1, 2)
+        @test_throws ArgumentError FrameTransformations.ComputableAxesVector(1, 2, 4)
+        @test_throws ArgumentError FrameTransformations.ComputableAxesVector(1, 2, 0)
+        @test_throws ArgumentError FrameTransformations.ComputableAxesVector(1, 1, 2)
 
         # ComputableAxesProperties
         # ------------------------
-        x = Frames.ComputableAxesVector(10, 20, 3)
-        y = Frames.ComputableAxesVector(2, 4, 2)
+        x = FrameTransformations.ComputableAxesVector(10, 20, 3)
+        y = FrameTransformations.ComputableAxesVector(2, 4, 2)
 
-        cap = Frames.ComputableAxesProperties(x, y)
+        cap = FrameTransformations.ComputableAxesProperties(x, y)
 
         @test cap.v1 == x
         @test cap.v2 == y
@@ -123,9 +124,9 @@
         # FrameSystem Constructors 
         # ------------------------
         
-        fsp = FrameTransformations.Frames.FrameSystemProperties()
-        @test FrameTransformations.Frames.ephemeris_points(fsp) == Int64[]
-        @test FrameTransformations.Frames.ephemeris_axes(fsp) == Int64[]
+        fsp = FrameTransformations.FrameTransformations.FrameSystemProperties()
+        @test FrameTransformations.FrameTransformations.ephemeris_points(fsp) == Int64[]
+        @test FrameTransformations.FrameTransformations.ephemeris_axes(fsp) == Int64[]
         
         # Default constructors
         fs1 = FrameSystem{1,Int64}()

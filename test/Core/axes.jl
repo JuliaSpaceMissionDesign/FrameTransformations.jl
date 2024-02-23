@@ -1,8 +1,8 @@
 kclear()
 
 @axes ICRF 1 InternationalCelestialReferenceFrame
-@axes MEME2000 22
-@axes ECLIPJ2000 17
+@axes EME2000 22
+@axes ECL2000 17
 
 @axes AXES_ROT 2
 @axes AXES_EPHEM 31008
@@ -18,15 +18,15 @@ kclear()
 
     # -- Testing @axes macro and type definition
     @testset "Macro @axes" verbose = true begin
-        @test Frames.axes_id(ICRF) == 1
+        @test FrameTransformations.axes_id(ICRF) == 1
         @test axes_alias(ICRF) == 1
         @test axes_alias(414) == 414
 
         @test typeof(ICRF) == InternationalCelestialReferenceFrameAxes
         @test typeof(AXES_ROT) == AxesRotAxes
-        @test typeof(ECLIPJ2000) == ECLIPJ2000Axes
+        @test typeof(ECL2000) == ECL2000Axes
 
-        @test isa(ICRF, Frames.AbstractFrameAxes)
+        @test isa(ICRF, FrameTransformations.AbstractFrameAxes)
     end
 
     # -- Testing INERTIAL AXES 
@@ -34,7 +34,7 @@ kclear()
     R = angle_to_dcm(π / 7, :Y)
 
     @testset "Inertial" verbose = false begin
-        @test_throws ArgumentError add_axes_inertial!(frames, ICRF; parent=MEME2000)
+        @test_throws ArgumentError add_axes_inertial!(frames, ICRF; parent=EME2000)
 
         add_axes_inertial!(frames, ICRF)
         @test frames_axes(frames).nodes[1].name == :ICRF
@@ -42,13 +42,13 @@ kclear()
         @test is_inertial(frames, ICRF)
 
         # test missing parent 
-        @test_throws ArgumentError add_axes_inertial!(frames, MEME2000)
+        @test_throws ArgumentError add_axes_inertial!(frames, EME2000)
         # test missing parent but with DCM 
-        @test_throws ArgumentError add_axes_inertial!(frames, MEME2000; dcm=DCM(1.0I))
+        @test_throws ArgumentError add_axes_inertial!(frames, EME2000; dcm=DCM(1.0I))
         # test parent not in frames 
-        @test_throws ArgumentError add_axes_inertial!(frames, MEME2000; parent=AXES_ROT)
+        @test_throws ArgumentError add_axes_inertial!(frames, EME2000; parent=AXES_ROT)
         # test missing DCM 
-        @test_throws ArgumentError add_axes_inertial!(frames, MEME2000; parent=ICRF)
+        @test_throws ArgumentError add_axes_inertial!(frames, EME2000; parent=ICRF)
 
         G = FrameSystem{2, Float64}()
         add_axes_inertial!(G, ICRF)
@@ -58,14 +58,14 @@ kclear()
         @test_throws ErrorException rotation9(G, ICRF, AXES_ROT, 0.0)
         
         # test parent must be inertial 
-        @test_throws ArgumentError add_axes_inertial!(G, MEME2000; parent=AXES_ROT, dcm=DCM(1.0I))
+        @test_throws ArgumentError add_axes_inertial!(G, EME2000; parent=AXES_ROT, dcm=DCM(1.0I))
 
         # Check that if the axes are not registered an error is thrown 
-        @test_throws ErrorException rotation9(frames, ICRF, MEME2000, 0.0)
-        add_axes_inertial!(frames, MEME2000; parent=ICRF, dcm=R)
+        @test_throws ErrorException rotation9(frames, ICRF, EME2000, 0.0)
+        add_axes_inertial!(frames, EME2000; parent=ICRF, dcm=R)
 
         # Test actual rotation 
-        Rb = rotation9(frames, ICRF, MEME2000, rand())
+        Rb = rotation9(frames, ICRF, EME2000, rand())
         @test v2as(Rb[1] * v, R * v) ≤ 1e-6
 
         for i in 2:3
@@ -81,8 +81,8 @@ kclear()
 
         end
 
-        @test is_timefixed(frames, MEME2000)
-        @test is_inertial(frames, MEME2000)
+        @test is_timefixed(frames, EME2000)
+        @test is_inertial(frames, EME2000)
     end
 
     A = angle_to_dcm(π / 3, :Z)
@@ -91,26 +91,26 @@ kclear()
     @testset "FixedOffset" verbose = false begin
 
         # test axes are already registered 
-        @test_throws ArgumentError add_axes_fixedoffset!(frames, MEME2000, ICRF, R)
-        @test_throws ArgumentError add_axes_fixedoffset!(frames, ECLIPJ2000, AXES_ROT, R)
+        @test_throws ArgumentError add_axes_fixedoffset!(frames, EME2000, ICRF, R)
+        @test_throws ArgumentError add_axes_fixedoffset!(frames, ECL2000, AXES_ROT, R)
 
-        add_axes_fixedoffset!(frames, ECLIPJ2000, MEME2000, A)
+        add_axes_fixedoffset!(frames, ECL2000, EME2000, A)
 
         # Test actual rotation 
-        Rb = rotation9(frames, ICRF, ECLIPJ2000, rand())
+        Rb = rotation9(frames, ICRF, ECL2000, rand())
         @test v2as(A * R * v, Rb[1] * v) ≤ 1e-6
 
         for i in 2:3
             @test maximum(abs.(Rb[i])) == 0.0
         end
 
-        @test is_timefixed(frames, ECLIPJ2000)
-        @test is_inertial(frames, ECLIPJ2000)
+        @test is_timefixed(frames, ECL2000)
+        @test is_inertial(frames, ECL2000)
 
         node = frames_axes(frames).nodes[end]
         @test node.class == :FixedOffsetAxes
         @test node.id == 17
-        @test node.name == :ECLIPJ2000
+        @test node.name == :ECL2000
     end
 
     # -- Testing ROTATING AXES 
@@ -156,7 +156,7 @@ kclear()
         @test is_timefixed(G, AXES_ROT) == false
         @test is_timefixed(G, 2) == false
 
-        B = Orient.DCM_MEME2000_TO_ECLIPJ2000
+        B = DCM_EME2000_TO_ECL2000
 
         atol, rtol = 1e-12, 1e-12
         # test AD derivatives for all combinations of specified functions
@@ -165,7 +165,7 @@ kclear()
 
             add_axes_inertial!(G, ICRF)
             add_axes_rotating!(G, AXES_ROT, ICRF, funs...)
-            add_axes_inertial!(G, ECLIPJ2000; parent=ICRF, dcm=B)
+            add_axes_inertial!(G, ECL2000; parent=ICRF, dcm=B)
 
             x = @SVector zeros(12)
 
@@ -210,7 +210,7 @@ kclear()
                 @test A[4] ≈ angle_to_δ³dcm([ep, 1, 0, 0], smb)' atol = atol rtol = rtol
 
                 # test transformation with another frame 
-                A = rotation6(G, AXES_ROT, ECLIPJ2000, ep)
+                A = rotation6(G, AXES_ROT, ECL2000, ep)
                 @test A[1] ≈ B * angle_to_dcm(ep, smb)' atol = atol rtol = rtol
                 @test A[2] ≈ B * angle_to_δdcm([ep, 1], smb)' atol = atol rtol = rtol
             end
@@ -229,23 +229,23 @@ kclear()
 
         eph = EphemerisProvider(path(KERNELS[:DE432]))
 
-        B = Orient.DCM_MEME2000_TO_ECLIPJ2000
+        B = DCM_EME2000_TO_ECL2000
 
         F = FrameSystem{4,Float64}(eph)
         add_axes_inertial!(F, ICRF)
-        add_axes_fixedoffset!(F, ECLIPJ2000, ICRF, B)
+        add_axes_fixedoffset!(F, ECL2000, ICRF, B)
 
         v1 = ComputableAxesVector(Earth, Sun, 1)
         v2 = ComputableAxesVector(Earth, Sun, 2)
 
         # test wrong rotation sequence
         @test_throws ArgumentError add_axes_computable!(
-            F, AXES_COMP, ECLIPJ2000, v1, v2, :Z
+            F, AXES_COMP, ECL2000, v1, v2, :Z
         )
 
         # test points not defined 
         @test_throws ArgumentError add_axes_computable!(
-            F, AXES_COMP, ECLIPJ2000, v1, v2, :XY
+            F, AXES_COMP, ECL2000, v1, v2, :XY
         )
 
         add_point_root!(F, Earth, ICRF)
@@ -253,7 +253,7 @@ kclear()
 
         seq = rand([:XY, :YX, :XZ, :ZX, :YZ, :ZY])
 
-        add_axes_computable!(F, AXES_COMP, ECLIPJ2000, v1, v2, seq)
+        add_axes_computable!(F, AXES_COMP, ECL2000, v1, v2, seq)
 
         # test axes properties 
         node = frames_axes(F).nodes[3]
@@ -268,19 +268,19 @@ kclear()
         @test is_timefixed(F, AXES_COMP) == false
 
         # test order is not enough
-        @test_throws ErrorException rotation12(F, AXES_COMP, ECLIPJ2000, 0.0)
+        @test_throws ErrorException rotation12(F, AXES_COMP, ECL2000, 0.0)
 
         atol, rtol = 1e-12, 1e-12
 
         # test rotations
         for _ in 1:10
             ep = rand()
-            # These are rotated first to ECLIPJ2000, because its the parent frame of AXES_COMP!
+            # These are rotated first to ECL2000, because its the parent frame of AXES_COMP!
             r, v, a, j = B * rfun(ep), B * vfun(ep), B * afun(ep), B * jfun(ep)
 
-            A = Frames.twovectors_to_dcm(r, v, seq)
-            dA = Frames.twovectors_to_δdcm(vcat(r, v), vcat(v, a), seq)
-            ddA = Frames.twovectors_to_δ²dcm(vcat(r, v, a), vcat(v, a, j), seq)
+            A = FrameTransformations.twovectors_to_dcm(r, v, seq)
+            dA = FrameTransformations.twovectors_to_δdcm(vcat(r, v), vcat(v, a), seq)
+            ddA = FrameTransformations.twovectors_to_δ²dcm(vcat(r, v, a), vcat(v, a, j), seq)
 
             R3 = rotation3(F, AXES_COMP, ICRF, ep)
             @test R3[1] ≈ (A * B)' atol = atol rtol = rtol
@@ -309,10 +309,10 @@ kclear()
         add_axes_inertial!(F, ICRF)
 
         # test ephem data not available for that ID
-        @test_throws ArgumentError add_axes_ephemeris!(F, MEME2000, :ZYX)
+        @test_throws ArgumentError add_axes_ephemeris!(F, EME2000, :ZYX)
 
         # test invalid rotation sequence 
-        @test_throws ArgumentError add_axes_ephemeris!(F, MEME2000, :ZY)
+        @test_throws ArgumentError add_axes_ephemeris!(F, EME2000, :ZY)
 
         # Load kernels!
         furnsh(path(KERNELS[:LEAP]), path(KERNELS[:PA440]), path(KERNELS[:FK_DE440]))
@@ -343,7 +343,7 @@ kclear()
             et = rand(0.0:1e5)
             Rs = sxform("MOON_PA", "J2000", et)
 
-            angles = ephem_orient!(y, eph, DJ2000, et / Tempo.DAY2SEC, 31008, 1, 3)
+            angles = ephem_orient!(y, eph, DJ2000, et / 86400.0, 31008, 1, 3)
             ddR = Math._3angles_to_δ²dcm(y, :ZXZ)
             dddR = Math._3angles_to_δ³dcm(y, :ZXZ)
 
@@ -377,23 +377,23 @@ kclear()
 
         G = FrameSystem{4,Float64}()
         add_axes_inertial!(G, ICRF)
-        add_axes_projected!(G, MEME2000, ICRF, fun)
-        add_axes_projected!(G, ECLIPJ2000, MEME2000, fun2)
+        add_axes_projected!(G, EME2000, ICRF, fun)
+        add_axes_projected!(G, ECL2000, EME2000, fun2)
 
-        add_axes_fixedoffset!(G, AXES_ROT, ECLIPJ2000, fun(π / 3))
+        add_axes_fixedoffset!(G, AXES_ROT, ECL2000, fun(π / 3))
 
         node = frames_axes(G).nodes[2]
 
         # test axes properties 
-        @test node.name == :MEME2000
+        @test node.name == :EME2000
         @test node.class == :ProjectedAxes
         @test node.id == 22
         @test node.parentid == 1
 
         @test length(node.angles) == nth
 
-        @test is_inertial(G, MEME2000)
-        @test is_timefixed(G, MEME2000) == false
+        @test is_inertial(G, EME2000)
+        @test is_timefixed(G, EME2000) == false
 
         @test is_inertial(G, AXES_ROT)
         @test is_timefixed(G, AXES_ROT) == false

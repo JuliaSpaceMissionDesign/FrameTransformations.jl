@@ -1,8 +1,8 @@
 kclear()
 
 @axes ICRF 1 InternationalCelestialReferenceFrame
-@axes MEME2000 22
-@axes ECLIPJ2000 17
+@axes EME2000 22
+@axes ECL2000 17
 
 @point SSB 0 SolarSystemBarycenter
 @point Sun 10
@@ -13,7 +13,7 @@ kclear()
 
 @testset "Points Definitions" verbose = true begin
     @testset "Macro @point" verbose = false begin
-        @test Frames.point_id(SSB) == 0
+        @test FrameTransformations.point_id(SSB) == 0
 
         @test point_alias(SSB) == 0
         @test point_alias(0) == 0
@@ -22,8 +22,8 @@ kclear()
         @test typeof(SSB) == SolarSystemBarycenterPoint
         @test typeof(Sun) == SunPoint
 
-        @test isa(SSB, Frames.AbstractFramePoint)
-        @test isa(Sun, Frames.AbstractFramePoint)
+        @test isa(SSB, FrameTransformations.AbstractFramePoint)
+        @test isa(Sun, FrameTransformations.AbstractFramePoint)
     end
 
     # -- Testing ROOT POINT
@@ -63,7 +63,7 @@ kclear()
 
         # test unknown parent point 
         @test_throws ArgumentError add_point_fixed!(frames, Earth, Sun, ICRF, offset)
-        @test_throws ArgumentError add_point_fixed!(frames, Earth, SSB, MEME2000, offset)
+        @test_throws ArgumentError add_point_fixed!(frames, Earth, SSB, EME2000, offset)
 
         add_point_fixed!(frames, Earth, SSB, ICRF, offset)
 
@@ -101,7 +101,7 @@ kclear()
         frames = FrameSystem{3,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)
-        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, Orient.DCM_MEME2000_TO_ECLIPJ2000)
+        add_axes_fixedoffset!(frames, ECL2000, ICRF, DCM_EME2000_TO_ECL2000)
 
         add_point_root!(frames, SSB, ICRF)
         add_point_ephemeris!(frames, Sun)
@@ -152,7 +152,7 @@ kclear()
             @test x ≈ y atol = 1e-12 rtol = 1e-12
 
             # test transform pos\vel 
-            xx = vector6(frames, SSB, Sun, ECLIPJ2000, et)
+            xx = vector6(frames, SSB, Sun, ECL2000, et)
             yy = spkezr("SUN", et, "ECLIPJ2000", "NONE", "SSB")[1]
             @test xx ≈ yy atol = 1e-12 rtol = 1e-12
 
@@ -161,7 +161,7 @@ kclear()
             yy = spkezr("SUN", et, "J2000", "NONE", "MOON")[1]
             @test xx ≈ yy atol = 1e-12 rtol = 1e-12
 
-            xx = vector6(frames, EMB, Sun, ECLIPJ2000, et)
+            xx = vector6(frames, EMB, Sun, ECL2000, et)
             yy = spkezr("SUN", et, "ECLIPJ2000", "NONE", "EMB")[1]
             @test xx ≈ yy atol = 1e-12 rtol = 1e-12
         end
@@ -172,8 +172,8 @@ kclear()
         @test_throws ArgumentError vector3(frames, Moon, Sun, ICRF, tai)
 
         frames2 = FrameSystem{3,Float64}(eph)
-        add_axes_inertial!(frames2, MEME2000)
-        add_point_root!(frames2, SSB, MEME2000)
+        add_axes_inertial!(frames2, EME2000)
+        add_point_root!(frames2, SSB, EME2000)
 
         # test ephemeris axes have not been registered
         @test_throws ErrorException add_point_ephemeris!(frames2, Sun)
@@ -182,7 +182,7 @@ kclear()
         frames = FrameSystem{4,Float64}(eph)
 
         add_axes_inertial!(frames, ICRF)
-        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, Orient.DCM_MEME2000_TO_ECLIPJ2000)
+        add_axes_fixedoffset!(frames, ECL2000, ICRF, DCM_EME2000_TO_ECL2000)
 
         add_point_root!(frames, SSB, ICRF)
         add_point_ephemeris!(frames, Sun)
@@ -193,7 +193,7 @@ kclear()
 
     # -- Testing Dynamical points!
     @testset "Dynamical" verbose = false begin
-        R = Orient.DCM_MEME2000_TO_ECLIPJ2000
+        R = DCM_EME2000_TO_ECL2000
 
         nth = Threads.nthreads()
         tid = Threads.threadid()
@@ -235,7 +235,7 @@ kclear()
         for funs in ((f,), (f, df), (f, df, ddf), (f, df, ddf, dddf))
             frames = FrameSystem{4,Float64}()
             add_axes_inertial!(frames, ICRF)
-            add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, R)
+            add_axes_fixedoffset!(frames, ECL2000, ICRF, R)
             add_point_root!(frames, EMB, ICRF)
 
             add_point_dynamical!(frames, Earth, EMB, ICRF, funs...)
@@ -257,7 +257,7 @@ kclear()
                 @test y[1:12] ≈ dddf(ep) atol = atol rtol = rtol
 
                 # test transformation with rotations to new frame!
-                x = vector6(frames, Earth, EMB, ECLIPJ2000, ep)
+                x = vector6(frames, Earth, EMB, ECL2000, ep)
                 @test x[1:3] ≈ -R * sin(ep) * ones(3) atol = atol rtol = rtol
                 @test x[4:6] ≈ -R * cos(ep) * ones(3) atol = atol rtol = rtol
 
@@ -270,14 +270,14 @@ kclear()
 
     # -- Testing Updatable points!
     @testset "Updatable" verbose = false begin
-        R = Orient.DCM_MEME2000_TO_ECLIPJ2000
+        R = DCM_EME2000_TO_ECL2000
 
         frames = FrameSystem{3,Float64}()
         add_axes_inertial!(frames, ICRF)
-        add_axes_fixedoffset!(frames, ECLIPJ2000, ICRF, R)
+        add_axes_fixedoffset!(frames, ECL2000, ICRF, R)
 
         add_point_root!(frames, EMB, ICRF)
-        add_point_updatable!(frames, Earth, EMB, ECLIPJ2000)
+        add_point_updatable!(frames, Earth, EMB, ECL2000)
 
         node = frames_points(frames).nodes[2]
 
@@ -317,12 +317,12 @@ kclear()
         @test get_tmp(node.stv[tid], 0.0)[1:3] == r
 
         # test transformation at different epoch 
-        @test_throws ErrorException vector3(frames, Earth, EMB, ECLIPJ2000, 1.0)
+        @test_throws ErrorException vector3(frames, Earth, EMB, ECL2000, 1.0)
         # test transformation at different order 
         @test_throws ErrorException vector6(frames, Earth, EMB, ICRF, 0.0)
 
         # test transformation 
-        @test vector3(frames, Earth, EMB, ECLIPJ2000, 0.0) == -r
+        @test vector3(frames, Earth, EMB, ECL2000, 0.0) == -r
 
         update_point!(frames, Earth, rr, 1.0)
 
