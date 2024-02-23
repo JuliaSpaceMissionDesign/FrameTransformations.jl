@@ -12,7 +12,7 @@ if CI
     Pkg.add("Dates")
 end
 
-include("generate.jl")
+# include("generate.jl")
 
 makedocs(;
     authors="Julia Space Mission Design Development Team",
@@ -22,37 +22,37 @@ makedocs(;
     pages=[
         "Home" => "index.md",
 
-        "Tutorials" => [
-            "01 - Frame System" => "Tutorials/gen/t00_frames.md",
-            "02 - Axes" => "Tutorials/gen/t01_axes.md",
-            "03 - Points" => "Tutorials/gen/t02_points.md",
-            "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
-            "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
-            "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
-        ],
+        # "Tutorials" => [
+        #     "01 - Frame System" => "Tutorials/gen/t00_frames.md",
+        #     "02 - Axes" => "Tutorials/gen/t01_axes.md",
+        #     "03 - Points" => "Tutorials/gen/t02_points.md",
+        #     "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
+        #     "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
+        #     "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
+        # ],
 
-        "Use Cases" => [
-            "CR3BP" => "Examples/gen/e01_cr3bp.md",
-            "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md",
-            "Custom Orbit Representation" => "Examples/gen/e03_customorb.md"
-        ],
+        # "Use Cases" => [
+        #     "CR3BP" => "Examples/gen/e01_cr3bp.md",
+        #     "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md",
+        #     "Custom Orbit Representation" => "Examples/gen/e03_customorb.md"
+        # ],
 
-        "Benchmarks" => "benchmarks.md",
+        # "Benchmarks" => "benchmarks.md",
 
-        "Modules" => [
-            "Frames" => [
-                "Public API" => "Modules/frames_api.md",
-                "Low-level API" => "Modules/frames_lapi.md",             
-            ],
+        # "Modules" => [
+        #     "Frames" => [
+        #         "Public API" => "Modules/frames_api.md",
+        #         "Low-level API" => "Modules/frames_lapi.md",             
+        #     ],
 
-            "Orient" => [
-                "Public API" => "Modules/orient_api.md"
-                "Low-level API" => "Modules/orient_lapi.md"
-            ],
+        #     "Orient" => [
+        #         "Public API" => "Modules/orient_api.md"
+        #         "Low-level API" => "Modules/orient_lapi.md"
+        #     ],
 
-        ], 
+        # ], 
 
-        "Roadmap" => "roadmap.md"
+        # "Roadmap" => "roadmap.md"
 
     ],
     clean=true,
