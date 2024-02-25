@@ -15,6 +15,9 @@ using FunctionWrappersWrappers:
 using ReferenceFrameRotations
 using StaticArrays
 
+using RuntimeGeneratedFunctions
+RuntimeGeneratedFunctions.init(@__MODULE__)
+
 # ----
 # JSMD ecosystem dependencies
 
@@ -54,6 +57,7 @@ import StaticArrays: similar_type, Size, MMatrix, SMatrix
 import SMDGraphs: get_node_id
 
 @reexport using Tempo
+export load
 
 # ----
 # CORE 
@@ -74,6 +78,7 @@ include("Definitions/celestial.jl")
 include("Definitions/ecliptic.jl")
 include("Definitions/terrestrial.jl")
 include("Definitions/topocentric.jl")
+include("Definitions/planetary.jl")
 include("Definitions/moon.jl")
 
 end
