@@ -251,7 +251,7 @@ function add_axes_bcrtod!(
         )
     end
 
-    p = PlanetaryPrecessionNutation(cid, data)
+    p = PlanetaryRotationalElements(cid, data)
     ψ, α, δ, W = build_iau_series(p)
 
     ex = :(
@@ -322,7 +322,7 @@ function add_axes_bci2000!(
         )
     end
 
-    p = PlanetaryPrecessionNutation(cid, data)
+    p = PlanetaryRotationalElements(cid, data)
     ψ, α, δ, _ = build_iau_series(p)
 
     @eval begin
@@ -388,7 +388,7 @@ function add_axes_bcifix!(
         )
     end
 
-    p = PlanetaryPrecessionNutation(cid, data)
+    p = PlanetaryRotationalElements(cid, data)
     ψ, α, δ, W = build_iau_series(p)
 
     ex = :(
