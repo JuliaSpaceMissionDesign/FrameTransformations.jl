@@ -1,5 +1,6 @@
 module FrameTransformations
 
+
 # ----
 # External dependencies
 
@@ -18,12 +19,17 @@ using StaticArrays
 using RuntimeGeneratedFunctions
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
+
+import LinearAlgebra: dot, norm, matprod, UniformScaling
+import StaticArrays: similar_type, Size, MMatrix, SMatrix
+import SMDGraphs: get_node_id
+
+
 # ----
 # JSMD ecosystem dependencies
 
 using JSMDInterfaces
 using JSMDInterfaces.Ephemeris
-import JSMDInterfaces.FilesIO: load
 using JSMDInterfaces.Graph: 
     AbstractJSMDGraphNode, 
     add_edge!, add_vertex!, get_path, has_vertex
@@ -49,12 +55,8 @@ using Tempo: AbstractTimeScale
 
 using IERSConventions
 
-# ----
-# Imports
 
-import LinearAlgebra: dot, norm, matprod, UniformScaling
-import StaticArrays: similar_type, Size, MMatrix, SMatrix
-import SMDGraphs: get_node_id
+import JSMDInterfaces.FilesIO: load
 
 @reexport using Tempo
 export load

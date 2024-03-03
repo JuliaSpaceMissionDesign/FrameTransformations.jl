@@ -100,8 +100,8 @@ Add `axes` as a set of inertial axes representing the Mean Equator Mean Equinox 
 to `frames`. 
 
 !!! warning 
-    The the axes ID of the parent set of axes must be $(AXESID_ICRF) (ICRF) or 
-    $(AXESID_EME2000) (EME2000) otherwise and error is thrown.
+    The the axes ID of the parent set of axes must be $(AXESID_ICRF) (ICRF), 
+    $(AXESID_GCRF) (GCRF) or $(AXESID_ECL2000) (EME2000) otherwise and error is thrown.
 
 ----
 
@@ -135,15 +135,16 @@ function add_axes_eme2000!(
     frames::FrameSystem, name::Symbol, parentid::Int=AXESID_ICRF, 
     axesid::Int=AXESID_EME2000
 )
-    if parentid == AXESID_ICRF
+    if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_ICRF_TO_EME2000
     elseif parentid == AXESID_ECL2000
-        dcm = DCM_ICRF_TO_ECL2000'
+        dcm = DCM_EME2000_TO_ECL2000'
     else 
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (EME2000) axes can only be defined " *
-                "w.r.t. the ICRF (ID = $(AXESID_ICRF)) and ECL2000 (ID = $(AXESID_ECL2000)).",
+                "w.r.t. the ICRF (ID = $(AXESID_ICRF)), the GCRF (ID = $(AXESID_GCRF)) " * 
+                "or the ECL2000 (ID = $(AXESID_ECL2000)).",
             ),
         )
     end

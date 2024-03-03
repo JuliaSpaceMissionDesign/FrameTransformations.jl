@@ -19,8 +19,8 @@ Axes ID for the Geocentric Celestial Reference Frame (GCRFF)
 !!! note 
     Although the ICRF and GCRF axes are identical, they are based upon a different 
     timescale. A different ID is here assigned to provide a robust way of distinguishing 
-    between the two. 23 has been chosen because it is one the unassigned axes ID among the 
-    built-in SPICE frames.
+    between the two. 23 has been chosen because it is one of the unassigned axes ID among 
+    the built-in SPICE frames.
 """
 const AXESID_GCRF = 23
 
@@ -37,9 +37,9 @@ const AXESID_ECL2000 = 17
 Axes ID for the Mean Dynamical Equator and Equinox of J2000.0. 
 
 !!! note 
-    In SPICE the J2000 and ICRF axes are considered equal, thus there exist no 
-    specific NAIF ID for the EME2000 axes. 22 has been chosen because it is the 
-    first unassigned axes ID among the built-in SPICE frames. 
+    In SPICE the J2000 (EME2000) and ICRF axes are considered equal, thus there exist no 
+    specific NAIF ID for the EME2000 axes. 22 has been chosen because it is the first 
+    unassigned axes ID among the built-in SPICE frames. 
 """
 const AXESID_EME2000 = 22
 

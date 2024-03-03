@@ -10,6 +10,7 @@ to `frames`. The obliquity of the ecliptic is computed using the IERS convention
 
 The admissed `parent` set of axes are the following: 
 - **ICRF**: for the International Celestial Reference Frame, with ID = $(AXESID_ICRF)
+- **GCRF**: for the Geocentric Celestial Reference Frame, with ID = $(AXESID_GCRF)
 - **EME2000**: the Mean Earth/Moon Ephemeris of J2000, with ID = $(AXESID_EME2000)
 
 ----
@@ -60,7 +61,7 @@ function add_axes_ecl2000!(
     # Compute the J2000 to ECLIPJ2000 rotationa ccording to the desired IAU model
     DCM_EME2000_TO_ECLJ2000_ = angle_to_dcm(iers_obliquity(model, 0.0), :X)
 
-    if parentid == AXESID_ICRF
+    if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_EME2000_TO_ECLJ2000_ * DCM_ICRF_TO_EME2000
     elseif parentid == AXESID_EME2000
         dcm = DCM_EME2000_TO_ECLJ2000_
