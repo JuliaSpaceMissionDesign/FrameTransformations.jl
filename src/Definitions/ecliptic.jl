@@ -62,11 +62,13 @@ function add_axes_ecl2000!(
     axesid::Int = AXESID_ECL2000
 )
 
+    DCM_EME2000_TO_ECLJ2000 = angle_to_dcm(iers_obliquity(model, 0.0), :X)
+
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_EME2000_TO_ECLJ2000_ * DCM_ICRF_TO_EME2000
     elseif parentid == AXESID_EME2000
         # Compute the J2000 to ECLIPJ2000 rotationa ccording to the desired IAU model
-        dcm = angle_to_dcm(iers_obliquity(model, 0.0), :X)
+        dcm = DCM_EME2000_TO_ECLJ2000
     else 
         throw(
             ArgumentError(
