@@ -32,7 +32,10 @@ using JSMDInterfaces
 using JSMDInterfaces.Ephemeris
 using JSMDInterfaces.Graph: 
     AbstractJSMDGraphNode, 
-    add_edge!, add_vertex!, get_path, has_vertex
+    add_edge!, 
+    add_vertex!, 
+    get_path, 
+    has_vertex
 
 using JSMDUtils 
 using JSMDUtils.Autodiff
@@ -47,16 +50,20 @@ using JSMDUtils.Math:
 
 using SMDGraphs
 using SMDGraphs:
-    MappedNodeGraph, SimpleGraph, MappedGraph,
-    get_mappedid, get_mappednode, get_node, get_node_id
+    MappedNodeGraph, 
+    SimpleGraph, 
+    MappedGraph,
+    get_mappedid, 
+    get_mappednode, 
+    get_node
 
 using Tempo
 using Tempo: AbstractTimeScale
 
 using IERSConventions
 
-
 import JSMDInterfaces.FilesIO: load
+import SMDGraphs: get_node_id
 
 @reexport using Tempo
 export load
