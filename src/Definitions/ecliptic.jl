@@ -62,7 +62,7 @@ function add_axes_ecl2000!(
     axesid::Int = AXESID_ECL2000
 )
 
-    DCM_EME2000_TO_ECLJ2000 = angle_to_dcm(iers_obliquity(model, 0.0), :X)
+    DCM_EME2000_TO_ECLJ2000 = angle_to_dcm(iers_obliquity(model, 0), :X)
 
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_EME2000_TO_ECLJ2000_ * DCM_ICRF_TO_EME2000
