@@ -26,7 +26,7 @@ the SPICE toolkit.
     513.2 (2004): 765-770. DOI: [10.1051/0004-6361:20031552](https://www.aanda.org/articles/aa/pdf/2004/02/aa3851.pdf)
 - [SOFA docs](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
 """
-const DCM_ICRF_TO_EME2000 = IERSConventions.iers_bias(iers2010a, 0.0)
+const DCM_ICRF_TO_EME2000 = IERSConventions.iers_bias(iers2010a, 0)
 
 
 """
@@ -60,7 +60,7 @@ function add_axes_gcrf!(frames::FrameSystem)
     if has_axes(frames, AXESID_ICRF)
         # Add the GCRF as a child of the ICRF with an identity rotation 
         return add_axes_fixedoffset!(
-            frames, :GCRF, AXESID_GCRF, AXESID_ICRF, DCM(1.0I)
+            frames, :GCRF, AXESID_GCRF, AXESID_ICRF, DCM(1I)
         )
 
     elseif isempty(frames_axes(frames))
