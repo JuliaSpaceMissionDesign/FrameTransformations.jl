@@ -1,5 +1,4 @@
 export  DCM_ICRF_TO_EME2000, 
-        DCM_ICRF_TO_ECL2000,
         add_axes_icrf!, 
         add_axes_gcrf!, 
         add_axes_eme2000!
@@ -27,15 +26,7 @@ the SPICE toolkit.
     513.2 (2004): 765-770. DOI: [10.1051/0004-6361:20031552](https://www.aanda.org/articles/aa/pdf/2004/02/aa3851.pdf)
 - [SOFA docs](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
 """
-const DCM_ICRF_TO_EME2000 = IERSConventions.iers_pb(iers2010a, 0.0)
-
-"""
-    DCM_ICRF_TO_ECL2000
-
-DCM for the rotation from the International Celestial Reference Frame (`ICRF`) to the 
-Mean Ecliptic Equinox of J2000 (`ECL2000`).
-"""
-const DCM_ICRF_TO_ECL2000 = DCM_ICRF_TO_EME2000 * DCM_EME2000_TO_ECL2000
+const DCM_ICRF_TO_EME2000 = IERSConventions.iers_bias(iers2010a, 0.0)
 
 
 """
