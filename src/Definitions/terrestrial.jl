@@ -78,7 +78,7 @@ to `frames`.
     are assumed null.
 
 !!! warning 
-    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF), or $(AXESID_GCRF)
+    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
     (GCRF) otherwise an error is thrown. 
 
 ----
@@ -121,7 +121,7 @@ end
     add_axes_tod!(frames, axes::AbstractFrameAxes, parent, 
         model::IERSConventions.IERSModel=iers2010b)
 
-Add `axes` as a set of projected axes representing the True Equator of Date (TOD)
+Add `axes` as a set of projected axes representing the True Equator of Date (TOD) 
 to `frames`. 
 
 !!! note

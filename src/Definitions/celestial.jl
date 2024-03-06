@@ -1,5 +1,8 @@
-export DCM_ICRF_TO_EME2000, DCM_EME2000_TO_ECL2000, DCM_ICRF_TO_ECL2000,
-       add_axes_icrf!, add_axes_gcrf!, add_axes_eme2000!
+export  DCM_ICRF_TO_EME2000, 
+        DCM_ICRF_TO_ECL2000,
+        add_axes_icrf!, 
+        add_axes_gcrf!, 
+        add_axes_eme2000!
 
 """
     DCM_ICRF_TO_EME2000
@@ -25,15 +28,6 @@ the SPICE toolkit.
 - [SOFA docs](https://www.iausofa.org/2021_0512_C/sofa/sofa_pn_c.pdf)
 """
 const DCM_ICRF_TO_EME2000 = IERSConventions.iers_pb(iers2010a, 0.0)
-
-"""
-    DCM_EME2000_TO_ECL2000
-
-DCM for the rotation from the Mean Equator and Equinox of J2000 (`EME2000`) to the 
-Mean Ecliptic Equinox. This corresponds to the transformation `J2000 -> ECLIPJ2000` 
-in the SPICE toolkit, and uses the mean obliquity of the ecliptic from the IAU 1976 theory.
-"""
-const DCM_EME2000_TO_ECL2000 = angle_to_dcm(iers_obliquity(iers1996, 0.0), :X)
 
 """
     DCM_ICRF_TO_ECL2000
@@ -100,8 +94,8 @@ Add `axes` as a set of inertial axes representing the Mean Equator Mean Equinox 
 to `frames`. 
 
 !!! warning 
-    The the axes ID of the parent set of axes must be $(AXESID_ICRF) (ICRF), 
-    $(AXESID_GCRF) (GCRF) or $(AXESID_ECL2000) (EME2000) otherwise and error is thrown.
+    The the axes ID of the parent set of axes must be $(AXESID_ICRF) (ICRF) or  
+    $(AXESID_GCRF) (GCRF) otherwise and error is thrown.
 
 ----
 
@@ -137,14 +131,11 @@ function add_axes_eme2000!(
 )
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_ICRF_TO_EME2000
-    elseif parentid == AXESID_ECL2000
-        dcm = DCM_EME2000_TO_ECL2000'
     else 
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (EME2000) axes can only be defined " *
-                "w.r.t. the ICRF (ID = $(AXESID_ICRF)), the GCRF (ID = $(AXESID_GCRF)) " * 
-                "or the ECL2000 (ID = $(AXESID_ECL2000)).",
+                "w.r.t. the ICRF (ID = $(AXESID_ICRF)) or the GCRF (ID = $(AXESID_GCRF))."
             ),
         )
     end

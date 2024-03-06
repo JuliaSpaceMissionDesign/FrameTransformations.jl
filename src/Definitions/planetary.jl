@@ -1,6 +1,216 @@
 export add_axes_bcrtod!, add_axes_bcifix!, add_axes_bci2000!
 
-### Low level 
+#
+# Exported functions
+
+"""
+    add_axes_bcrtod!(frames, axes::AbstractFrameAxes, center, data)
+
+Add `axes` as a set of Body-Centered Rotating (BCR), True-of-Date (TOD) axes to the 
+`frames` system. The center point (i.e., the reference body) is `center`. `data` is a dictionary 
+containing a parsed `TPC` file. These axes are the equivalent of SPICE's `IAU_<BODY_NAME>` frames.
+
+!!! warning 
+    The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
+    ICRF is not defined in `frames`, an error is thrown.
+
+----
+
+    add_axes_bcrtod!(frames, name::Symbol, axesid::Int, cname::Symbol, cid::Int, data)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro and of an [`AbstractFramePoint`](@ref) via the [`@point`](@ref)
+macro.
+
+### See also 
+See also [`add_axes_rotating!`](@ref), [`add_axes_bci2000!`](@ref) and [`AXESID_ICRF`](@ref).
+"""
+function add_axes_bcrtod!(
+    frames::FrameSystem, axes::AbstractFrameAxes, center, data
+)
+    return add_axes_bcrtod!(
+        frames, axes_name(axes), axes_id(axes), point_id(center), data
+    )
+end
+
+function add_axes_bcrtod!(
+    frames::FrameSystem, 
+    name::Symbol, 
+    axesid::Int,  
+    cid::Int, 
+    data
+)
+    if !(has_axes(frames, AXESID_ICRF))
+        throw(
+            ErrorException(
+                "Body-Centered Rotating (BCR), True-of-Date (TOD) axes can only be defined" * 
+                " w.r.t. the ICRF (ID = $(AXESID_ICRF)), which is not defined in" * 
+                " the current frames graph."
+            )
+        )
+    end
+
+    p = PlanetaryRotationalElements(cid, data)
+    ψ, α, δ, W = build_iau_series(p)
+
+    ex = :(
+        function (T::Number)
+            d = T * 36525
+            ψ = $ψ
+            α = $α 
+            δ = $δ 
+            w = $W
+            return angle_to_dcm(π / 2 + α, π / 2 - δ, w, :ZXZ)
+        end
+    )
+
+    f = @RuntimeGeneratedFunction(ex)
+
+    # TODO: implement higher order derivatives
+    # Insert new axes in the frame system 
+    return add_axes_rotating!(
+        frames, name, axesid, AXESID_ICRF, f
+    )
+
+end
+
+"""
+    add_axes_bci2000!(frames, axes::AbstractFrameAxes, center, data)
+
+Add `axes` as a set of Body-Centered Inertial (BCI) axes at J2000 relative to the `frames` 
+system. The center point (i.e., the reference body) is `center` and can either be the point 
+ID or an [`AbstractFramePoint`](@ref) instance. `data` is a dictionary containing a parsed 
+`TPC` file. 
+
+!!! warning 
+    The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
+    ICRF is not defined in `frames`, an error is thrown.
+
+----
+
+    add_axes_bci2000!(frames, name::Symbol, axesid::Int, cid::Int, data)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+    
+### See also 
+See also [`add_axes_bcifix!`](@ref), [`add_axes_bcrtod!`](@ref) and [`AXESID_ICRF`](@ref).
+"""
+function add_axes_bci2000!(
+    frames::FrameSystem, axes::AbstractFrameAxes, center, data
+)
+    return add_axes_bci2000!(
+        frames, axes_name(axes), axes_id(axes), point_id(center), data
+    )
+end
+
+function add_axes_bci2000!(
+    frames::FrameSystem,
+    name::Symbol, 
+    axesid::Int, 
+    cid::Int, 
+    data
+)
+    if !(has_axes(frames, AXESID_ICRF))
+        throw(
+            ErrorException(
+                "Body-Centered Inertial of J2000 (BCI2000) axes can only be defined" * 
+                " w.r.t. the ICRF (ID = $(AXESID_ICRF)), which is not defined in" * 
+                " the current frames graph."
+            )
+        )
+    end
+
+    p = PlanetaryRotationalElements(cid, data)
+    ψ, α, δ, _ = build_iau_series(p)
+
+    @eval begin
+        T = 0.0
+        d = 0.0
+        ψ = $ψ
+        α2000 = $α
+        δ2000 = $δ
+        dcm = angle_to_dcm(π / 2 + α2000, π / 2 - δ2000, :ZX)
+    end
+
+    # Insert new axes in the frame system 
+    return add_axes_fixedoffset!(frames, name, axesid, AXESID_ICRF, dcm)
+
+end
+
+
+"""
+    add_axes_bcifix!(frames, axes::AbstractFrameAxes, center, e::Epoch, data)
+
+Add `axes` as a set of Body-Centered Inertial (BCI) at epoch `e`, relative to the `frames` 
+system. The center point (i.e., the reference body) is `center` and can either be the point 
+ID or an [`AbstractFramePoint`](@ref) instance. `data` is a dictionary containing a parsed 
+`TPC` file. 
+
+!!! warning 
+    The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
+    ICRF is not defined in `frames`, an error is thrown.
+
+----
+
+    add_axes_bcifix!(frames, name::Symbol, axesid::Int, cid::Int, epoch::Number, data)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+    
+### See also 
+See also [`add_axes_bci2000!`](@ref), [`add_axes_bcrtod!`](@ref) and [`AXESID_ICRF`](@ref).
+"""
+function add_axes_bcifix!(
+    frames::FrameSystem, axes::AbstractFrameAxes, center, epoch::Epoch, data
+)
+    return add_axes_bcifix!(
+        frames, axes_name(axes), axes_id(axes), point_id(center), 
+        j2000s(epoch), data
+    )
+end
+
+function add_axes_bcifix!(
+    frames::FrameSystem, 
+    name::Symbol, 
+    axesid::Int, 
+    cid::Int,
+    epoch::Number, 
+    data
+)   
+    if !(has_axes(frames, AXESID_ICRF))
+        throw(
+            ErrorException(
+                "Body-Centered Inertial at Epoch axes can only be defined" * 
+                " w.r.t. the ICRF (ID = $(AXESID_ICRF)), which is not defined in" * 
+                " the current frames graph."
+            )
+        )
+    end
+
+    p = PlanetaryRotationalElements(cid, data)
+    ψ, α, δ, W = build_iau_series(p)
+
+    ex = :(
+        function (T::Number)
+            d = T * 36525
+            ψ = $ψ
+            α = $α 
+            δ = $δ 
+            w = $W
+            return angle_to_dcm(π / 2 + α, π / 2 - δ, w, :ZXZ)
+        end
+    )
+
+    f = @RuntimeGeneratedFunction(ex)
+    dcm = f(epoch / Tempo.CENTURY2SEC)
+    
+    # Insert new axes in the frame system 
+    return add_axes_fixedoffset!(frames, name, axesid, AXESID_ICRF, dcm)
+end
+
+
+### --- Low level 
 
 struct PrecNutComponent{T}
     A::Vector{T}
@@ -201,210 +411,3 @@ function build_iau_series(p)
     )
 end
 
-# ---
-# Exported functions
-
-"""
-    add_axes_bcrtod!(frames, axes::AbstractFrameAxes, center, data)
-
-Add `axes` as a set of Body-Centered Rotating (BCR), True-of-Date (TOD) axes to the 
-`frames` system. The center point (i.e., the reference body) is `center`. `data` is a dictionary 
-containing a parsed `TPC` file. These axes are the equivalent of SPICE's `IAU_<BODY_NAME>` frames.
-
-!!! warning 
-    The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
-    ICRF is not defined in `frames`, an error is thrown.
-
-----
-
-    add_axes_bcrtod!(frames, name::Symbol, axesid::Int, cname::Symbol, cid::Int, data)
-
-Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
-via the [`@axes`](@ref) macro and of an [`AbstractFramePoint`](@ref) via the [`@point`](@ref)
-macro.
-
-### See also 
-See also [`add_axes_rotating!`](@ref), [`add_axes_bci2000!`](@ref) and [`AXESID_ICRF`](@ref).
-"""
-function add_axes_bcrtod!(
-    frames::FrameSystem, axes::AbstractFrameAxes, center, data
-)
-    return add_axes_bcrtod!(
-        frames, axes_name(axes), axes_id(axes), point_id(center), data
-    )
-end
-
-function add_axes_bcrtod!(
-    frames::FrameSystem, 
-    name::Symbol, 
-    axesid::Int,  
-    cid::Int, 
-    data
-)
-    if !(has_axes(frames, AXESID_ICRF))
-        throw(
-            ErrorException(
-                "Body-Centered Rotating (BCR), True-of-Date (TOD) axes can only be defined" * 
-                " w.r.t. the ICRF (ID = $(AXESID_ICRF)), which is not defined in" * 
-                " the current frames graph."
-            )
-        )
-    end
-
-    p = PlanetaryRotationalElements(cid, data)
-    ψ, α, δ, W = build_iau_series(p)
-
-    ex = :(
-        function (T::Number)
-            d = T * 36525
-            ψ = $ψ
-            α = $α 
-            δ = $δ 
-            w = $W
-            return angle_to_dcm(π / 2 + α, π / 2 - δ, w, :ZXZ)
-        end
-    )
-
-    f = @RuntimeGeneratedFunction(ex)
-
-    # TODO: implement higher order derivatives
-    # Insert new axes in the frame system 
-    return add_axes_rotating!(
-        frames, name, axesid, AXESID_ICRF, f
-    )
-
-end
-
-"""
-    add_axes_bci2000!(frames, axes::AbstractFrameAxes, center, data)
-
-Add `axes` as a set of Body-Centered Inertial (BCI) axes at J2000 relative to the `frames` 
-system. The center point (i.e., the reference body) is `center` and can either be the point 
-ID or an [`AbstractFramePoint`](@ref) instance. `data` is a dictionary containing a parsed 
-`TPC` file. 
-
-!!! warning 
-    The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
-    ICRF is not defined in `frames`, an error is thrown.
-
-----
-
-    add_axes_bci2000!(frames, name::Symbol, axesid::Int, cid::Int, data)
-
-Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
-via the [`@axes`](@ref) macro.
-    
-### See also 
-See also [`add_axes_bcifix!`](@ref), [`add_axes_bcrtod!`](@ref) and [`AXESID_ICRF`](@ref).
-"""
-function add_axes_bci2000!(
-    frames::FrameSystem, axes::AbstractFrameAxes, center, data
-)
-    return add_axes_bci2000!(
-        frames, axes_name(axes), axes_id(axes), point_id(center), data
-    )
-end
-
-function add_axes_bci2000!(
-    frames::FrameSystem,
-    name::Symbol, 
-    axesid::Int, 
-    cid::Int, 
-    data
-)
-    if !(has_axes(frames, AXESID_ICRF))
-        throw(
-            ErrorException(
-                "Body-Centered Inertial of J2000 (BCI2000) axes can only be defined" * 
-                " w.r.t. the ICRF (ID = $(AXESID_ICRF)), which is not defined in" * 
-                " the current frames graph."
-            )
-        )
-    end
-
-    p = PlanetaryRotationalElements(cid, data)
-    ψ, α, δ, _ = build_iau_series(p)
-
-    @eval begin
-        T = 0.0
-        d = 0.0
-        ψ = $ψ
-        α2000 = $α
-        δ2000 = $δ
-        dcm = angle_to_dcm(π / 2 + α2000, π / 2 - δ2000, :ZX)
-    end
-
-    # Insert new axes in the frame system 
-    return add_axes_fixedoffset!(frames, name, axesid, AXESID_ICRF, dcm)
-
-end
-
-"""
-    add_axes_bcifix!(frames, axes::AbstractFrameAxes, center, e::Epoch, data)
-
-Add `axes` as a set of Body-Centered Inertial (BCI) at epoch `e`, relative to the `frames` 
-system. The center point (i.e., the reference body) is `center` and can either be the point 
-ID or an [`AbstractFramePoint`](@ref) instance. `data` is a dictionary containing a parsed 
-`TPC` file. 
-
-!!! warning 
-    The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
-    ICRF is not defined in `frames`, an error is thrown.
-
-----
-
-    add_axes_bcifix!(frames, name::Symbol, axesid::Int, cid::Int, epoch::Number, data)
-
-Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
-via the [`@axes`](@ref) macro.
-    
-### See also 
-See also [`add_axes_bci2000!`](@ref), [`add_axes_bcrtod!`](@ref) and [`AXESID_ICRF`](@ref).
-"""
-function add_axes_bcifix!(
-    frames::FrameSystem, axes::AbstractFrameAxes, center, epoch::Epoch, data
-)
-    return add_axes_bcifix!(
-        frames, axes_name(axes), axes_id(axes), point_id(center), 
-        j2000s(epoch), data
-    )
-end
-
-function add_axes_bcifix!(
-    frames::FrameSystem, 
-    name::Symbol, 
-    axesid::Int, 
-    cid::Int,
-    epoch::Number, 
-    data
-)   
-    if !(has_axes(frames, AXESID_ICRF))
-        throw(
-            ErrorException(
-                "Body-Centered Inertial at Epoch axes can only be defined" * 
-                " w.r.t. the ICRF (ID = $(AXESID_ICRF)), which is not defined in" * 
-                " the current frames graph."
-            )
-        )
-    end
-
-    p = PlanetaryRotationalElements(cid, data)
-    ψ, α, δ, W = build_iau_series(p)
-
-    ex = :(
-        function (T::Number)
-            d = T * 36525
-            ψ = $ψ
-            α = $α 
-            δ = $δ 
-            w = $W
-            return angle_to_dcm(π / 2 + α, π / 2 - δ, w, :ZXZ)
-        end
-    )
-
-    f = @RuntimeGeneratedFunction(ex)
-    dcm = f(epoch / Tempo.CENTURY2SEC)
-    
-    # Insert new axes in the frame system 
-    return add_axes_fixedoffset!(frames, name, axesid, AXESID_ICRF, dcm)
-end

@@ -13,6 +13,10 @@ The admissed `parent` set of axes are the following:
 - **GCRF**: for the Geocentric Celestial Reference Frame, with ID = $(AXESID_GCRF)
 - **EME2000**: the Mean Earth/Moon Ephemeris of J2000, with ID = $(AXESID_EME2000)
 
+!!! note 
+    To retrieve the same orientation of the ECLIPJ2000 axes avaialble in the SPICE 
+    Toolkit, the `iers1996` model must be used.
+
 ----
 
     add_axes_ecl2000!(frames, name::Symbol, parentid::Int, 
@@ -58,13 +62,11 @@ function add_axes_ecl2000!(
     axesid::Int = AXESID_ECL2000
 )
 
-    # Compute the J2000 to ECLIPJ2000 rotationa ccording to the desired IAU model
-    DCM_EME2000_TO_ECLJ2000_ = angle_to_dcm(iers_obliquity(model, 0.0), :X)
-
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_EME2000_TO_ECLJ2000_ * DCM_ICRF_TO_EME2000
     elseif parentid == AXESID_EME2000
-        dcm = DCM_EME2000_TO_ECLJ2000_
+        # Compute the J2000 to ECLIPJ2000 rotationa ccording to the desired IAU model
+        dcm = angle_to_dcm(iers_obliquity(model, 0.0), :X)
     else 
         throw(
             ArgumentError(
