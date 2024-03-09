@@ -62,19 +62,20 @@ function add_axes_ecl2000!(
     axesid::Int = AXESID_ECL2000
 )
 
+    # Compute the J2000 to ECLIPJ2000 rotation according to the desired IERS model
     DCM_EME2000_TO_ECLJ2000 = angle_to_dcm(iers_obliquity(model, 0), :X)
 
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
-        dcm = DCM_EME2000_TO_ECLJ2000_ * DCM_ICRF_TO_EME2000
+        dcm = DCM_EME2000_TO_ECLJ2000 * DCM_ICRF_TO_EME2000
     elseif parentid == AXESID_EME2000
-        # Compute the J2000 to ECLIPJ2000 rotationa ccording to the desired IAU model
         dcm = DCM_EME2000_TO_ECLJ2000
     else 
         throw(
             ArgumentError(
                 "Ecliptic Equinox of J2000 (ECL2000) axes cannot be defined" *
-                " w.r.t. $parentid axes. Only `ICRF` (ID = $(AXESID_ICRF)) or" * 
-                " `EME2000` (ID = $(AXESID_EME2000)) are accepted as parent axes.",
+                " w.r.t. $parentid axes. Only the ICRF (ID = $(AXESID_ICRF)), the GCRF" * 
+                " (ID = $(AXESID_GCRF)) or the EME2000 (ID = $(AXESID_EME2000)) are" * 
+                " accepted as parent axes.",
             ),
         )
     end
