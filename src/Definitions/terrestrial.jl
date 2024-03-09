@@ -1,6 +1,9 @@
 export  add_axes_itrf!, 
+        add_axes_cirf!, 
+        add_axes_tirf!,
         add_axes_mod!, 
         add_axes_tod!, 
+        add_axes_gtod!,
         add_axes_pef!
 
 """
@@ -8,7 +11,7 @@ export  add_axes_itrf!,
 
 Add `axes` as a set of axes representing the International Terrestrial Reference Frame (ITRF)
 to `frames`. Use the `model` argument to specify which IERS convention should be used for 
-the computations. The default is set to `iers2010b`.
+the computations, the default is set to `iers2010b`.
 
 !!! warning 
     If the ID of the parent set of `axes` is neither the ICRF (ID = $(AXESID_ICRF))
@@ -66,12 +69,22 @@ function add_axes_itrf!(
     )
 end
 
+
+# Equinox-based transformations from ICRF/GCRF
+# ==============================================
+
 """
     add_axes_mod!(frames, axes::AbstractFrameAxes, parent, 
         model::IERSConventions.IERSModel=iers2010b)
 
 Add `axes` as a set of projected axes representing the Mean Equator and Equinox of Date (MOD)
-to `frames`. 
+to `frames`. Use the `model` argument to specify which IERS convention should be used for 
+the computations, the default is set to `iers2010b`.
+
+!!! note 
+    The Mean-of-Date axes are obtained by applying the frame bias and precession matrix. 
+    For this reason, if the [`iers1996`](@ref) conventions are used, the rotation is 
+    actually computed starting from the MEME2000 rather than the GCRF.  
 
 !!! note
     Despite this class of axes has a rotation matrix that depends on time, its derivatives 
@@ -101,13 +114,13 @@ end
 function add_axes_mod!(frames::FrameSystem, name::Symbol, axesid::Int, 
     parentid::Int=AXESID_ICRF, model::IERSConventions.IERSModel=iers2010b)
 
-    if parentid != AXESID_ICRF || parentid != AXESID_GCRF
+    if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "Mean of Date (MOD) axes can only be defined " *
-                "w.r.t. the ICRF (ID = $(AXESID_ICRF)) or " * 
-                "the GCRF (ID = $(AXESID_GCRF)).",
-            )
+                "Mean-of-Date (MOD) axes cannot be defined with respect to axes $parentid."*
+                " Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
+            ),
         )
     end
 
@@ -117,19 +130,26 @@ function add_axes_mod!(frames::FrameSystem, name::Symbol, axesid::Int,
     )
 end
 
+
 """
     add_axes_tod!(frames, axes::AbstractFrameAxes, parent, 
         model::IERSConventions.IERSModel=iers2010b)
 
 Add `axes` as a set of projected axes representing the True Equator of Date (TOD) 
-to `frames`. 
+to `frames`. Use the `model` argument to specify which IERS convention should be used for 
+the computations, the default is set to `iers2010b`.
+
+!!! note 
+    The True-of-Date axes are obtained by applying the frame bias, precession and 
+    nutation matrix. For this reason, if the [`iers1996`](@ref) conventions are used, the 
+    rotation is actually computed starting from the MEME2000 rather than the GCRF.  
 
 !!! note
     Despite this class of axes has a rotation matrix that depends on time, its derivatives 
     are assumed null.
 
 !!! warning 
-    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF), or $(AXESID_GCRF)
+    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
     (GCRF) otherwise an error is thrown. 
 
 ----
@@ -145,20 +165,20 @@ See also [`add_axes_projected!`](@ref).
 """
 @inline function add_axes_tod!(frames::FrameSystem, axes::AbstractFrameAxes, parent, 
     model::IERSConventions.IERSModel=iers2010b)
-    return add_axes_mod!(frames, axes_name(axes), axes_id(axes), axes_alias(parent), model)
+    return add_axes_tod!(frames, axes_name(axes), axes_id(axes), axes_alias(parent), model)
 end
 
 # Low-level function
 function add_axes_tod!(frames::FrameSystem, name::Symbol, axesid::Int, 
     parentid::Int=AXESID_ICRF, model::IERSConventions.IERSModel=iers2010b)
 
-    if parentid != AXESID_ICRF || parentid != AXESID_GCRF
+    if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "True of Date (TOD) axes can only be defined " *
-                "w.r.t. the ICRF (ID = $(AXESID_ICRF)) or " * 
-                "the GCRF (ID = $(AXESID_GCRF)).",
-            )
+                "True-of-Date (TOD) axes cannot be defined with respect to axes $parentid."*
+                " Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
+            ),
         )
     end
 
@@ -168,16 +188,72 @@ function add_axes_tod!(frames::FrameSystem, name::Symbol, axesid::Int,
     )
 end
 
+
+"""
+    add_axes_gtod!(frames, axes::AbstractFrameAxes, parent, 
+        model::IERSConventions.IERSModel=iers2010b)
+
+Add `axes` as a set of projected axes representing the Greenwich True-of-Date (GTOD) 
+to `frames`. Use the `model` argument to specify which IERS convention should be used for 
+the computations, the default is set to `iers2010b`.
+
+!!! note
+    Despite this class of axes has a rotation matrix that depends on time, its derivatives 
+    are assumed null.
+
+!!! warning 
+    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
+    (GCRF) otherwise an error is thrown. 
+
+----
+
+    add_axes_gtod!(frames, name::Symbol, axesid::Int, parentid::Int, 
+        model::IERSConventions.IERSModel=iers2010b)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+
+### See also 
+See also [`add_axes_projected!`](@ref).
+"""
+@inline function add_axes_gtod!(frames::FrameSystem, axes::AbstractFrameAxes, parent, 
+    model::IERSConventions.IERSModel=iers2010b)
+    return add_axes_gtod!(frames, axes_name(axes), axes_id(axes), axes_alias(parent), model)
+end
+
+# Low-level function
+function add_axes_gtod!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=AXESID_ICRF, model::IERSConventions.IERSModel=iers2010b)
+
+    if !(parentid in (AXESID_ICRF, AXESID_GCRF))
+        throw(
+            ArgumentError(
+                "Greenwich True-of-Date (GTOD) axes cannot be defined with respect to axes"*
+                " $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
+            ),
+        )
+    end
+
+    # TODO: check if projected is right
+    return add_axes_projected!(
+        frames, name, axesid, parentid, 
+        t -> iers_rot3_gcrf_to_gtod(t, model)
+    )
+end
+
+
 """
     add_axes_pef!(frames, axes::AbstractFrameAxes, parent,
         model::IERSConventions.IERSModel=iers2010b)
 
-Add `axes` as a set of rotating axes representing the Pseudo Earth Fixed (PEF) axes
-to `frames`. 
+Add `axes` as a set of rotating axes representing the Pseudo-Earth Fixed (PEF) axes
+to `frames`. Use the `model` argument to specify which IERS convention should be used for 
+the computations, the default is set to `iers2010b`.
 
 !!! warning 
-    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF), 
-    or $(AXESID_GCRF) (GCRF) otherwise an error is thrown. 
+    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
+    (GCRF) otherwise an error is thrown. 
 
 ----
 
@@ -200,13 +276,13 @@ end
 function add_axes_pef!(frames::FrameSystem, name::Symbol, axesid::Int, 
     parentid::Int=Orient.AXESID_ICRF, model::IERSConventions.IERSModel=iers2010b)
 
-    if parentid != AXESID_ICRF || parentid != AXESID_GCRF
+    if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "Pseudo Earth Fixed (PEF) axes can only be defined " *
-                "w.r.t. the ICRF (ID = $(AXESID_ICRF)) or " * 
-                "the GCRF (ID = $(AXESID_GCRF)).",
-            )
+                "Pseudo-Earth Fixed (PEF) axes cannot be defined with respect to"*
+                " axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
+            ),
         )
     end
 
@@ -217,5 +293,116 @@ function add_axes_pef!(frames::FrameSystem, name::Symbol, axesid::Int,
         axesid,
         parentid,
         t -> iers_rot3_gcrf_to_pef(model, t)
+    )
+end
+
+
+# CIO-based transformations from ICRF/GCRF 
+# ==============================================
+
+"""
+    add_axes_cirf!(frames, axes::AbstractFrameAxes, parent, 
+        model::IERSConventions.IERSModel=iers2010b)
+
+Add `axes` as a set of projected axes representing the Celestial Intermediate Reference 
+Frame (CIRF) to `frames`. Use the `model` argument to specify which IERS convention should 
+be used for the computations, the default is set to `iers2010b`.
+
+!!! note
+    Despite this class of axes has a rotation matrix that depends on time, its derivatives 
+    are assumed null.
+
+!!! warning 
+    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
+    (GCRF) otherwise an error is thrown. 
+
+----
+
+    add_axes_cirf!(frames, name::Symbol, axesid::Int, parentid::Int, 
+        model::IERSConventions.IERSModel=iers2010b)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+
+### See also 
+See also [`add_axes_projected!`](@ref).
+"""
+@inline function add_axes_cirf!(frames::FrameSystem, axes::AbstractFrameAxes, parent, 
+    model::IERSConventions.IERSModel=iers2010b)
+    return add_axes_cirf!(frames, axes_name(axes), axes_id(axes), axes_alias(parent), model)
+end
+
+# Low-level function
+function add_axes_cirf!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=AXESID_ICRF, model::IERSConventions.IERSModel=iers2010b)
+
+    if !(parentid in (AXESID_ICRF, AXESID_GCRF))
+        throw(
+            ArgumentError(
+                "The Celestial Intermediate Reference Frame (CIRF) axes cannot be defined"*
+                " with respect to axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or"*
+                " the GCRF (ID = $(AXESID_GCRF)) are accepted as parent axes.",
+            ),
+        )
+    end
+
+    # TODO: check if projected is right
+    return add_axes_projected!(
+        frames, name, axesid, parentid, 
+        t -> iers_rot3_gcrf_to_cirf(t, model)
+    )
+end
+
+
+"""
+    add_axes_tirf!(frames, axes::AbstractFrameAxes, parent, 
+        model::IERSConventions.IERSModel=iers2010b)
+
+Add `axes` as a set of projected axes representing the Terrestrial Intermediate Reference 
+Frame (TIRF) to `frames`. Use the `model` argument to specify which IERS convention should 
+be used for the computations, the default is set to `iers2010b`.
+
+!!! note
+    Despite this class of axes has a rotation matrix that depends on time, its derivatives 
+    are assumed null.
+
+!!! warning 
+    The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
+    (GCRF) otherwise an error is thrown. 
+
+----
+
+    add_axes_tirf!(frames, name::Symbol, axesid::Int, parentid::Int, 
+        model::IERSConventions.IERSModel=iers2010b)
+
+Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@ref) type 
+via the [`@axes`](@ref) macro.
+
+### See also 
+See also [`add_axes_projected!`](@ref).
+"""
+@inline function add_axes_tirf!(frames::FrameSystem, axes::AbstractFrameAxes, parent, 
+    model::IERSConventions.IERSModel=iers2010b)
+    return add_axes_tirf!(frames, axes_name(axes), axes_id(axes), axes_alias(parent), model)
+end
+
+# Low-level function
+function add_axes_tirf!(frames::FrameSystem, name::Symbol, axesid::Int, 
+    parentid::Int=AXESID_ICRF, model::IERSConventions.IERSModel=iers2010b)
+
+    if !(parentid in (AXESID_ICRF, AXESID_GCRF))
+        throw(
+            ArgumentError(
+                "The Terrestrial Intermediate Reference Frame (TIRF) axes cannot be defined"*
+                " with respect to axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or"*
+                " the GCRF (ID = $(AXESID_GCRF)) are accepted as parent axes.",
+            ),
+        )
+    end
+
+    # TODO: check if projected is right
+    return add_axes_projected!(
+        frames, name, axesid, parentid, 
+        t -> iers_rot3_gcrf_to_tirf(t, model)
     )
 end
