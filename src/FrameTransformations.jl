@@ -68,8 +68,9 @@ import SMDGraphs: get_node_id
 @reexport using Tempo
 export load
 
-# ----
-# CORE 
+
+# Core Routines
+# ==============================================
 
 include("Core/index.jl")
 include("Core/rotation.jl")
@@ -80,8 +81,8 @@ include("Core/points.jl")
 include("Core/lightime.jl")
 include("Core/transform.jl")
 
-# ----
-# DEFINITIONs
+# Standard axes definitions
+# ==============================================
 
 include("Definitions/celestial.jl")
 include("Definitions/ecliptic.jl")
