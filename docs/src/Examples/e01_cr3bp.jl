@@ -45,7 +45,7 @@ add_axes_rotating!(CR3BP, SynodicAx, InertialAx, f)
 
 # Note that there is no need to specify the rotation derivatives, as they'll 
 # be computed by  automatic differentiation via the 
-# [ForwardDiff](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) package. 
+# [ForwardDiff](https://github.com/JuliaDiff/ForwardDiff.jl) package. 
 # For performace-critical transformations, however, it is reccomended to manually 
 # define these derivatives.
 

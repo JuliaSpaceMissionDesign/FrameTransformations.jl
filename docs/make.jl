@@ -13,15 +13,20 @@ if CI
 
     using Literate
 
+    # Generate Documentation Markdowns
     docs_path = joinpath("docs", "src", "Tutorials")
-
+    
     Literate.markdown(joinpath(docs_path, "t00_frames.jl"), docs_path)
     Literate.markdown(joinpath(docs_path, "t01_axes.jl"), docs_path)
     Literate.markdown(joinpath(docs_path, "t02_points.jl"), docs_path)
 
-end
+    
+    # Generate Examples Markdowns
+    examples_path = joinpath("docs", "src", "Examples")
 
-# include("generate.jl")
+    Literate.markdown(Joinpath(examples_path, "e01_cr3bp.jl"), examples_path)
+
+end
 
 makedocs(;
     authors="Julia Space Mission Design Development Team",
@@ -41,11 +46,11 @@ makedocs(;
             # "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
         ],
 
-        # "Use Cases" => [
-        #     "CR3BP" => "Examples/gen/e01_cr3bp.md",
+        "Use Cases" => [
+            "CR3BP" => "Examples/e01_cr3bp.md",
         #     "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md",
         #     "Custom Orbit Representation" => "Examples/gen/e03_customorb.md"
-        # ],
+        ],
 
         # "Benchmarks" => "benchmarks.md",
 
