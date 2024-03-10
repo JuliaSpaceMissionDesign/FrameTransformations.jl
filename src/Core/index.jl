@@ -25,7 +25,7 @@ Axes ID for the Geocentric Celestial Reference Frame (GCRFF)
 const AXESID_GCRF = 23
 
 """ 
-    AXESID_MEME2000 
+    AXESID_ECL2000 
    
 NAIF Axes ID for the Mean Ecliptic Equinox of J2000 (ECL2000).
 """
