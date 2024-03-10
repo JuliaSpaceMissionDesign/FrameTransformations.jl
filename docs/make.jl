@@ -11,6 +11,8 @@ if CI
     Pkg.add("Literate")
     Pkg.add("Dates")
 
+    using Literate
+
     Literate.markdown(joinpath("Tutorials", "t00_frames.jl"), joinpath("Tutorials"))
     Literate.markdown(joinpath("Tutorials", "t01_axes.jl"), joinpath("Tutorials"))
     Literate.markdown(joinpath("Tutorials", "t02_points.jl"), joinpath("Tutorials"))
