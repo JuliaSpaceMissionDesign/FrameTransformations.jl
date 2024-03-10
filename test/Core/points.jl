@@ -195,6 +195,8 @@ kclear()
 
     # -- Testing Dynamical points!
     @testset "Dynamical" verbose = false begin
+
+        DCM_EME2000_TO_ECL2000 = angle_to_dcm(iers_obliquity(iers1996, 0), :X)
         R = DCM_EME2000_TO_ECL2000
 
         nth = Threads.nthreads()
@@ -272,6 +274,8 @@ kclear()
 
     # -- Testing Updatable points!
     @testset "Updatable" verbose = false begin
+        
+        DCM_EME2000_TO_ECL2000 = angle_to_dcm(iers_obliquity(iers1996, 0), :X)
         R = DCM_EME2000_TO_ECL2000
 
         frames = FrameSystem{3,Float64}()
