@@ -25,7 +25,7 @@
 #md # !!! note
 #md #     This package provides a dedicated function to register each type of supported axes. 
 #md #     Additionally, higher-level functions to automatically register standard astronomical 
-#md #     reference axes are also provided, e.g., [`add_axes_eclipj2000!`](@ref).
+#md #     reference axes are also provided, e.g., [`add_axes_ecl2000!`](@ref).
 #-
 
 # Before diving into the creation of the axes graph, it is worth highlighting that transformations 
@@ -116,16 +116,16 @@ add_axes_inertial!(G, ICRF)
 # They are the only ones that can be used as root axes in the frame system but can also be 
 # defined through a relative orientation with respect to another set of inertial axis. 
 
-# In this example, we register the `ECLIPJ2000` as a set of inertial axes with respect to 
+# In this example, we register the `EME2000` as a set of inertial axes with respect to 
 # the `ICRF`. Since the set of root axes has already been defined, all the future usages of 
 # the [`add_axes_inertial!`](@ref) function require a parent set of axes and a DCM with the
 # relative orientation.
 
-@axes ECLIPJ2000 17
+@axes EME2000 17
 
-add_axes_inertial!(G, ECLIPJ2000; parent=ICRF, dcm=DCM_ICRF_TO_ECLIPJ2000)
+add_axes_inertial!(G, EME2000; parent=ICRF, dcm=DCM_ICRF_TO_EME2000)
 
-R = rotation6(G, ICRF, ECLIPJ2000, 10.0)
+R = rotation6(G, ICRF, EME2000, 10.0)
 
 #- 
 R[1]
@@ -133,10 +133,10 @@ R[1]
 #- 
 R[2]
 
-# Notice that we leveraged the default DCM provided by Orient's to express the relative 
-# orientation between the `ICRF` and the `ECLIPJ2000`. For a set of default DCM exported by 
-# Orient, check the [API documentation](@ref orient_dcms). Additionally, since it is an
-# inertial frame, the time derivative of the rotation is null. 
+# Notice that we leveraged the default DCM provided by FrameTransformationsto express the 
+# relative orientation between the `ICRF` and the `EME2000`. For a set of default DCM 
+# exported by Orient, check the [API documentation](@ref frames_dcms). Additionally, since 
+# it is an inertial frame, the time derivative of the rotation is null. 
 
 # ## Fixed-offset Axes
 
@@ -312,7 +312,7 @@ R = rotation6(G, ICRF, SunFrame, 0.0)
 # PCK kernel containing the orientation of the Moon's Principal Axes (PA421). NAIF's system 
 # has assigned to such set of axes the ID `31006`. If a different ID was assigned to the 
 # `MoonPA`, the function would have thrown an error. A set of default axes IDs is also 
-# defined within the [Orient](@ref orient_axesid)'s submodule for ease of use.
+# defined within this [package](@ref frames_axesid) for ease of use.
 
 # The function also requires the user to specify the rotation sequence to convert the Euler 
 # angles to a proper rotation matrix.
