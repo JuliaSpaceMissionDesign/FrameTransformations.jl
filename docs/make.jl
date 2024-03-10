@@ -23,14 +23,14 @@ makedocs(;
 
         "Home" => "index.md",
 
-        # "Tutorials" => [
-        #     "01 - Frame System" => "Tutorials/gen/t00_frames.md",
-        #     "02 - Axes" => "Tutorials/gen/t01_axes.md",
-        #     "03 - Points" => "Tutorials/gen/t02_points.md",
-        #     "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
-        #     "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
-        #     "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
-        # ],
+        "Tutorials" => [
+            "01 - Frame System" => "Tutorials/t00_frames.md",
+            "02 - Axes" => "Tutorials/t01_axes.md",
+            "03 - Points" => "Tutorials/t02_points.md",
+            # "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
+            # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
+            # "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
+        ],
 
         # "Use Cases" => [
         #     "CR3BP" => "Examples/gen/e01_cr3bp.md",
