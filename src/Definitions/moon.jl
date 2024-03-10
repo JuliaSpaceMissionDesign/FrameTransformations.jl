@@ -94,8 +94,7 @@ Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@
 via the [`@axes`](@ref) macro.
 
 ### See also 
-See also [`AXESID_MOONPA_DE440`](@ref), [`orient_rot3_icrf_to_pa440`](@ref)
-and [`add_axes_pa421!`](@ref).
+See also [`AXESID_MOONPA_DE440`](@ref) and [`add_axes_pa421!`](@ref).
 """
 @inline function add_axes_pa440!(frames::FrameSystem, axes::AbstractFrameAxes)
     return add_axes_pa440!(frames, axes_name(axes), axes_id(axes))
@@ -152,8 +151,7 @@ Low-level function to avoid requiring the creation of an [`AbstractFrameAxes`](@
 via the [`@axes`](@ref) macro.
 
 ### See also 
-See also [`AXESID_MOONPA_DE421`](@ref), [`orient_rot3_icrf_to_pa421`](@ref), 
-[`add_axes_pa440!`](@ref), and [`add_axes_me421!`](@ref)
+See also [`AXESID_MOONPA_DE421`](@ref), [`add_axes_pa440!`](@ref) and [`add_axes_me421!`](@ref)
 """
 @inline function add_axes_pa421!(frames::FrameSystem, axes::AbstractFrameAxes)
     return add_axes_pa421!(frames, axes_name(axes), axes_id(axes))
