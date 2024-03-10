@@ -5,8 +5,8 @@
 # the capability to compute relative position, orientation and their time derivatives up to 
 # order 3 (jerk), between standard and user-defined point and axes. It works by creating two 
 # separate graphs that silently store and manage all the parent-child relationships between 
-# the user-registered axes and points, in the form of [`Frames.FramePointNode`](@ref) and 
-# [`Frames.FrameAxesNode`](@ref). 
+# the user-registered axes and points, in the form of [`FrameTransformations.FramePointNode`](@ref) 
+# and [`FrameTransformations.FrameAxesNode`](@ref). 
 
 # These two objects define two precise entities: 
 # - **Axes**: defines an orientation in space. These are related each other by means of a 
