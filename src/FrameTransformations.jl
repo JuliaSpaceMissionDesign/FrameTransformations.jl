@@ -72,7 +72,6 @@ export load
 # Core Routines
 # ==============================================
 
-include("Core/index.jl")
 include("Core/rotation.jl")
 include("Core/twovectors.jl")
 include("Core/types.jl")
@@ -84,6 +83,7 @@ include("Core/transform.jl")
 # Standard axes definitions
 # ==============================================
 
+include("Definitions/index.jl")
 include("Definitions/celestial.jl")
 include("Definitions/ecliptic.jl")
 include("Definitions/terrestrial.jl")
