@@ -60,7 +60,7 @@ function add_axes_gcrf!(frames::FrameSystem)
     if has_axes(frames, AXESID_ICRF)
         # Add the GCRF as a child of the ICRF with an identity rotation 
         return add_axes_fixedoffset!(
-            frames, :GCRF, AXESID_GCRF, AXESID_ICRF, DCM(1I)
+            frames, :GCRF, AXESID_GCRF, AXESID_ICRF, DCM(1.0I)
         )
 
     elseif isempty(frames_axes(frames))
