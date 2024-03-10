@@ -19,12 +19,13 @@ if CI
     Literate.markdown(joinpath(docs_path, "t00_frames.jl"), docs_path)
     Literate.markdown(joinpath(docs_path, "t01_axes.jl"), docs_path)
     Literate.markdown(joinpath(docs_path, "t02_points.jl"), docs_path)
+    Literate.markdown(joinpath(docs_path, "t03_iers.jl"), docs_path)
 
-    
     # Generate Examples Markdowns
     examples_path = joinpath("docs", "src", "Examples")
 
     Literate.markdown(joinpath(examples_path, "e01_cr3bp.jl"), examples_path)
+    Literate.markdown(joinpath(examples_path, "e02_hifi.jl"), examples_path)
 
 end
 
@@ -41,22 +42,22 @@ makedocs(;
             "01 - Frame System" => joinpath("Tutorials", "t00_frames.md"),
             "02 - Axes" => joinpath("Tutorials", "t01_axes.md"),
             "03 - Points" => joinpath("Tutorials", "t02_points.md"),
-            # "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
+            "04 - IERS Rotations and EOP Handling" => joinpath("Tutorials", "t03_iers.md"),
             # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
             # "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
         ],
 
         "Use Cases" => [
-            "CR3BP" => "Examples/e01_cr3bp.md",
-        #     "High-Fidelity Earth-Moon Environment" => "Examples/gen/e02_hifi.md",
+            "CR3BP" => joinpath("Examples", "e01_cr3bp.md"),
+            "High-Fidelity Earth-Moon Environment" => joinpath("Examples", "e02_hifi.md"),
         #     "Custom Orbit Representation" => "Examples/gen/e03_customorb.md"
         ],
 
         # "Benchmarks" => "benchmarks.md",
 
         "API" => [
-            "Public API" => "API/frames_api.md",
-            "Low-level API" => "API/frames_lapi.md",             
+            "Public API" => joinpath("API", "frames_api.md"),
+            "Low-level API" => joinpath("API", "frames_lapi.md"),             
         ],
 
 

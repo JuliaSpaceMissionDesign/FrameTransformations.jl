@@ -89,13 +89,15 @@ add_axes_bci2000!(FRAMES, LME2000, Moon, iau);
 
 #md # !!! warning 
 #md #     In order to use `IERS` associated reference frames, EOP must be loaded. 
-#md #     See also [`Orient.prepare_eop`](@ref), [`Orient.init_eop`](@ref).
+#md #     See the dedicated [tutorial](@ref tutorial_03_iers) for more information.
+
+using IERSConventions
 
 url_eop = "https://datacenter.iers.org/data/csv/finals2000A.data.csv"
 eopfile = "iau2000a"
 
-Orient.prepare_eop(download(url_eop), eopfile)
-Orient.init_eop(eopfile * ".eop.dat")
+eop_generate_from_csv(iers2010a, download(url_eop), eopfile)
+eop_load_data!(iers2010a, eopfile * ".eop.dat")
 
 # For this purpose, `FrameTransformations` provides two  high-level functions that can be 
 # used to ease these definitions: [`add_axes_itrf!`](@ref) and [`add_axes_pa421!`](@ref).
@@ -103,11 +105,11 @@ Orient.init_eop(eopfile * ".eop.dat")
 @axes ITRF 6 
 @axes MOONPA_DE421 31006 
 
-add_axes_itrf!(FRAMES, ITRF, GCRF)
+add_axes_itrf!(FRAMES, ITRF, GCRF, model=iers2010a)
 add_axes_pa421!(FRAMES, MOONPA_DE421)
 
-# The default ITRF model is the [`iau2006b`](@ref), but other approximations are 
-# also [available](@ref iers_models). If one was interested in the Moon's PA440 axes, a 
+# The default ITRF model is the [`IERSConventions.iers2010b`](@ref), but other approximations 
+# are also available. If one was interested in the Moon's PA440 axes, a 
 # similar function named [`add_axes_pa440!`](@ref) is available.
 
 #md # !!! note 
