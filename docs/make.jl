@@ -24,7 +24,7 @@ if CI
     # Generate Examples Markdowns
     examples_path = joinpath("docs", "src", "Examples")
 
-    Literate.markdown(Joinpath(examples_path, "e01_cr3bp.jl"), examples_path)
+    Literate.markdown(joinpath(examples_path, "e01_cr3bp.jl"), examples_path)
 
 end
 
