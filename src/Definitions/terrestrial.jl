@@ -83,8 +83,8 @@ the computations, the default is set to `iers2010b`.
 
 !!! note 
     The Mean-of-Date axes are obtained by applying the frame bias and precession matrix. 
-    For this reason, if the [`iers1996`](@ref) conventions are used, the rotation is 
-    actually computed starting from the MEME2000 rather than the GCRF.  
+    For this reason, if the IERS 1996 conventions are used, the rotation is 
+    actually computed starting from the EME2000 rather than the GCRF.  
 
 !!! note
     Despite this class of axes has a rotation matrix that depends on time, its derivatives 
@@ -141,8 +141,8 @@ the computations, the default is set to `iers2010b`.
 
 !!! note 
     The True-of-Date axes are obtained by applying the frame bias, precession and 
-    nutation matrix. For this reason, if the [`iers1996`](@ref) conventions are used, the 
-    rotation is actually computed starting from the MEME2000 rather than the GCRF.  
+    nutation matrix. For this reason, if the IERS 1996 conventions are used, the 
+    rotation is actually computed starting from the EME2000 rather than the GCRF.  
 
 !!! note
     Despite this class of axes has a rotation matrix that depends on time, its derivatives 
