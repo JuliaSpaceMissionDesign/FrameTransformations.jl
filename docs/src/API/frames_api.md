@@ -41,7 +41,6 @@ add_axes_rotating!
 add_axes_tirf!
 add_axes_tod!
 add_axes_topocentric!
-
 ```
 
 ## Points
