@@ -20,6 +20,7 @@ makedocs(;
     modules=[FrameTransformations],
     format=Documenter.HTML(; prettyurls=CI, highlights=["yaml"], ansicolor=true),
     pages=[
+
         "Home" => "index.md",
 
         # "Tutorials" => [
@@ -39,18 +40,11 @@ makedocs(;
 
         # "Benchmarks" => "benchmarks.md",
 
-        # "Modules" => [
-        #     "Frames" => [
-        #         "Public API" => "Modules/frames_api.md",
-        #         "Low-level API" => "Modules/frames_lapi.md",             
-        #     ],
+        "API" => [
+            "Public API" => "API/frames_api.md",
+            "Low-level API" => "API/frames_lapi.md",             
+        ],
 
-        #     "Orient" => [
-        #         "Public API" => "Modules/orient_api.md"
-        #         "Low-level API" => "Modules/orient_lapi.md"
-        #     ],
-
-        # ], 
 
         # "Roadmap" => "roadmap.md"
 
