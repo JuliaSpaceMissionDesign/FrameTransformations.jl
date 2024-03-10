@@ -39,7 +39,7 @@ julia> add_axes_ecl2000!(FRAMES, ECL2000, ICRF)
 ``` 
 
 ### See also 
-See also [`add_axes_inertial!`](@ref) and [`DCM_ICRF_TO_ECL2000`](@ref)
+See also [`add_axes_inertial!`](@ref).
 """
 @inline function add_axes_ecl2000!(
     frames::FrameSystem,
