@@ -10,6 +10,11 @@ if CI
     Pkg.add("JSMDInterfaces")
     Pkg.add("Literate")
     Pkg.add("Dates")
+
+    Literate.markdown(joinpath("Tutorials", "t00_frames.jl"), joinpath("Tutorials"))
+    Literate.markdown(joinpath("Tutorials", "t01_axes.jl"), joinpath("Tutorials"))
+    Literate.markdown(joinpath("Tutorials", "t02_points.jl"), joinpath("Tutorials"))
+
 end
 
 # include("generate.jl")
@@ -24,9 +29,9 @@ makedocs(;
         "Home" => "index.md",
 
         "Tutorials" => [
-            "01 - Frame System" => "Tutorials/t00_frames.md",
-            "02 - Axes" => "Tutorials/t01_axes.md",
-            "03 - Points" => "Tutorials/t02_points.md",
+            "01 - Frame System" => joinpath("Tutorials", "t00_frames.md"),
+            "02 - Axes" => joinpath("Tutorials", "t01_axes.md"),
+            "03 - Points" => joinpath("Tutorials", "t02_points.md"),
             # "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
             # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
             # "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
