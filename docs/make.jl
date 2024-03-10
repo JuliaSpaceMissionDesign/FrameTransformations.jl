@@ -13,9 +13,11 @@ if CI
 
     using Literate
 
-    Literate.markdown(joinpath("Tutorials", "t00_frames.jl"), joinpath("Tutorials"))
-    Literate.markdown(joinpath("Tutorials", "t01_axes.jl"), joinpath("Tutorials"))
-    Literate.markdown(joinpath("Tutorials", "t02_points.jl"), joinpath("Tutorials"))
+    docs_path = joinpath("docs", "src", "Tutorials")
+
+    Literate.markdown(joinpath(docs_path, "t00_frames.jl"), docs_path)
+    Literate.markdown(joinpath(docs_path, "t01_axes.jl"), docs_path)
+    Literate.markdown(joinpath(docs_path, "t02_points.jl"), docs_path)
 
 end
 
