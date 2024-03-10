@@ -60,7 +60,7 @@ makedocs(;
         ],
 
 
-        # "Roadmap" => "roadmap.md"
+        "Roadmap" => "roadmap.md"
 
     ],
     clean=true,
