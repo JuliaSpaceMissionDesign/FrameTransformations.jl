@@ -318,7 +318,7 @@ function add_axes_inertial!(
     name::Symbol,
     axesid::Int;
     parentid = nothing,
-    dcm::Union{Nothing,DCM{T}} = nothing,
+    dcm::Union{Nothing,DCM} = nothing,
 ) where {O,T}
 
     # Checks for root-axes existence 
@@ -413,7 +413,7 @@ end
 
 # Low-level function
 function add_axes_fixedoffset!(
-    frames::FrameSystem{O,T}, name::Symbol, axesid::Int, parentid::Int, dcm::DCM{T}
+    frames::FrameSystem{O,T}, name::Symbol, axesid::Int, parentid::Int, dcm::DCM
 ) where {O,T}
 
     return build_axes(
