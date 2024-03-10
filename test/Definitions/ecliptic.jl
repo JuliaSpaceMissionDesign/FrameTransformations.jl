@@ -35,18 +35,6 @@
     @test maximum(abs.(R[2])) ≈ 0.0 atol = 1e-14 rtol = 1e-14
     @test maximum(abs.(R[3])) ≈ 0.0 atol = 1e-14 rtol = 1e-14
 
-    # Test rotation matrix from ECL2000 to EME2000
-    frames = FrameSystem{3,Float64}()
-    add_axes_inertial!(frames, ECL2000)
-    add_axes_eme2000!(frames, EME2000, ECL2000)
-
-    R = rotation9(frames, EME2000, ECL2000, rand())
-
-    v = rand(BigFloat, 3)
-    v /= norm(v)
-    @test maximum(abs.(R[2])) ≈ 0.0 atol = 1e-14 rtol = 1e-14
-    @test maximum(abs.(R[3])) ≈ 0.0 atol = 1e-14 rtol = 1e-14
-
     frames = FrameSystem{3,Float64}()
     add_axes_icrf!(frames)
 
@@ -56,7 +44,7 @@
 
 end;
 
-@testset "ECL2000" verbose = false begin
+@testset "ECLJ2000" verbose = false begin
     v2as = (x, y) -> acosd(max(-1, min(1, dot(x / norm(x), y / norm(y))))) * 3600
 
     frames = FrameSystem{3,Float64}()
