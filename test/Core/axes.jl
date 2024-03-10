@@ -156,7 +156,7 @@ kclear()
         @test is_timefixed(G, AXES_ROT) == false
         @test is_timefixed(G, 2) == false
 
-        B = DCM_EME2000_TO_ECL2000
+        B = angle_to_dcm(iers_obliquity(iers1996, 0), :X)
 
         atol, rtol = 1e-12, 1e-12
         # test AD derivatives for all combinations of specified functions
@@ -229,7 +229,7 @@ kclear()
 
         eph = EphemerisProvider(path(KERNELS[:DE432]))
 
-        B = DCM_EME2000_TO_ECL2000
+        B = angle_to_dcm(iers_obliquity(model, 0), :X)
 
         F = FrameSystem{4,Float64}(eph)
         add_axes_inertial!(F, ICRF)
