@@ -100,6 +100,8 @@ kclear()
         eph = EphemerisProvider(path(KERNELS[:DE432]))
         frames = FrameSystem{3,Float64}(eph)
 
+        DCM_EME2000_TO_ECL2000 = angle_to_dcm(iers_obliquity(iers1996, 0), :X)
+
         add_axes_inertial!(frames, ICRF)
         add_axes_fixedoffset!(frames, ECL2000, ICRF, DCM_EME2000_TO_ECL2000)
 

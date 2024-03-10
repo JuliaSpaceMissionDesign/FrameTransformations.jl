@@ -229,7 +229,7 @@ kclear()
 
         eph = EphemerisProvider(path(KERNELS[:DE432]))
 
-        B = angle_to_dcm(iers_obliquity(model, 0), :X)
+        B = angle_to_dcm(iers_obliquity(iers1996, 0), :X)
 
         F = FrameSystem{4,Float64}(eph)
         add_axes_inertial!(F, ICRF)
