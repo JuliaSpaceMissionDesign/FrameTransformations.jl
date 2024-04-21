@@ -104,6 +104,19 @@ end
 # ------
 # Node
 
+"""
+    FramePointNode{O, T, N} <: AbstractJSMDGraphNode
+
+Define a frame system point.
+
+### Fields
+- `name` -- point name 
+- `class` -- `Symbol` representing the class of the point 
+- `id` -- ID of the point
+- `parentid` -- ID of the parent point 
+- `axesid` -- ID of the axes in which the point coordinates are expressed 
+- `f` -- `FramePointFunctions` container 
+"""
 struct FramePointNode{O, N <: Number, D} <: AbstractJSMDGraphNode
     name::Symbol
     class::Int
@@ -224,6 +237,18 @@ end
 # ------
 # Node
 
+"""
+    FrameAxesNode{O, T, N} <: AbstractJSMDGraphNode
+
+Define a set of axes.
+
+### Fields
+- `name` -- axes name 
+- `class` -- `Symbol` representing the class of the axes 
+- `id` -- axes ID (equivalent of NAIFId for axes)
+- `parentid` -- ID of the parent axes 
+- `f` -- `FrameAxesFunctions` container 
+"""
 struct FrameAxesNode{O, N <: Number, D} <: AbstractJSMDGraphNode
     name::Symbol
     class::Int

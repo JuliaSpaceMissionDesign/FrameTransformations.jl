@@ -20,12 +20,36 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
             throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
         end
 
+        """
+            $($axfun)(frame::FrameSystem, from, to, ep::Epoch) 
+
+        Compute the rotation that transforms a $(3*$order)-elements state vector from one 
+        specified set of axes to another at a given epoch. 
+
+        Requires a frame system of order ≥ $($order).
+
+        ### Inputs 
+        - `frame` -- The `FrameSystem` container object 
+        - `from` -- ID or instance of the axes to transform from 
+        - `to` -- ID or instance of the axes to transform to 
+        - `ep` -- `Epoch` of the rotation. Its timescale must match that of the frame system. 
+
+        ### Output
+        A [`Rotation`](@ref) object of order $($order).
+        """
         @inline function ($axfun)(
             frame::FrameSystem{<:Any,<:Any, S}, from, to, ep::Epoch{S}
         ) where {S}
-            return $(axfun)(frame, from, to, Tempo.j2000s(ep))
+            return $(axfun)(frame, from, to, j2000s(ep))
         end
 
+        """
+            $($axfun)(frame::FrameSystem, from, to, t::Number)
+
+        Compute the rotation that transforms a $(3*$order)-elements state vector from one 
+        specified set of axes to another at a given time `t`, expressed in seconds since 
+        `J2000` if ephemerides are used. 
+        """
         function ($axfun)(frame::FrameSystem{O, T}, from::Int, to::Int, t::Number) where {O,T}
             if O < $order
                 throw(
@@ -93,12 +117,36 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
             throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
         end
 
+        """
+            $($pfun)(frame::FrameSystem, from, to, axes, ep::Epoch) 
+
+        Compute $(3*$order)-elements state vector of a target point relative to 
+        an observing point, in a given set of axes, at the desired epoch `ep`.
+
+        Requires a frame system of order ≥ $($order).
+
+        ### Inputs 
+        - `frame` -- The `FrameSystem` container object 
+        - `from` -- ID or instance of the observing point
+        - `to` -- ID or instance of the target point 
+        - `axes` -- ID or instance of the output state vector axes 
+        - `ep` -- `Epoch` of the observer. Its timescale must match that of the frame system. 
+
+        """
         @inline function ($pfun)(
             frame::FrameSystem{<:Any,<:Any,S}, from, to, axes, ep::Epoch{S}
         ) where {S}
-            return $(pfun)(frame, from, to, axes, Tempo.j2000s(ep))
+            return $(pfun)(frame, from, to, axes, j2000s(ep))
         end
 
+        """
+            $($pfun)(frame, from, to, axes, t::Number) 
+
+        Compute $(3*$order)-elements state vector of a target point relative to 
+        an observing point, in a given set of axes, at the desired time `t` expressed in 
+        seconds since `J2000` if ephemerides are used. 
+
+        """
         function ($pfun)(frame::FrameSystem{O, N}, from::Int, to::Int, axes::Int, t::Number) where {O, N}
             if O < $order
                 throw(
