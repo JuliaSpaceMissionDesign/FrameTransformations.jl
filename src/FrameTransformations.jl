@@ -1,7 +1,7 @@
 module FrameTransformations 
 
 using LinearAlgebra
-import LinearAlgebra: UniformScaling
+import LinearAlgebra: UniformScaling, matprod
 
 using ForwardDiff
 using StaticArrays
