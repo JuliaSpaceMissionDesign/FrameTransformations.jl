@@ -20,7 +20,7 @@ end
 # ----
 # ROTATION TYPE DEFINITION
 
-struct Rotation{O, N} <: AbstractArray{N, 1}
+struct Rotation{O, N}
     m::NTuple{O, DCM{N}}
 
     function Rotation(x::NTuple{O, Any}) where {O}
@@ -214,13 +214,15 @@ end
 
 @generated function _compose_rotation(A::Rotation{S,<:Any}, B::Rotation{S,<:Any}) where {S}
     expr = Expr(:call, :Rotation)
+
     for i in 1:S
         sum_expr = Expr(:call, :+)
         for j in 1:i
             c = binomial(i - 1, j - 1)
-            aᵢ = Expr(:ref, :A, i - j + 1)
-            bᵢ = Expr(:ref, :B, j)
-            push!(sum_expr.args, Expr(:call, :*, c, aᵢ, bᵢ))
+            ai = Expr(:ref, Expr(:., :A, QuoteNode(:m)), i - j + 1)
+            bi = Expr(:ref, Expr(:., :B, QuoteNode(:m)), j)
+
+            push!(sum_expr.args, Expr(:call, :*, c, ai, bi))
         end
         push!(expr.args, sum_expr)
     end
@@ -232,40 +234,8 @@ end
 
 @inline Base.:*(A::Rotation, v::AbstractVector) = _apply_rotation(A, v)
 
-# Function to compute product between Rotation and a svector
-@generated function _apply_rotation(R::Rotation{Sr, Nr}, v::SVector{Sv, Nv}) where {Sr, Sv, Nr, Nv} 
-
-    if Sv % 3 == 1
-        throw(
-            DimensionMismatch(
-                "Cannot multiply `Rotation` of size ($Sr, $Sr) and a $(Sv) vector",
-            )
-        )
-    end
-
-    expr = Expr(
-        :call, 
-        Expr(:curly, :SVector, Sv, Nv),
-        Expr(
-            :call,
-            :_apply_rotation,
-            :R, 
-            Expr(
-                :call,
-                Expr(:curly, :Translation, Sr),
-                :v 
-            )
-        )
-    )
-    
-    return quote
-        Base.@_inline_meta
-        @inbounds $expr
-    end
-end 
-    
 # Function to compute product between Rotation and a generic vector
-@generated function _apply_rot(A::Rotation{S,Na}, b::AbstractVector{Nb}) where {S,Na,Nb}
+@generated function _apply_rotation(A::Rotation{S,Na}, b::AbstractVector{Nb}) where {S,Na,Nb}
     exprs = [[Expr(:call, :+) for _ in 1:3] for _ in 1:S]
 
     for i in 1:S
@@ -292,6 +262,37 @@ end
             ),
         )
 
+        T = Base.promote_op(matprod, Na, Nb)
+        $retexpr
+    end
+end
+
+# Function to compute product between Rotation and a static vector
+@generated function _apply_rotation(A::Rotation{S,Na}, b::StaticVector{sb, Nb}) where {S,sb,Na,Nb}
+    sa = 3 * S
+    sa != sb && throw(
+        DimensionMismatch(
+            "Cannot multiply `Rotation` of size ($sa, $sa) and a ($sb,) length vector"
+        ),
+    )
+
+    exprs = [[Expr(:call, :+) for _ in 1:3] for _ in 1:S]
+    for i in 1:S
+        for j in 1:i
+            for k in 1:3
+                push!(
+                    exprs[i][k].args,
+                    StaticArrays.combine_products([
+                        :(A[$i - $j + 1][$k, $w] * b[3 * ($j - 1) + $w]) for w in 1:3
+                    ]),
+                )
+            end
+        end
+    end
+
+    retexpr = :(@inbounds return similar_type(b, T, Size($sa))(tuple($((exprs...)...))))
+    return quote
+        Base.@_inline_meta
         T = Base.promote_op(matprod, Na, Nb)
         $retexpr
     end
