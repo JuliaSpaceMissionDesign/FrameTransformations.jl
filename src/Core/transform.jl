@@ -36,18 +36,18 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
                 )
             end
 
-            from == to && return Rotation{$order}(T(1)I)
+            from == to && return Rotation{$order}(T(1)*I)
 
-            # # Check to ensure that the two axes are stored in the frame system
-            # for id in (from, to)
-            #     if !has_axes(frame, id)
-            #         throw(
-            #             ErrorException(
-            #                 "axes with ID $id are not registered in the frame system."
-            #             )
-            #         )
-            #     end 
-            # end
+            # Check to ensure that the two axes are stored in the frame system
+            for id in (from, to)
+                if !has_axes(frame, id)
+                    throw(
+                        ErrorException(
+                            "axes with ID $id are not registered in the frame system."
+                        )
+                    )
+                end 
+            end
             return $(_axfun)(frame, get_path(get_axes(frame), from, to), t)
         end
 
