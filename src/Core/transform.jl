@@ -68,9 +68,9 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
         # Low-level function to compute the rotation between two axes
         @inline function ($_axfun)(from::FrameAxesNode, to::FrameAxesNode, t::Number)
             return if from.id == to.parentid
-                return $(_axfun)(to, t)
+                $(_axfun)(to, t)
             else
-                return inv($(_axfun)(from, t))
+                inv($(_axfun)(from, t))
             end
         end
 

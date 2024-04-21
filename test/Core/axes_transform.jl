@@ -25,6 +25,7 @@ g = FrameSystem{4, Float64, BarycentricDynamicalTime}()
 
 # ---
 # Root axes
+
 faxs0 = FrameTransformations.FrameAxesFunctions{4, Float64}()
 fax0 = FrameTransformations.FrameAxesNode{4, Float64}(:Ax0, 0, 1, 1, faxs0)
 
@@ -36,13 +37,10 @@ fax0 = FrameTransformations.FrameAxesNode{4, Float64}(:Ax0, 0, 1, 1, faxs0)
 
 # ---
 # Direct rotation
-Rz = Rotation{4}(angle_to_dcm(π/4, :Z))
-faxs1 = FrameTransformations.FrameAxesFunctions{4, Float64}(t->Rz)
+f(t) = Rotation{4}(angle_to_dcm(π/4, :Z))
+faxs1 = FrameTransformations.FrameAxesFunctions{4, Float64}(f)
 
-@test faxs1[1](0.0) === Rz
-@test faxs1[2](0.0) === Rz
-@test faxs1[3](0.0) === Rz
-@test faxs1[4](0.0) === Rz
+@test faxs1[1](0.0) === f(0.0)
 
 fax1 = FrameTransformations.FrameAxesNode{4, Float64}(:Ax1, 0, 2, 1, faxs1)
 
@@ -54,7 +52,8 @@ fax1 = FrameTransformations.FrameAxesNode{4, Float64}(:Ax1, 0, 2, 1, faxs1)
 
 # ---
 # Inv rotation
-faxs2 = FrameTransformations.FrameAxesFunctions{4, Float64}(t->inv(Rz))
+finv(t) = inv(f(t))
+faxs2 = FrameTransformations.FrameAxesFunctions{4, Float64}(finv)
 fax2 = FrameTransformations.FrameAxesNode{4, Float64}(:Ax2, 0, 3, 2, faxs2)
 
 for ax in [fax0, fax1, fax2]
