@@ -12,6 +12,7 @@ using FunctionWrappersWrappers: FunctionWrappersWrapper
 
 using JSMDUtils
 using JSMDUtils.Autodiff
+using JSMDUtils.Math: D¹, D², D³ 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode, add_edge!, add_vertex!, get_path, has_vertex
 using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider
 
@@ -41,8 +42,8 @@ include("Core/graph.jl")
 include("Core/transform.jl")
 
 # Helper functions 
-export add_axes_root!, add_axes_projected!, add_axes_fixedoffset!,
-       add_point_root!
+export add_axes_root!, add_axes_projected!, add_axes_fixedoffset!, add_axes_rotating!,
+       add_point_root!, add_point_dynamical!
 
 include("Core/axes.jl")
 include("Core/points.jl")

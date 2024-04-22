@@ -11,6 +11,19 @@ const SVectorNT{D, T} = SVector{D, T}
     end
 end
 
+@generated function SVectorNT{D, T}(vec::SVector{N, T}) where {D, T, N}
+    expr = Expr(:call, Expr(:curly, :SVector, D, T))
+    for i in 1:min(D, N)
+        push!(expr.args, Expr(:ref, :vec, i))
+    end
+    for _ in 1:(D-N) 
+        push!(expr.args, Expr(:call, :zero, T))
+    end
+    return quote
+        @inbounds $(expr)
+    end
+end
+
 # ------------------------------------------------------------------------------------------
 # POINTS
 # ------------------------------------------------------------------------------------------

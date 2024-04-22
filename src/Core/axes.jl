@@ -89,5 +89,62 @@ function add_axes_projected!(
         t -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I)),
         t -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I)),
     )
-    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs; parentid)
+    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, parentid)
+end
+
+function add_axes_rotating!(
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int,
+    fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
+) where {O, N}
+
+    for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
+        if (O < order + 1 && !isnothing(fcn))
+            @debug "ignoring $fcn, frame system order is less than $(order+1)"
+        end
+    end
+
+    funs = FrameAxesFunctions{O, N}(
+        t -> Rotation{O}(fun(t)),
+
+        # First derivative 
+        if isnothing(δfun)
+            t -> Rotation{O}(fun(t), D¹(fun, t))
+        else
+            t -> Rotation{O}(δfun(t))
+        end,
+
+        # Second derivative 
+        if isnothing(δ²fun)
+            (
+                if isnothing(δfun)
+                    t -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t))
+                else
+                    t -> Rotation{O}(δfun(t)..., D²(fun, t))
+                end
+            )
+        else
+            t -> Rotation{O}(δ²fun(t))
+        end,
+
+        # Third derivative 
+        if isnothing(δ³fun)
+            (
+                if isnothing(δ²fun)
+                    (
+                        if isnothing(δfun)
+                            t -> Rotation{O}(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t))
+                        else
+                            t -> Rotation{O}(δfun(t)..., D²(δfun, t)...)
+                        end
+                    )
+                else
+                    t -> Rotation{O}(δ²fun(t)..., D³(fun, t))
+                end
+            )
+        else
+            t -> Rotation{O}(δ³fun(t))
+        end,
+    )
+
+    return add_axes!(frames, name, id, AXES_CLASSID_ROTATING, funs, parentid)
 end

@@ -88,3 +88,62 @@ function add_point_root!(
         frames, name, id, axesid, POINT_CLASSID_ROOT, FramePointFunctions{O, N}(), id
     )
 end
+
+
+function add_point_dynamical!(
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
+    fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
+) where {O, N}
+
+    for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
+        if (O < order + 1 && !isnothing(fcn))
+            @warn "ignoring $fcn, frame system order is less than $(order+1)"
+        end
+    end
+
+    funs = FramePointFunctions{O, N}(
+        fun,
+
+        # First derivative
+        if isnothing(δfun)
+            t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t)))
+        else
+            δfun
+        end,
+
+        # Second derivative
+        if isnothing(δ²fun)
+            (
+                if isnothing(δfun)
+                    t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t), D²(fun, t)))
+                else
+                    t -> SVectorNT{3O, N}(vcat(δfun(t), D²(fun, t)))
+                end
+            )
+        else
+            δ²fun
+        end,
+
+        # Third derivative 
+        if isnothing(δ³fun)
+            (
+                if isnothing(δ²fun)
+                    (
+                        if isnothing(δfun)
+                            t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t)))
+                        else
+                            t -> SVectorNT{3O, N}(vcat(δfun(t), D²(fun, t), D³(fun, t)))
+                        end
+                    )
+                else
+                    t -> SVectorNT{3O, N}(vcat(δ²fun(t), D³(fun, t)))
+                end
+            )
+        else
+            δ³fun
+        end,
+    )
+    
+    return add_axes!(frames, name, id, POINT_CLASSID_GENERIC, funs, parentid)
+
+end
