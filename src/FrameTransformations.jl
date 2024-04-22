@@ -5,7 +5,6 @@ import LinearAlgebra: UniformScaling, matprod
 
 using ForwardDiff
 using StaticArrays
-using PreallocationTools
 using ReferenceFrameRotations
 using FunctionWrappers: FunctionWrapper
 using FunctionWrappersWrappers: FunctionWrappersWrapper
@@ -15,16 +14,17 @@ using JSMDUtils.Autodiff
 using JSMDUtils.Math: D¹, D², D³ 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode, add_edge!, add_vertex!, get_path, has_vertex
 using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider
+using JSMDInterfaces.Interface: @interface
 
-using SMDGraphs
-using SMDGraphs:
-    MappedNodeGraph, SimpleGraph, MappedGraph,
-    get_mappedid, get_mappednode,  get_node
+using SMDGraphs: MappedNodeGraph, SimpleGraph, MappedGraph,
+                 get_mappedid, get_mappednode,  get_node, get_path
 
 import SMDGraphs: get_node_id
 
-# using Tempo
 using Tempo: AbstractTimeScale, Epoch, j2000s, BarycentricDynamicalTime
+
+# Core Routines
+# ==============================================
 
 # Low-level types and aliases
 export Rotation
@@ -47,5 +47,12 @@ export add_axes_root!, add_axes_inertial!, add_axes_rotating!, add_axes_fixedoff
 
 include("Core/axes.jl")
 include("Core/points.jl")
+
+# Standard axes definitions
+# ==============================================
+
+export add_point_ephemeris!
+
+include("Definitions/ephemeris.jl")
 
 end
