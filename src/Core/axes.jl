@@ -79,7 +79,7 @@ function add_axes_fixedoffset!(
     add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, parentid)
 end
 
-function add_axes_projected!(
+function add_axes_inertial!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, fun::Function
 ) where {O, N}
 

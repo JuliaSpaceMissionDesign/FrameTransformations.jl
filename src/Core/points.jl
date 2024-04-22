@@ -1,7 +1,9 @@
 
 const POINT_CLASSID_ROOT = 0
 
-const POINT_CLASSID_GENERIC = -1
+const POINT_CLASSID_FIXED = 1
+
+const POINT_CLASSID_DYNAMIC = 2
 
 function add_point!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, axesid::Int, class::Int,
@@ -89,6 +91,19 @@ function add_point_root!(
     )
 end
 
+function add_point_fixedoffset!(
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
+    offset::AbstractVector{T}
+) where {O, N, T}
+
+    voffset = SVectorNT{3O, N}(SVector(offset...))
+    funs = FramePointFunctions{O, N}(t -> voffset, t -> voffset, t -> voffset, t -> voffset)
+
+    return add_point!(
+        frames, name, id, axesid, POINT_CLASSID_FIXED, funs, parentid
+    )
+end
+
 
 function add_point_dynamical!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
@@ -144,6 +159,6 @@ function add_point_dynamical!(
         end,
     )
     
-    return add_axes!(frames, name, id, POINT_CLASSID_GENERIC, funs, parentid)
+    return add_axes!(frames, name, id, POINT_CLASSID_DYNAMIC, funs, parentid)
 
 end

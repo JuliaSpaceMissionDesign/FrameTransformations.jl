@@ -42,8 +42,8 @@ include("Core/graph.jl")
 include("Core/transform.jl")
 
 # Helper functions 
-export add_axes_root!, add_axes_projected!, add_axes_fixedoffset!, add_axes_rotating!,
-       add_point_root!, add_point_dynamical!
+export add_axes_root!, add_axes_inertial!, add_axes_rotating!, add_axes_fixedoffset!,
+       add_point_root!, add_point_dynamical!, add_point_fixedoffset!
 
 include("Core/axes.jl")
 include("Core/points.jl")
