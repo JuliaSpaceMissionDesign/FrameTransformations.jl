@@ -84,7 +84,7 @@ function add_point_ephemeris!(
     if !has_axes(frames, axesid)
         throw(
             ErrorException(
-                "Ephemeris data for point with NAIFID $naifid is expressed in a set" *
+                "Ephemeris data for point with ID $naifid is expressed in a set" *
                 " of axes with ID $axesid, which are yet to be defined in the" *
                 " input frame system.",
             ),
@@ -98,7 +98,7 @@ function add_point_ephemeris!(
         t -> ephem_vector12(eph, parentid, id, t) 
     )
 
-    add_point!(frames, name, id, axesid, 3, funs, parentid)
+    add_point!(frames, name, id, axesid, 3, funs, parentid) # TODO: change class to a const 
     nothing 
 
 end
