@@ -206,14 +206,14 @@ Return the rotation order S.
 @inline order(::Rotation{S,<:Any}) where {S} = S
 
 # Julia API
-Base.size(::Rotation{S,<:Any}) where {S} = (S,)
+Base.size(::Rotation{S,<:Any}) where {S} = (3S, 3S)
 Base.getindex(R::Rotation, i) = R.m[i]
 Base.length(::Rotation{S}) where S = S
 
 # Static Arrays API 
-StaticArrays.Size(::Rotation{S,N}) where {S,N} = Size((S,))
-StaticArrays.similar_type(::Rotation{S,N}) where {S,N} = Rotation{S,N}
-StaticArrays.similar_type(::Rotation{S,<:Any}, ::Type{N}) where {S,N} = Rotation{S,N}
+StaticArrays.Size(::Rotation{S,N}) where {S,N} = Size((3S, 3S))
+StaticArrays.similar_type(::Rotation{S,N}) where {S, N} = Rotation{S, N}
+StaticArrays.similar_type(::Rotation{S,<:Any}, ::Type{N}) where {S,N} = Rotation{S, N}
 
 # ----
 # Constructors
@@ -332,6 +332,7 @@ end
     for j in 1:(3S)
         Oⱼ = (j - 1) ÷ 3 + 1
         for i in 1:(3S)
+            Oᵢ = (i - 1) ÷ 3 + 1
             if Oⱼ > Oᵢ
                 push!(expr.args, Expr(:call, N, 0))
             else 
@@ -360,8 +361,8 @@ end
     return SA(Tuple(rot))
 end
 
-@inline MMatrix(rot::Rotation{S,N}) where {S,N} = MMatrix{3 * S,3 * S}(rot)
-@inline SMatrix(rot::Rotation{S,N}) where {S,N} = SMatrix{3 * S,3 * S}(rot)
+@inline StaticArrays.MMatrix(rot::Rotation{S, N}) where {S,N} = MMatrix{3S, 3S, N, 9*S*S}(Tuple(rot))
+@inline StaticArrays.SMatrix(rot::Rotation{S, N}) where {S,N} = SMatrix{3S, 3S, N, 9*S*S}(Tuple(rot))
 
 # ----
 # OPERATIONS 

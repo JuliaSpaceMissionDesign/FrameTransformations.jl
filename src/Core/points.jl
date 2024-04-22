@@ -87,7 +87,7 @@ function add_point_root!(
     end
 
     return add_point!(
-        frames, name, id, axesid, POINT_CLASSID_ROOT, FramePointFunctions{O, N}(), id
+        frames, name, id, axesid, POINT_CLASSID_ROOT, FramePointFunctions{O, N}()
     )
 end
 
@@ -95,6 +95,14 @@ function add_point_fixedoffset!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
     offset::AbstractVector{T}
 ) where {O, N, T}
+
+    if length(offset) != 3
+        throw(
+            DimensionMismatch(
+                "The offset vector should have length 3, but has $(length(offset))."
+            ),
+        )
+    end
 
     voffset = SVectorNT{3O, N}(SVector(offset...))
     funs = FramePointFunctions{O, N}(t -> voffset, t -> voffset, t -> voffset, t -> voffset)
@@ -117,13 +125,13 @@ function add_point_dynamical!(
     end
 
     funs = FramePointFunctions{O, N}(
-        fun,
+        t -> SVectorNT{3O, N}(fun(t)),
 
         # First derivative
         if isnothing(δfun)
             t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t)))
         else
-            δfun
+            t -> SVectorNT{3O, N}(δfun(t))
         end,
 
         # Second derivative
@@ -136,7 +144,7 @@ function add_point_dynamical!(
                 end
             )
         else
-            δ²fun
+            t -> SVectorNT{3O, N}(δ²fun(t))
         end,
 
         # Third derivative 
@@ -155,10 +163,10 @@ function add_point_dynamical!(
                 end
             )
         else
-            δ³fun
+            t -> SVectorNT{3O, N}(δ³fun(t))
         end,
     )
     
-    return add_axes!(frames, name, id, POINT_CLASSID_DYNAMIC, funs, parentid)
+    return add_point!(frames, name, id, axesid, POINT_CLASSID_DYNAMIC, funs, parentid)
 
 end
