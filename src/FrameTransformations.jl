@@ -13,7 +13,7 @@ using JSMDUtils
 using JSMDUtils.Autodiff
 using JSMDUtils.Math: D¹, D², D³ 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode, add_edge!, add_vertex!, get_path, has_vertex
-using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider
+using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider, ephem_position_records, ephem_available_points
 using JSMDInterfaces.Interface: @interface
 
 using SMDGraphs: MappedNodeGraph, SimpleGraph, MappedGraph,
