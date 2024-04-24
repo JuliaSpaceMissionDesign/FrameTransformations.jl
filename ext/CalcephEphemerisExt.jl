@@ -1,7 +1,8 @@
 module CalcephEphemerisExt
 
 import FrameTransformations: add_point_ephemeris!
-using FrameTransformations: FrameSystem, add_point!, FramePointFunctions, POINT_CLASSID_DYNAMIC
+using FrameTransformations: FrameSystem, add_point!, check_point_ephemeris, 
+                            FramePointFunctions, POINT_CLASSID_DYNAMIC
 using JSMDInterfaces.Ephemeris: ephem_compute!    
 using CalcephEphemeris: CalcephProvider
 
@@ -9,7 +10,7 @@ function add_point_ephemeris!(
     frames::FrameSystem{O, N}, eph::CalcephProvider, name::Symbol, id::Int
 ) where {O, N}
 
-    parentid, axesid = check_retrieve(frames, eph, id)
+    parentid, axesid = check_point_ephemeris(frames, eph, id)
     
     # Note: this cache would not work with ForwardDiff AD types but this is intentional as 
     # Calceph would be not compatible

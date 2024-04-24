@@ -3,6 +3,10 @@
     ::FrameSystem{O, N}, ::AbstractEphemerisProvider, ::Symbol, ::Int
 ) where {O, N} end
 
+@interface function add_axes_ephemeris!(
+    ::FrameSystem{O, N}, ::AbstractEphemerisProvider, ::Symbol, ::Int, ::Symbol
+) where {O, N} end
+
 function add_point_ephemeris!(
     frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol}
 ) where {O, N}
@@ -13,7 +17,7 @@ function add_point_ephemeris!(
         if id == 0 
             if length(get_points(frames).nodes) == 0 
                 # No point registered in the frame system 
-                add_point_root!(frames, book[id], id, 1) # TODO: change this 1 to AXESID_ICRF
+                add_point_root!(frames, book[id], id, AXESID_ICRF)
             end
         else
             # Assume that the SSB is registered in the frame system
@@ -25,8 +29,9 @@ function add_point_ephemeris!(
     nothing 
 end
 
-function check_retrieve(
-    frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, id::Int) where {O, N}
+function check_point_ephemeris(
+    frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, id::Int
+) where {O, N}
 
     # Check that the kernels contain the ephemeris data for the given naifid
     if !(id in ephem_available_points(eph))
@@ -107,4 +112,71 @@ function check_retrieve(
     end
 
     return parentid, axesid
+end
+
+function check_axes_ephemeris(
+    frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, id::Int
+) where {O, N}
+
+    # Check that the kernels contain orientation data for the given axes ID 
+    if !(id in ephem_available_axes(eph))
+        throw(
+            ArgumentError(
+                "Orientation data for AXESID $id is not available " *
+                "in the kernels loaded in the given FrameSystem.",
+            ),
+        )
+    end
+
+    # Retrieve the parent from the ephemeris data 
+    orient_records = ephem_orient_records(eph)
+    parentid = nothing
+
+    for or in orient_records
+        if or.target == id
+            if isnothing(parentid)
+                parentid = or.axes
+            elseif parentid != or.axes
+                throw(
+                    ErrorException(
+                        "UnambiguityError: at least two set of orientation data " *
+                        "with different centers are available for axes with ID $id.",
+                    ),
+                )
+            end
+        end
+    end
+
+    # Check that the default parent is available in the FrameSystem! 
+    if !has_axes(frames, parentid)
+        throw(
+            ArgumentError(
+                "Orientation data for axes with ID $id is available " *
+                "with respect to axes with ID $parentid, which has not yet been defined " *
+                "in the given FrameSystem.",
+            ),
+        )
+    end
+
+    return parentid
+end
+
+# Functions for an easier definition\handling of ephemeris axes
+@inline function triplet_to_rot3(θ, seq::Symbol)
+    @inbounds angle_to_dcm(θ[1], θ[2], θ[3], seq)
+end
+
+@inline function triplet_to_rot6(θ, seq::Symbol)
+    return _3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq)
+end
+
+@inline function triplet_to_rot9(θ, seq::Symbol)
+    return (_3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), _3angles_to_δ²dcm(θ, seq))
+end
+
+@inline function triplet_to_rot12(θ, seq::Symbol)
+    return (
+        _3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), 
+        _3angles_to_δ²dcm(θ, seq), _3angles_to_δ³dcm(θ, seq),
+    )
 end
