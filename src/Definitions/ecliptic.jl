@@ -1,7 +1,7 @@
 
 function add_axes_ecl2000!(
-    frames::FrameSystem, name::Symbol, parentid::Int=AXESID_ICRF, id::Int=AXESID_ECL2000,
-    model::IERSModel=iers2010a,
+    frames::FrameSystem, name::Symbol, parentid::Int=AXESID_ICRF, id::Int=AXESID_ECL2000;
+    model::IERSModel=iers1996,
 )
 
     # Compute the J2000 to ECLIPJ2000 rotation according to the desired IERS model
@@ -27,5 +27,5 @@ function add_axes_ecl2000!(
               " ($(AXESID_ECL2000))."
     end
 
-    return add_axes_inertial!(frames, name, id, parentid, dcm)
+    return add_axes_fixedoffset!(frames, name, id, parentid, dcm)
 end

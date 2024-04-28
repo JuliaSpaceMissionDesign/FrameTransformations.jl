@@ -209,6 +209,7 @@ Return the rotation order S.
 Base.size(::Rotation{S,<:Any}) where {S} = (3S, 3S)
 Base.getindex(R::Rotation, i) = R.m[i]
 Base.length(::Rotation{S}) where S = S
+Base.convert(::Type{Rotation{O2}}, rot::Rotation{O1}) where {O1, O2} = Rotation{O2}(rot)
 
 # Static Arrays API 
 StaticArrays.Size(::Rotation{S,N}) where {S,N} = Size((3S, 3S))

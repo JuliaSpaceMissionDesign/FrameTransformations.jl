@@ -57,3 +57,12 @@ FrameTransformations.add_edge!(g.axes, fax0.parentid, fax0.id)
 @test vector6(g, 1, 3, 1, 1.0) ≈ @SVector zeros(Float64, 6)
 @test vector9(g, 1, 3, 1, 1.0) ≈ @SVector zeros(Float64, 9)
 @test vector12(g, 1, 3, 1, 1.0) ≈ @SVector zeros(Float64, 12)
+
+# Dummy constructor 
+funs = FrameTransformations.FramePointFunctions{3, Int}()
+@test typeof(funs) == FrameTransformations.FramePointFunctions{3, Int, 9}
+@test length(funs.fun) == 3
+
+for i in 1:3
+    @test typeof(funs.fun[i](0)) == SVector{9, Int}
+end

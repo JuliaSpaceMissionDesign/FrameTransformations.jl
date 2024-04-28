@@ -1,4 +1,6 @@
 using RemoteFiles 
+using Test
+using SafeTestsets
 
 @RemoteFileSet KERNELS "Spice Kernels Set" begin
     LEAP = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/latest_leapseconds.tls" dir = joinpath(
@@ -19,3 +21,8 @@ using RemoteFiles
 end;
 
 download(KERNELS; verbose=true, force=false)
+
+@testset "Definitions" verbose=true begin
+    @safetestset "Celestial" begin include("celestial.jl") end
+    @safetestset "Ecliptic" begin include("ecliptic.jl") end
+end;

@@ -30,6 +30,7 @@ faxs0 = FrameTransformations.FrameAxesFunctions{4, Float64}()
 fax0 = FrameTransformations.FrameAxesNode{4, Float64}(:Ax0, 0, 1, 1, faxs0)
 
 @test fax0.name == :Ax0
+@test length(faxs0.fun) == 4 
 @test fax0.class == 0 
 @test fax0.id == 1
 @test fax0.parentid == 1
@@ -66,3 +67,23 @@ end
 @test FrameTransformations.order(rotation6(g, 1, 1, 0.0)) == 2
 @test FrameTransformations.order(rotation9(g, 1, 1, 0.0)) == 3
 @test FrameTransformations.order(rotation12(g, 1, 1, 0.0)) == 4
+
+
+# Dummy constructor 
+funs = FrameTransformations.FrameAxesFunctions{4, Int}()
+@test typeof(funs) == FrameTransformations.FrameAxesFunctions{4, Int, 12}
+@test length(funs.fun) == 4
+
+for i in 1:3
+    @test funs.fun[i](0) == Rotation{4}(1I)
+end
+
+fcn_rot(t) = Rotation{2}(angle_to_dcm(t, :Y))
+
+# Default constructor
+funs = FrameTransformations.FrameAxesFunctions{Float64}(fcn_rot, fcn_rot)
+@test typeof(funs) == FrameTransformations.FrameAxesFunctions{2, Float64, 6}
+@test length(funs.fun) == 2
+
+@test funs[2](π / 3)[1] ≈ fcn_rot2(π / 3)[1] atol = 1e-12
+@test funs[2](π / 3)[2] ≈ fcn_rot2(π / 3)[2] atol = 1e-12
