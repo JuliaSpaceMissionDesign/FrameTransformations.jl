@@ -12,7 +12,9 @@ using FunctionWrappersWrappers: FunctionWrappersWrapper
 using JSMDUtils
 using JSMDUtils.Autodiff
 using JSMDUtils.Math: D¹, D², D³, 
-                     _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
+                      unitvec, δunitvec, δ²unitvec, δ³unitvec, 
+                      cross3, cross6, cross9, cross12, 
+                      _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode, add_edge!, add_vertex!, get_path, has_vertex
 
@@ -87,5 +89,9 @@ include("Definitions/terrestrial.jl")
 export add_point_surface!, add_axes_topocentric!
 
 include("Definitions/topocentric.jl")
+
+export  add_axes_twovectors!
+
+include("Definitions/twovector.jl")
 
 end
