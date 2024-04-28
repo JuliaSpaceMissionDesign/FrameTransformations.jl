@@ -23,6 +23,7 @@ end;
 download(KERNELS; verbose=true, force=false)
 
 @testset "Definitions" verbose=true begin
+    @safetestset "Ephemeris" begin include("ephemeris.jl") end
     @safetestset "Celestial" begin include("celestial.jl") end
     @safetestset "Ecliptic" begin include("ecliptic.jl") end
 end;
