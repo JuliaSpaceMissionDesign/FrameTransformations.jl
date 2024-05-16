@@ -33,21 +33,21 @@ function add_axes_twovectors!(
                 )
             ),
             t -> Rotation{O}(
-                twovectors_to_dcm(
+                twovectors_to_δdcm(
                     vector6(frames, from1, to1, parentid, t), 
                     vector6(frames, from2, to2, parentid, t), 
                     seq
                 )
             ),
             t -> Rotation{O}(
-                twovectors_to_dcm(
+                twovectors_to_δ²dcm(
                     vector9(frames, from1, to1, parentid, t), 
                     vector9(frames, from2, to2, parentid, t), 
                     seq
                 )
             ),
             t -> Rotation{O}(
-                twovectors_to_dcm(
+                twovectors_to_δ³dcm(
                     vector12(frames, from1, to1, parentid, t), 
                     vector12(frames, from2, to2, parentid, t), 
                     seq
