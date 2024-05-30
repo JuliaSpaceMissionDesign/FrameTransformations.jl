@@ -1,4 +1,4 @@
-for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
+for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
     (1, 2, 3, 4),
     (:rotation3, :rotation6, :rotation9, :rotation12),
     (:_rotation3, :_rotation6, :_rotation9, :_rotation12),
@@ -6,6 +6,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
     (:_vector3, :_vector6, :_vector9, :_vector12),
     (:_vector3_forward, :_vector6_forward, :_vector9_forward, :_vector12_forward),
     (:_vector3_backward, :_vector6_backward, :_vector9_backward, :_vector12_backward),
+    (:direction3, :direction6, :direction9, :direction12)
 )
 
     # --------------------------------------------------------------------------------------
@@ -44,7 +45,20 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
         end
 
         """
-            $($axfun)(frame::FrameSystem, from, to, t::Number)
+            $($axfun)(frame::FrameSystem, from::Symbol, to::Symbol, t::Number)
+
+        Compute the rotation that transforms a $(3*$order)-elements state vector from one 
+        specified set of axes to another at a given time `t`, expressed in seconds since 
+        `J2000`. 
+        """
+        @inline function ($axfun)(
+            frame::FrameSystem{O, T}, from::Symbol, to::Symbol, t::Number
+        ) where {O, T}
+            return $(axfun)(frame, frame.axmap[from], frame.axmap[to], t)
+        end
+
+        """
+            $($axfun)(frame::FrameSystem, from::Int, to::Int, t::Number)
 
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
         specified set of axes to another at a given time `t`, expressed in seconds since 
@@ -140,12 +154,24 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
         end
 
         """
-            $($pfun)(frame, from, to, axes, t::Number) 
+            $($pfun)(frame, from::Symbol, to::Symbol, axes::Symbol, t::Number) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time `t` expressed in 
         seconds since `J2000`. 
+        """
+        function ($pfun)(
+            frame::FrameSystem{O, N}, from::Symbol, to::Symbol, axes::Symbol, t::Number
+        ) where {O, N}
+            return $(pfun)(frame, frame.pmap[from], frame.pmap[to], frame.axmap[axes], t)
+        end
 
+        """
+            $($pfun)(frame, from::Int, to::Int, axes::Int, t::Number) 
+
+        Compute $(3*$order)-elements state vector of a target point relative to 
+        an observing point, in a given set of axes, at the desired time `t` expressed in 
+        seconds since `J2000`. 
         """
         function ($pfun)(frame::FrameSystem{O, N}, from::Int, to::Int, axes::Int, t::Number) where {O, N}
             if O < $order
@@ -251,6 +277,43 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd) in zip(
 
         @inbounds function ($_pfun)(p::FramePointNode, t::Number)
             stv = p.f[$order](t)
+            D = 3 * $order
+            @views return SA[(stv[1:D])...]
+        end
+
+    end
+
+    # --------------------------------------------------------------------------------------
+    # Directions transformations
+    # --------------------------------------------------------------------------------------
+
+    @eval begin 
+        
+        @inline function ($dfun)(
+            frame::FrameSystem{<:Any,<:Any,S}, name::Symbol, ep::Epoch{S}
+        ) where {S}
+            return $(dfun)(frame, name, j2000s(ep))
+        end
+
+        function ($dfun)(frame::FrameSystem{O, N}, name::Symbol, t::Number) where {O, N}
+            if O < $order
+                throw(
+                    ErrorException(
+                        "Insufficient frame system order: " *
+                        "transformation requires at least order $($order).",
+                    ),
+                )
+            end
+
+            if !haskey(get_directions(frame), name)
+                throw(
+                    ErrorException(
+                        "No direction with name $(name) registered in the frame system."
+                    )
+                )
+            end 
+
+            stv = get_directions(frame)[name].f[$order](t)
             D = 3 * $order
             @views return SA[(stv[1:D])...]
         end

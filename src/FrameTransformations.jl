@@ -48,22 +48,27 @@ include("Core/rotation.jl")
 include("Core/ad.jl")
 
 # Frame system (graph & nodes)
-export FrameSystem, get_order, get_timescale, get_points, get_axes, has_axes, has_point, 
-       add_axes!, add_point!,
+export FrameSystem, 
+       get_order, get_timescale, get_points, get_axes, 
+       has_axes, has_point, 
+       axes, points, directions,
        rotation3, rotation6, rotation9, rotation12, 
-       vector3, vector6, vector9, vector12
+       vector3, vector6, vector9, vector12,
+       direction3, direction6, direction9, direction12
 
 include("Core/nodes.jl")
 include("Core/graph.jl")
 include("Core/transform.jl")
 
 # Helper functions 
-export add_axes_root!, add_axes_inertial!, add_axes_rotating!, add_axes_fixedoffset!,
-       add_point_root!, add_point_dynamical!, add_point_fixedoffset!
+export add_axes!, add_point!, add_direction!,
+       add_axes_root!, add_axes_inertial!, add_axes_rotating!, add_axes_fixedoffset!,
+       add_point_root!, add_point_dynamical!, add_point_fixedoffset!,
+       add_direction_fixed!, add_direction_position!
 
 include("Core/axes.jl")
 include("Core/points.jl")
-
+include("Core/direction.jl")
 
 # Standard axes definitions
 # ==============================================

@@ -24,12 +24,17 @@ The parameter `S` can be dropped, in case the default (`BarycentricDynamicalTime
 struct FrameSystem{O, N<:Number, S<:AbstractTimeScale, D}
     points::PointsGraph{O, N, D}
     axes::AxesGraph{O, N, D}
+    dir::Dict{Symbol, Direction{O, N, D}}
+
+    pmap::Dict{Symbol, Int}
+    axmap::Dict{Symbol, Int}
 end
 
 function FrameSystem{O, N, S}() where {O, N, S}
     D = 3O
     return FrameSystem{O, N, S, D}(
-        MappedGraph(FramePointNode{O, N, D}), MappedGraph(FrameAxesNode{O, N, D})
+        MappedGraph(FramePointNode{O, N, D}), MappedGraph(FrameAxesNode{O, N, D}), Dict(),
+        Dict(), Dict()
     )
 end
 
@@ -60,6 +65,14 @@ Return the frame system points graph.
 """
 @inline get_points(f::FrameSystem) = f.points
 
+@inline get_directions(f::FrameSystem) = f.dir
+
+@inline axes(f::FrameSystem) = f.axmap
+
+@inline points(f::FrameSystem) = f.pmap
+
+@inline directions(f::FrameSystem) = keys(f.dir)
+
 """ 
     get_axes(frames::FrameSystem) 
 
@@ -68,10 +81,12 @@ Return the frame system axes graph.
 @inline get_axes(f::FrameSystem) = f.axes
 
 function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
+    push!(fs.pmap, Pair(p.name, p.id))
     return add_vertex!(fs.points, p)
 end
 
 function add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
+    push!(fs.axmap, Pair(ax.name, ax.id))
     return add_vertex!(fs.axes, ax)
 end
 
@@ -122,7 +137,7 @@ function Base.show(io::IO, g::FrameSystem{O, N, S, D}) where {O, N, S, D}
     println(
         io, 
         "FrameSystem{$O, $N, $S, $D} with $(length(get_points(g).nodes))" 
-        * " points and $(length(get_axes(g).nodes)) axes"
+        * " points, $(length(get_axes(g).nodes)) axes and $(length(g.dir)) directions"
     )
     if !isempty(get_points(g).nodes)
         printstyled(io, "\nPoints: \n"; bold=true)
@@ -131,5 +146,11 @@ function Base.show(io::IO, g::FrameSystem{O, N, S, D}) where {O, N, S, D}
     if !isempty(get_axes(g).nodes)
         printstyled(io, "\nAxes: \n"; bold=true)
         prettyprint(get_axes(g))
+    end
+    if !isempty(get_directions(g))
+        printstyled(io, "\nDirections: \n"; bold=true)
+        for d in values(get_directions(g))
+            println(" └── $(d.name)(id=$(d.id))")
+        end
     end
 end

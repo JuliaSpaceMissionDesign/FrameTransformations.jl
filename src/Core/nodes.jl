@@ -288,3 +288,37 @@ function Base.show(io::IO, ax::FrameAxesNode{O, N, D}) where {O, N, D}
 end
 
 const AxesGraph{O, N, D} = MappedNodeGraph{FrameAxesNode{O, N, D}, SimpleGraph{Int}}
+
+# ------------------------------------------------------------------------------------------
+# DIRECTIONs
+# ------------------------------------------------------------------------------------------
+
+const DirectionFunctions{O, N, D} = FramePointFunctions{O, N, D}
+
+"""
+    Direction{O, N, D}
+
+Define a new direction.
+
+### Fields
+- `name` -- direction name 
+- `id` -- direction ID
+- `f` -- `DirectionFunctions` container 
+"""
+struct Direction{O, N, D}
+    name::Symbol 
+    id::Int 
+
+    # internals
+    f::DirectionFunctions{O, N, D}
+end
+
+function Direction{O, N}(
+    name::Symbol, id::Int, dfun::DirectionFunctions{O, N, D}
+) where {O, N, D}
+    return Direction{O, N, 3O}(name, id, dfun)
+end
+
+function Base.show(io::IO, d::Direction{O, N, D}) where {O, N, D}
+    return println(io, "Direction{$O, $N}(name=$(d.name), id=$(d.id))")
+end
