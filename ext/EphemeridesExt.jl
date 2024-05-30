@@ -7,7 +7,7 @@ using FrameTransformations: FrameSystem,
                             FrameAxesFunctions, Rotation, add_axes!, 
                             triplet_to_rot3, triplet_to_rot6, triplet_to_rot9, triplet_to_rot12,
                             check_point_ephemeris, check_axes_ephemeris, 
-                            POINT_CLASSID_DYNAMIC
+                            POINT_CLASSID_DYNAMIC, AXES_CLASSID_ROTATING
 
 using Ephemerides: EphemerisProvider, 
                    ephem_vector3, ephem_vector6, ephem_vector9, ephem_vector12,
@@ -30,7 +30,8 @@ function add_point_ephemeris!(
 end
 
 function add_axes_ephemeris!(
-    frames::FrameSystem{O,T}, eph::EphemerisProvider, name::Symbol, id::Int, class::Int, rot_seq::Symbol
+    frames::FrameSystem{O,T}, eph::EphemerisProvider, name::Symbol, id::Int, rot_seq::Symbol,
+    class::Int=AXES_CLASSID_ROTATING
 ) where {O,T}
 
     # Check and retrieve the parent ID for the given axes
