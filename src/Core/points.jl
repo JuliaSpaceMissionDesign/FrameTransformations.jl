@@ -221,3 +221,28 @@ function add_point_dynamical!(
     return add_point!(frames, name, id, axesid, POINT_CLASSID_DYNAMIC, funs, parentid)
 
 end
+
+function add_point_alias!(frames::FrameSystem{O, N}, target::Symbol, alias::Symbol) where {O, N}
+    return add_point_alias!(frames, points(frames)[target], alias)
+end
+
+function add_point_alias!(frames::FrameSystem{O, N}, target::Int, alias::Symbol) where {O, N}
+    if !has_point(frames, target)
+        throw(
+            ErrorException(
+                "no point with ID $target registered in the given frame system"
+            )
+        )
+    end
+
+    if alias in keys(points(frames))
+        throw(
+            ErrorException(
+                "point with name $alias already present in the given frame system"
+            )
+        )
+    end
+
+    push!(points(frames), Pair(alias, target))
+    nothing
+end

@@ -182,7 +182,7 @@ end
 
 function add_direction_normalize!(
     frames::FrameSystem{O, N}, name::Symbol, dir::Symbol
-)
+) where {O, N}
     if !(dir in directions(frames))
         throw(
             ErrorException(
@@ -191,8 +191,26 @@ function add_direction_normalize!(
         )
     end
     fun    = t->SVectorNT{3O, N}(unitvec(direction3(frames, dir, t)))
-    dfun   = t->SVectorNT{3O, N}(δunitvec(direction6(frames, dir, t))) 
-    ddfun  = t->SVectorNT{3O, N}(δ²unitvec(direction9(frames, dir, t))) 
-    dddfun = t->SVectorNT{3O, N}(δ³unitvec(direction12(frames, dir, t))) 
+    dfun   = t->SVectorNT{3O, N}(_normalize6(frames, dir, t)) 
+    ddfun  = t->SVectorNT{3O, N}(_normalize9(frames, dir, t))
+    dddfun = t->SVectorNT{3O, N}(_normalize12(frames, dir, t))
     return add_direction!(frames, name, fun, dfun, ddfun, dddfun)
+end
+
+function _normalize6(frames, dir, t)
+    d = direction6(frames, dir, t)
+    @views nd = vcat(unitvec(d[1:3]), δunitvec(d[4:6]))
+    return nd
+end
+
+function _normalize9(frames, dir, t)
+    d = direction9(frames, dir, t)
+    @views nd = vcat(unitvec(d[1:3]), δunitvec(d[4:6]), δ²unitvec(d[7:9]))
+    return nd
+end
+
+function _normalize12(frames, dir, t)
+    d = direction12(frames, dir, t)
+    @views nd = vcat(unitvec(d[1:3]), δunitvec(d[4:6]), δ²unitvec(d[7:9]), δ³unitvec(d[10:12]))
+    return nd
 end

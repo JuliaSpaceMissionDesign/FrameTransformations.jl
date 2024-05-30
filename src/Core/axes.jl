@@ -212,3 +212,28 @@ function add_axes_rotating!(
 
     return add_axes!(frames, name, id, AXES_CLASSID_ROTATING, funs, parentid)
 end
+
+function add_axes_alias!(frames::FrameSystem{O, N}, target::Symbol, alias::Symbol) where {O, N}
+    return add_axes_alias!(frames, axes(frames)[target], alias)
+end
+
+function add_axes_alias!(frames::FrameSystem{O, N}, target::Int, alias::Symbol) where {O, N}
+    if !has_axes(frames, target)
+        throw(
+            ErrorException(
+                "no axes with ID $target registered in the given frame system"
+            )
+        )
+    end
+
+    if alias in keys(axes(frames))
+        throw(
+            ErrorException(
+                "axes with name $alias already present in the given frame system"
+            )
+        )
+    end
+
+    push!(axes(frames), Pair(alias, target))
+    nothing
+end
