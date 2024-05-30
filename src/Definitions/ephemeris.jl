@@ -195,16 +195,16 @@ end
 end
 
 @inline function triplet_to_rot6(θ, seq::Symbol)
-    return _3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq)
+    return triplet_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq)
 end
 
 @inline function triplet_to_rot9(θ, seq::Symbol)
-    return (_3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), _3angles_to_δ²dcm(θ, seq))
+    return (triplet_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), _3angles_to_δ²dcm(θ, seq))
 end
 
 @inline function triplet_to_rot12(θ, seq::Symbol)
     return (
-        _3angles_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), 
+        triplet_to_rot3(θ, seq), _3angles_to_δdcm(θ, seq), 
         _3angles_to_δ²dcm(θ, seq), _3angles_to_δ³dcm(θ, seq),
     )
 end

@@ -35,10 +35,10 @@ function add_axes_ephemeris!(
 ) where {O,T}
 
     # Check and retrieve the parent ID for the given axes
-    parentid = check_axes_ephemeris(frames, id)
+    parentid = check_axes_ephemeris(frames, eph, id)
 
     if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
-        funs = FrameAxesFunctions{T,O}(
+        funs = FrameAxesFunctions{O, T}(
             t -> Rotation{O}(triplet_to_rot3(ephem_rotation3(eph, parentid, id, t), rot_seq)),
             t -> Rotation{O}(triplet_to_rot6(ephem_rotation6(eph, parentid, id, t), rot_seq)),
             t -> Rotation{O}(triplet_to_rot9(ephem_rotation9(eph, parentid, id, t), rot_seq)),

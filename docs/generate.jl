@@ -3,9 +3,9 @@ using Dates
 
 # TODO: Remove items from `SKIPFILE` as soon as they run on the latest stable 
 ONLYSTATIC = []
-EXAMPLE_DIRS = ["Tutorials", "Examples"]x 
+EXAMPLE_DIRS = ["Tutorials", "Examples"]
 SKIPFILE = [
-    "t01_axes.jl", "t02_points.jl", "t03_eop.jl", 
+    "t02_points.jl", "t03_eop.jl", 
     "t04_lighttime.jl", "t05_multithread.jl"
 ]
 
