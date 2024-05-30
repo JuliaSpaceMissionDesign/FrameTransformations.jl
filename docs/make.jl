@@ -3,24 +3,6 @@ using Pkg
 
 const CI = get(ENV, "CI", "false") == "true"
 
-# if CI 
-#     Pkg.add("Ephemerides")
-#     Pkg.add("ReferenceFrameRotations")
-#     Pkg.add("JSMDUtils")
-#     Pkg.add("JSMDInterfaces")
-#     Pkg.add("Literate")
-#     Pkg.add("Dates")
-
-#     using Literate
-
-#     docs_path = joinpath("docs", "src", "Tutorials")
-
-#     Literate.markdown(joinpath(docs_path, "t00_frames.jl"), docs_path)
-#     Literate.markdown(joinpath(docs_path, "t01_axes.jl"), docs_path)
-#     Literate.markdown(joinpath(docs_path, "t02_points.jl"), docs_path)
-
-# end
-
 include("generate.jl")
 
 makedocs(;
