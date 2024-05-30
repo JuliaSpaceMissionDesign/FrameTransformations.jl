@@ -64,7 +64,8 @@ include("Core/transform.jl")
 export add_axes!, add_point!, add_direction!,
        add_axes_root!, add_axes_inertial!, add_axes_rotating!, add_axes_fixedoffset!,
        add_point_root!, add_point_dynamical!, add_point_fixedoffset!,
-       add_direction_fixed!, add_direction_position!
+       add_direction_fixed!, add_direction_position!, add_direction_velocity!, 
+       add_direction_orthogonal!, add_direction_normalize!
 
 include("Core/axes.jl")
 include("Core/points.jl")
