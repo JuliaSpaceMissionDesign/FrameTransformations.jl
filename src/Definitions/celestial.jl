@@ -18,7 +18,7 @@ end
     add_axes_gcrf!(frames::FrameSystem)
 
 Add the Geocentric Celestial Reference Frame (GCRF) to the frames graph. The axes are 
-automatically named `GCRF` and assigned the $((AXESID_GCRF)) ID. These axes can only 
+automatically named `GCRF` and assigned the $(AXESID_GCRF) ID. These axes can only 
 be defined as a set of root axes or as child of the ICRF (ID = $(AXESID_ICRF)).
 
 ### See also 
@@ -70,8 +70,18 @@ the SPICE toolkit.
 """
 const DCM_ICRF_TO_EME2000 = iers_bias(iers2010a, 0)
 
+"""
+    add_axes_eme2000!(frames, name::Symbol=:EME2000, parentid::Int=AXESID_ICRF, 
+        id::Int = AXESID_EME2000)
+
+Add Mean Equator Mean Equinox of J2000 axes to `frames`. Custom `name`, `id` and `parentid` 
+can be assigned by the user.
+
+### See also 
+See also [`DCM_ICRF_TO_EME2000`](@ref).
+"""
 function add_axes_eme2000!(
-    frames::FrameSystem, name::Symbol, parentid::Int=AXESID_ICRF, id::Int=AXESID_EME2000,
+    frames::FrameSystem, name::Symbol=:EME2000, parentid::Int=AXESID_ICRF, id::Int=AXESID_EME2000,
 )
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_ICRF_TO_EME2000

@@ -1,12 +1,40 @@
 
+"""
+    add_point_ephemeris!(frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, 
+        name::Symbol, id::Int) where {O, N} 
+
+Add a point coming from an `AbstractEphemerisProvider` subtype. 
+The point is identifies by the `id` and a have a user defined `name`.
+
+!!! warning 
+    This is an interface only, concrete subtypes of `AbstractEphemerisProvider` requires 
+    an proper implementation.
+"""
 @interface function add_point_ephemeris!(
     ::FrameSystem{O, N}, ::AbstractEphemerisProvider, ::Symbol, ::Int
 ) where {O, N} end
 
+"""
+    add_axes_ephemeris!(frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, 
+        name::Symbol, id::Int, seq::Symbol, class::Int) where {O, N} 
+
+Add axes coming from an `AbstractEphemerisProvider` subtype to `frames`. 
+The axes are identifies by the `id` and a have a user defined `name`. The rotation matrix 
+is build using the rotation sequence specified in `seq`. The axes type is specified by `class`.
+
+!!! warning 
+    This is an interface only, concrete subtypes of `AbstractEphemerisProvider` requires 
+    an proper implementation.
+"""
 @interface function add_axes_ephemeris!(
-    ::FrameSystem{O, N}, ::AbstractEphemerisProvider, ::Symbol, ::Int, ::Symbol
+    ::FrameSystem{O, N}, ::AbstractEphemerisProvider, ::Symbol, ::Int, ::Symbol, ::Int
 ) where {O, N} end
 
+"""
+    add_point_ephemeris!(frames, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol})
+
+Add all points found in the `eph` and using id-names relationships specified in `book`.
+"""
 function add_point_ephemeris!(
     frames::FrameSystem{O, N}, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol}
 ) where {O, N}

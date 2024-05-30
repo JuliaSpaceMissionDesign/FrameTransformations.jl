@@ -1,4 +1,26 @@
 
+"""
+    FrameSystem{O, N, S, D}
+
+A `FrameSystem` instance manages a collection of user-defined `FramePointNode` and 
+`FrameAxesNode` objects, enabling computation of arbitrary transformations 
+between them. It is created by specifying the maximum transformation order `O`, the outputs 
+datatype `N` and an `AbstractTimeScale` instance `S`; the parameter `D` is the `length` of 
+the output ad shall always be `3O`.
+
+The following transformation orders are accepted: 
+- **1**: position 
+- **2**: position and velocity 
+- **3**: position, velocity and acceleration
+- **4**: position, velocity, acceleration and jerk
+
+--- 
+
+    FrameSystem{O, N, S}()
+
+Create a new, empty `FrameSystem` object of order `O`, datatype `N` and timescale `S`.
+The parameter `S` can be dropped, in case the default (`BarycentricDynamicalTime`) is used. 
+"""
 struct FrameSystem{O, N<:Number, S<:AbstractTimeScale, D}
     points::PointsGraph{O, N, D}
     axes::AxesGraph{O, N, D}
@@ -17,9 +39,32 @@ function Base.summary(io::IO, ::FrameSystem{O, T, S, D}) where {O,T,S,D}
     return println(io, "FrameSystem{$O, $T, $S, $D}")
 end
 
+""" 
+    get_order(frames::FrameSystem{O}) where O 
+
+Return the frame system order `O`.
+"""
 @inline get_order(::FrameSystem{O}) where O = O
+
+""" 
+    get_timescale(frames::FrameSystem{O, N, S}) where {O, N, S} 
+
+Return the frame system order timescale `S`.
+"""
 @inline get_timescale(::FrameSystem{O, N, S}) where {O, N, S} = S 
+
+""" 
+    get_points(frames::FrameSystem) 
+
+Return the frame system points graph.
+"""
 @inline get_points(f::FrameSystem) = f.points
+
+""" 
+    get_axes(frames::FrameSystem) 
+
+Return the frame system axes graph.
+"""
 @inline get_axes(f::FrameSystem) = f.axes
 
 function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
@@ -30,7 +75,18 @@ function add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
     return add_vertex!(fs.axes, ax)
 end
 
+""" 
+    has_point(frames::FrameSystem, id::Int) 
+
+Check if `id` point is within `frames`.
+"""
 @inline has_point(f::FrameSystem, id::Int) = has_vertex(get_points(f), id)
+
+""" 
+    has_axes(frames::FrameSystem, axesid::Int) 
+
+Check if `axesid` axes is within `frames`.
+"""
 @inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(get_axes(f), axesid)
 
 # ---

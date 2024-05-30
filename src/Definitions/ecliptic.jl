@@ -1,6 +1,21 @@
 
+"""
+    add_axes_ecl2000!(frames, name::Symbol=:ECL2000, parentid::Int, id::Int = AXESID_ECL2000; 
+        model::IERSModel=iers1996)
+    
+Add Ecliptic Equinox of J2000 (ECL2000) axes to `frames`. Custom `id`, `name` and `parentid`
+can be assigned by the user. The admissible parent axes are the following: 
+- *ICRF*: for the International Celestial Reference Frame, with ID = $(AXESID_ICRF)
+- *GCRF*: for the Geocentric Celestial Reference Frame, with ID = $(AXESID_GCRF)
+- *EME2000*: the Mean Earth/Moon Ephemeris of J2000, with ID = $(AXESID_EME2000)
+
+!!! note 
+    The obliquity of the ecliptic is computed using the IERS convention `model`.
+    To retrieve the same orientation of the ECLIPJ2000 axes avaialble in the SPICE 
+    Toolkit, the `iers1996` model must be used.
+"""
 function add_axes_ecl2000!(
-    frames::FrameSystem, name::Symbol, parentid::Int=AXESID_ICRF, id::Int=AXESID_ECL2000;
+    frames::FrameSystem, name::Symbol=:ECL2000, parentid::Int=AXESID_ICRF, id::Int=AXESID_ECL2000;
     model::IERSModel=iers1996,
 )
 

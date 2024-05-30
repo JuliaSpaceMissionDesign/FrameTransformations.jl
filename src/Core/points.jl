@@ -5,6 +5,26 @@ const POINT_CLASSID_FIXED = 1
 
 const POINT_CLASSID_DYNAMIC = 2
 
+""" 
+    add_point!(frames, name, id, axesid, class, funs, parentid=nothing)
+
+Create and add a new point node `name` to `frames` based on the input parameters. 
+
+### Inputs 
+- `frames` -- Target frame system 
+- `name` -- Point name, must be unique within `frames` 
+- `id` -- Point ID, must be unique within `frames`
+- `axesid` -- ID of the axes in which the state vector of the point is expressed. 
+- `class` -- Point class. 
+- `funs` -- `FramePointFunctions` object storing the functions to update the state 
+            vectors of the point. It must match the type and order of `frames`
+- `parentid` -- NAIF ID of the parent point. Not required only for the root point.
+
+!!! warning 
+    This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
+    to the frame system, see [`add_point_dynamical!`](@ref), [`add_point_fixedoffset!`](@ref)
+    and [`add_point_root!`](@ref).
+"""
 function add_point!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, axesid::Int, class::Int,
     funs::FramePointFunctions{O, N}, parentid=nothing
@@ -74,7 +94,11 @@ function add_point!(
     return nothing
 end
 
+"""
+    add_point_root!(frames, name, id, axesid)
 
+Add root `name` root point with the specified `id` to `frames`.
+"""
 function add_point_root!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, axesid::Int
 ) where {O, N}
@@ -91,6 +115,13 @@ function add_point_root!(
     )
 end
 
+"""
+    add_point_fixedoffset!(frames, name, id, parentid, axesid, offset::AbstractVector)
+
+Add `point` as a fixed-offset point to `frames`. Fixed points are those whose positions have a 
+constant `offset` with respect their `parent` points in the given set of `axes`. Thus, points 
+eligible for this class must have null velocity and acceleration with respect to `parent`.
+"""
 function add_point_fixedoffset!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
     offset::AbstractVector{T}
@@ -112,7 +143,27 @@ function add_point_fixedoffset!(
     )
 end
 
+""" 
+    add_point_dynamical!(frames, name, id, axesid, fun, δfun=nothing, 
+        δ²fun=nothing, δ³fun=nothing)
 
+Add `point` as a time point to `frames`. The state vector for these points depends only on 
+time and is computed through the custom functions provided by the user. 
+
+The input functions must accept only time as argument and their outputs must be as follows: 
+
+- **fun**: return a 3-elements vector: position
+- **δfun**: return a 6-elements vector: position and velocity
+- **δ²fun**: return a 9-elements vector: position, velocity and acceleration
+- **δ³fun**: return a 12-elements vector: position, velocity, acceleration and jerk
+
+If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with automatic differentiation. 
+
+!!! warning 
+    It is expected that the input functions and their ouputs have the correct signature. This 
+    function does not perform any checks on whether the returned vectors have the appropriate 
+    dimensions. 
+"""
 function add_point_dynamical!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
     fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,

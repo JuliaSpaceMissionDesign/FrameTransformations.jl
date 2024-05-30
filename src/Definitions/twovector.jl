@@ -1,4 +1,17 @@
 
+"""
+    add_axes_twovectors!(frames, name::Symbol, id::Int, parentid::Int,
+        from1::Int, to1::Int, from2::Int, to2::Int, seq::Symbol; 
+        inertial::Bool=false)
+
+Add a set of axes to `frames` based on two vectors defined by four points. 
+
+This function adds a new set of axes to `frames` using two vectors defined by four points. 
+The vectors are constructed from the points specified by `from1` to `to1` and `from2` to `to2`. 
+A right-handed coordinate system is generated based on the specified sequence direction (`seq`), 
+which determines the order in which the vectors are used to define the basis. 
+The `inertial` flag specifies whether the resulting axes are inertial.
+"""
 function add_axes_twovectors!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int,
     from1::Int, to1::Int, from2::Int, to2::Int, seq::Symbol; 

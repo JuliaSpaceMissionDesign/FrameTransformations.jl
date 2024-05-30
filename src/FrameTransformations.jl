@@ -12,6 +12,7 @@ using FunctionWrappersWrappers: FunctionWrappersWrapper
 using JSMDUtils
 using JSMDUtils.Autodiff
 using JSMDUtils.Math: D¹, D², D³, 
+                      arcsec2rad,
                       unitvec, δunitvec, δ²unitvec, δ³unitvec, 
                       cross3, cross6, cross9, cross12, 
                       _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
@@ -47,9 +48,10 @@ include("Core/rotation.jl")
 include("Core/ad.jl")
 
 # Frame system (graph & nodes)
-export FrameSystem, get_order, get_timescale, get_points, get_axes,
-       has_axes, has_point, add_axes!, add_point!,
-       rotation3, rotation6, rotation9, rotation12, vector3, vector6, vector9, vector12
+export FrameSystem, get_order, get_timescale, get_points, get_axes, has_axes, has_point, 
+       add_axes!, add_point!,
+       rotation3, rotation6, rotation9, rotation12, 
+       vector3, vector6, vector9, vector12
 
 include("Core/nodes.jl")
 include("Core/graph.jl")
@@ -72,7 +74,7 @@ export AXESID_ICRF, AXESID_GCRF,
 
 include("Definitions/index.jl")
 
-export add_point_ephemeris!
+export add_point_ephemeris!, add_axes_ephemeris!
 
 include("Definitions/ephemeris.jl")
 
@@ -85,6 +87,10 @@ export add_axes_itrf!, add_axes_cirf!, add_axes_tirf!,
        add_axes_mod!, add_axes_tod!, add_axes_gtod!, add_axes_pef!
 
 include("Definitions/terrestrial.jl")
+
+export add_axes_pa440!, add_axes_pa421!, add_axes_me421!
+
+include("Definitions/lunar.jl")
 
 export add_point_surface!, add_axes_topocentric!
 

@@ -21,11 +21,11 @@ end
 # ROTATION TYPE DEFINITION
 
 """
-    Rotation{S, N}
+    Rotation{O, N}
 
-A container to efficiently compute `S`-th order rotation matrices of type `N` between two 
+A container to efficiently compute `O`-th order rotation matrices of type `N` between two 
 set of axes. It stores the Direction Cosine Matrix (DCM) and its time derivatives up to 
-the (`S`-1)-th order. Since this type is immutable, the data must be provided upon 
+the (`O`-1)-th order. Since this type is immutable, the data must be provided upon 
 construction and cannot be mutated later.
 
 The rotation of state vector between two set of axes is computed with an ad-hoc overload 
@@ -89,11 +89,11 @@ Rotation{4, ComplexF64}
 
 ---
 
-    Rotation{S}(dcms::DCM...) where S 
+    Rotation{O}(dcms::DCM...) where O 
 
-Create a `Rotation` object of order `S`. If the number of `dcms` is smaller than `S`, the 
+Create a `Rotation` object of order `O`. If the number of `dcms` is smaller than `O`, the 
 remaining slots are filled with null DCMs, otherwise if the number of inputs is greater than 
-`S`, only the first `S` DCMs are used. 
+`O`, only the first `O` DCMs are used. 
 
 !!! warning 
     Usage of this constructor is not recommended as it may yield unexpected results to 
@@ -126,10 +126,10 @@ DCM{Float64}:
 ```
 ---
 
-    Rotation{S}(u::UniformScaling{N}) where {S, N}
-    Rotation{S, N}(u::UniformScaling) where {S, N}
+    Rotation{O}(u::UniformScaling{N}) where {O, N}
+    Rotation{O, N}(u::UniformScaling) where {O, N}
 
-Create an `S`-order identity `Rotation` object of type `N` with identity position rotation 
+Create an `O`-order identity `Rotation` object of type `N` with identity position rotation 
 and null time derivatives.
 
 ### Examples 
@@ -199,11 +199,11 @@ struct Rotation{O, N}
 end
 
 """ 
-    order(R::Rotation{S}) where S 
+    order(R::Rotation{O}) where O 
 
-Return the rotation order S.
+Return the rotation order O.
 """
-@inline order(::Rotation{S,<:Any}) where {S} = S
+@inline order(::Rotation{O,<:Any}) where {O} = O
 
 # Julia API
 Base.size(::Rotation{S,<:Any}) where {S} = (3S, 3S)
