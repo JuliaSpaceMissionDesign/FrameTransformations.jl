@@ -1,36 +1,41 @@
 name = "FrameTransformations"
 uuid = "5be70612-1674-42c4-a038-c376b6dc81ed"
 authors = ["JSMD Team"]
-version = "1.3.2"
+version = "2.0.0"
 
 [deps]
-DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+FunctionWrappers = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
 FunctionWrappersWrappers = "77dc65aa-8811-40c2-897b-53d922fa7daf"
+IERSConventions = "4e86e20e-879b-40dc-9e12-cee74f4cd199"
 JSMDInterfaces = "6b30ee2f-618e-4a15-bf4e-7df7b496e609"
 JSMDUtils = "67801824-9821-48b9-a814-9bfb19231086"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
-PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
-Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 ReferenceFrameRotations = "74f56ac7-18b3-5285-802d-d4bd4f104033"
 SMDGraphs = "b792745b-7241-45be-ba96-70eb67e8468f"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Tempo = "c33777b2-e695-4fae-9135-aeae8855dd81"
 
+[weakdeps]
+CalcephEphemeris = "54e8752a-b65a-4aac-bda5-4918ee1e3cc5"
+Ephemerides = "6a9c3322-c8fe-4c26-8ad6-14a6f8acd2a0"
+
+[extensions]
+CalcephEphemerisExt = ["CalcephEphemeris"]
+EphemeridesExt = ["Ephemerides"]
+
 [compat]
-DelimitedFiles = "1"
 FunctionWrappersWrappers = "0.1"
 JSMDInterfaces = "1.5"
 JSMDUtils = "1"
-PreallocationTools = "0.4"
 PrecompileTools = "1"
-Reexport = "1"
 ReferenceFrameRotations = "3"
 SMDGraphs = "0.2"
 StaticArrays = "1"
 Tempo = "1.2"
-julia = "1.8"
+julia = "1.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

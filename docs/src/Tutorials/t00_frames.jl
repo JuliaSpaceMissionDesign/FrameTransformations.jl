@@ -5,8 +5,7 @@
 # the capability to compute relative position, orientation and their time derivatives up to 
 # order 3 (jerk), between standard and user-defined point and axes. It works by creating two 
 # separate graphs that silently store and manage all the parent-child relationships between 
-# the user-registered axes and points, in the form of [`Frames.FramePointNode`](@ref) and 
-# [`Frames.FrameAxesNode`](@ref). 
+# the user-registered axes and points, in the form of `FramePointNode` and `FrameAxesNode`. 
 
 # These two objects define two precise entities: 
 # - **Axes**: defines an orientation in space. These are related each other by means of a 
@@ -16,20 +15,20 @@
 #   means of a `Translation` transformation which relate one point to a parent point in a 
 #   particular axes in a certain time interval.
 
+# Additionally, it is possible to create `Direction`s, as vector valued functions that could
+# be used to define custom frames.
+
 #-
 #md # !!! note 
 #md #     A single [`FrameSystem`](@ref) instance simultaneously handles both the axes and 
 #md #     point graphs, regardless of what the user registers in it. For instance, if no 
-#md #     points are added, the point graph will remain empty.
+#md #     points are added, the point graph will remain empty. The same applies for directions.
 #-
 
 # Additionally, any node can have several childs, each with different transformations with 
-# respect to the parent node. Moreover, nodes can be **created** independenlty of each other 
-# (by means of the [`@axes`](@ref), and [`@point`](@ref) macros). However, they shall be 
-# **registered** within the [`FrameSystem`](@ref) before being used in a transformation or 
-# as parents of other nodes.
+# respect to the parent node. However, they shall be **registered** within the 
+# [`FrameSystem`](@ref) before being used in a transformation or as parents of other nodes.
 
-using FrameTransformations #hide
 
 # ## Basic Constructors 
 # The creation of a generic [`FrameSystem`](@ref) requires the definition of the maximum 
@@ -40,6 +39,9 @@ using FrameTransformations #hide
 # allowed transformation order is 4. 
 
 # In this example, we highlight the most basic way to initialise a [`FrameSystem`](@ref):
+
+using FrameTransformations
+using Tempo 
 
 F = FrameSystem{2, Float64}()
 
@@ -53,29 +55,75 @@ F = FrameSystem{2, Float64}()
 
 F = FrameSystem{2, Float64, InternationalAtomicTime}()
 
+# ## Graph Inspection
+
+# Once a [`FrameSystem`](@ref) is constructed (and populated) there are many routines devoted 
+# to inspect its content. As already said, there are three main *objects* that are contained 
+# in the `FrameSystem`: **points**, **axes** and **directions**. For each of them series of 
+# utility functions are made available in order to check for the presence of a registered point:
+
+has_point(F, 1)
+
+# a registered axes:
+
+has_axes(F, 1)
+
+# or a registered direction:
+
+has_direction(F, :Root)
+
+# Additionally, the possibility to get a dictionary containing all name-id relationships is 
+# made available for axes, via the [`axes`](@ref) method:
+
+axes(F)
+
+# and points, via the [`points`](@ref) method:
+
+points(F)
+
+# Finally, the `FrameSystem` order and timescale might be retrieved via the associated methods:
+
+order(F)
+
+#- 
+
+FrameTransformations.timescale(F)
+
+# Refer to the [API](@ref frames_api) for additional details.
+
+# ## Basic Usage
+
+#md # !!! note 
+#md #     Work in progress
+
 # ## Ephemerides Support
 
 # In certain scenarios, the transformations require usage of binary ephemeris kernels, e.g., 
-# the JPL's DE440 files. To support this applications, an ephemeris provider can be associated 
-# to a [`FrameSystem`](@ref). Since this package leverages a set of standard interfaces, any 
-# ephemeris reader that exposes JSMD-compatible interfaces can be used as a backend in 
-# FrameTransformations. Currently, the only two supported readers are our own 
-# [Ephemerides.jl](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) or 
-# [CalcephEphemeris.jl](https://github.com/JuliaSpaceMissionDesign/CalcephEphemeris.jl). 
-# Although the former only can only parse binary PCK/SPK kernels, it seamlessly integrates 
-# with [ForwardDiff](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) since it is 
-# completely written in Julia.
+# the JPL's DE440 files. To support this applications, this package has an interface relying 
+# on [JSMDInterfaces.jl](https://github.com/JuliaSpaceMissionDesign/JSMDInterfaces.jl) 
+# `AbstractEphemerisProvider`s. Currently, this package is shipped with extension for the 
+# following two ephemeris readers:
+# * [Ephemerides.jl](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl)
+# * [CalcephEphemeris.jl](https://github.com/JuliaSpaceMissionDesign/CalcephEphemeris.jl)
 
-# Once the desired ephemeris provider is created, it can be associated to the frame system object. 
-# However, in this case the reference timescale is retrieved from the ephemeris kernels and 
-# cannot be specified by the user. In this example we begin loading an old DE421 kernerl 
-# to pass to the ephemeris reader.
+# Once the desired ephemeris provider is created, it can be used to register points or axes. 
+# In this example we begin loading an old DE421 kernels to pass to the ephemeris reader.
 
 using Ephemerides, Downloads
 
 url = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp";
-eph = EphemerisProvider(Downloads.download(url));
+E = EphemerisProvider(Downloads.download(url));
 
-F = FrameSystem{2, Float64}(eph)
+F = FrameSystem{2, Float64}()
 
-# As you can see, the default `NullEphemerisProvider` has been replaced by the user-constructed one. 
+# Before registering any node, a set of root axes and a root node shall be anyway registered.
+
+add_axes_icrf!(F)
+add_point_root!(F, :SSB, 0, 1)
+
+# Points from the `EphemerisProvider` can be now registered. 
+
+add_point_ephemeris!(F, E, :Sun, 10)
+add_point_ephemeris!(F, E, :EMB, 3)
+
+# Here the parent point will be inferred from the ephemeris.

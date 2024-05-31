@@ -9,10 +9,10 @@ extensible axes/point graph models for mission analysis and space mission design
 
 ## Features 
 
-- Convert between different time scales and representations (via [Tempo.jl](https://github.com/JuliaSpaceMissionDesign/Tempo.jl));
-- Read binary ephemeris files (via [Ephemerides.jl](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) or [CalcephEphemeris.jl](https://github.com/JuliaSpaceMissionDesign/CalcephEphemeris.jl))
-- Create custom reference frame systems with both standard and user-defined points and axes.
-- Transform states and their higher-order derivatives between different frames (up to jerk)
+- Convert between different time scales and representations (via [Tempo.jl](https://github.com/JuliaSpaceMissionDesign/Tempo.jl)).
+- Read binary ephemeris files (via [Ephemerides.jl](https://github.com/JuliaSpaceMissionDesign/Ephemerides.jl) or [CalcephEphemeris.jl](https://github.com/JuliaSpaceMissionDesign/CalcephEphemeris.jl) extensions).
+- Create custom reference frame systems with both standard and user-defined points, axes and directions.
+- Transform states and their higher-order derivatives between different frames (up to jerk).
 
 All of this seamlessly integrated with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 
