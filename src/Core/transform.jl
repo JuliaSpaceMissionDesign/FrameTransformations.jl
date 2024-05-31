@@ -86,18 +86,18 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                     )
                 end 
             end
-            return $(_axfun)(frame, get_path(get_axes(frame), from, to), t)
+            return $(_axfun)(frame, get_path(axes_graph(frame), from, to), t)
         end
 
         # Low-level function to parse a path of axes and chain their rotations 
         @inbounds function ($_axfun)(frame::FrameSystem, path::Vector{Int}, t::Number)
-            f1 = get_mappednode(get_axes(frame), path[1])
-            f2 = get_mappednode(get_axes(frame), path[2])
+            f1 = get_mappednode(axes_graph(frame), path[1])
+            f2 = get_mappednode(axes_graph(frame), path[2])
             rot = $(_axfun)(f1, f2, t)
 
             for i in 2:(length(path) - 1)
                 f1 = f2
-                f2 = get_mappednode(get_axes(frame), path[i + 1])
+                f2 = get_mappednode(axes_graph(frame), path[i + 1])
                 rot = $(_axfun)(f1, f2, t) * rot
             end
             return rot
@@ -203,12 +203,12 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end
 
-            return $(_pfun)(frame, get_path(get_points(frame), from, to), axes, t)
+            return $(_pfun)(frame, get_path(points_graph(frame), from, to), axes, t)
         end
 
         function ($_pfun)(frame::FrameSystem, path::Vector{Int}, axes::Int, t::Number)
-            @inbounds p1 = get_mappednode(get_points(frame), path[1])
-            @inbounds p2 = get_mappednode(get_points(frame), path[end])
+            @inbounds p1 = get_mappednode(points_graph(frame), path[1])
+            @inbounds p2 = get_mappednode(points_graph(frame), path[end])
 
             if length(path) == 2 
                 # This handles all the cases where you don't need to chain any transformations
@@ -232,11 +232,11 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         end
 
         @inbounds function ($_pfwd)(frame::FrameSystem, p1::FramePointNode, path::Vector{Int}, t::Number)
-            p2 = get_mappednode(get_points(frame), path[2])
+            p2 = get_mappednode(points_graph(frame), path[2])
             axid, stv = ($_pfun)(p1, p2, t)
             for i in 2:(length(path)-1)
                 p1 = p2 
-                p2 = get_mappednode(get_points(frame), path[i+1])
+                p2 = get_mappednode(points_graph(frame), path[i+1])
                 ax2id, stv2 = ($_pfun)(p1, p2, t)
 
                 # Rotates previous vector to p2's axes
@@ -251,11 +251,11 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         end
 
         @inbounds function ($_pbwd)(frame::FrameSystem, p1::FramePointNode, path::Vector{Int}, t::Number)
-            p2 = get_mappednode(get_points(frame), path[end-1])
+            p2 = get_mappednode(points_graph(frame), path[end-1])
             axid, stv = ($_pfun)(p1, p2, t)
             for i in 2:(length(path)-1)
                 p1 = p2 
-                p2 = get_mappednode(get_points(frame), path[end-i])
+                p2 = get_mappednode(points_graph(frame), path[end-i])
                 ax2id, stv2 = ($_pfun)(p1, p2, t)
 
                 # Rotates previous vector to p2's axes
@@ -291,12 +291,27 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
 
     @eval begin 
         
+        """
+            $($dfun)(frame::FrameSystem, name::Symbol, ep::Epoch) 
+
+        Compute the direction vector `name` of order $(3*$order) at epoch `ep`.
+
+        Requires a frame system of order ≥ $($order).
+        """
         @inline function ($dfun)(
             frame::FrameSystem{<:Any,<:Any,S}, name::Symbol, ep::Epoch{S}
         ) where {S}
             return $(dfun)(frame, name, j2000s(ep))
         end
 
+        """
+            $($dfun)(frame::FrameSystem, name::Symbol, t::Number) 
+
+        Compute the direction vector `name` of order $(3*$order) at epoch `t`, where `t` is 
+        expressed in seconds since `J2000`.
+
+        Requires a frame system of order ≥ $($order).
+        """
         function ($dfun)(frame::FrameSystem{O, N}, name::Symbol, t::Number) where {O, N}
             if O < $order
                 throw(
@@ -307,7 +322,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end
 
-            if !haskey(get_directions(frame), name)
+            if !has_direction(frame, name)
                 throw(
                     ErrorException(
                         "No direction with name $(name) registered in the frame system."
@@ -315,7 +330,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end 
 
-            stv = get_directions(frame)[name].f[$order](t)
+            stv = directions_map(frame)[name].f[$order](t)
             D = 3 * $order
             @views return SA[(stv[1:D])...]
         end

@@ -1,4 +1,15 @@
 
+"""
+    add_direction!(frames, name::Symbol, funs)
+
+Add a new direction node to `frames`.
+
+### Inputs 
+- `frames` -- Target frame system 
+- `name` -- Direction name, must be unique within `frames` 
+- `funs` -- `DirectionFunctions` object storing the functions to compute the direction and, 
+            eventually, its time derivatives. It must match the type and order of `frames`.
+"""
 function add_direction!(
     frames::FrameSystem{O, N}, name::Symbol, funs::DirectionFunctions{O, N}
 ) where {O, N <: Number}
@@ -11,13 +22,32 @@ function add_direction!(
     end
 
     dir = Direction{O, N}(name, length(directions(frames))+1, funs)
-    push!(get_directions(frames), Pair(name, dir))
+    push!(directions_map(frames), Pair(name, dir))
     nothing
 end
 
+"""
+    add_direction!(frames, name::Symbol, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing)
+
+Add a new direction node to `frames`. The orientation of these direction depends only 
+on time and is computed through the custom functions provided by the user. 
+
+The input functions must accept only time as argument and their outputs must be as follows: 
+
+- `fun`: return a direction vector.
+- `δfun`: return a direction vector and its 1st order time derivative.
+- `δ²fun`: return a direction vector and its 1st and 2nd order time derivatives.
+- `δ³fun`: return a direction vector and its 1st, 2nd and 3rd order time derivatives.
+
+If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via automatic differentiation.
+
+!!! warning 
+    It is expected that the input functions and their outputs have the correct signature. This 
+    function does not perform any checks on the output types. 
+"""
 function add_direction!(
-    frames::FrameSystem{O, N}, name::Symbol,  
-    fun::Function, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
+    frames::FrameSystem{O, N}, name::Symbol, fun::Function, 
+    δfun = nothing, δ²fun = nothing, δ³fun = nothing
 ) where {O, N}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
@@ -71,7 +101,11 @@ function add_direction!(
     return add_direction!(frames, name, funs)
 end
 
+"""
+    add_direction_fixed!(frames, name, offset::AbstractVector)
 
+Add a fixed direction to `frames`.
+"""
 function add_direction_fixed!(
     frames::FrameSystem{O, N}, name::Symbol, offset::AbstractVector{T}
 ) where {O, N, T}
@@ -90,6 +124,11 @@ function add_direction_fixed!(
     return add_direction!(frames, name, funs)
 end
 
+"""
+    add_direction_position!(frames, name::Symbol, origin, target, ax)
+
+Add a direction based on the position vector from `origin` to `target` in the specified `ax`.
+"""
 function add_direction_position!(
     frames::FrameSystem{O, N}, name::Symbol, from::Symbol, to::Symbol, ax::Symbol
 ) where {O, N}
@@ -125,6 +164,11 @@ function add_direction_position!(
     return add_direction!(frames, name, funs)
 end
 
+"""
+    add_direction_velocity!(frames, name::Symbol, origin, target, ax)
+
+Add a direction based on the velocity vector from `origin` to `target` in the specified `ax`.
+"""
 function add_direction_velocity!(
     frames::FrameSystem{O, N}, name::Symbol, from::Int, to::Int, ax::Int
 ) where {O, N}
@@ -150,6 +194,11 @@ function add_direction_velocity!(
     return add_direction!(frames, name, fun, dfun , ddfun)
 end
 
+"""
+    add_direction_orthogonal!(frames, name::Symbol, dir1, dir2)
+
+Add a direction as the cross product between two existing directions (i.e. `dir1` and `dir2`).
+"""
 function add_direction_orthogonal!(
     frames::FrameSystem{O, N}, name::Symbol, dir1::Symbol, dir2::Symbol
 ) where {O, N}
@@ -180,6 +229,11 @@ function add_direction_orthogonal!(
     return add_direction!(frames, name, fun, dfun, ddfun, dddfun)
 end
 
+"""
+    add_direction_normalize!(frames, name::Symbol, dir)
+
+Add a direction as the normalized version of `dir`.
+"""
 function add_direction_normalize!(
     frames::FrameSystem{O, N}, name::Symbol, dir::Symbol
 ) where {O, N}

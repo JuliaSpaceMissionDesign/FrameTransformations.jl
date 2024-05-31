@@ -2,8 +2,8 @@
 """
     FrameSystem{O, N, S, D}
 
-A `FrameSystem` instance manages a collection of user-defined `FramePointNode` and 
-`FrameAxesNode` objects, enabling computation of arbitrary transformations 
+A `FrameSystem` instance manages a collection of user-defined `FramePointNode`, 
+`FrameAxesNode` and `Direction` objects, enabling computation of arbitrary transformations 
 between them. It is created by specifying the maximum transformation order `O`, the outputs 
 datatype `N` and an `AbstractTimeScale` instance `S`; the parameter `D` is the `length` of 
 the output ad shall always be `3O`.
@@ -45,39 +45,46 @@ function Base.summary(io::IO, ::FrameSystem{O, T, S, D}) where {O,T,S,D}
 end
 
 """ 
-    get_order(frames::FrameSystem{O}) where O 
+    order(frames::FrameSystem{O}) where O 
 
 Return the frame system order `O`.
 """
-@inline get_order(::FrameSystem{O}) where O = O
+@inline order(::FrameSystem{O}) where O = O
 
 """ 
-    get_timescale(frames::FrameSystem{O, N, S}) where {O, N, S} 
+    timescale(frames::FrameSystem{O, N, S}) where {O, N, S} 
 
 Return the frame system order timescale `S`.
 """
-@inline get_timescale(::FrameSystem{O, N, S}) where {O, N, S} = S 
+@inline timescale(::FrameSystem{O, N, S}) where {O, N, S} = S 
 
 """ 
-    get_points(frames::FrameSystem) 
+    points_graph(frames::FrameSystem) 
 
 Return the frame system points graph.
 """
-@inline get_points(f::FrameSystem) = f.points
+@inline points_graph(f::FrameSystem) = f.points
+
+""" 
+    axes_graph(frames::FrameSystem) 
+
+Return the frame system axes graph.
+"""
+@inline axes_graph(f::FrameSystem) = f.axes
 
 """
-    get_directions(f::FrameSystem)
+    directions_map(f::FrameSystem)
 
 Return the direction dictionary.
 """
-@inline get_directions(f::FrameSystem) = f.dir
+@inline directions_map(f::FrameSystem) = f.dir
 
 """
     axes(f::FrameSystem)
 
 Return the registered axes names/ids map.
 """
-@inline axes(f::FrameSystem) = f.axes_map
+@inline Base.axes(f::FrameSystem) = f.axes_map
 
 """
     points(f::FrameSystem)
@@ -91,14 +98,7 @@ Return the registered points names/ids map.
 
 Return the registered directions names.
 """
-@inline directions(f::FrameSystem) = keys(f.dir)
-
-""" 
-    get_axes(frames::FrameSystem) 
-
-Return the frame system axes graph.
-"""
-@inline get_axes(f::FrameSystem) = f.axes
+@inline directions(f::FrameSystem) = keys(directions_map(f))
 
 function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
     push!(fs.points_map, Pair(p.name, p.id))
@@ -115,14 +115,21 @@ end
 
 Check if `id` point is within `frames`.
 """
-@inline has_point(f::FrameSystem, id::Int) = has_vertex(get_points(f), id)
+@inline has_point(f::FrameSystem, id::Int) = has_vertex(points_graph(f), id)
 
 """ 
     has_axes(frames::FrameSystem, axesid::Int) 
 
 Check if `axesid` axes is within `frames`.
 """
-@inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(get_axes(f), axesid)
+@inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(axes_graph(f), axesid)
+
+""" 
+    has_axes(frames::FrameSystem, name::Symbol) 
+
+Check if `name` direction is within `frames`.
+"""
+@inline has_direction(f::FrameSystem, name::Symbol) = haskey(f.dir, name)
 
 # ---
 # Formatting & printing 
@@ -156,20 +163,20 @@ end
 function Base.show(io::IO, g::FrameSystem{O, N, S, D}) where {O, N, S, D}
     println(
         io, 
-        "FrameSystem{$O, $N, $S, $D} with $(length(get_points(g).nodes))" 
-        * " points, $(length(get_axes(g).nodes)) axes and $(length(g.dir)) directions"
+        "FrameSystem{$O, $N, $S, $D} with $(length(points_graph(g).nodes))" 
+        * " points, $(length(axes_graph(g).nodes)) axes and $(length(g.dir)) directions"
     )
-    if !isempty(get_points(g).nodes)
+    if !isempty(points_graph(g).nodes)
         printstyled(io, "\nPoints: \n"; bold=true)
-        prettyprint(get_points(g))
+        prettyprint(points_graph(g))
     end
-    if !isempty(get_axes(g).nodes)
+    if !isempty(axes_graph(g).nodes)
         printstyled(io, "\nAxes: \n"; bold=true)
-        prettyprint(get_axes(g))
+        prettyprint(axes_graph(g))
     end
-    if !isempty(get_directions(g))
+    if !isempty(directions_map(g))
         printstyled(io, "\nDirections: \n"; bold=true)
-        for d in values(get_directions(g))
+        for d in values(directions_map(g))
             println(" └── $(d.name)(id=$(d.id))")
         end
     end

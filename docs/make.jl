@@ -6,7 +6,7 @@ const CI = get(ENV, "CI", "false") == "true"
 include("generate.jl")
 
 makedocs(;
-    authors="Julia Space Mission Design Development Team",
+    authors="JSMD Development Team",
     sitename="FrameTransformations.jl",
     modules=[FrameTransformations],
     format=Documenter.HTML(; prettyurls=CI, highlights=["yaml"], ansicolor=true),
@@ -23,8 +23,8 @@ makedocs(;
         ],
         "Use Cases" => [
             "CR3BP" => "Examples/gen/e01_cr3bp.md",
-            "HiFi Earth-Moon Environment" => "Examples/gen/e02_hifi.md",
-            "Custom Orbit Representation" => "Examples/gen/e03_customorb.md"
+            "High Fidelity" => "Examples/gen/e02_hifi.md",
+            "Custom Orbit" => "Examples/gen/e03_customorb.md"
         ],
         "Benchmarks" => "benchmarks.md",
         "API" => [
@@ -32,6 +32,7 @@ makedocs(;
                 "Frames" => "API/frames_api.md", 
                 "Axes" => "API/axes_api.md",
                 "Points" => "API/point_api.md",
+                "Directions" => "API/dir_api.md"
             ],         
         ],
     ],

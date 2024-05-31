@@ -40,7 +40,7 @@ function add_point!(
     end
 
     # Check point with the same name does not already exist 
-    if name in map(x -> x.name, get_points(frames).nodes)
+    if name in map(x -> x.name, points_graph(frames).nodes)
         throw(
             ArgumentError(
                 "A point with name=$name is already registed in the input frame system"
@@ -59,7 +59,7 @@ function add_point!(
 
     if isnothing(parentid)
         # If a root-point exists, check that a parent has been specified 
-        if !isempty(get_points(frames))
+        if !isempty(points_graph(frames))
             throw(
                 ArgumentError(
                     "A parent point is required because the input frame system " *
@@ -89,7 +89,7 @@ function add_point!(
     add_point!(frames, pnt)
 
     # Connect the new point to the parent point in the graph 
-    !isnothing(parentid) && add_edge!(get_points(frames), parentid, id)
+    !isnothing(parentid) && add_edge!(points_graph(frames), parentid, id)
 
     return nothing
 end
@@ -104,7 +104,7 @@ function add_point_root!(
 ) where {O, N}
 
     # Check for root-point existence 
-    if !isempty(get_points(frames))
+    if !isempty(points_graph(frames))
         throw(
             ArgumentError("A root-point is already registed in the input frame system.")
         )
@@ -222,6 +222,12 @@ function add_point_dynamical!(
 
 end
 
+"""
+    add_point_alias!(frames, target::Symbol, alias::Symbol)
+    add_point_alias!(frames, target::Int, alias::Symbol)
+
+Add a name `alias` to a `target` point registered in `frames`.
+"""
 function add_point_alias!(frames::FrameSystem{O, N}, target::Symbol, alias::Symbol) where {O, N}
     return add_point_alias!(frames, points(frames)[target], alias)
 end

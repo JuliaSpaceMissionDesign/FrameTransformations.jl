@@ -1,4 +1,4 @@
-# Points
+# [Points](@id points_api)
 
 ```@docs
 add_point!
@@ -9,4 +9,6 @@ add_point_fixedoffset!
 
 add_point_ephemeris!
 add_point_surface!
+
+add_point_alias!
 ```

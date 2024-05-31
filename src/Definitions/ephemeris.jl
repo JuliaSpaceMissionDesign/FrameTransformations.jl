@@ -43,7 +43,7 @@ function add_point_ephemeris!(
         !haskey(book, id) && throw(KeyError("Cannot find point with ID $id in the names book"))
 
         if id == 0 
-            if length(get_points(frames).nodes) == 0 
+            if length(points_graph(frames).nodes) == 0 
                 # No point registered in the frame system 
                 add_point_root!(frames, book[id], id, AXESID_ICRF)
             end

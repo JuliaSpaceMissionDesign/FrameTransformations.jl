@@ -47,10 +47,10 @@ export Rotation
 include("Core/rotation.jl")
 include("Core/ad.jl")
 
-# Frame system (graph & nodes)
+# Frame system 
 export FrameSystem, 
-       get_order, get_timescale, get_points, get_axes, 
-       has_axes, has_point, 
+       order, timescale, points_graph, axes_graph, directions_map, 
+       has_axes, has_point, has_direction,
        axes, points, directions,
        rotation3, rotation6, rotation9, rotation12, 
        vector3, vector6, vector9, vector12,
@@ -71,7 +71,7 @@ include("Core/axes.jl")
 include("Core/points.jl")
 include("Core/direction.jl")
 
-# Standard axes definitions
+# Standard axes/points definitions
 # ==============================================
 
 export AXESID_ICRF, AXESID_GCRF, 

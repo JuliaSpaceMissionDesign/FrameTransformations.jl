@@ -8,7 +8,7 @@ The axes are automatically named `ICRF` and assigned the $(AXESID_ICRF) ID.
 See also [`add_axes_root!`](@ref), [`add_axes_gcrf!`](@ref) and [`AXESID_ICRF`](@ref).
 """
 @inline function add_axes_icrf!(frames::FrameSystem)
-    if !isempty(get_axes(frames))
+    if !isempty(axes_graph(frames))
         throw(ArgumentError("The ICRF can only be defined as a set of root axes."))
     end
     return add_axes_root!(frames, :ICRF, AXESID_ICRF)
@@ -31,7 +31,7 @@ function add_axes_gcrf!(frames::FrameSystem)
             frames, :GCRF, AXESID_GCRF, AXESID_ICRF, DCM(1.0I)
         )
 
-    elseif isempty(get_axes(frames))
+    elseif isempty(axes_graph(frames))
         # Add the GCRF as a root set of axes
         return add_axes_root!(frames, :GCRF, AXESID_GCRF)
         

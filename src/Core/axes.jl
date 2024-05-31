@@ -21,7 +21,6 @@ Add a new axes node to `frames`.
     This is a low-level function and is NOT meant to be directly used. Instead, to add a set of
     axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), 
     [`add_axes_fixedoffset!`](@ref) and [`add_axes_root!`](@ref).
-
 """
 function add_axes!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, class::Int, 
@@ -38,7 +37,7 @@ function add_axes!(
         )
     end
 
-    if name in map(x -> x.name, get_axes(frames).nodes)
+    if name in map(x -> x.name, axes_graph(frames).nodes)
         # Check if axes with the same name also do not already exist
         throw(
             ArgumentError(
@@ -50,7 +49,7 @@ function add_axes!(
     # if the frame has a parent
     if !isnothing(parentid)
         # Check if the root axes is not present
-        isempty(get_axes(frames)) && throw(ArgumentError("Missing root axes."))
+        isempty(axes_graph(frames)) && throw(ArgumentError("Missing root axes."))
 
         # Check if the parent axes are registered in frame 
         if !has_axes(frames, parentid)
@@ -76,7 +75,7 @@ function add_axes!(
     add_axes!(frames, node)
 
     # Connect the new axes to the parent axes in the graph 
-    !isnothing(parentid) && add_edge!(get_axes(frames), parentid, id)
+    !isnothing(parentid) && add_edge!(axes_graph(frames), parentid, id)
 
     return nothing
 end
@@ -145,10 +144,10 @@ on time and is computed through the custom functions provided by the user.
 
 The input functions must accept only time as argument and their outputs must be as follows: 
 
-- **fun**: return a Direction Cosine Matrix (DCM).
-- **δfun**: return the DCM and its 1st order time derivative.
-- **δ²fun**: return the DCM and its 1st and 2nd order time derivatives.
-- **δ³fun**: return the DCM and its 1st, 2nd and 3rd order time derivatives.
+- `fun`: return a Direction Cosine Matrix (DCM).
+- `δfun`: return the DCM and its 1st order time derivative.
+- `δ²fun`: return the DCM and its 1st and 2nd order time derivatives.
+- `δ³fun`: return the DCM and its 1st, 2nd and 3rd order time derivatives.
 
 If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via automatic differentiation.
 

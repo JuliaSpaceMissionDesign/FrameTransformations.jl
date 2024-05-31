@@ -1,4 +1,4 @@
-# Axes 
+# [Axes](@id axes_api) 
 
 ## Core
 
@@ -64,9 +64,6 @@ add_axes_ephemeris!
 ### [IDs](@id frames_axesid)
 
 This is a list of NAIF IDs for standard axes that are used in astrodynamic applications.
-
-!!! note 
-    Although they are listed in the public documentation section, these IDs are not directly exported by the package.
 
 ```@docs 
 FrameTransformations.AXESID_ICRF
