@@ -17,9 +17,8 @@ makedocs(;
             "02 - Rotation" => "Tutorials/gen/t01_rotation.md",
             "03 - Axes" => "Tutorials/gen/t02_axes.md",
             "04 - Points" => "Tutorials/gen/t03_points.md",
-            # "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
             # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
-            # "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
+            # "06 - Multi-threading" => "Tutorials/gen/t05_multithread.md"
         ],
         # "Use Cases" => [
         #     "CR3BP" => "Examples/gen/e01_cr3bp.md",
