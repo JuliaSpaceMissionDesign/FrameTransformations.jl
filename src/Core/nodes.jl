@@ -308,17 +308,18 @@ Define a new direction.
 struct Direction{O, N, D}
     name::Symbol 
     id::Int 
+    axesid::Int
 
     # internals
     f::DirectionFunctions{O, N, D}
 end
 
 function Direction{O, N}(
-    name::Symbol, id::Int, dfun::DirectionFunctions{O, N, D}
+    name::Symbol, id::Int, axesid::Int, dfun::DirectionFunctions{O, N, D}
 ) where {O, N, D}
-    return Direction{O, N, 3O}(name, id, dfun)
+    return Direction{O, N, 3O}(name, id, axesid, dfun)
 end
 
 function Base.show(io::IO, d::Direction{O, N, D}) where {O, N, D}
-    return println(io, "Direction{$O, $N}(name=$(d.name), id=$(d.id))")
+    return println(io, "Direction{$O, $N}(name=$(d.name), id=$(d.id), axesid=$(d.axesid))")
 end

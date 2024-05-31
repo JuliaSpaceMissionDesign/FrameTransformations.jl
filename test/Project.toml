@@ -1,4 +1,5 @@
 [deps]
+CalcephEphemeris = "54e8752a-b65a-4aac-bda5-4918ee1e3cc5"
 ERFA = "17511681-8477-586a-8d98-4cfd5a1f2ec3"
 Ephemerides = "6a9c3322-c8fe-4c26-8ad6-14a6f8acd2a0"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
