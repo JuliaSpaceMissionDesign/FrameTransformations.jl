@@ -6,14 +6,11 @@ env:
   JULIA_NUM_THREADS: 4
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.group }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        group:
-          - Core 
-          - Definitions
         version:
           - '1.9'
           - '1.10'
@@ -27,7 +24,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-          group: ${{ matrix.group }}
           include-all-prereleases: true
       - uses: actions/cache@v3
         env:
