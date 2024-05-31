@@ -14,7 +14,7 @@ using FrameTransformations
     add_point_root!(frames, :Root, 1, 1)
 
     # test point properties
-    node = get_points(frames).nodes[1]
+    node = points_graph(frames).nodes[1]
     @test node.class == 0
     @test node.name == :Root
     @test node.axesid == 1
@@ -43,7 +43,7 @@ end
     add_point_fixedoffset!(frames, :Fixed, 2, 1, 1, offset)
 
     # test point properties 
-    node = get_points(frames).nodes[2]
+    node = points_graph(frames).nodes[2]
     @test node.class == 1
     @test node.name == :Fixed
     @test node.axesid == 1
@@ -80,7 +80,7 @@ end
     add_point_dynamical!(frames, :Dyn, 2, 1, 1, f)
 
     # test point properties 
-    node = get_points(frames).nodes[2]
+    node = points_graph(frames).nodes[2]
     @test node.class == 2
     @test node.name == :Dyn
     @test node.axesid == 1
@@ -97,7 +97,7 @@ end
         add_point_dynamical!(frames, :Dyn, 2, 1, 1, funs...)
         add_axes_fixedoffset!(frames, :Fox, 2, 1, R)
 
-        node = get_points(frames).nodes[2]
+        node = points_graph(frames).nodes[2]
         
         for _ in 1:10
             t = rand()

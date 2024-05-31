@@ -85,5 +85,5 @@ funs = FrameTransformations.FrameAxesFunctions{Float64}(fcn_rot, fcn_rot)
 @test typeof(funs) == FrameTransformations.FrameAxesFunctions{2, Float64, 6}
 @test length(funs.fun) == 2
 
-@test funs[2](π / 3)[1] ≈ fcn_rot2(π / 3)[1] atol = 1e-12
-@test funs[2](π / 3)[2] ≈ fcn_rot2(π / 3)[2] atol = 1e-12
+@test funs[2](π / 3)[1] ≈ fcn_rot(π / 3)[1] atol = 1e-12
+@test funs[2](π / 3)[2] ≈ fcn_rot(π / 3)[2] atol = 1e-12

@@ -17,12 +17,12 @@ frames = FrameSystem{3,Float64}()
 frames = FrameSystem{3, Float64}() 
 add_axes_icrf!(frames)
 
-node = get_axes(frames).nodes[1]
+node = axes_graph(frames).nodes[1]
 @test node.id == AXESID_ICRF
 @test node.name == :ICRF
 
 add_axes_gcrf!(frames)
-node = get_axes(frames).nodes[2]
+node = axes_graph(frames).nodes[2]
 @test node.id == AXESID_GCRF
 @test node.name == :GCRF 
 
@@ -35,6 +35,6 @@ R = rotation6(frames, 1, 23, 0.0)
 frames = FrameSystem{3, Float64}() 
 add_axes_gcrf!(frames)
 
-node = get_axes(frames).nodes[1]
+node = axes_graph(frames).nodes[1]
 @test node.id == AXESID_GCRF
 @test node.name == :GCRF 
