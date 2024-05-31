@@ -15,19 +15,20 @@
 #   means of a `Translation` transformation which relate one point to a parent point in a 
 #   particular axes in a certain time interval.
 
+# Additionally, it is possible to create `Direction`s, as vector valued functions that could
+# be used to define custom frames.
+
 #-
 #md # !!! note 
 #md #     A single [`FrameSystem`](@ref) instance simultaneously handles both the axes and 
 #md #     point graphs, regardless of what the user registers in it. For instance, if no 
-#md #     points are added, the point graph will remain empty.
+#md #     points are added, the point graph will remain empty. The same applies for directions.
 #-
 
 # Additionally, any node can have several childs, each with different transformations with 
 # respect to the parent node. However, they shall be **registered** within the 
 # [`FrameSystem`](@ref) before being used in a transformation or as parents of other nodes.
 
-using FrameTransformations #hide
-using Tempo #hide
 
 # ## Basic Constructors 
 # The creation of a generic [`FrameSystem`](@ref) requires the definition of the maximum 
@@ -38,6 +39,9 @@ using Tempo #hide
 # allowed transformation order is 4. 
 
 # In this example, we highlight the most basic way to initialise a [`FrameSystem`](@ref):
+
+using FrameTransformations
+using Tempo 
 
 F = FrameSystem{2, Float64}()
 
@@ -50,6 +54,47 @@ F = FrameSystem{2, Float64}()
 # for his applications. In this example, we set the `InternationalAtomicTime` as the reference scale.
 
 F = FrameSystem{2, Float64, InternationalAtomicTime}()
+
+# ## Graph Inspection
+
+# Once a [`FrameSystem`](@ref) is constructed (and populated) there are many routines devoted 
+# to inspect its content. As already said, there are three main *objects* that are contained 
+# in the `FrameSystem`: **points**, **axes** and **directions**. For each of them series of 
+# utility functions are made available in order to check for the presence of a registered point:
+
+has_point(F, 1)
+
+# a registered axes:
+
+has_axes(F, 1)
+
+# or a registered direction:
+
+has_direction(F, :Root)
+
+# Additionally, the possibility to get a dictionary containing all name-id relationships is 
+# made available for axes, via the [`axes`](@ref) method:
+
+axes(F)
+
+# and points, via the [`points`](@ref) method:
+
+points(F)
+
+# Finally, the `FrameSystem` order and timescale might be retrieved via the associated methods:
+
+order(F)
+
+#- 
+
+FrameTransformations.timescale(F)
+
+# Refer to the [API](@ref frames_api) for additional details.
+
+# ## Basic Usage
+
+#md # !!! note 
+#md #     Work in progress
 
 # ## Ephemerides Support
 

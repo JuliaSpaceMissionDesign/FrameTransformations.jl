@@ -95,13 +95,11 @@ function add_point!(
 end
 
 """
-    add_point_root!(frames, name, id, axesid)
+    add_point_root!(frames, name, id, axes)
 
 Add root `name` root point with the specified `id` to `frames`.
 """
-function add_point_root!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, axesid::Int
-) where {O, N}
+function add_point_root!(frames::FrameSystem{O, N}, name::Symbol, id::Int, ax) where {O, N}
 
     # Check for root-point existence 
     if !isempty(points_graph(frames))
@@ -111,19 +109,19 @@ function add_point_root!(
     end
 
     return add_point!(
-        frames, name, id, axesid, POINT_CLASSID_ROOT, FramePointFunctions{O, N}()
+        frames, name, id, axes_id(frames, ax), POINT_CLASSID_ROOT, FramePointFunctions{O, N}()
     )
 end
 
 """
-    add_point_fixedoffset!(frames, name, id, parentid, axesid, offset::AbstractVector)
+    add_point_fixedoffset!(frames, name, id, parent, axes, offset::AbstractVector)
 
 Add `point` as a fixed-offset point to `frames`. Fixed points are those whose positions have a 
 constant `offset` with respect their `parent` points in the given set of `axes`. Thus, points 
 eligible for this class must have null velocity and acceleration with respect to `parent`.
 """
 function add_point_fixedoffset!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, ax,
     offset::AbstractVector{T}
 ) where {O, N, T}
 
@@ -139,13 +137,13 @@ function add_point_fixedoffset!(
     funs = FramePointFunctions{O, N}(t -> voffset, t -> voffset, t -> voffset, t -> voffset)
 
     return add_point!(
-        frames, name, id, axesid, POINT_CLASSID_FIXED, funs, parentid
+        frames, name, id, axes_id(frames, ax), POINT_CLASSID_FIXED, funs, 
+        point_id(frames, parent)
     )
 end
 
 """ 
-    add_point_dynamical!(frames, name, id, axesid, fun, δfun=nothing, 
-        δ²fun=nothing, δ³fun=nothing)
+    add_point_dynamical!(frames, name, id, parent, axes, fun, δfun=nothing, δ²fun=nothing, δ³fun=nothing)
 
 Add `point` as a time point to `frames`. The state vector for these points depends only on 
 time and is computed through the custom functions provided by the user. 
@@ -165,7 +163,7 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with auto
     dimensions. 
 """
 function add_point_dynamical!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, axesid::Int,
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, ax,
     fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
 ) where {O, N}
 
@@ -218,21 +216,19 @@ function add_point_dynamical!(
         end,
     )
     
-    return add_point!(frames, name, id, axesid, POINT_CLASSID_DYNAMIC, funs, parentid)
-
+    return add_point!(
+        frames, name, id, axes_id(frames, ax), POINT_CLASSID_DYNAMIC, funs, 
+        point_id(frames, parent)
+    )
 end
 
 """
-    add_point_alias!(frames, target::Symbol, alias::Symbol)
-    add_point_alias!(frames, target::Int, alias::Symbol)
+    add_point_alias!(frames, target, alias::Symbol)
+    add_point_alias!(frames, target, alias::Symbol)
 
 Add a name `alias` to a `target` point registered in `frames`.
 """
-function add_point_alias!(frames::FrameSystem{O, N}, target::Symbol, alias::Symbol) where {O, N}
-    return add_point_alias!(frames, points(frames)[target], alias)
-end
-
-function add_point_alias!(frames::FrameSystem{O, N}, target::Int, alias::Symbol) where {O, N}
+function add_point_alias!(frames::FrameSystem{O, N}, target, alias::Symbol) where {O, N}
     if !has_point(frames, target)
         throw(
             ErrorException(
@@ -249,6 +245,6 @@ function add_point_alias!(frames::FrameSystem{O, N}, target::Int, alias::Symbol)
         )
     end
 
-    push!(points(frames), Pair(alias, target))
+    push!(points(frames), Pair(alias, point_id(frames, target)))
     nothing
 end

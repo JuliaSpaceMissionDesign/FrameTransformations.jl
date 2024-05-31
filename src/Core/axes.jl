@@ -91,9 +91,9 @@ function add_axes_root!(frames::FrameSystem{O, N}, name::Symbol, id::Int) where 
 end
 
 """
-    add_axes_fixedoffset!(frames, name::Symbol, id::Int, parentid::Int, dcm:DCM)
+    add_axes_fixedoffset!(frames, name::Symbol, id::Int, parent, dcm:DCM)
    
-Add axes `name` with id `id` to `frames` with a fixed-offset from `parentid`. 
+Add axes `name` with id `id` to `frames` with a fixed-offset from `parent`. 
 Fixed offset axes have a constant orientation with respect to their `parent` axes, 
 represented by `dcm`, a Direction Cosine Matrix (DCM).
 
@@ -101,7 +101,7 @@ represented by `dcm`, a Direction Cosine Matrix (DCM).
 See also [`add_axes!`](@ref).
 """
 function add_axes_fixedoffset!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, dcm::DCM{N}
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, dcm::DCM{N}
 ) where {O, N}
 
     funs = FrameAxesFunctions{O, N}(
@@ -110,20 +110,20 @@ function add_axes_fixedoffset!(
         t -> Rotation{O}(dcm, DCM(0.0I), DCM(0.0I)), 
         t -> Rotation{O}(dcm, DCM(0.0I), DCM(0.0I), DCM(0.0I))
     )
-    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, parentid)
+    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, axes_id(frames, parent))
 end
 
 """
-    add_axes_inertial!(frames, name, id, parentid, fun)
+    add_axes_inertial!(frames, name, id, parent, fun)
 
 Add inertial axes `name` and id `id` as a set of inertial axes to `frames`. The axes relation 
-to the `parentid` axes are given by a `fun`.
+to the `parent` axes are given by a `fun`.
 
 ### See also 
 See also [`add_axes!`](@ref).
 """
 function add_axes_inertial!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int, fun::Function
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, fun::Function
 ) where {O, N}
 
     funs = FrameAxesFunctions{O, N}(
@@ -132,11 +132,11 @@ function add_axes_inertial!(
         t -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I)),
         t -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I)),
     )
-    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, parentid)
+    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, axes_id(frames, parent))
 end
 
 """
-    add_axes_rotating!(frames, name::Symbol, id::Int, parentid::Int, fun, δfun=nothing, 
+    add_axes_rotating!(frames, name::Symbol, id::Int, parent, fun, δfun=nothing, 
         δ²fun=nothing, δ³fun=nothing)
    
 Add `axes` as a set of rotating axes to `frames`. The orientation of these axes depends only 
@@ -156,7 +156,7 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via autom
     function does not perform any checks on the output types. 
 """
 function add_axes_rotating!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parentid::Int,
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent,
     fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
 ) where {O, N}
 
@@ -209,14 +209,15 @@ function add_axes_rotating!(
         end,
     )
 
-    return add_axes!(frames, name, id, AXES_CLASSID_ROTATING, funs, parentid)
+    return add_axes!(frames, name, id, AXES_CLASSID_ROTATING, funs, axes_id(frames, parent))
 end
 
-function add_axes_alias!(frames::FrameSystem{O, N}, target::Symbol, alias::Symbol) where {O, N}
-    return add_axes_alias!(frames, axes(frames)[target], alias)
-end
+"""
+    add_axes_alias!(frames, target, alias::Symbol)
 
-function add_axes_alias!(frames::FrameSystem{O, N}, target::Int, alias::Symbol) where {O, N}
+Add a name `alias` to a `target` axes registered in `frames`.
+"""
+function add_axes_alias!(frames::FrameSystem{O, N}, target, alias::Symbol) where {O, N}
     if !has_axes(frames, target)
         throw(
             ErrorException(
@@ -233,6 +234,6 @@ function add_axes_alias!(frames::FrameSystem{O, N}, target::Int, alias::Symbol) 
         )
     end
 
-    push!(axes(frames), Pair(alias, target))
+    push!(axes(frames), Pair(alias, axes_id(frames, target)))
     nothing
 end

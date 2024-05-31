@@ -45,26 +45,13 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         end
 
         """
-            $($axfun)(frame::FrameSystem, from::Symbol, to::Symbol, t::Number)
+            $($axfun)(frame::FrameSystem, from, to, t::Number)
 
         Compute the rotation that transforms a $(3*$order)-elements state vector from one 
         specified set of axes to another at a given time `t`, expressed in seconds since 
         `J2000`. 
         """
-        @inline function ($axfun)(
-            frame::FrameSystem{O, T}, from::Symbol, to::Symbol, t::Number
-        ) where {O, T}
-            return $(axfun)(frame, axes(frame)[from], axes(frame)[to], t)
-        end
-
-        """
-            $($axfun)(frame::FrameSystem, from::Int, to::Int, t::Number)
-
-        Compute the rotation that transforms a $(3*$order)-elements state vector from one 
-        specified set of axes to another at a given time `t`, expressed in seconds since 
-        `J2000`. 
-        """
-        function ($axfun)(frame::FrameSystem{O, T}, from::Int, to::Int, t::Number) where {O,T}
+        function ($axfun)(frame::FrameSystem{O, T}, from, to, t::Number) where {O,T}
             if O < $order
                 throw(
                     ErrorException(
@@ -74,10 +61,13 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end
 
-            from == to && return Rotation{$order}(T(1)*I)
+            fromid = axes_id(frame, from)
+            toid = axes_id(frame, to)
+
+            fromid == toid && return Rotation{$order}(T(1)*I)
 
             # Check to ensure that the two axes are stored in the frame system
-            for id in (from, to)
+            for id in (fromid, toid)
                 if !has_axes(frame, id)
                     throw(
                         ErrorException(
@@ -86,7 +76,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                     )
                 end 
             end
-            return $(_axfun)(frame, get_path(axes_graph(frame), from, to), t)
+            return $(_axfun)(frame, get_path(axes_graph(frame), fromid, toid), t)
         end
 
         # Low-level function to parse a path of axes and chain their rotations 
@@ -154,28 +144,13 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         end
 
         """
-            $($pfun)(frame, from::Symbol, to::Symbol, axes::Symbol, t::Number) 
+            $($pfun)(frame, from, to, axes, t::Number) 
 
         Compute $(3*$order)-elements state vector of a target point relative to 
         an observing point, in a given set of axes, at the desired time `t` expressed in 
         seconds since `J2000`. 
         """
-        function ($pfun)(
-            frame::FrameSystem{O, N}, from::Symbol, to::Symbol, ax::Symbol, t::Number
-        ) where {O, N}
-            return $(pfun)(
-                frame,  points(frame)[from], points(frame)[to], axes(frame)[ax], t
-            )
-        end
-
-        """
-            $($pfun)(frame, from::Int, to::Int, axes::Int, t::Number) 
-
-        Compute $(3*$order)-elements state vector of a target point relative to 
-        an observing point, in a given set of axes, at the desired time `t` expressed in 
-        seconds since `J2000`. 
-        """
-        function ($pfun)(frame::FrameSystem{O, N}, from::Int, to::Int, axes::Int, t::Number) where {O, N}
+        function ($pfun)(frame::FrameSystem{O, N}, from, to, ax, t::Number) where {O, N}
             if O < $order
                 throw(
                     ErrorException(
@@ -185,10 +160,14 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end
 
-            from == to && return @SVector zeros(N, 3 * $order)
+            fromid = point_id(frame, from)
+            toid = point_id(frame, to)
+            axid = axes_id(frame, ax)
+
+            fromid == toid && return @SVector zeros(N, 3 * $order)
 
             # Check to ensure that the two points are registerd
-            for id in (from, to)
+            for id in (fromid, toid)
                 if !has_point(frame, id)
                     throw(
                         ErrorException("point with ID $id is not registered in the frame system.")
@@ -197,13 +176,13 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             end
 
             # Check that the ouput axes are registered 
-            if !has_axes(frame, axes)
+            if !has_axes(frame, axid)
                 throw(
-                    ErrorException("axes with ID $axes are not registered in the frame system.")
+                    ErrorException("axes with ID $axid are not registered in the frame system.")
                 )
             end
 
-            return $(_pfun)(frame, get_path(points_graph(frame), from, to), axes, t)
+            return $(_pfun)(frame, get_path(points_graph(frame), fromid, toid), axid, t)
         end
 
         function ($_pfun)(frame::FrameSystem, path::Vector{Int}, axes::Int, t::Number)

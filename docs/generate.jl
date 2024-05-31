@@ -3,10 +3,9 @@ using Dates
 
 # TODO: Remove items from `SKIPFILE` as soon as they run on the latest stable 
 ONLYSTATIC = []
-EXAMPLE_DIRS = ["Tutorials", "Examples"]
+EXAMPLE_DIRS = ["Tutorials", ]
 SKIPFILE = [
-    "t02_points.jl", "t03_eop.jl", 
-    "t04_lighttime.jl", "t05_multithread.jl"
+    "t03_eop.jl", "t04_lighttime.jl", "t05_multithread.jl"
 ]
 
 function update_date(content)

@@ -100,6 +100,22 @@ Return the registered directions names.
 """
 @inline directions(f::FrameSystem) = keys(directions_map(f))
 
+"""
+    point_id(f::FrameSystem, id)
+
+Get the `id` associate to a point.
+"""
+@inline point_id(::FrameSystem, id::Int) = id 
+@inline point_id(f::FrameSystem, name::Symbol) = points(f)[name]
+
+"""
+    axes_id(f::FrameSystem, id)
+
+Get the `id` associate to an axes.
+"""
+@inline axes_id(::FrameSystem, id::Int) = id
+@inline axes_id(f::FrameSystem, name::Symbol) = axes(f)[name]
+
 function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
     push!(fs.points_map, Pair(p.name, p.id))
     return add_vertex!(fs.points, p)
@@ -111,18 +127,18 @@ function add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
 end
 
 """ 
-    has_point(frames::FrameSystem, id::Int) 
+    has_point(frames::FrameSystem, id) 
 
 Check if `id` point is within `frames`.
 """
-@inline has_point(f::FrameSystem, id::Int) = has_vertex(points_graph(f), id)
+@inline has_point(f::FrameSystem, id) = has_vertex(points_graph(f), point_id(f, id))
 
 """ 
-    has_axes(frames::FrameSystem, axesid::Int) 
+    has_axes(frames::FrameSystem, ax) 
 
-Check if `axesid` axes is within `frames`.
+Check if `ax` axes is within `frames`.
 """
-@inline has_axes(f::FrameSystem, axesid::Int) = has_vertex(axes_graph(f), axesid)
+@inline has_axes(f::FrameSystem, ax) = has_vertex(axes_graph(f), axes_id(f, ax))
 
 """ 
     has_axes(frames::FrameSystem, name::Symbol) 

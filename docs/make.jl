@@ -16,16 +16,16 @@ makedocs(;
             "01 - Frame System" => "Tutorials/gen/t00_frames.md",
             "02 - Rotation" => "Tutorials/gen/t01_rotation.md",
             "03 - Axes" => "Tutorials/gen/t02_axes.md",
-            # "03 - Points" => joinpath("Tutorials", "t02_points.md"),
+            "04 - Points" => "Tutorials/gen/t03_points.md",
             # "04 - Loading EOP Data" => "Tutorials/gen/t03_eop.md",
             # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
             # "06 - Multithreading" => "Tutorials/gen/t05_multithread.md"
         ],
-        "Use Cases" => [
-            "CR3BP" => "Examples/gen/e01_cr3bp.md",
-            "High Fidelity" => "Examples/gen/e02_hifi.md",
-            "Custom Orbit" => "Examples/gen/e03_customorb.md"
-        ],
+        # "Use Cases" => [
+        #     "CR3BP" => "Examples/gen/e01_cr3bp.md",
+        #     "High Fidelity" => "Examples/gen/e02_hifi.md",
+        #     "Custom Orbit" => "Examples/gen/e03_customorb.md"
+        # ],
         "Benchmarks" => "benchmarks.md",
         "API" => [
             "Public API" => [

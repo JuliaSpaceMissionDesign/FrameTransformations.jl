@@ -9,6 +9,7 @@ add_axes_root!
 add_axes_inertial!
 add_axes_rotating!
 add_axes_fixedoffset!
+add_axes_alias!
 ```
 
 ## Celestial

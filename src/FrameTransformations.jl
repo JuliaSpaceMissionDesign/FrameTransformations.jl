@@ -51,6 +51,7 @@ include("Core/ad.jl")
 export FrameSystem, 
        order, timescale, points_graph, axes_graph, directions_map, 
        has_axes, has_point, has_direction,
+       point_id, axes_id,
        axes, points, directions,
        rotation3, rotation6, rotation9, rotation12, 
        vector3, vector6, vector9, vector12,
