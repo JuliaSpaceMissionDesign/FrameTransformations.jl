@@ -112,7 +112,7 @@ FrameTransformations.timescale(F)
 using Ephemerides, Downloads
 
 url = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp";
-eph = EphemerisProvider(Downloads.download(url));
+E = EphemerisProvider(Downloads.download(url));
 
 F = FrameSystem{2, Float64}()
 
@@ -123,7 +123,7 @@ add_point_root!(F, :SSB, 0, 1)
 
 # Points from the `EphemerisProvider` can be now registered. 
 
-add_point_ephemeris!(F, eph, :Sun, 10)
-add_point_ephemeris!(F, eph, :EMB, 3)
+add_point_ephemeris!(F, E, :Sun, 10)
+add_point_ephemeris!(F, E, :EMB, 3)
 
 # Here the parent point will be inferred from the ephemeris.
