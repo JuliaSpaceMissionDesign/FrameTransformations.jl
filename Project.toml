@@ -35,7 +35,7 @@ ReferenceFrameRotations = "3"
 SMDGraphs = "0.2"
 StaticArrays = "1"
 Tempo = "1.2"
-julia = "1.8"
+julia = "1.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
