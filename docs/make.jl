@@ -10,6 +10,7 @@ if CI
     Pkg.add("JSMDInterfaces")
     Pkg.add("Literate")
     Pkg.add("Dates")
+    Pkg.add("Tempo")
 end
 
 include("generate.jl")
