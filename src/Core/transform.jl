@@ -54,7 +54,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         @inline function ($axfun)(
             frame::FrameSystem{O, T}, from::Symbol, to::Symbol, t::Number
         ) where {O, T}
-            return $(axfun)(frame, frame.axmap[from], frame.axmap[to], t)
+            return $(axfun)(frame, axes(frame)[from], axes(frame)[to], t)
         end
 
         """
@@ -161,9 +161,11 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         seconds since `J2000`. 
         """
         function ($pfun)(
-            frame::FrameSystem{O, N}, from::Symbol, to::Symbol, axes::Symbol, t::Number
+            frame::FrameSystem{O, N}, from::Symbol, to::Symbol, ax::Symbol, t::Number
         ) where {O, N}
-            return $(pfun)(frame, frame.pmap[from], frame.pmap[to], frame.axmap[axes], t)
+            return $(pfun)(
+                frame,  points(frame)[from], points(frame)[to], axes(frame)[ax], t
+            )
         end
 
         """

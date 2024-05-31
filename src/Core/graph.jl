@@ -26,8 +26,8 @@ struct FrameSystem{O, N<:Number, S<:AbstractTimeScale, D}
     axes::AxesGraph{O, N, D}
     dir::Dict{Symbol, Direction{O, N, D}}
 
-    pmap::Dict{Symbol, Int}
-    axmap::Dict{Symbol, Int}
+    points_map::Dict{Symbol, Int}
+    axes_map::Dict{Symbol, Int}
 end
 
 function FrameSystem{O, N, S}() where {O, N, S}
@@ -65,12 +65,32 @@ Return the frame system points graph.
 """
 @inline get_points(f::FrameSystem) = f.points
 
+"""
+    get_directions(f::FrameSystem)
+
+Return the direction dictionary.
+"""
 @inline get_directions(f::FrameSystem) = f.dir
 
-@inline axes(f::FrameSystem) = f.axmap
+"""
+    axes(f::FrameSystem)
 
-@inline points(f::FrameSystem) = f.pmap
+Return the registered axes names/ids map.
+"""
+@inline axes(f::FrameSystem) = f.axes_map
 
+"""
+    points(f::FrameSystem)
+
+Return the registered points names/ids map.
+"""
+@inline points(f::FrameSystem) = f.points_map
+
+"""
+    directions(f::FrameSystem)
+
+Return the registered directions names.
+"""
 @inline directions(f::FrameSystem) = keys(f.dir)
 
 """ 
@@ -81,12 +101,12 @@ Return the frame system axes graph.
 @inline get_axes(f::FrameSystem) = f.axes
 
 function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
-    push!(fs.pmap, Pair(p.name, p.id))
+    push!(fs.points_map, Pair(p.name, p.id))
     return add_vertex!(fs.points, p)
 end
 
 function add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
-    push!(fs.axmap, Pair(ax.name, ax.id))
+    push!(fs.axes_map, Pair(ax.name, ax.id))
     return add_vertex!(fs.axes, ax)
 end
 
