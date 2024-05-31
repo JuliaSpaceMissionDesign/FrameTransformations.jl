@@ -52,6 +52,6 @@ makedocs(;
 if CI 
     deploydocs(;
         repo="github.com/JuliaSpaceMissionDesign/FrameTransformations.jl", 
-        branch="gh-pages", devbranch="dev"
+        branch="gh-pages"
     )
 end
