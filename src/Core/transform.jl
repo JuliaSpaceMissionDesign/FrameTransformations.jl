@@ -271,27 +271,28 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
     @eval begin 
         
         """
-            $($dfun)(frame::FrameSystem, name::Symbol, ep::Epoch) 
+            $($dfun)(frames::FrameSystem, name::Symbol, axes, ep::Epoch) 
 
-        Compute the direction vector `name` of order $(3*$order) at epoch `ep`.
+        Compute the direction vector `name` of order $(3*$order) at epoch `ep` expressed in 
+        the `axes` frame.
 
         Requires a frame system of order ≥ $($order).
         """
         @inline function ($dfun)(
-            frame::FrameSystem{<:Any,<:Any,S}, name::Symbol, ep::Epoch{S}
+            frames::FrameSystem{<:Any,<:Any,S}, name::Symbol, ax, ep::Epoch{S}
         ) where {S}
-            return $(dfun)(frame, name, j2000s(ep))
+            return $(dfun)(frames, name, j2000s(ep))
         end
 
         """
-            $($dfun)(frame::FrameSystem, name::Symbol, t::Number) 
+            $($dfun)(frames::FrameSystem, name::Symbol, axes, t::Number) 
 
         Compute the direction vector `name` of order $(3*$order) at epoch `t`, where `t` is 
         expressed in seconds since `J2000`.
 
         Requires a frame system of order ≥ $($order).
         """
-        function ($dfun)(frame::FrameSystem{O, N}, name::Symbol, t::Number) where {O, N}
+        function ($dfun)(frames::FrameSystem{O, N}, name::Symbol, ax, t::Number) where {O, N}
             if O < $order
                 throw(
                     ErrorException(
@@ -301,7 +302,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end
 
-            if !has_direction(frame, name)
+            if !has_direction(frames, name)
                 throw(
                     ErrorException(
                         "No direction with name $(name) registered in the frame system."
@@ -309,9 +310,19 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 )
             end 
 
-            stv = directions_map(frame)[name].f[$order](t)
+            node = directions_map(frames)[name]
+            stv = node.f[$order](t)
             D = 3 * $order
-            @views return SA[(stv[1:D])...]
+            y = @views SA[(stv[1:D])...]
+
+            thisaxid = node.axesid 
+            axid = axes_id(frames, ax) 
+
+            if thisaxid == axid 
+                return y 
+            end
+            return ($axfun)(frames, thisaxid, axid, t) * y 
+            
         end
 
     end

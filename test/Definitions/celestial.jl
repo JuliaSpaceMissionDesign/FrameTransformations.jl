@@ -2,6 +2,15 @@ using Test
 using LinearAlgebra
 using FrameTransformations
 using ReferenceFrameRotations
+using Logging
+
+frames = FrameSystem{3,Float64}()
+
+# Add ICRF axes
+@test_nowarn add_axes_root!(frames, :Root, 12)
+
+# test that GCRF can be defined only as child of ICRF
+@test_throws ArgumentError add_axes_gcrf!(frames)
 
 frames = FrameSystem{3,Float64}()
 
@@ -38,3 +47,9 @@ add_axes_gcrf!(frames)
 node = axes_graph(frames).nodes[1]
 @test node.id == AXESID_GCRF
 @test node.name == :GCRF 
+
+# Test EME 
+frames = FrameSystem{3, Float64}() 
+add_axes_icrf!(frames)
+
+add_axes_eme2000!(frames, :EME, 1, 4)

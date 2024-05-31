@@ -40,7 +40,7 @@ function add_point_ephemeris!(
 ) where {O, N}
     records = ephem_position_records(eph) 
     for id in sort(ephem_available_points(eph))
-        !haskey(book, id) && throw(KeyError("Cannot find point with ID $id in the names book"))
+        !haskey(book, id) && @warn "Cannot find point with ID $id in the names book" continue
 
         if id == 0 
             if length(points_graph(frames).nodes) == 0 

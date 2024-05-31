@@ -70,7 +70,7 @@ export add_axes!, add_point!, add_direction!,
 
 include("Core/axes.jl")
 include("Core/points.jl")
-include("Core/direction.jl")
+include("Core/directions.jl")
 
 # Standard axes/points definitions
 # ==============================================

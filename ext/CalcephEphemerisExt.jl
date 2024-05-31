@@ -2,9 +2,12 @@ module CalcephEphemerisExt
 
 import FrameTransformations: add_point_ephemeris!
 using FrameTransformations: FrameSystem, add_point!, check_point_ephemeris, 
-                            FramePointFunctions, POINT_CLASSID_DYNAMIC
+                            FramePointFunctions, POINT_CLASSID_DYNAMIC,
+                            SVectorNT
 using JSMDInterfaces.Ephemeris: ephem_compute!    
 using CalcephEphemeris: CalcephProvider
+
+using StaticArrays
 
 function add_point_ephemeris!(
     frames::FrameSystem{O, N}, eph::CalcephProvider, name::Symbol, id::Int
