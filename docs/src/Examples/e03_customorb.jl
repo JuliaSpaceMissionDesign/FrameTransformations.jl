@@ -27,7 +27,7 @@ using FrameTransformations
 
 G = FrameSystem{4, Float64}()
 
-add_axes_inertial!(G, :ICRF, 1)
+add_axes_icrf!(G)
 add_point_root!(G, :Earth, 399, 1)
 
 #md # !!! note 
