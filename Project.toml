@@ -26,12 +26,13 @@ CalcephEphemerisExt = ["CalcephEphemeris"]
 EphemeridesExt = ["Ephemerides"]
 
 [compat]
+CalcephEphemeris = "1"
+ForwardDiff = "0.10"
 FunctionWrappers = "1"
 FunctionWrappersWrappers = "0.1"
 IERSConventions = "1"
 JSMDInterfaces = "1.5"
 JSMDUtils = "1"
-ForwardDiff = "0.10"
 PrecompileTools = "1"
 ReferenceFrameRotations = "3"
 SMDGraphs = "0.2"
