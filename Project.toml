@@ -26,6 +26,7 @@ CalcephEphemerisExt = ["CalcephEphemeris"]
 EphemeridesExt = ["Ephemerides"]
 
 [compat]
+Ephemerides = "1"
 CalcephEphemeris = "1"
 ForwardDiff = "0.10"
 FunctionWrappers = "1"
