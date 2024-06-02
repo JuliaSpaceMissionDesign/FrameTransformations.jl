@@ -10,6 +10,8 @@ add_axes_inertial!
 add_axes_rotating!
 add_axes_fixedoffset!
 add_axes_alias!
+add_axes_frozen!
+add_axes_ephemeris!
 ```
 
 ## Celestial
@@ -39,6 +41,13 @@ add_axes_gtod!
 add_axes_pef!
 ```
 
+## Planetary
+
+```@docs
+add_axes_bci2000!
+add_axes_bcrtod!
+```
+
 ## Lunar
 
 ```@docs
@@ -57,7 +66,6 @@ add_axes_topocentric!
 
 ```@docs
 add_axes_twovectors!
-add_axes_ephemeris!
 ```
 
 ## Utils

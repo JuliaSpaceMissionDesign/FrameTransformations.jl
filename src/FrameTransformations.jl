@@ -15,14 +15,19 @@ using JSMDUtils.Math: D¹, D², D³,
                       arcsec2rad,
                       unitvec, δunitvec, δ²unitvec, δ³unitvec, 
                       cross3, cross6, cross9, cross12, 
-                      _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
+                      _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm,
+                      angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode, add_edge!, add_vertex!, get_path, has_vertex
 
 using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider, 
                                 ephem_position_records, ephem_available_points,
                                 ephem_orient_records, ephem_available_axes
+
 using JSMDInterfaces.Interface: @interface
+
+using JSMDInterfaces.Bodies: body_rotational_elements, ∂body_rotational_elements, 
+                             ∂²body_rotational_elements, ∂³body_rotational_elements
 
 using IERSConventions: iers_bias, iers_obliquity, 
                        iers_rot3_gcrf_to_itrf, iers_rot6_gcrf_to_itrf, 
@@ -36,7 +41,7 @@ using SMDGraphs: MappedNodeGraph, SimpleGraph, MappedGraph,
 
 import SMDGraphs: get_node_id
 
-using Tempo: AbstractTimeScale, Epoch, j2000s, BarycentricDynamicalTime
+using Tempo: AbstractTimeScale, Epoch, j2000s, BarycentricDynamicalTime, CENTURY2SEC
 
 # Core Routines
 # ==============================================
@@ -81,6 +86,10 @@ export AXESID_ICRF, AXESID_GCRF,
 
 include("Definitions/index.jl")
 
+export add_axes_frozen!
+
+include("Definitions/frozen.jl")
+
 export add_point_ephemeris!, add_axes_ephemeris!
 
 include("Definitions/ephemeris.jl")
@@ -94,6 +103,10 @@ export add_axes_itrf!, add_axes_cirf!, add_axes_tirf!,
        add_axes_mod!, add_axes_tod!, add_axes_gtod!, add_axes_pef!
 
 include("Definitions/terrestrial.jl")
+
+export add_axes_bci2000!, add_axes_bcrtod!
+
+include("Definitions/planetary.jl")
 
 export add_axes_pa440!, add_axes_pa421!, add_axes_me421!
 

@@ -1,7 +1,7 @@
 name = "FrameTransformations"
 uuid = "5be70612-1674-42c4-a038-c376b6dc81ed"
 authors = ["JSMD Team"]
-version = "2.1.0"
+version = "2.1.1"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -32,7 +32,7 @@ ForwardDiff = "0.10"
 FunctionWrappers = "1"
 FunctionWrappersWrappers = "0.1"
 IERSConventions = "1"
-JSMDInterfaces = "1.5"
+JSMDInterfaces = "1.6"
 JSMDUtils = "1"
 PrecompileTools = "1"
 ReferenceFrameRotations = "3"
