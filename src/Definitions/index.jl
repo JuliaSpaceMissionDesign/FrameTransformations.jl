@@ -1,9 +1,7 @@
-
-
 """ 
     AXESID_ICRF 
    
-NAIF Axes ID for the International Celestial Reference Frame (ICRF)
+NAIF Axes ID for the International Celestial Reference Frame (ICRF).
 """
 const AXESID_ICRF = 1
 

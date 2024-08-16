@@ -1,54 +1,34 @@
 module EphemeridesExt 
 
-import FrameTransformations: add_point_ephemeris!, add_axes_ephemeris!
+import FrameTransformations: add_point_ephemeris!
 
 using FrameTransformations: FrameSystem, 
-                            FramePointFunctions, SVectorNT, add_point!,
-                            FrameAxesFunctions, Rotation, add_axes!, 
-                            triplet_to_rot3, triplet_to_rot6, triplet_to_rot9, triplet_to_rot12,
-                            check_point_ephemeris, check_axes_ephemeris, 
-                            POINT_CLASSID_DYNAMIC, AXES_CLASSID_ROTATING
+                            FramePointFunctions, Translation, add_point!,
+                            check_point_ephemeris
 
 using Ephemerides: EphemerisProvider, 
-                   ephem_vector3, ephem_vector6, ephem_vector9, ephem_vector12,
-                   ephem_rotation3, ephem_rotation6, ephem_rotation9, ephem_rotation12 
+                   ephem_vector3, ephem_vector6, ephem_vector9, ephem_vector12
 
+
+"""
+    add_point_ephemeris!(fr::FrameSystem{O, N}, eph::EphemerisProvider, 
+        name::Symbol, id::Int) where {O, N}
+    
+Add a point from `Ephemerides.jl` provider.
+"""
 function add_point_ephemeris!(
-    frames::FrameSystem{O, N}, eph::EphemerisProvider, name::Symbol, id::Int
+    fr::FrameSystem{O, N}, eph::EphemerisProvider, name::Symbol, id::Int
 ) where {O, N}
 
-    parentid, axesid = check_point_ephemeris(frames, eph, id)
+    pid, axid = check_point_ephemeris(fr, eph, id)
 
     funs = FramePointFunctions{O, N}(
-        t -> SVectorNT{3O, N}( ephem_vector3(eph, parentid, id, t) ),
-        t -> SVectorNT{3O, N}( ephem_vector6(eph, parentid, id, t) ),
-        t -> SVectorNT{3O, N}( ephem_vector9(eph, parentid, id, t) ),
-        t -> SVectorNT{3O, N}( ephem_vector12(eph, parentid, id, t) )
+        t -> Translation{O}( ephem_vector3(eph, pid, id, t) ),
+        t -> Translation{O}( ephem_vector6(eph, pid, id, t) ),
+        t -> Translation{O}( ephem_vector9(eph, pid, id, t) ),
+        t -> Translation{O}( ephem_vector12(eph, pid, id, t) )
     )
-
-    return add_point!(frames, name, id, axesid, POINT_CLASSID_DYNAMIC, funs, parentid)    
-end
-
-function add_axes_ephemeris!(
-    frames::FrameSystem{O,T}, eph::EphemerisProvider, name::Symbol, id::Int, rot_seq::Symbol,
-    class::Int=AXES_CLASSID_ROTATING
-) where {O,T}
-
-    # Check and retrieve the parent ID for the given axes
-    parentid = check_axes_ephemeris(frames, eph, id)
-
-    if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
-        funs = FrameAxesFunctions{O, T}(
-            t -> Rotation{O}(triplet_to_rot3(ephem_rotation3(eph, parentid, id, t), rot_seq)),
-            t -> Rotation{O}(triplet_to_rot6(ephem_rotation6(eph, parentid, id, t), rot_seq)),
-            t -> Rotation{O}(triplet_to_rot9(ephem_rotation9(eph, parentid, id, t), rot_seq)),
-            t -> Rotation{O}(triplet_to_rot12(ephem_rotation12(eph, parentid, id, t), rot_seq))
-        )
-    else
-        throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
-    end
-
-    return add_axes!(frames, name, id, class, funs, parentid)
+    return add_point!(fr, name, id, axid, funs, pid)    
 end
 
 end

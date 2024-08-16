@@ -1,8 +1,3 @@
-
-const AXES_CLASSID_INERTIAL = 0
-
-const AXES_CLASSID_ROTATING = 1
-
 """
     add_axes!(frames, name::Symbol, id::Int, class::Int, funs, parentid)
 
@@ -12,9 +7,8 @@ Add a new axes node to `frames`.
 - `frames` -- Target frame system 
 - `name` -- Axes name, must be unique within `frames` 
 - `id` -- Axes ID, must be unique within `frames`
-- `class` -- Axes class.  
 - `funs` -- `FrameAxesFunctions` object storing the functions to compute the DCM and, 
-            eventually, its time derivatives. It must match the type and order of `frames`.
+            eventually, its time derivatives. 
 - `parentid` -- Axes ID of the parent axes. Not required only for the root axes.
 
 !!! warning 
@@ -23,8 +17,9 @@ Add a new axes node to `frames`.
     [`add_axes_fixedoffset!`](@ref) and [`add_axes_root!`](@ref).
 """
 function add_axes!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, class::Int, 
-    funs::FrameAxesFunctions{O, N}, parentid=nothing
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, 
+    funs::FrameAxesFunctions{O, N} = FrameAxesFunctions{O, N}(), 
+    parentid=nothing
 ) where {O, N <: Number}
 
     if has_axes(frames, id)
@@ -46,7 +41,6 @@ function add_axes!(
         )
     end
 
-    # if the frame has a parent
     if !isnothing(parentid)
         # Check if the root axes is not present
         isempty(axes_graph(frames)) && throw(ArgumentError("Missing root axes."))
@@ -60,16 +54,17 @@ function add_axes!(
                 ),
             )
         end
+    else
+        # Check if axes are already present 
+        !isempty(axes_graph(frames)) && throw(ArgumentError("Root axes already registed."))
 
-    elseif class == AXES_CLASSID_INERTIAL
+        # Root axes
         parentid = id
     end
 
 
     # Create point
-    node = FrameAxesNode{O, N}(
-        name, class, id, parentid, funs
-    )
+    node = FrameAxesNode{O, N}(name, id, parentid, funs)
 
     # Insert new point in the graph
     add_axes!(frames, node)
@@ -78,16 +73,6 @@ function add_axes!(
     !isnothing(parentid) && add_edge!(axes_graph(frames), parentid, id)
 
     return nothing
-end
-
-"""
-    add_axes_root!(frames, name::Symbol, id::Int)
-   
-Create root axes in `frames`.
-"""
-function add_axes_root!(frames::FrameSystem{O, N}, name::Symbol, id::Int) where {O, N}
-    funs = FrameAxesFunctions{O, N}()
-    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs)
 end
 
 """
@@ -104,35 +89,28 @@ function add_axes_fixedoffset!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, dcm::DCM{N}
 ) where {O, N}
 
-    funs = FrameAxesFunctions{O, N}(
-        t -> Rotation{O}(dcm), 
-        t -> Rotation{O}(dcm, DCM(0.0I)), 
-        t -> Rotation{O}(dcm, DCM(0.0I), DCM(0.0I)), 
-        t -> Rotation{O}(dcm, DCM(0.0I), DCM(0.0I), DCM(0.0I))
-    )
-    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, axes_id(frames, parent))
+    funs = FrameAxesFunctions{O, N}( t -> Rotation{O}(dcm) )
+    add_axes!(frames, name, id, funs, axes_id(frames, parent))
 end
 
 """
-    add_axes_inertial!(frames, name, id, parent, fun)
+    add_axes_projected!(frames, name, id, parent, fun)
 
-Add inertial axes `name` and id `id` as a set of inertial axes to `frames`. The axes relation 
-to the `parent` axes are given by a `fun`.
+Add inertial axes `name` and id `id` as a set of projected axes to `frames`. The axes relation 
+to the `parent` axes are given by a `fun`. 
+
+Projected axes are similar to rotating axis, except that all the positions, velocity, etc ... 
+are rotated by the 0-order rotation (i.e. the derivatives of the rotation matrix are null, 
+despite the rotation depends on time).
 
 ### See also 
 See also [`add_axes!`](@ref).
 """
-function add_axes_inertial!(
+function add_axes_projected!(
     frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, fun::Function
 ) where {O, N}
-
-    funs = FrameAxesFunctions{O, N}(
-        t -> Rotation{O}(fun(t)),
-        t -> Rotation{O}(fun(t), DCM(0.0I)),
-        t -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I)),
-        t -> Rotation{O}(fun(t), DCM(0.0I), DCM(0.0I), DCM(0.0I)),
-    )
-    add_axes!(frames, name, id, AXES_CLASSID_INERTIAL, funs, axes_id(frames, parent))
+    funs = FrameAxesFunctions{O, N}( t -> Rotation{O}(fun(t)) )
+    add_axes!(frames, name, id, funs, axes_id(frames, parent))
 end
 
 """
@@ -156,13 +134,13 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via autom
     function does not perform any checks on the output types. 
 """
 function add_axes_rotating!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent,
-    fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
+    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, fun, 
+    δfun = nothing, δ²fun = nothing, δ³fun = nothing,
 ) where {O, N}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
-            @debug "ignoring $fcn, frame system order is less than $(order+1)"
+            @warn "ignoring $fcn, frame system order is less than $(order+1)"
         end
     end
 
@@ -209,31 +187,5 @@ function add_axes_rotating!(
         end,
     )
 
-    return add_axes!(frames, name, id, AXES_CLASSID_ROTATING, funs, axes_id(frames, parent))
-end
-
-"""
-    add_axes_alias!(frames, target, alias::Symbol)
-
-Add a name `alias` to a `target` axes registered in `frames`.
-"""
-function add_axes_alias!(frames::FrameSystem{O, N}, target, alias::Symbol) where {O, N}
-    if !has_axes(frames, target)
-        throw(
-            ErrorException(
-                "no axes with ID $target registered in the given frame system"
-            )
-        )
-    end
-
-    if alias in keys(axes(frames))
-        throw(
-            ErrorException(
-                "axes with name $alias already present in the given frame system"
-            )
-        )
-    end
-
-    push!(axes(frames), Pair(alias, axes_id(frames, target)))
-    nothing
+    return add_axes!(frames, name, id, funs, axes_id(frames, parent))
 end

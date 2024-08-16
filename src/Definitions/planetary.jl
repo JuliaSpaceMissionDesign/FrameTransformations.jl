@@ -1,24 +1,24 @@
 
 """
-    add_axes_bcrtod!(frames, name, id, center; deriv=true)
+    add_axes_bcrtod!(fr, name, id, center; deriv=true)
 
-Add Body-Centered Rotating (BCR), True-of-Date (TOD) axes with `name` and `id` to `frames`. 
+Add Body-Centered Rotating (BCR), True-of-Date (TOD) axes with `name` and `id` to `fr`. 
 The center point (i.e., the reference body) is `center`.
 
 These axes are the equivalent of SPICE's `IAU_<BODY_NAME>` frames.
 
 !!! warning 
     The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
-    ICRF is not defined in `frames`, an error is thrown.
+    ICRF is not defined in `fr`, an error is thrown.
 
 ### See also 
 See also [`add_axes_rotating!`](@ref), [`add_axes_bci2000!`](@ref).
 """
 function add_axes_bcrtod!(
-    frames::FrameSystem, name::Symbol, id::Int, center; deriv::Bool=false
+    fr::FrameSystem, name::Symbol, id::Int, center; deriv::Bool=false
 )
     # create val dispatch
-    cid = point_id(frames, center)
+    cid = point_id(fr, center)
     vid = Val(cid)
 
     if length( methods(body_rotational_elements, [Number, Val{cid}]) ) != 1
@@ -30,7 +30,7 @@ function add_axes_bcrtod!(
         )
     end
 
-    if !(has_axes(frames, AXESID_ICRF))
+    if !(has_axes(fr, AXESID_ICRF))
         throw(
             ErrorException(
                 "Body-Centered Inertial (BCI) at J2000 axes can only be defined" * 
@@ -41,32 +41,32 @@ function add_axes_bcrtod!(
     end
 
     if !deriv
-        add_axes_rotating!(frames, name, id, AXESID_ICRF, t->_bcrtod(t, vid))
+        add_axes_rotating!(fr, name, id, AXESID_ICRF, t->_bcrtod(t, vid))
     else 
         add_axes_rotating!(
-            frames, name, id, AXESID_ICRF, 
+            fr, name, id, AXESID_ICRF, 
             t->_bcrtod(t, vid), t->_∂bcrtod(t, vid), t->_∂²bcrtod(t, vid), t->_∂³bcrtod(t, vid)
         )
     end
 end
 
 """
-    add_axes_bci2000!(frames, axes::AbstractFrameAxes, center, data)
+    add_axes_bci2000!(fr, axes::AbstractFrameAxes, center, data)
 
-Add Body-Centered Inertial (BCI) axes at J2000 with `name` and `id` to `frames`. 
+Add Body-Centered Inertial (BCI) axes at J2000 with `name` and `id` to `fr`. 
 The center point (i.e., the reference body) is `center`.
 
 !!! warning 
     The parent axes are automatically set to the ICRF (ID = $(AXESID_ICRF)). If the 
-    ICRF is not defined in `frames`, an error is thrown.
+    ICRF is not defined in `fr`, an error is thrown.
     
 ### See also 
 See also [`add_axes_fixedoffset!`](@ref), [`add_axes_bcrtod!`](@ref).
 """
-function add_axes_bci2000!(frames::FrameSystem, name::Symbol, id::Int, center)
+function add_axes_bci2000!(fr::FrameSystem, name::Symbol, id::Int, center)
 
     # create val dispatch
-    cid = point_id(frames, center)
+    cid = point_id(fr, center)
     vid = Val(cid)
 
     if length( methods(body_rotational_elements, [Number, Val{cid}]) ) != 1
@@ -77,7 +77,7 @@ function add_axes_bci2000!(frames::FrameSystem, name::Symbol, id::Int, center)
         )
     end
 
-    if !(has_axes(frames, AXESID_ICRF))
+    if !(has_axes(fr, AXESID_ICRF))
         throw(
             ErrorException(
                 "Body-Centered Inertial (BCI) at J2000 axes can only be defined" * 
@@ -92,7 +92,7 @@ function add_axes_bci2000!(frames::FrameSystem, name::Symbol, id::Int, center)
     dcm = angle_to_dcm(π/2 + α2000, π/2 - δ2000, :ZX)
 
     # insert the new axes
-    return add_axes_fixedoffset!(frames, name, id, AXESID_ICRF, dcm)
+    return add_axes_fixedoffset!(fr, name, id, AXESID_ICRF, dcm)
 
 end
 

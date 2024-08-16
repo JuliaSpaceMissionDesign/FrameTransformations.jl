@@ -1,8 +1,69 @@
-using Test 
+using FrameTransformations
+
+using ReferenceFrameRotations
 using LinearAlgebra
 using StaticArrays
-using ReferenceFrameRotations
-using FrameTransformations
+using Test
+
+@test FrameTransformations.dcm_eltype(DCM{Float64}) == Float64
+@test FrameTransformations.promote_dcm_eltype(Tuple{DCM{Int64}, DCM{Float64}}) == Float64
+
+dcm = angle_to_dcm(π/3, :Z)
+δdcm = DCM(ddcm(dcm, [0, 0, 1]))
+δ²dcm = DCM(ddcm(δdcm, [0, 0, 1]))
+
+r1 = Rotation(dcm, δdcm, δ²dcm)
+@test order(r1) == 3
+@test size(r1) == (3,)
+@test length(r1) == 3
+@test r1[1] == dcm 
+@test r1[2] == δdcm
+@test r1[3] == δ²dcm
+
+@test r1 == Rotation((dcm, δdcm, δ²dcm))
+
+r2 = Rotation{1}(dcm, δdcm, δ²dcm)
+@test length(r2) == 1
+@test r2[1] == dcm
+
+r3 = Rotation{1}((dcm, δdcm, δ²dcm))
+@test length(r3) == 1
+@test r3[1] == dcm
+@test r2 == r3
+
+r4 = Rotation{2}(1.0I)
+@test length(r4) == 2
+@test r4[1] == I
+@test r4[2] == 0I
+
+r5 = Rotation{3, Float64}(I)
+@test length(r5) == 3
+@test r5[1] == I
+@test r5[2] == 0I
+@test r5[3] == 0I
+
+r6 = Rotation{1}(r1)
+@test length(r6) == 1
+@test r6[1] == dcm
+
+r7 = Rotation{2}(r6)
+@test length(r7) == 2
+@test r7[1] == dcm 
+@test r7[2] == 0I
+
+r8 = Rotation{1, Float32}(r5)
+@test length(r8) == 1
+@test r8[1] == I
+
+r9 = Rotation{1, Float64}(I)
+@test Tuple(r9) == (1, 0, 0, 0, 1, 0, 0, 0, 1)
+@test SVector(r9) == [1, 0, 0, 0, 1, 0, 0, 0, 1]
+@test inv(r9) == r9
+@test inv(r6)[1] == adjoint(dcm)
+
+@test_throws DimensionMismatch r6*r7
+r10 = r9*r6
+@test r10 == r6
 
 @testset "Constructors" begin
 
@@ -74,9 +135,32 @@ end
     @test FrameTransformations._compose_rotation(R, Ri)[1] ≈ (R * Ri)[1]
 
     # Apply rotation
-    @test FrameTransformations._apply_rotation(R, [1.0, 0.0, 0.0]) ≈ SA[cos(θ), -sin(θ), 0.0]
+    @testset "apply_rotation" begin 
+        t = Translation(1., 0., 0., 0., 1., 0., -1., 0., 0.)
+        r1 = Rotation{1, Float64}(I)
+        @test_throws DimensionMismatch r1 * t
+    
+        r2 = Rotation{3}(r1)
+        @test r2 * t == t
+    
+        v = SA[1., 0., 0., 0., 1., 0., -1., 0., 0.]
+        @test r2 * v == v
+        @test_throws DimensionMismatch r2 * (@SVector zeros(12))
+    
+        dcm = angle_to_dcm(π/3, :Z)
+        r = Rotation(dcm, dcm, dcm)
+    
+        rt = r * t
+        v1 = r[1] * t[1]
+        v2 = r[2] * t[1] + r[1] * t[2]  
+        v3 = r[3] * t[1] + 2 * r[2] * t[2] + r[1] * t[3]
+    
+        @test rt[1] == v1
+        @test rt[2] == v2
+        @test rt[3] == v3
+    end
+
     @test FrameTransformations._apply_rotation(R, SA[1.0, 0.0, 0.0]) ≈ R * SA[1.0, 0.0, 0.0]
-    @test FrameTransformations._apply_rotation(R, [1.0, 0.0, 0.0]) ≈ R * [1.0, 0.0, 0.0]
 
     # 2nd order rotations
     A = angle_to_dcm(rand(), :Z)
@@ -92,32 +176,4 @@ end
     @test RO[1] ≈ A * C atol = 1e-12
     @test RO[2] ≈ A * D + B * C atol = 1e-12
     @test typeof(RO) == Rotation{2,Float64}
-end
-
-@testset "Utility functions" begin
-    R = Rotation((DCM(1I), DCM(0.0I)))
-    @test FrameTransformations.order(R) == 2
-    @test size(R) == (6, 6)
-    @test StaticArrays.Size(R) == (6, 6)
-    @test R[1] == R.m[1]
-    @test typeof(R) == Rotation{2,Float64}
-
-    @test StaticArrays.similar_type(R) == Rotation{2,Float64}
-    @test StaticArrays.similar_type(R, BigFloat) == Rotation{2, BigFloat}
-
-    # Convert to tuple
-    A = angle_to_dcm(rand(), rand(), rand(), :XYZ)
-    @test Tuple(Rotation(A)) === Tuple(A)
-
-    # Convert to SMatrix
-    @test typeof(SMatrix(R)) == SMatrix{6,6,Float64,36}
-
-    # Convert to MMatrix
-    @test typeof(MMatrix(R)) == MMatrix{6,6,Float64,36}
-
-    # Inverse rotation
-    A = angle_to_dcm(π / 3, :Z)
-    R = Rotation(A)
-    @test inv(R)[1] ≈ A'
-    @test FrameTransformations._inverse_rotation(R) == inv(R)
 end

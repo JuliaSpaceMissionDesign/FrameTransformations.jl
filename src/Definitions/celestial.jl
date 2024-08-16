@@ -11,7 +11,7 @@ See also [`add_axes_root!`](@ref), [`add_axes_gcrf!`](@ref) and [`AXESID_ICRF`](
     if !isempty(axes_graph(frames))
         throw(ArgumentError("The ICRF can only be defined as a set of root axes."))
     end
-    return add_axes_root!(frames, :ICRF, AXESID_ICRF)
+    return add_axes!(frames, :ICRF, AXESID_ICRF)
 end
 
 """
@@ -33,7 +33,7 @@ function add_axes_gcrf!(frames::FrameSystem)
 
     elseif isempty(axes_graph(frames))
         # Add the GCRF as a root set of axes
-        return add_axes_root!(frames, :GCRF, AXESID_GCRF)
+        return add_axes!(frames, :GCRF, AXESID_GCRF)
         
     else 
         throw(

@@ -1,12 +1,16 @@
 
+struct AliasGraph{G, A}
+    graph::G 
+    alias::A
+end
+
 """
-    FrameSystem{O, N, S, D}
+    FrameSystem{O, T, S}
 
 A `FrameSystem` instance manages a collection of user-defined `FramePointNode`, 
 `FrameAxesNode` and `Direction` objects, enabling computation of arbitrary transformations 
 between them. It is created by specifying the maximum transformation order `O`, the outputs 
-datatype `N` and an `AbstractTimeScale` instance `S`; the parameter `D` is the `length` of 
-the output ad shall always be `3O`.
+datatype `T` and an `AbstractTimeScale` instance `S`.
 
 The following transformation orders are accepted: 
 - **1**: position 
@@ -16,32 +20,29 @@ The following transformation orders are accepted:
 
 --- 
 
-    FrameSystem{O, N, S}()
+    FrameSystem{O, T, S}()
 
-Create a new, empty `FrameSystem` object of order `O`, datatype `N` and timescale `S`.
+Create a new, empty `FrameSystem` object of order `O`, datatype `T` and timescale `S`.
 The parameter `S` can be dropped, in case the default (`BarycentricDynamicalTime`) is used. 
 """
-struct FrameSystem{O, N<:Number, S<:AbstractTimeScale, D}
-    points::PointsGraph{O, N, D}
-    axes::AxesGraph{O, N, D}
-    dir::Dict{Symbol, Direction{O, N, D}}
-
-    points_map::Dict{Symbol, Int}
-    axes_map::Dict{Symbol, Int}
+struct FrameSystem{O, T<:Number, S<:AbstractTimeScale}
+    points::AliasGraph{PointsGraph{O, T}, Dict{Symbol, Int}}
+    axes::AliasGraph{AxesGraph{O, T}, Dict{Symbol, Int}}
+    dir::Dict{Symbol, Direction{O, T}}
 end
 
-function FrameSystem{O, N, S}() where {O, N, S}
-    D = 3O
-    return FrameSystem{O, N, S, D}(
-        MappedGraph(FramePointNode{O, N, D}), MappedGraph(FrameAxesNode{O, N, D}), Dict(),
-        Dict(), Dict()
+function FrameSystem{O, T, S}() where {O, T, S}
+    return FrameSystem{O, T, S}(
+        AliasGraph(MappedGraph(FramePointNode{O, T}), Dict{Symbol, Int}()),
+        AliasGraph(MappedGraph(FrameAxesNode{O, T}), Dict{Symbol, Int}()),
+        Dict()
     )
 end
 
-@inline FrameSystem{O, N}() where {O, N} = FrameSystem{O, N, BarycentricDynamicalTime}()
+@inline FrameSystem{O, T}() where {O, T} = FrameSystem{O, T, BarycentricDynamicalTime}()
 
-function Base.summary(io::IO, ::FrameSystem{O, T, S, D}) where {O,T,S,D}
-    return println(io, "FrameSystem{$O, $T, $S, $D}")
+function Base.summary(io::IO, ::FrameSystem{O, T, S}) where {O, T, S}
+    return println(io, "FrameSystem{$O, $T, $S}")
 end
 
 """ 
@@ -52,53 +53,46 @@ Return the frame system order `O`.
 @inline order(::FrameSystem{O}) where O = O
 
 """ 
-    timescale(frames::FrameSystem{O, N, S}) where {O, N, S} 
+    timescale(frames::FrameSystem{O, T, S}) where {O, T, S} 
 
 Return the frame system order timescale `S`.
 """
-@inline timescale(::FrameSystem{O, N, S}) where {O, N, S} = S 
+@inline timescale(::FrameSystem{O, T, S}) where {O, T, S} = S 
 
 """ 
     points_graph(frames::FrameSystem) 
 
 Return the frame system points graph.
 """
-@inline points_graph(f::FrameSystem) = f.points
+@inline points_graph(f::FrameSystem) = f.points.graph
 
 """ 
     axes_graph(frames::FrameSystem) 
 
 Return the frame system axes graph.
 """
-@inline axes_graph(f::FrameSystem) = f.axes
+@inline axes_graph(f::FrameSystem) = f.axes.graph
 
 """
-    directions_map(f::FrameSystem)
+    points_alias(f::FrameSystem)
 
-Return the direction dictionary.
+Return the registered points graph.
 """
-@inline directions_map(f::FrameSystem) = f.dir
-
-"""
-    axes(f::FrameSystem)
-
-Return the registered axes names/ids map.
-"""
-@inline Base.axes(f::FrameSystem) = f.axes_map
+@inline points_alias(f::FrameSystem) = f.points.alias
 
 """
-    points(f::FrameSystem)
+    axes_alias(f::FrameSystem)
 
-Return the registered points names/ids map.
+Return the registered axes aliases map.
 """
-@inline points(f::FrameSystem) = f.points_map
+@inline axes_alias(f::FrameSystem) = f.axes.alias
 
 """
     directions(f::FrameSystem)
 
-Return the registered directions names.
+Return the direction dictionary.
 """
-@inline directions(f::FrameSystem) = keys(directions_map(f))
+@inline directions(f::FrameSystem) = f.dir
 
 """
     point_id(f::FrameSystem, id)
@@ -106,7 +100,7 @@ Return the registered directions names.
 Get the `id` associate to a point.
 """
 @inline point_id(::FrameSystem, id::Int) = id 
-@inline point_id(f::FrameSystem, name::Symbol) = points(f)[name]
+@inline point_id(f::FrameSystem, name::Symbol) = points_alias(f)[name]
 
 """
     axes_id(f::FrameSystem, id)
@@ -114,16 +108,26 @@ Get the `id` associate to a point.
 Get the `id` associate to an axes.
 """
 @inline axes_id(::FrameSystem, id::Int) = id
-@inline axes_id(f::FrameSystem, name::Symbol) = axes(f)[name]
+@inline axes_id(f::FrameSystem, name::Symbol) = axes_alias(f)[name]
 
+"""
+    add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
+
+Add point to the frame system.
+"""
 function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
-    push!(fs.points_map, Pair(p.name, p.id))
-    return add_vertex!(fs.points, p)
+    push!(fs.points.alias, Pair(p.name, p.id))
+    return add_vertex!(fs.points.graph, p)
 end
 
+"""
+    add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
+
+Add axes to the frame system.
+"""
 function add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
-    push!(fs.axes_map, Pair(ax.name, ax.id))
-    return add_vertex!(fs.axes, ax)
+    push!(fs.axes.alias, Pair(ax.name, ax.id))
+    return add_vertex!(fs.axes.graph, ax)
 end
 
 """ 
@@ -151,11 +155,11 @@ Check if `name` direction is within `frames`.
 # Formatting & printing 
 
 function _fmt_node(n::FramePointNode)
-    return " $(n.name)(id=$(n.id), axesid=$(n.axesid), class=$(n.class))"
+    return " $(n.name)(id=$(n.id), axesid=$(n.axesid))"
 end
 
 function _fmt_node(n::FrameAxesNode)
-    return " $(n.name)(id=$(n.id), class=$(n.class))"
+    return " $(n.name)(id=$(n.id))"
 end
 
 function prettyprint(g::Union{AxesGraph, PointsGraph})
@@ -165,21 +169,21 @@ function prettyprint(g::Union{AxesGraph, PointsGraph})
     end
 end
 
-function _print_frame_graph(g, pid::Int, idx::Int, last_prefix::String, prefix::String)
+function _print_frame_graph(g, pid::Int, idx::Int, last::String, prefix::String)
     for i in idx:length(g.nodes)
         if g.nodes[i].parentid == pid
             prefix = (i < length(g.nodes) && g.nodes[i+1].parentid == pid) ? " |" : " └"
-            println(last_prefix * prefix * "── " * _fmt_node(g.nodes[i]))
+            println(last * prefix * "── " * _fmt_node(g.nodes[i]))
             _print_frame_graph(
-                g, get_node_id(g.nodes[i]), i, last_prefix * prefix * "   ", last_prefix * prefix)
+                g, get_node_id(g.nodes[i]), i, last * prefix * "   ", last * prefix)
         end
     end
 end
 
-function Base.show(io::IO, g::FrameSystem{O, N, S, D}) where {O, N, S, D}
+function Base.show(io::IO, g::FrameSystem{O, T, S}) where {O, T, S}
     println(
         io, 
-        "FrameSystem{$O, $N, $S, $D} with $(length(points_graph(g).nodes))" 
+        "FrameSystem{$O, $T, $S} with $(length(points_graph(g).nodes))" 
         * " points, $(length(axes_graph(g).nodes)) axes and $(length(g.dir)) directions"
     )
     if !isempty(points_graph(g).nodes)
@@ -190,9 +194,9 @@ function Base.show(io::IO, g::FrameSystem{O, N, S, D}) where {O, N, S, D}
         printstyled(io, "\nAxes: \n"; bold=true)
         prettyprint(axes_graph(g))
     end
-    if !isempty(directions_map(g))
+    if !isempty(directions(g))
         printstyled(io, "\nDirections: \n"; bold=true)
-        for d in values(directions_map(g))
+        for d in values(directions(g))
             println(" └── $(d.name)(id=$(d.id))")
         end
     end
