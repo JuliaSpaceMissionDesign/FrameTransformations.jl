@@ -206,7 +206,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                 # Optimising this transformation would probably demand a significant 
                 # portion of time with respect to the time required by the whole transformation
                 # therefore forward pass is used without any optimisation
-                return $(axfun)(frame, p2.axesid, axes, t) * $(_pfwd)(frame, path, p1, t)
+                return $(axfun)(frame, p2.axesid, axes, t) * $(_pfwd)(frame, p1, path, t)
             end
         end
 
