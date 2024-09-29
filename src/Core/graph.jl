@@ -8,7 +8,7 @@ end
     FrameSystem{O, T, S}
 
 A `FrameSystem` instance manages a collection of user-defined `FramePointNode`, 
-`FrameAxesNode` and `Direction` objects, enabling computation of arbitrary transformations 
+`FrameAxesNode` and `DirectionDefinition` objects, enabling computation of arbitrary transformations 
 between them. It is created by specifying the maximum transformation order `O`, the outputs 
 datatype `T` and an `AbstractTimeScale` instance `S`.
 
@@ -28,7 +28,7 @@ The parameter `S` can be dropped, in case the default (`BarycentricDynamicalTime
 struct FrameSystem{O,T<:Number,S<:AbstractTimeScale}
     points::AliasGraph{PointsGraph{O,T},Dict{Symbol,Int}}
     axes::AliasGraph{AxesGraph{O,T},Dict{Symbol,Int}}
-    dir::Dict{Symbol,Direction{O,T}}
+    dir::Dict{Symbol,DirectionDefinition{O,T}}
 end
 
 function FrameSystem{O,T,S}() where {O,T,S}

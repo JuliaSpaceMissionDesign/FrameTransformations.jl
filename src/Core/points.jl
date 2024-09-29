@@ -138,9 +138,9 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with auto
     dimensions. 
 """
 function add_point_dynamical!(
-    frames::FrameSystem{O,N}, name::Symbol, id::Int, parent, ax, fun,
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, ax, fun,
     δfun=nothing, δ²fun=nothing, δ³fun=nothing
-) where {O,N}
+) where {O,T}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
@@ -148,7 +148,7 @@ function add_point_dynamical!(
         end
     end
 
-    funs = FramePointFunctions{O,N}(
+    funs = FramePointFunctions{O,T}(
         t -> Translation{O}(fun(t)),
 
         # First derivative

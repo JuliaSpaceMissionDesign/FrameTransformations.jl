@@ -243,7 +243,7 @@ const AxesGraph{O,T} = MappedNodeGraph{FrameAxesNode{O,T},SimpleGraph{Int}}
 const DirectionFunctions{O,T} = FramePointFunctions{O,T}
 
 """
-    Direction{O, T}
+    DirectionDefinition{O, T}
 
 Define a new direction.
 
@@ -252,18 +252,15 @@ Define a new direction.
 - `id` -- direction ID
 - `f` -- `DirectionFunctions` container 
 """
-struct Direction{O,T}
+struct DirectionDefinition{O,T}
     name::Symbol
     id::Int
+    axesid::Int
 
     # internals
     f::DirectionFunctions{O,T}
 end
 
-function Direction{O,T}(name::Symbol, id::Int, dfun::DirectionFunctions{O,T}) where {O,T}
-    return Direction{O,T}(name, id, dfun)
-end
-
-function Base.show(io::IO, d::Direction{O,T}) where {O,T}
-    return println(io, "Direction{$O, $T}(name=$(d.name), id=$(d.id))")
+function Base.show(io::IO, d::DirectionDefinition{O,T}) where {O,T}
+    return println(io, "DirectionDefinition{$O, $T}(name=$(d.name), id=$(d.id), axesid=$(d.axesid))")
 end

@@ -6,7 +6,8 @@ using ReferenceFrameRotations
 using FunctionWrappers: FunctionWrapper
 using FunctionWrappersWrappers: FunctionWrappersWrapper
 
-using JSMDUtils.Math: D¹, D², D³, unitvec, δunitvec, δ²unitvec, δ³unitvec
+using JSMDUtils.Math: D¹, D², D³, unitvec, cross3
+
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode,
        add_edge!, add_vertex!, get_path, has_vertex
 
@@ -67,7 +68,8 @@ include("Core/directions.jl")
 
 # Transformations 
 export rotation3, rotation6, rotation9, rotation12,
-       vector3, vector6, vector9, vector12
+       vector3, vector6, vector9, vector12,
+       direction3, direction6, direction9, direction12
 
 include("Core/transform.jl")
 
@@ -102,5 +104,9 @@ include("Definitions/terrestrial.jl")
 export add_axes_bci2000!, add_axes_bcrtod!
 
 include("Definitions/planetary.jl")
+
+export add_direction_position!, add_direction_velocity!, add_direction_orthogonal!
+
+include("Definitions/directions.jl")
 
 end

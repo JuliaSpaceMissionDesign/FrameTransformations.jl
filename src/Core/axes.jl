@@ -17,10 +17,10 @@ Add a new axes node to `frames`.
     [`add_axes_fixedoffset!`](@ref) and [`add_axes_root!`](@ref).
 """
 function add_axes!(
-    frames::FrameSystem{O,N}, name::Symbol, id::Int,
-    funs::FrameAxesFunctions{O,N}=FrameAxesFunctions{O,N}(),
+    frames::FrameSystem{O,T}, name::Symbol, id::Int,
+    funs::FrameAxesFunctions{O,T}=FrameAxesFunctions{O,T}(),
     parentid=nothing
-) where {O,N<:Number}
+) where {O,T<:Number}
 
     if has_axes(frames, id)
         # Check if a set of axes with the same ID is already registered within 
@@ -64,7 +64,7 @@ function add_axes!(
 
 
     # Create point
-    node = FrameAxesNode{O,N}(name, id, parentid, funs)
+    node = FrameAxesNode{O,T}(name, id, parentid, funs)
 
     # Insert new point in the graph
     add_axes!(frames, node)
@@ -86,10 +86,10 @@ represented by `dcm`, a Direction Cosine Matrix (DCM).
 See also [`add_axes!`](@ref).
 """
 function add_axes_fixedoffset!(
-    frames::FrameSystem{O,N}, name::Symbol, id::Int, parent, dcm::DCM{N}
-) where {O,N}
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, dcm::DCM{T}
+) where {O,T}
 
-    funs = FrameAxesFunctions{O,N}(t -> Rotation{O}(dcm))
+    funs = FrameAxesFunctions{O,T}(t -> Rotation{O}(dcm))
     add_axes!(frames, name, id, funs, axes_id(frames, parent))
 end
 
@@ -107,9 +107,9 @@ despite the rotation depends on time).
 See also [`add_axes!`](@ref).
 """
 function add_axes_projected!(
-    frames::FrameSystem{O,N}, name::Symbol, id::Int, parent, fun::Function
-) where {O,N}
-    funs = FrameAxesFunctions{O,N}(t -> Rotation{O}(fun(t)))
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, fun::Function
+) where {O,T}
+    funs = FrameAxesFunctions{O,T}(t -> Rotation{O}(fun(t)))
     add_axes!(frames, name, id, funs, axes_id(frames, parent))
 end
 
@@ -134,9 +134,9 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via autom
     function does not perform any checks on the output types. 
 """
 function add_axes_rotating!(
-    frames::FrameSystem{O,N}, name::Symbol, id::Int, parent, fun,
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, fun,
     δfun=nothing, δ²fun=nothing, δ³fun=nothing,
-) where {O,N}
+) where {O,T}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
@@ -144,7 +144,7 @@ function add_axes_rotating!(
         end
     end
 
-    funs = FrameAxesFunctions{O,N}(
+    funs = FrameAxesFunctions{O,T}(
         t -> Rotation{O}(fun(t)),
 
         # First derivative 

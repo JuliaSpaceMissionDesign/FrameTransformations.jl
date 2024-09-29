@@ -1,7 +1,7 @@
 
 """
-    add_point_ephemeris!(fr::FrameSystem{O, N}, eph::AbstractEphemerisProvider, 
-        name::Symbol, id::Int) where {O, N} 
+    add_point_ephemeris!(fr::FrameSystem{O, T}, eph::AbstractEphemerisProvider, 
+        name::Symbol, id::Int) where {O, T} 
 
 Add a point coming from an `AbstractEphemerisProvider` subtype. 
 The point is identifies by the `id` and a have a user defined `name`.
@@ -11,8 +11,8 @@ The point is identifies by the `id` and a have a user defined `name`.
     an proper implementation.
 """
 @interface function add_point_ephemeris!(
-    ::FrameSystem{O,N}, ::AbstractEphemerisProvider, ::Symbol, ::Int
-) where {O,N} end
+    ::FrameSystem{O,T}, ::AbstractEphemerisProvider, ::Symbol, ::Int
+) where {O,T} end
 
 """
     add_point_ephemeris!(fr, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol})
@@ -20,8 +20,8 @@ The point is identifies by the `id` and a have a user defined `name`.
 Add all points found in the `eph` and using id-names relationships specified in `book`.
 """
 function add_point_ephemeris!(
-    fr::FrameSystem{O,N}, eph::AbstractEphemerisProvider, book::Dict{Int,Symbol}
-) where {O,N}
+    fr::FrameSystem{O,T}, eph::AbstractEphemerisProvider, book::Dict{Int,Symbol}
+) where {O,T}
     records = ephem_position_records(eph)
     for id in sort(ephem_available_points(eph))
         !haskey(book, id) && @warn "Cannot find point with ID $id in the names book" continue
@@ -42,8 +42,8 @@ function add_point_ephemeris!(
 end
 
 function check_point_ephemeris(
-    fr::FrameSystem{O,N}, eph::AbstractEphemerisProvider, id::Int
-) where {O,N}
+    fr::FrameSystem{O,T}, eph::AbstractEphemerisProvider, id::Int
+) where {O,T}
 
     # Check that the kernels contain the ephemeris data for the given naifid
     if !(id in ephem_available_points(eph))

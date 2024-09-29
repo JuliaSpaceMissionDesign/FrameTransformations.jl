@@ -8,8 +8,8 @@ it to `frames`.
     The parent axes are automatically assigned to the `frozen` parent.
 """
 function add_axes_frozen!(
-    fr::FrameSystem{O,N,S}, name::Symbol, id::Int, frozen, epoch::Epoch{S2}
-) where {O,N,S,S2}
+    fr::FrameSystem{O,T,S}, name::Symbol, id::Int, frozen, epoch::Epoch{S2}
+) where {O,T,S,S2}
 
     eS = convert(S(), epoch)
     fixid = axes_id(fr, frozen)

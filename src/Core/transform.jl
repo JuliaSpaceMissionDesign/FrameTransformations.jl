@@ -153,7 +153,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         an observing point, in a given set of axes, at the desired time `t` expressed in 
         seconds since `J2000`. 
         """
-        function ($pfun)(fr::FrameSystem{O,N}, from, to, ax, t::Number) where {O,N}
+        function ($pfun)(fr::FrameSystem{O,T}, from, to, ax, t::Number) where {O,T}
             if O < $order
                 throw(
                     ErrorException(
@@ -167,7 +167,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             toid = point_id(fr, to)
             axid = axes_id(fr, ax)
 
-            fromid == toid && return @SVector zeros(N, 3 * $order)
+            fromid == toid && return @SVector zeros(T, 3 * $order)
 
             # Check to ensure that the two points are registerd
             for id in (fromid, toid)
@@ -266,4 +266,66 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         end
 
     end
+
+    # --------------------------------------------------------------------------------------
+    # Directions transformations
+    # --------------------------------------------------------------------------------------
+
+    @eval begin
+
+        """
+            $($dfun)(frames::FrameSystem, name::Symbol, axes, ep::Epoch) 
+
+        Compute the direction vector `name` of order $(3*$order) at epoch `ep` expressed in 
+        the `axes` frame.
+
+        Requires a frame system of order ≥ $($order).
+        """
+        @inline function ($dfun)(
+            frames::FrameSystem{<:Any,<:Any,S}, name::Symbol, axes, ep::Epoch{S}
+        ) where {S}
+            return $(dfun)(frames, name, axes, j2000s(ep))
+        end
+
+        """
+            $($dfun)(frames::FrameSystem, name::Symbol, axes, t::Number) 
+
+        Compute the direction vector `name` of order $(3*$order) at epoch `t`, where `t` is 
+        expressed in seconds since `J2000`.
+
+        Requires a frame system of order ≥ $($order).
+        """
+        function ($dfun)(frames::FrameSystem{O,N}, name::Symbol, axes, t::Number) where {O,N}
+            if O < $order
+                throw(
+                    ErrorException(
+                        "Insufficient frame system order: " *
+                        "transformation requires at least order $($order).",
+                    ),
+                )
+            end
+
+            if !has_direction(frames, name)
+                throw(
+                    ErrorException(
+                        "No direction with name $(name) registered in the frame system."
+                    )
+                )
+            end
+
+            node = directions(frames)[name]
+            stv = Translation{$order}(node.f[$order](t))
+
+            thisaxid = node.axesid
+            axid = axes_id(frames, axes)
+            if thisaxid != axid
+                stv = ($axfun)(frames, thisaxid, axid, t) * stv
+            end
+
+            D = 3 * $order
+            return @views SVector(stv)[1:D]
+        end
+
+    end
+
 end
