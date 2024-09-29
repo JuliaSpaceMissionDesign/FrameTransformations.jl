@@ -6,8 +6,10 @@ using ReferenceFrameRotations
 using FunctionWrappers: FunctionWrapper
 using FunctionWrappersWrappers: FunctionWrappersWrapper
 
-using JSMDUtils.Math: D¹, D², D³, unitvec, cross3, arcsec2rad, angle_to_δdcm, angle_to_δdcm,
-       angle_to_δ²dcm, angle_to_δ³dcm
+using JSMDUtils.Math: D¹, D², D³, arcsec2rad,
+       unitvec, δunitvec, δ²unitvec, δ³unitvec,
+       cross3, cross6, cross9, cross12,
+       angle_to_δdcm, angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode,
        add_edge!, add_vertex!, get_path, has_vertex
@@ -118,5 +120,13 @@ export add_direction_position!, add_direction_velocity!, add_direction_orthogona
        add_direction_fixed!
 
 include("Definitions/directions.jl")
+
+export add_axes_twodir!
+
+include("Definitions/axesfromdir.jl")
+
+export add_axes_fixed_quaternion!, add_axes_fixed_angles!, add_axes_fixed_angleaxis!
+
+include("Definitions/attitude.jl")
 
 end
