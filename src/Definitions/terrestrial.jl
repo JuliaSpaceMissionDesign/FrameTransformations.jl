@@ -56,22 +56,22 @@ specify which IERS convention should be used for the computations.
     The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
     (GCRF) otherwise an error is thrown. 
 """
-function add_axes_mod!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF, 
+function add_axes_mod!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF,
     model::IERSModel=iers2010b
 )
 
     if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "Mean-of-Date (MOD) axes cannot be defined with respect to axes $parentid."*
-                " Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                "Mean-of-Date (MOD) axes cannot be defined with respect to axes $parentid." *
+                " Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF" *
                 " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
             ),
         )
     end
 
     return add_axes_projected!(
-        fr, name, id, parentid, t->iers_rot3_gcrf_to_mod(t, model)
+        fr, name, id, parentid, t -> iers_rot3_gcrf_to_mod(t, model)
     )
 end
 
@@ -95,15 +95,15 @@ IERS convention should be used for the computations.
     The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
     (GCRF) otherwise an error is thrown. 
 """
-function add_axes_tod!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF, 
+function add_axes_tod!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF,
     model::IERSModel=iers2010b
 )
 
     if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "True-of-Date (TOD) axes cannot be defined with respect to axes $parentid."*
-                " Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                "True-of-Date (TOD) axes cannot be defined with respect to axes $parentid." *
+                " Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF" *
                 " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
             ),
         )
@@ -130,15 +130,15 @@ which IERS convention should be used for the computations.
     (GCRF) otherwise an error is thrown. 
 """
 function add_axes_gtod!(
-    fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF, 
+    fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF,
     model::IERSModel=iers2010b
 )
 
     if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "Greenwich True-of-Date (GTOD) axes cannot be defined with respect to axes"*
-                " $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                "Greenwich True-of-Date (GTOD) axes cannot be defined with respect to axes" *
+                " $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF" *
                 " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
             ),
         )
@@ -162,15 +162,15 @@ IERS convention should be used for the computations.
     (GCRF) otherwise an error is thrown. 
 """
 function add_axes_pef!(
-    fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF, 
+    fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF,
     model::IERSModel=iers2010b
 )
 
     if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "Pseudo-Earth Fixed (PEF) axes cannot be defined with respect to"*
-                " axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF"*
+                "Pseudo-Earth Fixed (PEF) axes cannot be defined with respect to" *
+                " axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or the GCRF" *
                 " (ID = $(AXESID_GCRF)) are accepted as parent axes.",
             ),
         )
@@ -201,15 +201,15 @@ to specify which IERS convention should be used for the computations.
     The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
     (GCRF) otherwise an error is thrown. 
 """
-function add_axes_cirf!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF, 
+function add_axes_cirf!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF,
     model::IERSModel=iers2010b
 )
 
     if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "The Celestial Intermediate Reference Frame (CIRF) axes cannot be defined"*
-                " with respect to axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or"*
+                "The Celestial Intermediate Reference Frame (CIRF) axes cannot be defined" *
+                " with respect to axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or" *
                 " the GCRF (ID = $(AXESID_GCRF)) are accepted as parent axes.",
             ),
         )
@@ -236,15 +236,15 @@ to specify which IERS convention should be used for the computations.
     The ID of the `parent` set of axes must be $(AXESID_ICRF) (ICRF) or $(AXESID_GCRF)
     (GCRF) otherwise an error is thrown. 
 """
-function add_axes_tirf!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF, 
+function add_axes_tirf!(fr::FrameSystem, name::Symbol, id::Int, parentid::Int=AXESID_ICRF,
     model::IERSModel=iers2010b
 )
 
     if !(parentid in (AXESID_ICRF, AXESID_GCRF))
         throw(
             ArgumentError(
-                "The Terrestrial Intermediate Reference Frame (TIRF) axes cannot be defined"*
-                " with respect to axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or"*
+                "The Terrestrial Intermediate Reference Frame (TIRF) axes cannot be defined" *
+                " with respect to axes $parentid. Only the ICRF (ID = $(AXESID_ICRF)) or" *
                 " the GCRF (ID = $(AXESID_GCRF)) are accepted as parent axes.",
             ),
         )

@@ -1,6 +1,6 @@
 
-struct AliasGraph{G, A}
-    graph::G 
+struct AliasGraph{G,A}
+    graph::G
     alias::A
 end
 
@@ -25,23 +25,23 @@ The following transformation orders are accepted:
 Create a new, empty `FrameSystem` object of order `O`, datatype `T` and timescale `S`.
 The parameter `S` can be dropped, in case the default (`BarycentricDynamicalTime`) is used. 
 """
-struct FrameSystem{O, T<:Number, S<:AbstractTimeScale}
-    points::AliasGraph{PointsGraph{O, T}, Dict{Symbol, Int}}
-    axes::AliasGraph{AxesGraph{O, T}, Dict{Symbol, Int}}
-    dir::Dict{Symbol, Direction{O, T}}
+struct FrameSystem{O,T<:Number,S<:AbstractTimeScale}
+    points::AliasGraph{PointsGraph{O,T},Dict{Symbol,Int}}
+    axes::AliasGraph{AxesGraph{O,T},Dict{Symbol,Int}}
+    dir::Dict{Symbol,Direction{O,T}}
 end
 
-function FrameSystem{O, T, S}() where {O, T, S}
-    return FrameSystem{O, T, S}(
-        AliasGraph(MappedGraph(FramePointNode{O, T}), Dict{Symbol, Int}()),
-        AliasGraph(MappedGraph(FrameAxesNode{O, T}), Dict{Symbol, Int}()),
+function FrameSystem{O,T,S}() where {O,T,S}
+    return FrameSystem{O,T,S}(
+        AliasGraph(MappedGraph(FramePointNode{O,T}), Dict{Symbol,Int}()),
+        AliasGraph(MappedGraph(FrameAxesNode{O,T}), Dict{Symbol,Int}()),
         Dict()
     )
 end
 
-@inline FrameSystem{O, T}() where {O, T} = FrameSystem{O, T, BarycentricDynamicalTime}()
+@inline FrameSystem{O,T}() where {O,T} = FrameSystem{O,T,BarycentricDynamicalTime}()
 
-function Base.summary(io::IO, ::FrameSystem{O, T, S}) where {O, T, S}
+function Base.summary(io::IO, ::FrameSystem{O,T,S}) where {O,T,S}
     return println(io, "FrameSystem{$O, $T, $S}")
 end
 
@@ -50,14 +50,14 @@ end
 
 Return the frame system order `O`.
 """
-@inline order(::FrameSystem{O}) where O = O
+@inline order(::FrameSystem{O}) where {O} = O
 
 """ 
     timescale(frames::FrameSystem{O, T, S}) where {O, T, S} 
 
 Return the frame system order timescale `S`.
 """
-@inline timescale(::FrameSystem{O, T, S}) where {O, T, S} = S 
+@inline timescale(::FrameSystem{O,T,S}) where {O,T,S} = S
 
 """ 
     points_graph(frames::FrameSystem) 
@@ -99,7 +99,7 @@ Return the direction dictionary.
 
 Get the `id` associate to a point.
 """
-@inline point_id(::FrameSystem, id::Int) = id 
+@inline point_id(::FrameSystem, id::Int) = id
 @inline point_id(f::FrameSystem, name::Symbol) = points_alias(f)[name]
 
 """
@@ -115,7 +115,7 @@ Get the `id` associate to an axes.
 
 Add point to the frame system.
 """
-function add_point!(fs::FrameSystem{O, T}, p::FramePointNode{O, T}) where {O,T}
+function add_point!(fs::FrameSystem{O,T}, p::FramePointNode{O,T}) where {O,T}
     push!(fs.points.alias, Pair(p.name, p.id))
     return add_vertex!(fs.points.graph, p)
 end
@@ -125,7 +125,7 @@ end
 
 Add axes to the frame system.
 """
-function add_axes!(fs::FrameSystem{O, T}, ax::FrameAxesNode{O, T}) where {O,T}
+function add_axes!(fs::FrameSystem{O,T}, ax::FrameAxesNode{O,T}) where {O,T}
     push!(fs.axes.alias, Pair(ax.name, ax.id))
     return add_vertex!(fs.axes.graph, ax)
 end
@@ -162,7 +162,7 @@ function _fmt_node(n::FrameAxesNode)
     return " $(n.name)(id=$(n.id))"
 end
 
-function prettyprint(g::Union{AxesGraph, PointsGraph})
+function prettyprint(g::Union{AxesGraph,PointsGraph})
     if !isempty(g.nodes)
         println(_fmt_node(g.nodes[1]))
         _print_frame_graph(g, get_node_id(g.nodes[1]), 2, " ", " │   ")
@@ -180,11 +180,12 @@ function _print_frame_graph(g, pid::Int, idx::Int, last::String, prefix::String)
     end
 end
 
-function Base.show(io::IO, g::FrameSystem{O, T, S}) where {O, T, S}
+function Base.show(io::IO, g::FrameSystem{O,T,S}) where {O,T,S}
     println(
-        io, 
-        "FrameSystem{$O, $T, $S} with $(length(points_graph(g).nodes))" 
-        * " points, $(length(axes_graph(g).nodes)) axes and $(length(g.dir)) directions"
+        io,
+        "FrameSystem{$O, $T, $S} with $(length(points_graph(g).nodes))"
+        *
+        " points, $(length(axes_graph(g).nodes)) axes and $(length(g.dir)) directions"
     )
     if !isempty(points_graph(g).nodes)
         printstyled(io, "\nPoints: \n"; bold=true)

@@ -34,11 +34,11 @@ function add_axes_gcrf!(frames::FrameSystem)
     elseif isempty(axes_graph(frames))
         # Add the GCRF as a root set of axes
         return add_axes!(frames, :GCRF, AXESID_GCRF)
-        
-    else 
+
+    else
         throw(
             ArgumentError(
-                "The GCRF can only be defined with respect to the ICRF (ID =" * 
+                "The GCRF can only be defined with respect to the ICRF (ID =" *
                 " $(AXESID_ICRF)) or as a set of root axes."
             )
         )
@@ -85,7 +85,7 @@ function add_axes_eme2000!(
 )
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_ICRF_TO_EME2000
-    else 
+    else
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (EME2000) axes can only be defined " *

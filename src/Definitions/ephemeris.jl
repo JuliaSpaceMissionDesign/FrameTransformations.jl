@@ -11,8 +11,8 @@ The point is identifies by the `id` and a have a user defined `name`.
     an proper implementation.
 """
 @interface function add_point_ephemeris!(
-    ::FrameSystem{O, N}, ::AbstractEphemerisProvider, ::Symbol, ::Int
-) where {O, N} end
+    ::FrameSystem{O,N}, ::AbstractEphemerisProvider, ::Symbol, ::Int
+) where {O,N} end
 
 """
     add_point_ephemeris!(fr, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol})
@@ -20,14 +20,14 @@ The point is identifies by the `id` and a have a user defined `name`.
 Add all points found in the `eph` and using id-names relationships specified in `book`.
 """
 function add_point_ephemeris!(
-    fr::FrameSystem{O, N}, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol}
-) where {O, N}
-    records = ephem_position_records(eph) 
+    fr::FrameSystem{O,N}, eph::AbstractEphemerisProvider, book::Dict{Int,Symbol}
+) where {O,N}
+    records = ephem_position_records(eph)
     for id in sort(ephem_available_points(eph))
         !haskey(book, id) && @warn "Cannot find point with ID $id in the names book" continue
 
-        if id == 0 
-            if length(points_graph(fr).nodes) == 0 
+        if id == 0
+            if length(points_graph(fr).nodes) == 0
                 # No point registered in the frame system 
                 add_point!(fr, book[id], id, AXESID_ICRF)
             end
@@ -38,12 +38,12 @@ function add_point_ephemeris!(
             add_point_ephemeris!(fr, eph, book[id], id)
         end
     end
-    nothing 
+    nothing
 end
 
 function check_point_ephemeris(
-    fr::FrameSystem{O, N}, eph::AbstractEphemerisProvider, id::Int
-) where {O, N}
+    fr::FrameSystem{O,N}, eph::AbstractEphemerisProvider, id::Int
+) where {O,N}
 
     # Check that the kernels contain the ephemeris data for the given naifid
     if !(id in ephem_available_points(eph))
@@ -60,38 +60,38 @@ function check_point_ephemeris(
     # Retrieve the parent point and the point axes from the ephemeris data 
     parentid, parent_found = 0, false
     axesid, axes_found = 0, false
- 
+
     for pr in pos_records
         if pr.target == id
-            
-        # Update the parent point ID
-        if !parent_found
-            parentid = pr.center
-            parent_found = true 
 
-        elseif parentid != pr.center
-            throw(
-                ErrorException(
-                    "UnambiguityError: at least two set of data with different" * 
-                    " centers are available for point with ID $id.",
-                ),
-            )
+            # Update the parent point ID
+            if !parent_found
+                parentid = pr.center
+                parent_found = true
 
-        end
-        
-        # Update the reference axes ID
-        if !axes_found
-            axesid = pr.axes 
-            axes_found = true 
+            elseif parentid != pr.center
+                throw(
+                    ErrorException(
+                        "UnambiguityError: at least two set of data with different" *
+                        " centers are available for point with ID $id.",
+                    ),
+                )
 
-        elseif axesid != pr.axes 
-            throw(
-                ErrorException(
-                    "UnambiguityError: at least two set of data with different axes" *
-                    " are available for point with ID $id.",
-                ),
-            )
-        end
+            end
+
+            # Update the reference axes ID
+            if !axes_found
+                axesid = pr.axes
+                axes_found = true
+
+            elseif axesid != pr.axes
+                throw(
+                    ErrorException(
+                        "UnambiguityError: at least two set of data with different axes" *
+                        " are available for point with ID $id.",
+                    ),
+                )
+            end
 
         end
     end
@@ -100,7 +100,7 @@ function check_point_ephemeris(
     if !has_point(fr, parentid)
         throw(
             ErrorException(
-                "Ephemeris data for point with ID $id is available with respect" * 
+                "Ephemeris data for point with ID $id is available with respect" *
                 " to point with ID $parentid, which has not yet been defined" *
                 " in the input frame system.",
             ),

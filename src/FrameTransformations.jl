@@ -1,4 +1,4 @@
-module FrameTransformations 
+module FrameTransformations
 
 using LinearAlgebra
 using StaticArrays
@@ -6,32 +6,32 @@ using ReferenceFrameRotations
 using FunctionWrappers: FunctionWrapper
 using FunctionWrappersWrappers: FunctionWrappersWrapper
 
-using JSMDUtils.Math: D¹, D², D³
-using JSMDInterfaces.Graph: AbstractJSMDGraphNode, 
-                            add_edge!, add_vertex!, get_path, has_vertex
+using JSMDUtils.Math: D¹, D², D³, unitvec, δunitvec, δ²unitvec, δ³unitvec
+using JSMDInterfaces.Graph: AbstractJSMDGraphNode,
+       add_edge!, add_vertex!, get_path, has_vertex
 
 using SMDGraphs: MappedNodeGraph, SimpleGraph, MappedGraph,
-                 get_mappedid, get_mappednode,  get_node, get_path
+       get_mappedid, get_mappednode, get_node, get_path
 
 import SMDGraphs: get_node_id
 
 using Tempo: AbstractTimeScale, Epoch, j2000s, BarycentricDynamicalTime, ftype
 
-using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider, 
-                                ephem_position_records, ephem_available_points,
-                                ephem_orient_records, ephem_available_axes
+using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider,
+       ephem_position_records, ephem_available_points,
+       ephem_orient_records, ephem_available_axes
 
 using JSMDInterfaces.Interface: @interface
 
-using JSMDInterfaces.Bodies: body_rotational_elements, ∂body_rotational_elements, 
-                             ∂²body_rotational_elements, ∂³body_rotational_elements
+using JSMDInterfaces.Bodies: body_rotational_elements, ∂body_rotational_elements,
+       ∂²body_rotational_elements, ∂³body_rotational_elements
 
-using IERSConventions: iers_bias, iers_obliquity, 
-                       iers_rot3_gcrf_to_itrf, iers_rot6_gcrf_to_itrf, 
-                       iers_rot9_gcrf_to_itrf, iers_rot12_gcrf_to_itrf,
-                       iers_rot3_gcrf_to_mod, iers_rot3_gcrf_to_tod, iers_rot3_gcrf_to_gtod, 
-                       iers_rot3_gcrf_to_pef, iers_rot3_gcrf_to_cirf, iers_rot3_gcrf_to_tirf,
-                       IERSModel, iers2010a, iers2010b, iers1996
+using IERSConventions: iers_bias, iers_obliquity,
+       iers_rot3_gcrf_to_itrf, iers_rot6_gcrf_to_itrf,
+       iers_rot9_gcrf_to_itrf, iers_rot12_gcrf_to_itrf,
+       iers_rot3_gcrf_to_mod, iers_rot3_gcrf_to_tod, iers_rot3_gcrf_to_gtod,
+       iers_rot3_gcrf_to_pef, iers_rot3_gcrf_to_cirf, iers_rot3_gcrf_to_tirf,
+       IERSModel, iers2010a, iers2010b, iers1996
 
 using ForwardDiff
 using JSMDUtils.Autodiff: JSMDDiffTag, derivative
@@ -48,9 +48,9 @@ include("Core/rotation.jl")
 include("Core/ad.jl")
 
 # Frame system 
-export FrameSystem, 
-       order, timescale, points_graph, axes_graph, points_alias, axes_alias, directions, 
-       has_axes, has_point, has_direction, 
+export FrameSystem,
+       order, timescale, points_graph, axes_graph, points_alias, axes_alias, directions,
+       has_axes, has_point, has_direction,
        point_id, axes_id
 
 include("Core/nodes.jl")
@@ -75,8 +75,8 @@ include("Core/transform.jl")
 # Definitions
 # ==========================================================================================
 
-export AXESID_ICRF, AXESID_GCRF, 
-       AXESID_ECL2000, AXESID_EME2000, 
+export AXESID_ICRF, AXESID_GCRF,
+       AXESID_ECL2000, AXESID_EME2000,
        AXESID_MOONME_DE421, AXESID_MOONPA_DE421, AXESID_MOONPA_DE440
 
 include("Definitions/index.jl")

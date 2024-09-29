@@ -12,11 +12,11 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
     # Axes transformations
     # --------------------------------------------------------------------------------------
 
-    @eval begin 
+    @eval begin
 
         @inline function ($axfun)(
-            ::FrameSystem{<:Any, <:Any, S1}, from, to, ::Epoch{S2}
-        ) where {S1, S2}
+            ::FrameSystem{<:Any,<:Any,S1}, from, to, ::Epoch{S2}
+        ) where {S1,S2}
             throw(ArgumentError("Incompatible epoch timescale: expected $S1, found $S2."))
         end
 
@@ -38,7 +38,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         A [`Rotation`](@ref) object of order $($order).
         """
         @inline function ($axfun)(
-            fr::FrameSystem{<:Any,<:Any, S}, from, to, ep::Epoch{S}
+            fr::FrameSystem{<:Any,<:Any,S}, from, to, ep::Epoch{S}
         ) where {S}
             return $(axfun)(fr, from, to, j2000s(ep))
         end
@@ -50,12 +50,12 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         specified set of axes to another at a given time `t`, expressed in seconds since 
         `J2000`. 
         """
-        function ($axfun)(fr::FrameSystem{O, T}, from, to, t::Number) where {O,T}
+        function ($axfun)(fr::FrameSystem{O,T}, from, to, t::Number) where {O,T}
             return $(_axfun)(fr, from, to, t)
         end
 
         # Low level function to compute the rotation
-        function ($_axfun)(fr::FrameSystem{O, T}, from, to, t::Number) where {O, T}
+        function ($_axfun)(fr::FrameSystem{O,T}, from, to, t::Number) where {O,T}
             if O < $order
                 throw(
                     ErrorException(
@@ -68,7 +68,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             fromid = axes_id(fr, from)
             toid = axes_id(fr, to)
 
-            fromid == toid && return Rotation{$order}(T(1)*I)
+            fromid == toid && return Rotation{$order}(T(1) * I)
 
             # Check to ensure that the two axes are stored in the frame system
             for id in (fromid, toid)
@@ -78,20 +78,20 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                             "axes with ID $id are not registered in the frame system."
                         )
                     )
-                end 
+                end
             end
             return $(_axfun)(fr, get_path(axes_graph(fr), fromid, toid), t)
         end
-        
+
         # Low-level function to parse a path of axes and chain their rotations 
         @inbounds function ($_axfun)(fr::FrameSystem, path::Vector{Int}, t::Number)
             f1 = get_mappednode(axes_graph(fr), path[1])
             f2 = get_mappednode(axes_graph(fr), path[2])
             rot = $(_axfun)(f1, f2, t)
 
-            for i in 2:(length(path) - 1)
+            for i in 2:(length(path)-1)
                 f1 = f2
-                f2 = get_mappednode(axes_graph(fr), path[i + 1])
+                f2 = get_mappednode(axes_graph(fr), path[i+1])
                 rot = $(_axfun)(f1, f2, t) * rot
             end
             return rot
@@ -106,8 +106,8 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             end
         end
 
-        @inline function($_axfun)(ax::FrameAxesNode, t::Number)
-            R = ax.f[$order](t) 
+        @inline function ($_axfun)(ax::FrameAxesNode, t::Number)
+            R = ax.f[$order](t)
             return Rotation{$order}(R)
         end
     end
@@ -116,7 +116,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
     # Points transformations
     # --------------------------------------------------------------------------------------
 
-    @eval begin 
+    @eval begin
 
         @inline function ($pfun)(
             ::FrameSystem{<:Any,<:Any,S1}, from, to, axes, ::Epoch{S2}
@@ -153,7 +153,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
         an observing point, in a given set of axes, at the desired time `t` expressed in 
         seconds since `J2000`. 
         """
-        function ($pfun)(fr::FrameSystem{O, N}, from, to, ax, t::Number) where {O, N}
+        function ($pfun)(fr::FrameSystem{O,N}, from, to, ax, t::Number) where {O,N}
             if O < $order
                 throw(
                     ErrorException(
@@ -175,7 +175,7 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                     throw(
                         ErrorException("point with ID $id is not registered in the frame system.")
                     )
-                end 
+                end
             end
 
             # Check that the ouput axes are registered 
@@ -193,20 +193,20 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             @inbounds p1 = get_mappednode(points_graph(fr), path[1])
             @inbounds p2 = get_mappednode(points_graph(fr), path[end])
 
-            if length(path) == 2 
+            if length(path) == 2
                 # This handles all the cases where you don't need to chain any transformations
                 axid, tr = ($_pfun)(p1, p2, t)
                 if axid != axes
-                    return $(axfun)(fr, axid, axes, t) * tr 
+                    return $(axfun)(fr, axid, axes, t) * tr
                 end
                 return tr
-            elseif axes == p1.axesid 
+            elseif axes == p1.axesid
                 # backward pass 
                 return $(_pbwd)(fr, p2, path, t)
-            elseif axes == p2.axesid 
+            elseif axes == p2.axesid
                 # forward pass 
                 return $(_pfwd)(fr, p1, path, t)
-            else 
+            else
                 # Optimising this transformation would probably demand a significant 
                 # portion of time with respect to the time required by the whole transformation
                 # therefore forward pass is used without any optimisation
@@ -218,44 +218,44 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             p2 = get_mappednode(points_graph(fr), path[2])
             axid, tr = ($_pfun)(p1, p2, t)
             for i in 2:(length(path)-1)
-                p1 = p2 
+                p1 = p2
                 p2 = get_mappednode(points_graph(fr), path[i+1])
                 ax2id, tr2 = ($_pfun)(p1, p2, t)
 
                 # Rotates previous vector to p2's axes
-                if ax2id != axid 
+                if ax2id != axid
                     tr = ($axfun)(fr, axid, ax2id, t) * tr
                 end
 
-                axid = ax2id 
+                axid = ax2id
                 tr += tr2
             end
-            return tr 
+            return tr
         end
 
         @inbounds function ($_pbwd)(fr::FrameSystem, p1::FramePointNode, path::Vector{Int}, t::Number)
             p2 = get_mappednode(points_graph(fr), path[end-1])
             axid, tr = ($_pfun)(p1, p2, t)
             for i in 2:(length(path)-1)
-                p1 = p2 
+                p1 = p2
                 p2 = get_mappednode(points_graph(fr), path[end-i])
                 ax2id, tr2 = ($_pfun)(p1, p2, t)
 
                 # Rotates previous vector to p2's axes
-                if ax2id != axid 
+                if ax2id != axid
                     tr = ($axfun)(fr, axid, ax2id, t) * tr
                 end
 
-                axid = ax2id 
+                axid = ax2id
                 tr += tr2
             end
-            return -tr 
+            return -tr
         end
 
         @inbounds function ($_pfun)(from::FramePointNode, to::FramePointNode, t::Number)
-            if from.id == to.parentid 
+            if from.id == to.parentid
                 return to.axesid, $(_pfun)(to, t)
-            else 
+            else
                 return from.axesid, -$(_pfun)(from, t)
             end
         end

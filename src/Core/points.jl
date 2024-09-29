@@ -18,9 +18,9 @@ Create and add a new point node `name` to `frames` based on the input parameters
     and [`add_point_root!`](@ref).
 """
 function add_point!(
-    frames::FrameSystem{O, T}, name::Symbol, id::Int, axes,
-    funs::FramePointFunctions{O, T}=FramePointFunctions{O, T}(), parentid=nothing
-) where {O, T <: Number}
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, axes,
+    funs::FramePointFunctions{O,T}=FramePointFunctions{O,T}(), parentid=nothing
+) where {O,T<:Number}
 
     if has_point(frames, id)
         # Check point with the same id already registered 
@@ -76,7 +76,7 @@ function add_point!(
     end
 
     # Creates point node 
-    pnt = FramePointNode{O, T}(name, id, parentid, axesid, funs)
+    pnt = FramePointNode{O,T}(name, id, parentid, axesid, funs)
 
     # Insert new point in the graph
     add_point!(frames, pnt)
@@ -97,9 +97,9 @@ points in the given set of `axes`. Thus, points eligible for this class must hav
 velocity and acceleration with respect to `parent`.
 """
 function add_point_fixedoffset!(
-    frames::FrameSystem{O, T}, name::Symbol, id::Int, parent, ax,
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, ax,
     offset::AbstractVector{N}
-) where {O, N, T}
+) where {O,N,T}
 
     if length(offset) != 3
         throw(
@@ -110,7 +110,7 @@ function add_point_fixedoffset!(
     end
 
     tr = Translation{O}(SVector(offset...))
-    funs = FramePointFunctions{O, T}(t -> tr)
+    funs = FramePointFunctions{O,T}(t -> tr)
 
     return add_point!(
         frames, name, id, axes_id(frames, ax), funs, point_id(frames, parent)
@@ -138,9 +138,9 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with auto
     dimensions. 
 """
 function add_point_dynamical!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, ax, fun, 
-    δfun = nothing, δ²fun = nothing, δ³fun = nothing
-) where {O, N}
+    frames::FrameSystem{O,N}, name::Symbol, id::Int, parent, ax, fun,
+    δfun=nothing, δ²fun=nothing, δ³fun=nothing
+) where {O,N}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
@@ -148,7 +148,7 @@ function add_point_dynamical!(
         end
     end
 
-    funs = FramePointFunctions{O, N}(
+    funs = FramePointFunctions{O,N}(
         t -> Translation{O}(fun(t)),
 
         # First derivative
@@ -190,7 +190,7 @@ function add_point_dynamical!(
             t -> Translation{O}(δ³fun(t))
         end,
     )
-    
+
     return add_point!(
         frames, name, id, axes_id(frames, ax), funs, point_id(frames, parent)
     )

@@ -25,12 +25,12 @@ function add_axes_ecl2000!(
         dcm = DCM_EME2000_TO_ECLJ2000 * DCM_ICRF_TO_EME2000
     elseif parentid == AXESID_EME2000
         dcm = DCM_EME2000_TO_ECLJ2000
-    else 
+    else
         throw(
             ArgumentError(
                 "Ecliptic Equinox of J2000 (ECL2000) axes cannot be defined" *
-                " w.r.t. $parentid axes. Only the ICRF (ID = $(AXESID_ICRF)), the GCRF" * 
-                " (ID = $(AXESID_GCRF)) or the EME2000 (ID = $(AXESID_EME2000)) are" * 
+                " w.r.t. $parentid axes. Only the ICRF (ID = $(AXESID_ICRF)), the GCRF" *
+                " (ID = $(AXESID_GCRF)) or the EME2000 (ID = $(AXESID_EME2000)) are" *
                 " accepted as parent axes.",
             ),
         )

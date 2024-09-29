@@ -12,8 +12,8 @@ Add a new direction node to `frames`.
             eventually, its time derivatives. It must match the type and order of `frames`.
 """
 function add_direction!(
-    frames::FrameSystem{O, N}, name::Symbol, axesid::Int, funs::DirectionFunctions{O, N}
-) where {O, N <: Number}
+    frames::FrameSystem{O,N}, name::Symbol, axesid::Int, funs::DirectionFunctions{O,N}
+) where {O,N<:Number}
     if name in directions(frames)
         throw(
             ArgumentError(
@@ -22,7 +22,7 @@ function add_direction!(
         )
     end
 
-    dir = Direction{O, N}(name, length(directions(frames))+1, axesid, funs)
+    dir = Direction{O,N}(name, length(directions(frames)) + 1, axesid, funs)
     push!(directions(frames), Pair(name, dir))
     nothing
 end
@@ -47,9 +47,9 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed via autom
     function does not perform any checks on the output types. 
 """
 function add_direction!(
-    frames::FrameSystem{O, N}, name::Symbol, ax, fun::Function, 
-    δfun = nothing, δ²fun = nothing, δ³fun = nothing
-) where {O, N}
+    frames::FrameSystem{O,N}, name::Symbol, ax, fun::Function,
+    δfun=nothing, δ²fun=nothing, δ³fun=nothing
+) where {O,N}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
@@ -57,7 +57,7 @@ function add_direction!(
         end
     end
 
-    funs = DirectionFunctions{O, N}(
+    funs = DirectionFunctions{O,N}(
         t -> Translation{O}fun(t),
 
         # First derivative
