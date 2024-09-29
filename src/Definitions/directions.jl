@@ -88,3 +88,25 @@ function add_direction_orthogonal!(
     fun = t -> unitvec(cross3(direction3(frames, dir1, axid, t), direction3(frames, dir2, axid, t)))
     return add_direction!(frames, name, axid, fun)
 end
+
+"""
+    add_direction_fixed!(frames, name, axes, offset::AbstractVector)
+
+Add a fixed direction to `frames`.
+"""
+function add_direction_fixed!(
+    frames::FrameSystem{O,N}, name::Symbol, axes, offset::AbstractVector{T}
+) where {O,N,T}
+
+    if length(offset) != 3
+        throw(
+            DimensionMismatch(
+                "The offset vector should have length 3, but has $(length(offset))."
+            ),
+        )
+    end
+
+    voffset = SVector{3,N}(offset)
+    fun = t -> voffset
+    return add_direction!(frames, name, axes, fun)
+end

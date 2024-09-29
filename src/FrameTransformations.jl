@@ -105,7 +105,8 @@ export add_axes_bci2000!, add_axes_bcrtod!
 
 include("Definitions/planetary.jl")
 
-export add_direction_position!, add_direction_velocity!, add_direction_orthogonal!
+export add_direction_position!, add_direction_velocity!, add_direction_orthogonal!,
+       add_direction_fixed!
 
 include("Definitions/directions.jl")
 
