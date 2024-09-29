@@ -15,6 +15,22 @@ The point is identifies by the `id` and a have a user defined `name`.
 ) where {O,T} end
 
 """
+    add_axes_ephemeris!(frames::FrameSystem{O, T}, eph::AbstractEphemerisProvider, 
+        name::Symbol, id::Int, seq::Symbol, class::Int) where {O, T} 
+
+Add axes coming from an `AbstractEphemerisProvider` subtype to `frames`. 
+The axes are identifies by the `id` and a have a user defined `name`. The rotation matrix 
+is build using the rotation sequence specified in `seq`. The axes type is specified by `class`.
+
+!!! warning 
+    This is an interface only, concrete subtypes of `AbstractEphemerisProvider` requires 
+    an proper implementation.
+"""
+@interface function add_axes_ephemeris!(
+    ::FrameSystem{O,T}, ::AbstractEphemerisProvider, ::Symbol, ::Int, ::Symbol, ::Int
+) where {O,T} end
+
+"""
     add_point_ephemeris!(fr, eph::AbstractEphemerisProvider, book::Dict{Int, Symbol})
 
 Add all points found in the `eph` and using id-names relationships specified in `book`.
@@ -124,4 +140,80 @@ function check_point_ephemeris(
     end
 
     return parentid, axesid
+end
+
+function check_axes_ephemeris(
+    frames::FrameSystem{O,N}, eph::AbstractEphemerisProvider, id::Int
+) where {O,N}
+
+    # Check that the kernels contain orientation data for the given axes ID 
+    if !(id in ephem_available_axes(eph))
+        throw(
+            ArgumentError(
+                "Orientation data for AXESID $id is not available " *
+                "in the kernels loaded in the given FrameSystem.",
+            ),
+        )
+    end
+
+    # Retrieve the parent from the ephemeris data 
+    orient_records = ephem_orient_records(eph)
+    parentid = nothing
+
+    for or in orient_records
+        if or.target == id
+            if isnothing(parentid)
+                parentid = or.axes
+            elseif parentid != or.axes
+                throw(
+                    ErrorException(
+                        "UnambiguityError: at least two set of orientation data " *
+                        "with different centers are available for axes with ID $id.",
+                    ),
+                )
+            end
+        end
+    end
+
+    # Check that the default parent is available in the FrameSystem! 
+    if !has_axes(frames, parentid)
+        throw(
+            ArgumentError(
+                "Orientation data for axes with ID $id is available " *
+                "with respect to axes with ID $parentid, which has not yet been defined " *
+                "in the given FrameSystem.",
+            ),
+        )
+    end
+
+    return parentid
+end
+
+# Functions for an easier definition\handling of ephemeris axes
+@inline function angles_to_rot3(θ, seq::Symbol)
+    @inbounds angle_to_dcm(θ[1], θ[2], θ[3], seq)
+end
+
+@inline function angles_to_rot6(θ, seq::Symbol)
+    return (
+        angle_to_dcm(θ[1], θ[2], θ[3], seq),
+        angle_to_δdcm(θ[1], θ[2], θ[3], seq)
+    )
+end
+
+@inline function angles_to_rot9(θ, seq::Symbol)
+    return (
+        angle_to_dcm(θ[1], θ[2], θ[3], seq),
+        angle_to_δdcm(θ[1], θ[2], θ[3], seq),
+        angle_to_δ²dcm(θ[1], θ[2], θ[3], seq)
+    )
+end
+
+@inline function angles_to_rot12(θ, seq::Symbol)
+    return (
+        angle_to_dcm(θ[1], θ[2], θ[3], seq),
+        angle_to_δdcm(θ[1], θ[2], θ[3], seq),
+        angle_to_δ²dcm(θ[1], θ[2], θ[3], seq),
+        angle_to_δ³dcm(θ[1], θ[2], θ[3], seq)
+    )
 end

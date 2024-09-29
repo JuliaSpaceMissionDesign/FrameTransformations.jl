@@ -6,7 +6,8 @@ using ReferenceFrameRotations
 using FunctionWrappers: FunctionWrapper
 using FunctionWrappersWrappers: FunctionWrappersWrapper
 
-using JSMDUtils.Math: D¹, D², D³, unitvec, cross3
+using JSMDUtils.Math: D¹, D², D³, unitvec, cross3, arcsec2rad, angle_to_δdcm, angle_to_δdcm,
+       angle_to_δ²dcm, angle_to_δ³dcm
 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode,
        add_edge!, add_vertex!, get_path, has_vertex
@@ -104,6 +105,14 @@ include("Definitions/terrestrial.jl")
 export add_axes_bci2000!, add_axes_bcrtod!
 
 include("Definitions/planetary.jl")
+
+export add_axes_pa440!, add_axes_pa421!, add_axes_me421!
+
+include("Definitions/lunar.jl")
+
+export add_axes_topocentric!, add_point_surface!
+
+include("Definitions/topocentric.jl")
 
 export add_direction_position!, add_direction_velocity!, add_direction_orthogonal!,
        add_direction_fixed!
