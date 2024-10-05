@@ -32,13 +32,13 @@
 # package and download the kernels from NAIF's website.
 
 using FrameTransformations
-using Ephemerides 
+using Ephemerides
 
 url_pck = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de421_1900-2050.bpc";
 url_spk = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp";
 
 const EPH = EphemerisProvider([download(url_spk), download(url_pck)])
-const F = FrameSystem{3, Float64}()
+const F = FrameSystem{3,Float64}()
 
 # To initialise the axes graph, a set of root axes must be initially registered. 
 # These will serve as the uppermost node of the graph and have no parents, meaning their
@@ -47,7 +47,7 @@ const F = FrameSystem{3, Float64}()
 
 #  In this example, we will use the `ICRF` as our base root inertial axes.
 
-add_axes_root!(F, :ICRF, AXESID_ICRF)
+add_axes!(F, :ICRF, AXESID_ICRF)
 
 # Once a set of root axes has been registered, any other type of axes can be added to the system.
 
@@ -73,7 +73,7 @@ using ReferenceFrameRotations
 using LinearAlgebra
 
 fun(t) = DCM(1.0I)
-add_axes_inertial!(F, :GCRF, AXESID_GCRF, AXESID_ICRF, fun)
+add_axes_projected!(F, :GCRF, AXESID_GCRF, :ICRF, fun)
 
 R = rotation6(F, AXESID_ICRF, AXESID_GCRF, 1.0)
 
@@ -96,13 +96,13 @@ R[2]
 # In this example, we register `FOX` as a set of axes with a fixed rotation of `π/4` around 
 # the Z-axis with respect to the `ICRF`.
 
-rot = angle_to_dcm(π/4, :Z)
+rot = angle_to_dcm(π / 4, :Z)
 
 add_axes_fixedoffset!(F, :FOX, 2, AXESID_ICRF, rot)
 
 # The state rotation matrix can then be obtained as: 
 
-R = rotation6(F, 1, 2, 86400)
+R = rotation6(F, :ICRF, :FOX, 86400)
 
 #-
 R[1]
@@ -123,12 +123,12 @@ R[2]
 
 fun(t) = angle_to_dcm(-t, :Z)
 
-add_axes_rotating!(F, :ROX, 3, AXESID_ICRF, fun)
+add_axes_rotating!(F, :ROX, 3, :ICRF, fun)
 
 # If we now compute the orientation between the `FOX` and `ROX` at `π/4` we obtain an identity
 # rotation, since the orientation of `ROX` is directed in the opposite direction of `FOX`.
 
-R = rotation6(F, 2, 3, π/4)
+R = rotation6(F, 2, 3, π / 4)
 
 #- 
 R[1]
@@ -138,7 +138,7 @@ R[1]
 # (AD) of `fun`. 
 
 #- 
-R2 = rotation6(F, 1, 3, π/4)
+R2 = rotation6(F, 1, 3, π / 4)
 
 #-
 R2[2]
@@ -152,9 +152,9 @@ using JSMDUtils.Math
 fun(t) = angle_to_dcm(-t, :Z)
 dfun(t) = (angle_to_dcm(-t, :Z), Math.angle_to_δdcm([-t, -1], :Z))
 
-add_axes_rotating!(F, :ROX2, 4, AXESID_ICRF, fun, dfun)
+add_axes_rotating!(F, :ROX2, 4, :ICRF, fun, dfun)
 
-R2 = rotation6(F, 1, 3, π/4)
+R2 = rotation6(F, 1, 3, π / 4)
 
 #-
 R2[2]
@@ -183,9 +183,9 @@ R2[2]
 # The function also requires the user to specify the rotation sequence to convert the Euler 
 # angles to a proper rotation matrix.
 
-add_axes_ephemeris!(F, EPH, :MOONPA, 31006, :ZXZ)
+FrameTransformations.add_axes_ephemeris!(F, EPH, :MOONPA, 31006, :ZXZ)
 
-R = rotation6(F, 1, 31006, 86400.0)
+R = rotation6(F, :ICRF, :MOONPA, 86400.0)
 
 #-
 R[1]
