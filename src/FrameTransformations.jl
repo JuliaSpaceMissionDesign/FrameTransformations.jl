@@ -19,7 +19,7 @@ using SMDGraphs: MappedNodeGraph, SimpleGraph, MappedGraph,
 
 import SMDGraphs: get_node_id
 
-using Tempo: AbstractTimeScale, Epoch, j2000s, BarycentricDynamicalTime, ftype
+using Tempo: AbstractTimeScale, Epoch, j2000s, BarycentricDynamicalTime, ftype, CENTURY2SEC
 
 using JSMDInterfaces.Ephemeris: AbstractEphemerisProvider,
        ephem_position_records, ephem_available_points,

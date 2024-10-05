@@ -102,7 +102,7 @@ function _bcrtod(seconds, val)
 end
 
 function _∂bcrtod(seconds, val)
-    T = seconds / CENTURY2SEC
+    T = seconds / Tempo.CENTURY2SEC
     α, δ, w = body_rotational_elements(T, val)
     dα, dδ, dw = ∂body_rotational_elements(T, val)
 
@@ -112,7 +112,7 @@ function _∂bcrtod(seconds, val)
 end
 
 function _∂²bcrtod(seconds, val)
-    T = seconds / CENTURY2SEC
+    T = seconds / Tempo.CENTURY2SEC
     α, δ, w = body_rotational_elements(T, val)
     dα, dδ, dw = ∂body_rotational_elements(T, val)
     d²α, d²δ, d²w = ∂²body_rotational_elements(T, val)
@@ -124,7 +124,7 @@ function _∂²bcrtod(seconds, val)
 end
 
 function _∂³bcrtod(seconds, val)
-    T = seconds / CENTURY2SEC
+    T = seconds / Tempo.CENTURY2SEC
     α, δ, w = body_rotational_elements(T, val)
     dα, dδ, dw = ∂body_rotational_elements(T, val)
     d²α, d²δ, d²w = ∂²body_rotational_elements(T, val)
