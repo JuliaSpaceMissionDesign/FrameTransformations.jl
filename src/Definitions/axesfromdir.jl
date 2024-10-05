@@ -16,6 +16,25 @@ function add_axes_twodir!(
     project::Bool=false
 ) where {O,T}
 
+    # Check directions 
+    if !(has_direction(frames, dir1))
+        throw(
+            ArgumentError("No direction with name $dir1 available.")
+        )
+    end
+
+    if !(has_direction(frames, dir2))
+        throw(
+            ArgumentError("No direction with name $dir2 available.")
+        )
+    end
+
+    if !(has_axes(frames, parent))
+        throw(
+            ArgumentError("No axes with id $pid available.")
+        )
+    end
+
     fun = t -> twodir_to_dcm(
         direction3(frames, dir1, parent, t), direction3(frames, dir2, parent, t), seq
     )

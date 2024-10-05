@@ -41,4 +41,8 @@ download(KERNELS; verbose=true, force=false)
     @safetestset "Lunar" begin
         include("lunar.jl")
     end
+    @safetestset "Directions" begin
+        include("directions.jl")
+        include("twodir.jl")
+    end
 end;
