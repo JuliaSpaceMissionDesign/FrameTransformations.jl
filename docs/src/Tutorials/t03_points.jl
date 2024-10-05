@@ -28,9 +28,10 @@
 
 # We then can go ahead and initialise the graph.
 
+using StaticArrays
 using FrameTransformations
 
-F = FrameSystem{2, Float64}()
+F = FrameSystem{2,Float64}()
 
 # ## Root Point
 
@@ -39,11 +40,11 @@ F = FrameSystem{2, Float64}()
 # `SatFrame`, here considered as inertial, and then register a root point, called 
 # `SC` in our graph. 
 
-# A root point can be registered using the [`add_point_root!`](@ref) function: 
+# A root point can be registered using the [`add_point!`](@ref) function: 
 
-add_axes_root!(F, :SatFrame, -1)
+add_axes!(F, :SatFrame, -1)
 
-add_point_root!(F, :SC, -10000, :SatFrame)
+add_point!(F, :SC, -10000, :SatFrame)
 
 #md # !!! tip 
 #md #     For standard applications, it is good practice that the points's IDs are as in 
@@ -71,7 +72,7 @@ sa_offset_left = [1.0, 0.0, 0.0]
 sa_offset_right = [-1.0, 0.0, 0.0]
 an_offset = [0.0, 0.0, -1.0]
 
-add_point_fixedoffset!(F, :SolArrLeft, -10101, :SC, :SatFrame, sa_offset_left) 
+add_point_fixedoffset!(F, :SolArrLeft, -10101, :SC, :SatFrame, sa_offset_left)
 add_point_fixedoffset!(F, :SolArrRight, -10102, :SC, :SatFrame, sa_offset_right)
 add_point_fixedoffset!(F, :Antenna, -10001, :SC, :SatFrame, an_offset)
 
@@ -92,12 +93,12 @@ vector6(F, :Antenna, :SolArrRight, :SatFrame, 456.0)
 # its derivatives) are only function of time. However, differently from ephemeris points, 
 # their position is computed through user-defined functions.
 
-fun(t) = [cos(t), sin(t), 0]
+fun(t) = SA[cos(t), sin(t), 0.0]
 
 add_point_dynamical!(F, :TimedAppendage, -10003, :SolArrLeft, :SatFrame, fun)
 
 #-
-vector6(F, :TimedAppendage, :SC, :SatFrame, π/3)
+vector3(F, :TimedAppendage, :SC, :SatFrame, π / 3)
 
 #md # !!! note 
 #md #     To avoid allocations, `fun` should return a static array.
@@ -109,13 +110,13 @@ vector6(F, :TimedAppendage, :SC, :SatFrame, π/3)
 # derivative of `fun`, the function should return a 6-elements vector containing the
 # relative position and velocity. For example: 
 
-fun(t) = [cos(t), sin(t), 0]
-dfun(t) = [cos(t), sin(t), 0, -sin(t), cos(t), 0]
+fun(t) = SA[cos(t), sin(t), 0]
+dfun(t) = SA[cos(t), sin(t), 0, -sin(t), cos(t), 0]
 
 add_point_dynamical!(F, :TimedAppendage2, -10004, :SolArrLeft, :SatFrame, fun, dfun)
 
 #- 
-vector6(F, :TimedAppendage2, :SC, :SatFrame, π/3)
+vector6(F, :TimedAppendage2, :SC, :SatFrame, π / 3)
 
 # We can again see that the results are in agreement with the previous example. 
 # For more details, consult the [`add_point_dynamical!`](@ref) documentation.

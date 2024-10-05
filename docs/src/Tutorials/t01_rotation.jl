@@ -10,10 +10,11 @@
 
 # A time-fixed rotation between two axes and its derivative can then be expressed as follows: 
 
-using FrameTransformations 
+using StaticArrays
+using FrameTransformations
 using ReferenceFrameRotations
 
-dcm  = angle_to_dcm(π/3, :Z)
+dcm = angle_to_dcm(π / 3, :Z)
 δdcm = DCM(0I)
 
 R = Rotation(dcm, δdcm)
@@ -30,8 +31,18 @@ R[2]
 
 # For example, to rotate a generic vector `v`, we can simply do: 
 
-v = [1., -6., 3., 0., 5., 0]
-R*v
+v = [1.0, -6.0, 3.0, 0.0, 5.0, 0]
+R * v
+
+# For a static vector vector `sv`: 
+
+sv = SA[1.0, -6.0, 3.0, 0.0, 5.0, 0]
+R * sv
+
+# And for a [`Translation`](@ref) 
+
+t = Translation(1.0, -6.0, 3.0, 0.0, 5.0, 0)
+R * t
 
 # The inverse can instead be taken as: 
 

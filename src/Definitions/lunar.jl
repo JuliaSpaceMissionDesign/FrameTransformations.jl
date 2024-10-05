@@ -78,13 +78,13 @@ from the `eph` ephemeris kernels, an error is thrown if such orientation data is
 	NAIF's FRAME ID for the Moon PA DE440 axes ($(AXESID_MOONPA_DE440)).
 """
 function add_axes_pa440!(
-    frames::FrameSystem, eph::AbstractEphemerisProvider, name::Symbol, 
+    frames::FrameSystem, eph::AbstractEphemerisProvider, name::Symbol,
     id::Int=AXESID_MOONPA_DE440
 )
     if !(has_axes(frames, AXESID_ICRF))
         throw(
             ErrorException(
-                "The DE440 Moon Principal Axes (PA) can only be defined w.r.t. the" * 
+                "The DE440 Moon Principal Axes (PA) can only be defined w.r.t. the" *
                 " ICRF (ID = $(AXESID_ICRF)), which is not defined" *
                 " in the current frames graph."
             )
@@ -95,13 +95,13 @@ function add_axes_pa440!(
     if id != AXESID_MOONPA_DE440
         throw(
             ArgumentError(
-                "$name is aliasing an ID that is not the standard PA440" * 
+                "$name is aliasing an ID that is not the standard PA440" *
                 " ID ($(AXESID_MOONPA_DE440))."
             )
         )
     end
 
-    return add_axes_ephemeris!(frames, eph, name, id, :ZXZ, AXES_CLASSID_ROTATING)
+    return add_axes_ephemeris!(frames, eph, name, id, :ZXZ)
 end
 
 """
@@ -120,13 +120,13 @@ from the `eph` ephemeris kernels, an error is thrown if such orientation data is
 	NAIF's FRAME ID for the Moon PA DE421 axes ($(AXESID_MOONPA_DE421)).
 """
 function add_axes_pa421!(
-    frames::FrameSystem, eph::AbstractEphemerisProvider, name::Symbol, 
+    frames::FrameSystem, eph::AbstractEphemerisProvider, name::Symbol,
     id::Int=AXESID_MOONPA_DE421
 )
     if !(has_axes(frames, AXESID_ICRF))
         throw(
             ErrorException(
-                "The DE421 Moon Principal Axes (PA) can only be defined w.r.t. the" * 
+                "The DE421 Moon Principal Axes (PA) can only be defined w.r.t. the" *
                 " ICRF (ID = $(AXESID_ICRF)), which is not defined" *
                 " in the current frames graph."
             )
@@ -137,15 +137,14 @@ function add_axes_pa421!(
     if id != AXESID_MOONPA_DE421
         throw(
             ArgumentError(
-                "$name is aliasing an ID that is not the standard PA421" * 
+                "$name is aliasing an ID that is not the standard PA421" *
                 " ID ($(AXESID_MOONPA_DE421))."
             )
         )
     end
 
-    return add_axes_ephemeris!(frames, eph, name, id, :ZXZ, AXES_CLASSID_ROTATING)
+    return add_axes_ephemeris!(frames, eph, name, id, :ZXZ)
 end
-
 
 """
     add_axes_me421!(frames, name::Symbol, parentid::Int, axesid::Int=AXESID_MOONME_DE421)
@@ -159,12 +158,13 @@ Add DE421 Moon's Mean Earth/Mean Rotation (ME) axes to `frames`.
     relative axes orientation will be automatically selected by this function. 
 """
 function add_axes_me421!(
-    frames::FrameSystem, name::Symbol, parentid::Int, id::Int=AXESID_MOONME_DE421
+    frames::FrameSystem, name::Symbol, parent, id::Int=AXESID_MOONME_DE421
 )
-    if parentid == AXESID_MOONPA_DE421
+    pid = axes_id(frames, parent)
+    if pid == AXESID_MOONPA_DE421
         dcm = DCM_MOON_PA421_TO_ME421
 
-    elseif parentid == AXESID_MOONPA_DE440
+    elseif pid == AXESID_MOONPA_DE440
         dcm = DCM_MOON_PA440_TO_ME421
 
     else
@@ -172,7 +172,7 @@ function add_axes_me421!(
         throw(
             ArgumentError(
                 "The DE421 Mean Earth/Mean Rotation (ME) axes cannot be defined w.r.t." *
-                " axes with ID $parentid. Only the DE440 (ID = $(AXESID_MOONPA_DE440))" * 
+                " axes with ID $pid. Only the DE440 (ID = $(AXESID_MOONPA_DE440))" *
                 " or DE421 (ID = $(AXESID_MOONPA_DE421)) Moon Principal Axes are" *
                 " accepted as parent axes.",
             ),
@@ -180,9 +180,9 @@ function add_axes_me421!(
     end
 
     if id != AXESID_MOONME_DE421
-        @warn "$(name) is aliasing an ID that is not the standard ME421" * 
-            "ID ($(AXESID_MOONME_DE421))."
+        @warn "$(name) is aliasing an ID that is not the standard ME421" *
+              "ID ($(AXESID_MOONME_DE421))."
     end
 
-    return add_axes_fixedoffset!(frames, name, id, parentid, dcm)
+    return add_axes_fixedoffset!(frames, name, id, pid, dcm)
 end

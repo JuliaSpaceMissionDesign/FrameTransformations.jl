@@ -1,4 +1,4 @@
-using RemoteFiles 
+using RemoteFiles
 using Test
 using SafeTestsets
 
@@ -22,10 +22,27 @@ end;
 
 download(KERNELS; verbose=true, force=false)
 
-@testset "Definitions" verbose=true begin
-    @safetestset "Frozen" begin include("frozen.jl") end
-    @safetestset "Ephemeris" begin include("ephemeris.jl") end
-    @safetestset "Celestial" begin include("celestial.jl") end
-    @safetestset "Ecliptic" begin include("ecliptic.jl") end
-    @safetestset "Planetary" begin include("planetary.jl") end
+@testset "Definitions" verbose = true begin
+    @safetestset "Celestial" begin
+        include("celestial.jl")
+    end
+    @safetestset "Ecliptic" begin
+        include("ecliptic.jl")
+    end
+    @safetestset "Frozen" begin
+        include("frozen.jl")
+    end
+    @safetestset "Ephemeris" begin
+        include("ephemeris.jl")
+    end
+    @safetestset "Planetary" begin
+        include("planetary.jl")
+    end
+    @safetestset "Lunar" begin
+        include("lunar.jl")
+    end
+    @safetestset "Directions" begin
+        include("directions.jl")
+        include("twodir.jl")
+    end
 end;
