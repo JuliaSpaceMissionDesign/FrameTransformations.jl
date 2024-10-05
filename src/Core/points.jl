@@ -1,10 +1,3 @@
-
-const POINT_CLASSID_ROOT = 0
-
-const POINT_CLASSID_FIXED = 1
-
-const POINT_CLASSID_DYNAMIC = 2
-
 """ 
     add_point!(frames, name, id, axesid, class, funs, parentid=nothing)
 
@@ -14,21 +7,19 @@ Create and add a new point node `name` to `frames` based on the input parameters
 - `frames` -- Target frame system 
 - `name` -- Point name, must be unique within `frames` 
 - `id` -- Point ID, must be unique within `frames`
-- `axesid` -- ID of the axes in which the state vector of the point is expressed. 
-- `class` -- Point class. 
+- `axes` -- ID/Name of the axes in which the state vector of the point is expressed. 
 - `funs` -- `FramePointFunctions` object storing the functions to update the state 
-            vectors of the point. It must match the type and order of `frames`
+            vectors of the point.
 - `parentid` -- NAIF ID of the parent point. Not required only for the root point.
 
 !!! warning 
     This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
-    to the frame system, see [`add_point_dynamical!`](@ref), [`add_point_fixedoffset!`](@ref)
-    and [`add_point_root!`](@ref).
+    to the frame system, see [`add_point_dynamical!`](@ref) and [`add_point_fixedoffset!`](@ref).
 """
 function add_point!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, axesid::Int, class::Int,
-    funs::FramePointFunctions{O, N}, parentid=nothing
-) where {O, N <: Number}
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, axes,
+    funs::FramePointFunctions{O,T}=FramePointFunctions{O,T}(), parentid=nothing
+) where {O,T<:Number}
 
     if has_point(frames, id)
         # Check point with the same id already registered 
@@ -49,6 +40,7 @@ function add_point!(
     end
 
     # Check if the given axes are known in the FrameSystem
+    axesid = axes_id(frames, axes)
     if !has_axes(frames, axesid)
         throw(
             ArgumentError(
@@ -83,7 +75,7 @@ function add_point!(
     end
 
     # Creates point node 
-    pnt = FramePointNode{O, N}(name, class, id, parentid, axesid, funs)
+    pnt = FramePointNode{O,T}(name, id, parentid, axesid, funs)
 
     # Insert new point in the graph
     add_point!(frames, pnt)
@@ -95,35 +87,18 @@ function add_point!(
 end
 
 """
-    add_point_root!(frames, name, id, axes)
-
-Add root `name` root point with the specified `id` to `frames`.
-"""
-function add_point_root!(frames::FrameSystem{O, N}, name::Symbol, id::Int, ax) where {O, N}
-
-    # Check for root-point existence 
-    if !isempty(points_graph(frames))
-        throw(
-            ArgumentError("A root-point is already registed in the input frame system.")
-        )
-    end
-
-    return add_point!(
-        frames, name, id, axes_id(frames, ax), POINT_CLASSID_ROOT, FramePointFunctions{O, N}()
-    )
-end
-
-"""
     add_point_fixedoffset!(frames, name, id, parent, axes, offset::AbstractVector)
 
-Add `point` as a fixed-offset point to `frames`. Fixed points are those whose positions have a 
-constant `offset` with respect their `parent` points in the given set of `axes`. Thus, points 
-eligible for this class must have null velocity and acceleration with respect to `parent`.
+Add `point` as a fixed-offset point to `frames`. 
+
+Fixed points are those whose positions have a constant `offset` with respect their `parent` 
+points in the given set of `axes`. Thus, points eligible for this class must have null 
+velocity and acceleration with respect to `parent`.
 """
 function add_point_fixedoffset!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, ax,
-    offset::AbstractVector{T}
-) where {O, N, T}
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, ax,
+    offset::AbstractVector{N}
+) where {O,N,T}
 
     if length(offset) != 3
         throw(
@@ -133,12 +108,11 @@ function add_point_fixedoffset!(
         )
     end
 
-    voffset = SVectorNT{3O, N}(SVector(offset...))
-    funs = FramePointFunctions{O, N}(t -> voffset, t -> voffset, t -> voffset, t -> voffset)
+    tr = Translation{O}(SVector(offset...))
+    funs = FramePointFunctions{O,T}(t -> tr)
 
     return add_point!(
-        frames, name, id, axes_id(frames, ax), POINT_CLASSID_FIXED, funs, 
-        point_id(frames, parent)
+        frames, name, id, axes_id(frames, ax), funs, point_id(frames, parent)
     )
 end
 
@@ -163,9 +137,9 @@ If `δfun`, `δ²fun` or `δ³fun` are not provided, they are computed with auto
     dimensions. 
 """
 function add_point_dynamical!(
-    frames::FrameSystem{O, N}, name::Symbol, id::Int, parent, ax,
-    fun, δfun = nothing, δ²fun = nothing, δ³fun = nothing,
-) where {O, N}
+    frames::FrameSystem{O,T}, name::Symbol, id::Int, parent, ax, fun,
+    δfun=nothing, δ²fun=nothing, δ³fun=nothing
+) where {O,T}
 
     for (order, fcn) in enumerate([δfun, δ²fun, δ³fun])
         if (O < order + 1 && !isnothing(fcn))
@@ -173,27 +147,27 @@ function add_point_dynamical!(
         end
     end
 
-    funs = FramePointFunctions{O, N}(
-        t -> SVectorNT{3O, N}(fun(t)),
+    funs = FramePointFunctions{O,T}(
+        t -> Translation{O}(fun(t)),
 
         # First derivative
         if isnothing(δfun)
-            t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t)))
+            t -> Translation{O}(vcat(fun(t), D¹(fun, t)))
         else
-            t -> SVectorNT{3O, N}(δfun(t))
+            t -> Translation{O}(δfun(t))
         end,
 
         # Second derivative
         if isnothing(δ²fun)
             (
                 if isnothing(δfun)
-                    t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t), D²(fun, t)))
+                    t -> Translation{O}(vcat(fun(t), D¹(fun, t), D²(fun, t)))
                 else
-                    t -> SVectorNT{3O, N}(vcat(δfun(t), D²(fun, t)))
+                    t -> Translation{O}(vcat(δfun(t), D²(fun, t)))
                 end
             )
         else
-            t -> SVectorNT{3O, N}(δ²fun(t))
+            t -> Translation{O}(δ²fun(t))
         end,
 
         # Third derivative 
@@ -202,33 +176,31 @@ function add_point_dynamical!(
                 if isnothing(δ²fun)
                     (
                         if isnothing(δfun)
-                            t -> SVectorNT{3O, N}(vcat(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t)))
+                            t -> Translation{O}(vcat(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t)))
                         else
-                            t -> SVectorNT{3O, N}(vcat(δfun(t), D²(fun, t), D³(fun, t)))
+                            t -> Translation{O}(vcat(δfun(t), D²(fun, t), D³(fun, t)))
                         end
                     )
                 else
-                    t -> SVectorNT{3O, N}(vcat(δ²fun(t), D³(fun, t)))
+                    t -> Translation{O}(vcat(δ²fun(t), D³(fun, t)))
                 end
             )
         else
-            t -> SVectorNT{3O, N}(δ³fun(t))
+            t -> Translation{O}(δ³fun(t))
         end,
     )
-    
+
     return add_point!(
-        frames, name, id, axes_id(frames, ax), POINT_CLASSID_DYNAMIC, funs, 
-        point_id(frames, parent)
+        frames, name, id, axes_id(frames, ax), funs, point_id(frames, parent)
     )
 end
 
 """
     add_point_alias!(frames, target, alias::Symbol)
-    add_point_alias!(frames, target, alias::Symbol)
 
 Add a name `alias` to a `target` point registered in `frames`.
 """
-function add_point_alias!(frames::FrameSystem{O, N}, target, alias::Symbol) where {O, N}
+function add_point_alias!(frames::FrameSystem{O,N}, target, alias::Symbol) where {O,N}
     if !has_point(frames, target)
         throw(
             ErrorException(
@@ -237,7 +209,7 @@ function add_point_alias!(frames::FrameSystem{O, N}, target, alias::Symbol) wher
         )
     end
 
-    if alias in keys(points(frames))
+    if alias in keys(points_alias(frames))
         throw(
             ErrorException(
                 "point with name $alias already present in the given frame system"
@@ -245,6 +217,6 @@ function add_point_alias!(frames::FrameSystem{O, N}, target, alias::Symbol) wher
         )
     end
 
-    push!(points(frames), Pair(alias, point_id(frames, target)))
+    push!(points_alias(frames), Pair(alias, point_id(frames, target)))
     nothing
 end

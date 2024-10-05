@@ -12,7 +12,7 @@
 #   [`Rotation`](@ref) transformation which relate one axes to a parent axes in 
 #   a certain time interval.
 # - **Points**: defines a location in space. These are related each other by 
-#   means of a `Translation` transformation which relate one point to a parent point in a 
+#   means of a [`Translation`]@(ref) transformation which relate one point to a parent point in a 
 #   particular axes in a certain time interval.
 
 # Additionally, it is possible to create `Direction`s, as vector valued functions that could
@@ -41,9 +41,9 @@
 # In this example, we highlight the most basic way to initialise a [`FrameSystem`](@ref):
 
 using FrameTransformations
-using Tempo 
+using Tempo
 
-F = FrameSystem{2, Float64}()
+F = FrameSystem{2,Float64}()
 
 # From this example, you can see that within the frame system there are both point and axes 
 # graphs. However, at the moment they are completely empty since the graph was just created.
@@ -53,7 +53,7 @@ F = FrameSystem{2, Float64}()
 # `BarycentricDynamicalTime`, however, the user is free to select the most suited timescale 
 # for his applications. In this example, we set the `InternationalAtomicTime` as the reference scale.
 
-F = FrameSystem{2, Float64, InternationalAtomicTime}()
+F = FrameSystem{2,Float64,InternationalAtomicTime}()
 
 # ## Graph Inspection
 
@@ -73,13 +73,13 @@ has_axes(F, 1)
 has_direction(F, :Root)
 
 # Additionally, the possibility to get a dictionary containing all name-id relationships is 
-# made available for axes, via the [`axes`](@ref) method:
+# made available for axes, via the [`axes_alias`](@ref) method:
 
-axes(F)
+axes_alias(F)
 
-# and points, via the [`points`](@ref) method:
+# and points, via the [`points_alias`](@ref) method:
 
-points(F)
+points_alias(F)
 
 # Finally, the `FrameSystem` order and timescale might be retrieved via the associated methods:
 
@@ -114,12 +114,12 @@ using Ephemerides, Downloads
 url = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp";
 E = EphemerisProvider(Downloads.download(url));
 
-F = FrameSystem{2, Float64}()
+F = FrameSystem{2,Float64}()
 
 # Before registering any node, a set of root axes and a root node shall be anyway registered.
 
 add_axes_icrf!(F)
-add_point_root!(F, :SSB, 0, 1)
+add_point!(F, :SSB, 0, 1)
 
 # Points from the `EphemerisProvider` can be now registered. 
 
@@ -127,3 +127,5 @@ add_point_ephemeris!(F, E, :Sun, 10)
 add_point_ephemeris!(F, E, :EMB, 3)
 
 # Here the parent point will be inferred from the ephemeris.
+
+F

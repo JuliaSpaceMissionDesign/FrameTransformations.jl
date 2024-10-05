@@ -1,192 +1,148 @@
-
-const SVectorNT{D, T} = SVector{D, T}
-
-@generated function SVectorNT{D, T}() where {D, T}
-    expr = Expr(:call, Expr(:curly, :SVector, D, T))
-    for _ in 1:D 
-        push!(expr.args, T(0))
-    end
-    return quote
-        @inbounds $(expr)
-    end
-end
-
-@generated function SVectorNT{D, T}(vec::SVector{N, T}) where {D, T, N}
-    expr = Expr(:call, Expr(:curly, :SVector, D, T))
-    for i in 1:min(D, N)
-        push!(expr.args, Expr(:ref, :vec, i))
-    end
-    for _ in 1:(D-N) 
-        push!(expr.args, Expr(:call, :zero, T))
-    end
-    return quote
-        @inbounds $(expr)
-    end
-end
-
 # ------------------------------------------------------------------------------------------
 # POINTS
 # ------------------------------------------------------------------------------------------
 
-struct FramePointFunctions{O, N, D}
-    fun::NTuple{O, FramePointFunWrapper{D, N}}
+# ------
+# Functions
+
+struct FramePointFunctions{O,T}
+    fun::NTuple{O,FramePointFunWrapper{O,T}}
 end
 
 Base.getindex(pf::FramePointFunctions, i) = pf.fun[i]
 
-@generated function FramePointFunctions{N}(funs::Function...) where {N}
+@generated function FramePointFunctions{T}(funs::Function...) where {T}
     O = length(funs)
-    D = 3O
 
     expr = Expr(:call, :tuple)
-    for i in 1:O 
+    for i in 1:O
         push!(
             expr.args,
             Expr(
-                :call,
-                Expr(:curly, :FramePointFunWrapper, D, N),
-                Expr(:ref, :funs, i)
+                :call, Expr(:curly, :FramePointFunWrapper, O, T), Expr(:ref, :funs, i)
             )
         )
     end
-    pexpr = Expr(
-        :call, 
-        Expr(:curly, :FramePointFunctions, O, N, D),
-        expr
-    )
+    pexpr = Expr(:call, Expr(:curly, :FramePointFunctions, O, T), expr)
 
     return quote
         @inbounds $(pexpr)
     end
 end
 
-@generated function FramePointFunctions{O, N}(funs::Function...) where {O, N}
+@generated function FramePointFunctions{O,T}(funs::Function...) where {O,T}
     O > length(funs) && throw(ArgumentError("required at least $O functions."))
-    D = 3O
 
     expr = Expr(:call, :tuple)
-    for i in 1:O 
+    for i in 1:O
         push!(
             expr.args,
             Expr(
-                :call,
-                Expr(:curly, :FramePointFunWrapper, D, N),
-                Expr(:ref, :funs, i)
+                :call, Expr(:curly, :FramePointFunWrapper, O, T), Expr(:ref, :funs, i)
             )
         )
     end
-    pexpr = Expr(
-        :call, 
-        Expr(:curly, :FramePointFunctions, O, N, D),
-        expr
-    )
+    pexpr = Expr(:call, Expr(:curly, :FramePointFunctions, O, T), expr)
 
     return quote
         @inbounds $(pexpr)
     end
 end
 
-@generated function FramePointFunctions{O, N}(fun::Function) where {O, N}
-    D = 3O
+@generated function FramePointFunctions{O,T}(fun::Function) where {O,T}
     expr = Expr(:call, :tuple)
-    for i in 1:O 
+    for _ in 1:O
         push!(
             expr.args,
             Expr(
-                :call,
-                Expr(:curly, :FramePointFunWrapper, D, N),
-                :fun
+                :call, Expr(:curly, :FramePointFunWrapper, O, T), :fun
             )
         )
     end
     pexpr = Expr(
-        :call, 
-        Expr(:curly, :FramePointFunctions, O, N, D),
+        :call,
+        Expr(:curly, :FramePointFunctions, O, T),
         expr
     )
 
     return quote
-        @inbounds $(pexpr)
+        Base.@_inline_meta
+        $(pexpr)
     end
 end
 
-function FramePointFunctions{O, N}() where {O, N}
-    return FramePointFunctions{O, N}(t->SVectorNT{3*O, N}())
+function FramePointFunctions{O,T}() where {O,T}
+    return FramePointFunctions{O,T}(t -> Translation{O,T}())
 end
+
 
 # ------
 # Node
 
 """
-    FramePointNode{O, T, N} <: AbstractJSMDGraphNode
+    FramePointNode{O, T} <: AbstractJSMDGraphNode
 
 Define a frame system point.
 
 ### Fields
 - `name` -- point name 
-- `class` -- `Symbol` representing the class of the point 
 - `id` -- ID of the point
 - `parentid` -- ID of the parent point 
 - `axesid` -- ID of the axes in which the point coordinates are expressed 
 - `f` -- `FramePointFunctions` container 
 """
-struct FramePointNode{O, N <: Number, D} <: AbstractJSMDGraphNode
+struct FramePointNode{O,T<:Number} <: AbstractJSMDGraphNode
     name::Symbol
-    class::Int
     id::Int
     parentid::Int
     axesid::Int
 
     # internals
-    f::FramePointFunctions{O, N, D}
+    f::FramePointFunctions{O,T}
 end
 
-function FramePointNode{O, N}(
-    name::Symbol, class::Int, id::Int, pid::Int, axid::Int, 
-    fps::FramePointFunctions{O, N, D}
-) where {O, N, D}
-    return FramePointNode{O, N, 3O}(name, class, id, pid, axid, fps)
-end
+get_node_id(p::FramePointNode{O,T}) where {O,T} = p.id
 
-get_node_id(p::FramePointNode{O, N}) where {O, N} = p.id
-
-function Base.show(io::IO, p::FramePointNode{O, N, D}) where {O, N, D}
-    pstr = "FramePointNode{$O, $N}(name=$(p.name), class=$(p.class)"
+function Base.show(io::IO, p::FramePointNode{O,T}) where {O,T}
+    pstr = "FramePointNode{$O, $T}(name=$(p.name)"
     pstr *= ", id=$(p.id), axesid=$(p.axesid)"
     p.parentid == p.id || (pstr *= ", parent=$(p.parentid)")
     pstr *= ")"
     return println(io, pstr)
 end
 
-const PointsGraph{O, N, D} = MappedNodeGraph{FramePointNode{O, N, D}, SimpleGraph{Int}}
+const PointsGraph{O,T} = MappedNodeGraph{FramePointNode{O,T},SimpleGraph{Int}}
 
 # ------------------------------------------------------------------------------------------
 # AXES
 # ------------------------------------------------------------------------------------------
 
-struct FrameAxesFunctions{O, N, D}
-    fun::NTuple{O, FrameAxesFunWrapper{O, N}}
+# ------
+# Functions
+
+struct FrameAxesFunctions{O,T}
+    fun::NTuple{O,FrameAxesFunWrapper{O,T}}
 end
 
 Base.getindex(pf::FrameAxesFunctions, i) = pf.fun[i]
 
-@generated function FrameAxesFunctions{N}(funs::Function...) where {N}
+@generated function FrameAxesFunctions{T}(funs::Function...) where {T}
     O = length(funs)
 
     expr = Expr(:call, :tuple)
-    for i in 1:O 
+    for i in 1:O
         push!(
             expr.args,
             Expr(
                 :call,
-                Expr(:curly, :FrameAxesFunWrapper, O, N),
+                Expr(:curly, :FrameAxesFunWrapper, O, T),
                 Expr(:ref, :funs, i)
             )
         )
     end
     pexpr = Expr(
-        :call, 
-        Expr(:curly, :FrameAxesFunctions, O, N, 3O),
+        :call,
+        Expr(:curly, :FrameAxesFunctions, O, T),
         expr
     )
 
@@ -195,23 +151,23 @@ Base.getindex(pf::FrameAxesFunctions, i) = pf.fun[i]
     end
 end
 
-@generated function FrameAxesFunctions{O, N}(funs::Function...) where {O, N}
+@generated function FrameAxesFunctions{O,T}(funs::Function...) where {O,T}
     O > length(funs) && throw(ArgumentError("required at least $O functions."))
 
     expr = Expr(:call, :tuple)
-    for i in 1:O 
+    for i in 1:O
         push!(
             expr.args,
             Expr(
                 :call,
-                Expr(:curly, :FrameAxesFunWrapper, O, N),
+                Expr(:curly, :FrameAxesFunWrapper, O, T),
                 Expr(:ref, :funs, i)
             )
         )
     end
     pexpr = Expr(
-        :call, 
-        Expr(:curly, :FrameAxesFunctions, O, N, 3O),
+        :call,
+        Expr(:curly, :FrameAxesFunctions, O, T),
         expr
     )
 
@@ -220,83 +176,74 @@ end
     end
 end
 
-@generated function FrameAxesFunctions{O, N}(fun::Function) where {O, N}
+@generated function FrameAxesFunctions{O,T}(fun::Function) where {O,T}
     expr = Expr(:call, :tuple)
-    for i in 1:O 
+    for _ in 1:O
         push!(
             expr.args,
             Expr(
-                :call,
-                Expr(:curly, :FrameAxesFunWrapper, O, N),
-                :fun
+                :call, Expr(:curly, :FrameAxesFunWrapper, O, T), :fun
             )
         )
     end
     pexpr = Expr(
-        :call, 
-        Expr(:curly, :FrameAxesFunctions, O, N, 3O),
+        :call,
+        Expr(:curly, :FrameAxesFunctions, O, T),
         expr
     )
 
     return quote
-        @inbounds $(pexpr)
+        Base.@_inline_meta
+        $(pexpr)
     end
 end
 
-function FrameAxesFunctions{O, N}() where {O, N}
-    return FrameAxesFunctions{O, N}(t->Rotation{O, N}(N(1)I))
+function FrameAxesFunctions{O,T}() where {O,T}
+    return FrameAxesFunctions{O,T}(t -> Rotation{O,T}(one(T)I))
 end
 
 # ------
 # Node
 
 """
-    FrameAxesNode{O, T, N} <: AbstractJSMDGraphNode
+    FrameAxesNode{O, T} <: AbstractJSMDGraphNode
 
 Define a set of axes.
 
 ### Fields
 - `name` -- axes name 
-- `class` -- `Symbol` representing the class of the axes 
 - `id` -- axes ID (equivalent of NAIFId for axes)
 - `parentid` -- ID of the parent axes 
 - `f` -- `FrameAxesFunctions` container 
 """
-struct FrameAxesNode{O, N <: Number, D} <: AbstractJSMDGraphNode
+struct FrameAxesNode{O,T<:Number} <: AbstractJSMDGraphNode
     name::Symbol
-    class::Int
     id::Int
     parentid::Int
 
     # internals
-    f::FrameAxesFunctions{O, N, D}
+    f::FrameAxesFunctions{O,T}
 end
 
-function FrameAxesNode{O, N}(
-    name::Symbol, class::Int, id::Int, pid::Int, faxs::FrameAxesFunctions{O, N, D}
-) where {O, N, D}
-    return FrameAxesNode{O, N, 3O}(name, class, id, pid, faxs)
-end
+get_node_id(ax::FrameAxesNode{O,T}) where {O,T} = ax.id
 
-get_node_id(ax::FrameAxesNode{O, N, D}) where {O, N, D} = ax.id
-
-function Base.show(io::IO, ax::FrameAxesNode{O, N, D}) where {O, N, D}
-    pstr = "FrameAxesNode{$O, $N}(name=$(ax.name), class=$(ax.class), id=$(ax.id)"
+function Base.show(io::IO, ax::FrameAxesNode{O,T}) where {O,T}
+    pstr = "FrameAxesNode{$O, $T}(name=$(ax.name), id=$(ax.id)"
     ax.parentid == ax.id || (pstr *= ", parent=$(ax.parentid)")
     pstr *= ")"
     return println(io, pstr)
 end
 
-const AxesGraph{O, N, D} = MappedNodeGraph{FrameAxesNode{O, N, D}, SimpleGraph{Int}}
+const AxesGraph{O,T} = MappedNodeGraph{FrameAxesNode{O,T},SimpleGraph{Int}}
 
 # ------------------------------------------------------------------------------------------
-# DIRECTIONs
+# DIRECTIONS
 # ------------------------------------------------------------------------------------------
 
-const DirectionFunctions{O, N, D} = FramePointFunctions{O, N, D}
+const DirectionFunctions{O,T} = FramePointFunctions{O,T}
 
 """
-    Direction{O, N, D}
+    DirectionDefinition{O, T}
 
 Define a new direction.
 
@@ -305,21 +252,15 @@ Define a new direction.
 - `id` -- direction ID
 - `f` -- `DirectionFunctions` container 
 """
-struct Direction{O, N, D}
-    name::Symbol 
-    id::Int 
+struct DirectionDefinition{O,T}
+    name::Symbol
+    id::Int
     axesid::Int
 
     # internals
-    f::DirectionFunctions{O, N, D}
+    f::DirectionFunctions{O,T}
 end
 
-function Direction{O, N}(
-    name::Symbol, id::Int, axesid::Int, dfun::DirectionFunctions{O, N, D}
-) where {O, N, D}
-    return Direction{O, N, 3O}(name, id, axesid, dfun)
-end
-
-function Base.show(io::IO, d::Direction{O, N, D}) where {O, N, D}
-    return println(io, "Direction{$O, $N}(name=$(d.name), id=$(d.id), axesid=$(d.axesid))")
+function Base.show(io::IO, d::DirectionDefinition{O,T}) where {O,T}
+    return println(io, "DirectionDefinition{$O, $T}(name=$(d.name), id=$(d.id), axesid=$(d.axesid))")
 end

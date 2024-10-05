@@ -1,10 +1,10 @@
 
 """
-    add_axes_topocentric!(frames, name::Symbol, id::Int, parentid::Int, λ, ϕ, mount)
+    add_axes_topocentric!(frames, name::Symbol, id::Int, parent, λ, ϕ, mount)
 
 Add topocentric axes to `frames` at a specified location and mounting.
 
-The orientation relative to the parent axes `parentid` is defined throuh the longitude `λ`, 
+The orientation relative to the parent axes `parent` is defined throuh the longitude `λ`, 
 the geodetic latitude `ϕ` and the mounting type `mount`, which may be any of the following: 
 
 - `:NED` (North, East, Down): the X-axis points North, the Y-axis is directed eastward and 
@@ -19,7 +19,7 @@ the geodetic latitude `ϕ` and the mounting type `mount`, which may be any of th
     resposibility. 
 """
 function add_axes_topocentric!(
-    frames::FrameSystem, name::Symbol, id::Int, parentid::Int, 
+    frames::FrameSystem, name::Symbol, id::Int, parent,
     λ::Number, ϕ::Number, mount::Symbol
 )
     if mount == :NED
@@ -29,10 +29,10 @@ function add_axes_topocentric!(
     elseif mount == :ENU
         dcm = angle_to_dcm(λ + π / 2, π / 2 - ϕ, :ZX)
     else
-        throw(ArgumentError("$mount is not a supported topocentric orientation."))
+        throw(ArgumentError("$mount is not a supported topocentric mounting type."))
     end
-
-    return add_axes_fixedoffset!(frames, name, id, parentid, dcm)
+    pid = axes_id(frames, parent)
+    return add_axes_fixedoffset!(frames, name, id, pid, dcm)
 end
 
 @fastmath function _geod2pos(h::Number, λ::Number, ϕ::Number, R::Number, f::Number)
@@ -46,11 +46,11 @@ end
     c = (d + h) * cϕ
     s = (1 - e²) * d
 
-    return SA[c * cλ, c * sλ, (s + h) * sϕ]
+    return SA[c*cλ, c*sλ, (s+h)*sϕ]
 end
 
 """
-    add_point_surface!(frames, name::Symbol, pointid::Int, parentid::Int, axesid::Int, 
+    add_point_surface!(frames, name::Symbol, pointid::Int, parent, axes, 
         λ::Number, ϕ::Number, R::Number, f::Number=0.0, h::Number=0.0)
 
 Add `point` to `frames` as a fixed point on the surface of the `parent` point body. 
@@ -63,9 +63,11 @@ The altitude over the reference surface of the  ellipsoid `h` defaults to 0.
     `parentid`. This is under user resposibility. 
 """
 function add_point_surface!(
-    frames::FrameSystem, name::Symbol, id::Int, parentid::Int, axesid::Int, 
+    frames::FrameSystem, name::Symbol, id::Int, parent, axes,
     λ::Number, ϕ::Number, R::Number, f::Number=0.0, h::Number=0.0,
 )
     pos = _geod2pos(h, λ, ϕ, R, f)
-    return add_point_fixed!(frames, name, id, parentid, axesid, pos)
+    pid = point_id(frames, parent)
+    axid = axes_id(frames, axes)
+    return add_point_fixedoffset!(frames, name, id, pid, axid, pos)
 end

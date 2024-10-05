@@ -5,13 +5,13 @@ Add the International Celestial Reference Frame (ICRF) as the root axes of the f
 The axes are automatically named `ICRF` and assigned the $(AXESID_ICRF) ID. 
 
 ### See also 
-See also [`add_axes_root!`](@ref), [`add_axes_gcrf!`](@ref) and [`AXESID_ICRF`](@ref).
+See also [`add_axes!`](@ref), [`add_axes_gcrf!`](@ref) and [`AXESID_ICRF`](@ref).
 """
 @inline function add_axes_icrf!(frames::FrameSystem)
     if !isempty(axes_graph(frames))
         throw(ArgumentError("The ICRF can only be defined as a set of root axes."))
     end
-    return add_axes_root!(frames, :ICRF, AXESID_ICRF)
+    return add_axes!(frames, :ICRF, AXESID_ICRF)
 end
 
 """
@@ -33,12 +33,12 @@ function add_axes_gcrf!(frames::FrameSystem)
 
     elseif isempty(axes_graph(frames))
         # Add the GCRF as a root set of axes
-        return add_axes_root!(frames, :GCRF, AXESID_GCRF)
-        
-    else 
+        return add_axes!(frames, :GCRF, AXESID_GCRF)
+
+    else
         throw(
             ArgumentError(
-                "The GCRF can only be defined with respect to the ICRF (ID =" * 
+                "The GCRF can only be defined with respect to the ICRF (ID =" *
                 " $(AXESID_ICRF)) or as a set of root axes."
             )
         )
@@ -85,7 +85,7 @@ function add_axes_eme2000!(
 )
     if parentid == AXESID_ICRF || parentid == AXESID_GCRF
         dcm = DCM_ICRF_TO_EME2000
-    else 
+    else
         throw(
             ArgumentError(
                 "Mean Equator, Mean Equinox of J2000 (EME2000) axes can only be defined " *

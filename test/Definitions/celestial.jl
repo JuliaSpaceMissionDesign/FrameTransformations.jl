@@ -2,12 +2,11 @@ using Test
 using LinearAlgebra
 using FrameTransformations
 using ReferenceFrameRotations
-using Logging
 
 frames = FrameSystem{3,Float64}()
 
 # Add ICRF axes
-@test_nowarn add_axes_root!(frames, :Root, 12)
+@test_nowarn add_axes!(frames, :Root, 12)
 
 # test that GCRF can be defined only as child of ICRF
 @test_throws ArgumentError add_axes_gcrf!(frames)
@@ -15,7 +14,7 @@ frames = FrameSystem{3,Float64}()
 frames = FrameSystem{3,Float64}()
 
 # Add ICRF axes
-@test_nowarn add_axes_root!(frames, :ICRF, 1)
+@test_nowarn add_axes!(frames, :ICRF, 1)
 
 # test that ICRF can only be added as a root axes
 @test_throws ArgumentError add_axes_icrf!(frames)

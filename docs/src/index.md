@@ -14,7 +14,7 @@ extensible axes/point graph models for mission analysis and space mission design
 - Create custom reference frame systems with both standard and user-defined points, axes and directions.
 - Transform states and their higher-order derivatives between different frames (up to jerk).
 
-All of this seamlessly integrated with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
+All of this integrated with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 
 ## Installation 
 

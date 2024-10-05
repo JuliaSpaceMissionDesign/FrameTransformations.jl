@@ -3,7 +3,7 @@ using Dates
 
 # TODO: Remove items from `SKIPFILE` as soon as they run on the latest stable 
 ONLYSTATIC = []
-EXAMPLE_DIRS = ["Tutorials", ]
+EXAMPLE_DIRS = ["Tutorials",]
 SKIPFILE = [
     "t03_eop.jl", "t04_lighttime.jl", "t05_multithread.jl"
 ]
@@ -13,11 +13,11 @@ function update_date(content)
     return content
 end
 
-for edir in EXAMPLE_DIRS 
+for edir in EXAMPLE_DIRS
     gen_dir = joinpath(@__DIR__, "src", edir, "gen")
     example_dir = joinpath(@__DIR__, "src", edir)
     for example in filter!(x -> endswith(x, ".jl"), readdir(example_dir))
-        if example in SKIPFILE 
+        if example in SKIPFILE
             continue
         end
         input = abspath(joinpath(example_dir, example))
@@ -25,10 +25,10 @@ for edir in EXAMPLE_DIRS
         code = strip(read(script, String))
         mdpost(str) = replace(str, "@__CODE__" => code)
         Literate.markdown(
-            input, gen_dir, 
-            preprocess = update_date,
-            postprocess = mdpost,
-            documenter = !(example in ONLYSTATIC)
+            input, gen_dir,
+            preprocess=update_date,
+            postprocess=mdpost,
+            documenter=!(example in ONLYSTATIC)
         )
     end
 end

@@ -14,7 +14,7 @@ EME_TEST = -10000000
 
 @testset "EME 2000" verbose = false begin
     frames = FrameSystem{3, Float64}()
-    add_axes_root!(frames, :Test, EME_TEST)
+    add_axes!(frames, :Test, EME_TEST)
 
     # Check that you can't add meme2000 to a random axes
     @test_throws ArgumentError add_axes_eme2000!(frames, :EME, EME_TEST)
@@ -36,7 +36,7 @@ end
 @testset "ECL 2000" verbose = false begin
 
     frames = FrameSystem{3, Float64}()
-    add_axes_root!(frames, :Test, EME_TEST)
+    add_axes!(frames, :Test, EME_TEST)
 
     # Check that you can't add eclipj2000 to a random axes
     @test_throws ArgumentError add_axes_ecl2000!(frames, :ECL, EME_TEST)
@@ -51,7 +51,7 @@ end
     add_axes_eme2000!(f1, :EME)
     add_axes_ecl2000!(f1, :ECL)
 
-    add_axes_root!(f2, :EME, EME2000) 
+    add_axes!(f2, :EME, EME2000) 
     add_axes_ecl2000!(f2, :ECL, EME2000, ECL2000)
 
     # Test that ECL2000 is defined correctly with both ICRF and 

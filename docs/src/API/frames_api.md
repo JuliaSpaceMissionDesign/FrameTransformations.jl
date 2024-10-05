@@ -10,16 +10,16 @@ FrameTransformations.timescale
 
 ```@docs 
 has_point
-points 
 points_graph
+points_alias
 ```
 
 ### Axes
 
 ```@docs 
 has_axes 
-FrameTransformations.axes
 axes_graph
+axes_alias
 ```
 
 ### Directions
@@ -27,7 +27,6 @@ axes_graph
 ```@docs 
 has_direction
 directions
-directions_map
 ```
 
 ## [Rotations](@id rotation_api)
@@ -35,6 +34,7 @@ directions_map
 ```@docs 
 Rotation
 Base.inv
+Translation
 ```
 
 ## [Transformations](@id transformations_api)
