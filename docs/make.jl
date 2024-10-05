@@ -26,16 +26,8 @@ makedocs(;
             "01 - Frame System" => "Tutorials/gen/t00_frames.md",
             "02 - Rotation" => "Tutorials/gen/t01_rotation.md",
             "03 - Axes" => "Tutorials/gen/t02_axes.md",
-            "04 - Points" => "Tutorials/gen/t03_points.md",
-            # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
-            # "06 - Multi-threading" => "Tutorials/gen/t05_multithread.md"
+            "04 - Points" => "Tutorials/gen/t03_points.md"
         ],
-        # "Use Cases" => [
-        #     "CR3BP" => "Examples/gen/e01_cr3bp.md",
-        #     "High Fidelity" => "Examples/gen/e02_hifi.md",
-        #     "Custom Orbit" => "Examples/gen/e03_customorb.md"
-        # ],
-        # "Benchmarks" => "benchmarks.md",
         "API" => [
             "Public API" => [
                 "Axes" => "API/axes_api.md",
