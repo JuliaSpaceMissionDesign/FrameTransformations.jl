@@ -35,17 +35,17 @@ function add_point_ephemeris!(
 end
 
 """
-    add_point_ephemeris!(fr::FrameSystem{O, T}, eph::EphemerisProvider, 
+    add_axes_ephemeris!(fr::FrameSystem{O, T}, eph::EphemerisProvider, 
         name::Symbol, id::Int) where {O, T}
     
-Add a point from `Ephemerides.jl` provider.
+Add an axes from `Ephemerides.jl` provider.
 """
-function add_point_ephemeris!(
+function add_axes_ephemeris!(
     fr::FrameSystem{O,T}, eph::EphemerisProvider, name::Symbol, id::Int, rot_seq::Symbol
 ) where {O,T}
 
     # Check and retrieve the parent ID for the given axes
-    pid = check_axes_ephemeris(frames, eph, id)
+    pid = check_axes_ephemeris(fr, eph, id)
 
     if rot_seq in (:ZYX, :XYX, :XYZ, :XZX, :XZY, :YXY, :YXZ, :YZX, :YZY, :ZXY, :ZXZ, :ZYZ)
         funs = FrameAxesFunctions{O,T}(
@@ -57,7 +57,7 @@ function add_point_ephemeris!(
     else
         throw(ArgumentError("The rotation sequence :$rot_seq is not valid."))
     end
-    return add_axes!(fr, name, id, axid, funs, pid)
+    return add_axes!(fr, name, id, funs, pid)
 end
 
 end

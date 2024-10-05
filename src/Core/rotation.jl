@@ -381,6 +381,7 @@ end
 end
 
 @inline Base.:*(A::Rotation{S}, v::Translation{S}) where {S} = _apply_rotation(A, v)
+@inline Base.:*(A::Rotation{S}, v::AbstractVector{T}) where {S,T} = _apply_rotation(A, v)
 @inline function Base.:*(::Rotation{S1}, ::Translation{S2}) where {S1,S2}
     throw(DimensionMismatch("Cannot apply Rotation of order $S1 to Translation of order $S2"))
 end
@@ -443,5 +444,38 @@ end
     return quote
         Base.@_inline_meta
         @inbounds $expr
+    end
+end
+
+# Function to compute product between Rotation and a generic vector
+@generated function _apply_rotation(A::Rotation{S,Na}, b::AbstractVector{Nb}) where {S,Na,Nb}
+    exprs = [[Expr(:call, :+) for _ in 1:3] for _ in 1:S]
+
+    for i in 1:S
+        for j in 1:i
+            for k in 1:3
+                mi = i - j + 1
+                push!(
+                    exprs[i][k].args,
+                    StaticArrays.combine_products([
+                        :(A[$mi][$k, $w] * b[3*($j-1)+$w]) for w in 1:3
+                    ]),
+                )
+            end
+        end
+    end
+
+    sa = 3 * S
+    retexpr = :(@inbounds return similar_type(b, T, Size($sa))(tuple($((exprs...)...))))
+    return quote
+        Base.@_inline_meta
+        length(b) != $sa && throw(
+            DimensionMismatch(
+                "Cannot multiply `Rotation` of size ($($sa), $($sa)) and a $(size(b)) vector",
+            ),
+        )
+
+        T = Base.promote_op(LinearAlgebra.matprod, Na, Nb)
+        $retexpr
     end
 end

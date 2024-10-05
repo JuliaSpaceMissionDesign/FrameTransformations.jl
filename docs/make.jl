@@ -13,7 +13,7 @@ if CI
     Pkg.add("Tempo")
 end
 
-# include("generate.jl")
+include("generate.jl")
 
 makedocs(;
     authors="JSMD Development Team",
@@ -23,12 +23,12 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Tutorials" => [
-        # "01 - Frame System" => "Tutorials/gen/t00_frames.md",
-        # "02 - Rotation" => "Tutorials/gen/t01_rotation.md",
-        # "03 - Axes" => "Tutorials/gen/t02_axes.md",
-        # "04 - Points" => "Tutorials/gen/t03_points.md",
-        # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
-        # "06 - Multi-threading" => "Tutorials/gen/t05_multithread.md"
+            "01 - Frame System" => "Tutorials/gen/t00_frames.md",
+            "02 - Rotation" => "Tutorials/gen/t01_rotation.md",
+            "03 - Axes" => "Tutorials/gen/t02_axes.md",
+            "04 - Points" => "Tutorials/gen/t03_points.md",
+            # "05 - Light Time Corrections" => "Tutorials/gen/t04_lighttime.md",
+            # "06 - Multi-threading" => "Tutorials/gen/t05_multithread.md"
         ],
         # "Use Cases" => [
         #     "CR3BP" => "Examples/gen/e01_cr3bp.md",

@@ -177,6 +177,11 @@ end
     end
 end
 
+# Constructor from Vector 
+function Translation{S}(v::AbstractVector{T}) where {S,T}
+    return Translation{S}(SVector(v...))
+end
+
 # ------------------------------------------------------------------------------------------
 # OPERATIONS
 # ------------------------------------------------------------------------------------------
