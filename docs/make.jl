@@ -5,6 +5,7 @@ const CI = get(ENV, "CI", "false") == "true"
 
 if CI
     Pkg.add("Ephemerides")
+    Pkg.add("StaticArrays")
     Pkg.add("ReferenceFrameRotations")
     Pkg.add("JSMDUtils")
     Pkg.add("JSMDInterfaces")
