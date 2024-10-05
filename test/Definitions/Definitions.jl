@@ -38,4 +38,7 @@ download(KERNELS; verbose=true, force=false)
     @safetestset "Planetary" begin
         include("planetary.jl")
     end
+    @safetestset "Lunar" begin
+        include("lunar.jl")
+    end
 end;

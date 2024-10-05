@@ -9,7 +9,7 @@ using FunctionWrappersWrappers: FunctionWrappersWrapper
 using JSMDUtils.Math: D¹, D², D³, arcsec2rad,
        unitvec, δunitvec, δ²unitvec, δ³unitvec,
        cross3, cross6, cross9, cross12,
-       angle_to_δdcm, angle_to_δdcm, angle_to_δ²dcm, angle_to_δ³dcm
+       angle_to_δdcm, _3angles_to_δdcm, _3angles_to_δ²dcm, _3angles_to_δ³dcm
 
 using JSMDInterfaces.Graph: AbstractJSMDGraphNode,
        add_edge!, add_vertex!, get_path, has_vertex

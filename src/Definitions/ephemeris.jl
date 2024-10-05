@@ -197,23 +197,23 @@ end
 @inline function angles_to_rot6(θ, seq::Symbol)
     return (
         angle_to_dcm(θ[1], θ[2], θ[3], seq),
-        angle_to_δdcm(θ[1], θ[2], θ[3], seq)
+        _3angles_to_δdcm(θ, seq)
     )
 end
 
 @inline function angles_to_rot9(θ, seq::Symbol)
     return (
         angle_to_dcm(θ[1], θ[2], θ[3], seq),
-        angle_to_δdcm(θ[1], θ[2], θ[3], seq),
-        angle_to_δ²dcm(θ[1], θ[2], θ[3], seq)
+        _3angles_to_δdcm(θ, seq),
+        _3angles_to_δ²dcm(θ, seq)
     )
 end
 
 @inline function angles_to_rot12(θ, seq::Symbol)
     return (
         angle_to_dcm(θ[1], θ[2], θ[3], seq),
-        angle_to_δdcm(θ[1], θ[2], θ[3], seq),
-        angle_to_δ²dcm(θ[1], θ[2], θ[3], seq),
-        angle_to_δ³dcm(θ[1], θ[2], θ[3], seq)
+        _3angles_to_δdcm(θ, seq),
+        _3angles_to_δ²dcm(θ, seq),
+        _3angles_to_δ³dcm(θ, seq)
     )
 end
