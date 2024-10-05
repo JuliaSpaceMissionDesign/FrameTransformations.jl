@@ -13,8 +13,8 @@ Add a new axes node to `frames`.
 
 !!! warning 
     This is a low-level function and is NOT meant to be directly used. Instead, to add a set of
-    axes to the frame system, see [`add_axes_inertial!`](@ref), [`add_axes_rotating!`](@ref), 
-    [`add_axes_fixedoffset!`](@ref) and [`add_axes_root!`](@ref).
+    axes to the frame system, see [`add_axes_projected!`](@ref), [`add_axes_rotating!`](@ref) 
+    and [`add_axes_fixedoffset!`](@ref).
 """
 function add_axes!(
     frames::FrameSystem{O,T}, name::Symbol, id::Int,
@@ -188,4 +188,30 @@ function add_axes_rotating!(
     )
 
     return add_axes!(frames, name, id, funs, axes_id(frames, parent))
+end
+
+"""
+    add_axes_alias!(frames, target, alias::Symbol)
+
+Add a name `alias` to a `target` axes registered in `frames`.
+"""
+function add_axes_alias!(frames::FrameSystem{O,T}, target, alias::Symbol) where {O,T}
+    if !has_axes(frames, target)
+        throw(
+            ErrorException(
+                "no axes with ID $target registered in the given frame system"
+            )
+        )
+    end
+
+    if alias in keys(axes_alias(frames))
+        throw(
+            ErrorException(
+                "axes with name $alias already present in the given frame system"
+            )
+        )
+    end
+
+    push!(axes_alias(frames), Pair(alias, axes_id(frames, target)))
+    nothing
 end

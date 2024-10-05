@@ -5,7 +5,7 @@ Add the International Celestial Reference Frame (ICRF) as the root axes of the f
 The axes are automatically named `ICRF` and assigned the $(AXESID_ICRF) ID. 
 
 ### See also 
-See also [`add_axes_root!`](@ref), [`add_axes_gcrf!`](@ref) and [`AXESID_ICRF`](@ref).
+See also [`add_axes!`](@ref), [`add_axes_gcrf!`](@ref) and [`AXESID_ICRF`](@ref).
 """
 @inline function add_axes_icrf!(frames::FrameSystem)
     if !isempty(axes_graph(frames))

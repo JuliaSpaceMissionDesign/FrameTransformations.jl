@@ -24,6 +24,20 @@ end
 # TYPE DEF
 # ------------------------------------------------------------------------------------------
 
+"""
+    Translation{O, N}
+
+A container to efficiently compute `O`-th order translation vectors of type `N` between two 
+points or a direction. It stores the translation vector and its time derivatives up to 
+the (`O`-1)-th order. Since this type is immutable, the data must be provided upon 
+construction and cannot be mutated later.
+
+!!! todo 
+    Add constructors details.
+
+### See also 
+See also [`Rotation`](@ref).
+"""
 struct Translation{S,T<:Number} <: AbstractArray{T,1}
     v::NTuple{S,SVector3{T}}
 
@@ -37,6 +51,11 @@ function Base.summary(io::IO, ::Translation{S,N}) where {S,N}
     return print(io, "Translation{$S, $N}")
 end
 
+""" 
+    order(t::Translation{O}) where O 
+
+Return the translation order O.
+"""
 order(::Translation{S,<:Any}) where {S} = S
 
 # Julia API

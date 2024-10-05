@@ -76,7 +76,7 @@ Return the frame system axes graph.
 """
     points_alias(f::FrameSystem)
 
-Return the registered points graph.
+Return the registered points aliases map.
 """
 @inline points_alias(f::FrameSystem) = f.points.alias
 

@@ -14,8 +14,7 @@ Create and add a new point node `name` to `frames` based on the input parameters
 
 !!! warning 
     This is a low-level function and is NOT meant to be directly used. Instead, to add a point 
-    to the frame system, see [`add_point_dynamical!`](@ref), [`add_point_fixedoffset!`](@ref)
-    and [`add_point_root!`](@ref).
+    to the frame system, see [`add_point_dynamical!`](@ref) and [`add_point_fixedoffset!`](@ref).
 """
 function add_point!(
     frames::FrameSystem{O,T}, name::Symbol, id::Int, axes,
@@ -194,4 +193,30 @@ function add_point_dynamical!(
     return add_point!(
         frames, name, id, axes_id(frames, ax), funs, point_id(frames, parent)
     )
+end
+
+"""
+    add_point_alias!(frames, target, alias::Symbol)
+
+Add a name `alias` to a `target` point registered in `frames`.
+"""
+function add_point_alias!(frames::FrameSystem{O,N}, target, alias::Symbol) where {O,N}
+    if !has_point(frames, target)
+        throw(
+            ErrorException(
+                "no point with ID $target registered in the given frame system"
+            )
+        )
+    end
+
+    if alias in keys(points_alias(frames))
+        throw(
+            ErrorException(
+                "point with name $alias already present in the given frame system"
+            )
+        )
+    end
+
+    push!(points_alias(frames), Pair(alias, point_id(frames, target)))
+    nothing
 end

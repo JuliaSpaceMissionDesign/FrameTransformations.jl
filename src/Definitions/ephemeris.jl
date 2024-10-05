@@ -16,7 +16,7 @@ The point is identifies by the `id` and a have a user defined `name`.
 
 """
     add_axes_ephemeris!(frames::FrameSystem{O, T}, eph::AbstractEphemerisProvider, 
-        name::Symbol, id::Int, seq::Symbol, class::Int) where {O, T} 
+        name::Symbol, id::Int, seq::Symbol) where {O, T} 
 
 Add axes coming from an `AbstractEphemerisProvider` subtype to `frames`. 
 The axes are identifies by the `id` and a have a user defined `name`. The rotation matrix 
@@ -27,7 +27,7 @@ is build using the rotation sequence specified in `seq`. The axes type is specif
     an proper implementation.
 """
 @interface function add_axes_ephemeris!(
-    ::FrameSystem{O,T}, ::AbstractEphemerisProvider, ::Symbol, ::Int, ::Symbol, ::Int
+    ::FrameSystem{O,T}, ::AbstractEphemerisProvider, ::Symbol, ::Int, ::Symbol
 ) where {O,T} end
 
 """
