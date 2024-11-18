@@ -1,0 +1,25 @@
+using StaticArrays
+using FrameTransformations
+using ReferenceFrameRotations
+
+dcm = angle_to_dcm(π / 3, :Z)
+δdcm = DCM(0I)
+
+R = Rotation(dcm, δdcm)
+
+R[1]
+
+R[2]
+
+v = [1.0, -6.0, 3.0, 0.0, 5.0, 0]
+R * v
+
+sv = SA[1.0, -6.0, 3.0, 0.0, 5.0, 0]
+R * sv
+
+t = Translation(1.0, -6.0, 3.0, 0.0, 5.0, 0)
+R * t
+
+inv(R)
+
+# This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
