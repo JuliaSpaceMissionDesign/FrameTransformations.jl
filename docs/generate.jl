@@ -3,10 +3,8 @@ using Dates
 
 # TODO: Remove items from `SKIPFILE` as soon as they run on the latest stable 
 ONLYSTATIC = []
-EXAMPLE_DIRS = ["Tutorials",]
-SKIPFILE = [
-    "t03_eop.jl", "t04_lighttime.jl", "t05_multithread.jl"
-]
+EXAMPLE_DIRS = ["Tutorials", "Examples"]
+SKIPFILE = []
 
 function update_date(content)
     content = replace(content, "DATEOFTODAY" => Dates.DateTime(now()))

@@ -18,16 +18,13 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Tempo = "c33777b2-e695-4fae-9135-aeae8855dd81"
 
 [weakdeps]
-# CalcephEphemeris = "54e8752a-b65a-4aac-bda5-4918ee1e3cc5"
 Ephemerides = "6a9c3322-c8fe-4c26-8ad6-14a6f8acd2a0"
 
 [extensions]
-# CalcephEphemerisExt = ["CalcephEphemeris"]
 EphemeridesExt = ["Ephemerides"]
 
 [compat]
 Ephemerides = "1"
-# CalcephEphemeris = "1"
 ForwardDiff = "0.10"
 FunctionWrappers = "1"
 FunctionWrappersWrappers = "0.1"
@@ -42,8 +39,8 @@ Tempo = "1.2"
 julia = "1.9"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "SafeTestsets"]

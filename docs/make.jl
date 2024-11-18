@@ -29,6 +29,9 @@ makedocs(;
             "03 - Axes" => "Tutorials/gen/t02_axes.md",
             "04 - Points" => "Tutorials/gen/t03_points.md"
         ],
+        "Examples" => [
+            "01 - Custom Orbit" => "Examples/gen/e00_ode.md"
+        ],
         "API" => [
             "Public API" => [
                 "Axes" => "API/axes_api.md",
