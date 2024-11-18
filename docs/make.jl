@@ -15,7 +15,7 @@ if CI
 
     # Examples 
     Pkg.add("DiffEqBase")
-    Pkg.add("OrdinaryDiffEqVerner")
+    Pkg.add("OrdinaryDiffEq")
 end
 
 include("generate.jl")
