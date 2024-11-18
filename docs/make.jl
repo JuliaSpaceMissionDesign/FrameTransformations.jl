@@ -12,6 +12,10 @@ if CI
     Pkg.add("Literate")
     Pkg.add("Dates")
     Pkg.add("Tempo")
+
+    # Examples 
+    Pkg.add("DiffEqBase")
+    Pkg.add("OrdinaryDiffEqVerner")
 end
 
 include("generate.jl")

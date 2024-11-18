@@ -37,7 +37,7 @@ add_point!(G, :Earth, 399, 1)
 # but more complex models can be used. We interface with [`SciML`](https://github.com/SciML) 
 # ODE solvers to compute the trajectory solution.
 
-using OrdinaryDiffEq
+using OrdinaryDiffEqVerner
 using DiffEqBase
 
 # Now we create the problem with a given initial condition, time-span and gravitational 
