@@ -26,7 +26,7 @@ using Ephemerides
     FK_DE421 = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_080317.tf" dir = joinpath(
         @__DIR__, "..", "assets"
     )
-    FK_DE440 = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_220930.tf" dir = joinpath(
+    FK_DE440 = @RemoteFile "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_250416.tf" dir = joinpath(
         @__DIR__, "..", "assets"
     )
 end;
@@ -78,6 +78,7 @@ end
 
 @testset "DE440" verbose = false begin
 
+    kclear()
     for kernel in (:LEAP, :PA440, :FK_DE440)
         furnsh(path(KERNELS[kernel]))
     end
@@ -96,7 +97,7 @@ end
         v = rand(BigFloat, 3)
         v /= norm(v)
 
-        # Test PA421!
+        # Test PA440
         Rb = rotation6(frames, :PA440, :ICRF, et)
         Rs = sxform("MOON_PA", "J2000", et)
 

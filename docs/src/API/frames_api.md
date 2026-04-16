@@ -65,3 +65,26 @@ direction6
 direction9
 direction12
 ```
+
+## [Compiled Fast-Path](@id compiled_api)
+
+The compiled fast-path provides zero-overhead, AD-transparent callables that bypass the 
+`FunctionWrapper` type-erasure barrier used internally by `FrameSystem`. Use these when you 
+need full inlining, custom AD-backend support (e.g., Mooncake, Zygote), or maximum 
+performance in hot loops such as ODE right-hand sides.
+
+### Types
+
+```@docs 
+CompiledRotation
+CompiledTranslation
+CompiledDirection
+```
+
+### Constructors
+
+```@docs 
+compile_rotation
+compile_translation
+compile_direction
+```

@@ -29,13 +29,17 @@ struct FrameSystem{O,T<:Number,S<:AbstractTimeScale}
     points::AliasGraph{PointsGraph{O,T},Dict{Symbol,Int}}
     axes::AliasGraph{AxesGraph{O,T},Dict{Symbol,Int}}
     dir::Dict{Symbol,DirectionDefinition{O,T}}
+    _axes_nodes::Dict{Tuple{Int,Int},Vector{FrameAxesNode{O,T}}}
+    _points_nodes::Dict{Tuple{Int,Int},Vector{FramePointNode{O,T}}}
 end
 
 function FrameSystem{O,T,S}() where {O,T,S}
     return FrameSystem{O,T,S}(
         AliasGraph(MappedGraph(FramePointNode{O,T}), Dict{Symbol,Int}()),
         AliasGraph(MappedGraph(FrameAxesNode{O,T}), Dict{Symbol,Int}()),
-        Dict()
+        Dict{Symbol,DirectionDefinition{O,T}}(),
+        Dict{Tuple{Int,Int},Vector{FrameAxesNode{O,T}}}(),
+        Dict{Tuple{Int,Int},Vector{FramePointNode{O,T}}}()
     )
 end
 
@@ -150,6 +154,72 @@ Check if `ax` axes is within `frames`.
 Check if `name` direction is within `frames`.
 """
 @inline has_direction(f::FrameSystem, name::Symbol) = haskey(f.dir, name)
+
+"""
+    _get_axes_nodes(fr::FrameSystem, fromid::Int, toid::Int)
+
+Return the cached vector of `FrameAxesNode` along the path from `fromid` to `toid`,
+or `nothing` if the pair is not in the cache. The cache is lazily built on first access
+after any topology change, then reused for all subsequent queries.
+"""
+function _get_axes_nodes(fr::FrameSystem, fromid::Int, toid::Int)
+    if isempty(fr._axes_nodes) && length(axes_graph(fr).nodes) > 1
+        _rebuild_axes_cache!(fr)
+    end
+    return get(fr._axes_nodes, (fromid, toid), nothing)
+end
+
+"""
+    _get_points_nodes(fr::FrameSystem, fromid::Int, toid::Int)
+
+Return the cached vector of `FramePointNode` along the path from `fromid` to `toid`,
+or `nothing` if the pair is not in the cache. The cache is lazily built on first access
+after any topology change, then reused for all subsequent queries.
+"""
+function _get_points_nodes(fr::FrameSystem, fromid::Int, toid::Int)
+    if isempty(fr._points_nodes) && length(points_graph(fr).nodes) > 1
+        _rebuild_points_cache!(fr)
+    end
+    return get(fr._points_nodes, (fromid, toid), nothing)
+end
+
+# Rebuild the full axes path cache. Cost is O(N²) in the number of registered axes.
+# Deferred to first query so that registering N axes costs O(N²) total rather than O(N³).
+function _rebuild_axes_cache!(fr::FrameSystem{O,T}) where {O,T}
+    empty!(fr._axes_nodes)
+    g = axes_graph(fr)
+    ids = [n.id for n in g.nodes]
+    for fromid in ids, toid in ids
+        fromid == toid && continue
+        path = get_path(g, fromid, toid)
+        isempty(path) && continue
+        nodes = Vector{FrameAxesNode{O,T}}(undef, length(path))
+        @inbounds for i in eachindex(path)
+            nodes[i] = get_mappednode(g, path[i])
+        end
+        fr._axes_nodes[(fromid, toid)] = nodes
+    end
+    return nothing
+end
+
+# Rebuild the full points path cache. Cost is O(N²) in the number of registered points.
+# Deferred to first query so that registering N points costs O(N²) total rather than O(N³).
+function _rebuild_points_cache!(fr::FrameSystem{O,T}) where {O,T}
+    empty!(fr._points_nodes)
+    g = points_graph(fr)
+    ids = [n.id for n in g.nodes]
+    for fromid in ids, toid in ids
+        fromid == toid && continue
+        path = get_path(g, fromid, toid)
+        isempty(path) && continue
+        nodes = Vector{FramePointNode{O,T}}(undef, length(path))
+        @inbounds for i in eachindex(path)
+            nodes[i] = get_mappednode(g, path[i])
+        end
+        fr._points_nodes[(fromid, toid)] = nodes
+    end
+    return nothing
+end
 
 # ---
 # Formatting & printing 

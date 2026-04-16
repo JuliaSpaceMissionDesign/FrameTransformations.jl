@@ -63,15 +63,16 @@ function add_axes!(
     end
 
 
-    # Create point
+    # Create node and insert into the graph
     node = FrameAxesNode{O,T}(name, id, parentid, funs)
 
     # Insert new point in the graph
     add_axes!(frames, node)
 
-    # Connect the new axes to the parent axes in the graph 
-    !isnothing(parentid) && add_edge!(axes_graph(frames), parentid, id)
+    # Connect the new axes to the parent axes in the graph (skip for root)
+    parentid != id && add_edge!(axes_graph(frames), parentid, id)
 
+    empty!(frames._axes_nodes)
     return nothing
 end
 

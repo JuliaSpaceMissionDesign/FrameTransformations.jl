@@ -74,15 +74,16 @@ function add_point!(
         end
     end
 
-    # Creates point node 
+    # Create node and insert into the graph
     pnt = FramePointNode{O,T}(name, id, parentid, axesid, funs)
 
     # Insert new point in the graph
     add_point!(frames, pnt)
 
-    # Connect the new point to the parent point in the graph 
-    !isnothing(parentid) && add_edge!(points_graph(frames), parentid, id)
+    # Connect the new point to the parent point in the graph (skip for root)
+    parentid != id && add_edge!(points_graph(frames), parentid, id)
 
+    empty!(frames._points_nodes)
     return nothing
 end
 

@@ -69,7 +69,7 @@ Base.keys(t::Translation) = keys(t.v)
 # ------------------------------------------------------------------------------------------
 
 # Varargs constructor
-function Translation(args::Vararg{<:Number,S}) where {S}
+function Translation(args::Vararg{Number,S}) where {S}
     O, r = divrem(S, 3)
     if r != 0
         throw(
@@ -94,7 +94,7 @@ end
 end
 
 # Empty constructor
-@generated function Translation{O,T}(args::Vararg{<:Number,L}) where {O,L,T}
+@generated function Translation{O,T}(args::Vararg{Number,L}) where {O,L,T}
     expr = Expr(:call, :Translation)
     for i in 1:L
         push!(

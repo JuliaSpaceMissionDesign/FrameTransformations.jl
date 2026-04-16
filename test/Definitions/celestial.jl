@@ -51,4 +51,4 @@ node = axes_graph(frames).nodes[1]
 frames = FrameSystem{3, Float64}() 
 add_axes_icrf!(frames)
 
-add_axes_eme2000!(frames, :EME, 1, 4)
+@test_logs (:warn,) add_axes_eme2000!(frames, :EME, 1, 4)

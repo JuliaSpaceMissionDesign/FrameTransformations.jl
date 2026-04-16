@@ -70,7 +70,6 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
 
             fromid == toid && return Rotation{$order}(T(1) * I)
 
-            # Check to ensure that the two axes are stored in the frame system
             for id in (fromid, toid)
                 if !has_axes(fr, id)
                     throw(
@@ -80,24 +79,28 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
                     )
                 end
             end
-            return $(_axfun)(fr, get_path(axes_graph(fr), fromid, toid), t)
+
+            nodes = _get_axes_nodes(fr, fromid, toid)
+            isnothing(nodes) && throw(
+                ErrorException("no path between axes $fromid and $toid in the frame system.")
+            )
+
+            return $(_axfun)(nodes, t)
         end
 
-        # Low-level function to parse a path of axes and chain their rotations 
-        @inbounds function ($_axfun)(fr::FrameSystem, path::Vector{Int}, t::Number)
-            f1 = get_mappednode(axes_graph(fr), path[1])
-            f2 = get_mappednode(axes_graph(fr), path[2])
+        @inbounds function ($_axfun)(nodes::Vector{<:FrameAxesNode}, t::Number)
+            f1 = nodes[1]
+            f2 = nodes[2]
             rot = $(_axfun)(f1, f2, t)
 
-            for i in 2:(length(path)-1)
+            for i in 2:(length(nodes)-1)
                 f1 = f2
-                f2 = get_mappednode(axes_graph(fr), path[i+1])
+                f2 = nodes[i+1]
                 rot = $(_axfun)(f1, f2, t) * rot
             end
             return rot
         end
 
-        # Low-level function to compute the rotation between two axes
         @inline function ($_axfun)(from::FrameAxesNode, to::FrameAxesNode, t::Number)
             return if from.id == to.parentid
                 $(_axfun)(to, t)
@@ -169,61 +172,60 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
 
             fromid == toid && return @SVector zeros(T, 3 * $order)
 
-            # Check to ensure that the two points are registerd
             for id in (fromid, toid)
                 if !has_point(fr, id)
                     throw(
-                        ErrorException("point with ID $id is not registered in the frame system.")
+                        ErrorException(
+                            "point with ID $id is not registered in the frame system."
+                        )
                     )
                 end
             end
 
-            # Check that the ouput axes are registered 
             if !has_axes(fr, axid)
                 throw(
                     ErrorException("axes with ID $axid are not registered in the frame system.")
                 )
             end
 
-            return SVector($(_pfun)(fr, get_path(points_graph(fr), fromid, toid), axid, t))
+            nodes = _get_points_nodes(fr, fromid, toid)
+            isnothing(nodes) && throw(
+                ErrorException("no path between points $fromid and $toid in the frame system.")
+            )
+
+            return SVector($(_pfun)(fr, nodes, axid, t))
         end
 
 
-        function ($_pfun)(fr::FrameSystem, path::Vector{Int}, axes::Int, t::Number)
-            @inbounds p1 = get_mappednode(points_graph(fr), path[1])
-            @inbounds p2 = get_mappednode(points_graph(fr), path[end])
+        function ($_pfun)(fr::FrameSystem, nodes::Vector{<:FramePointNode}, axes::Int, t::Number)
+            @inbounds p1 = nodes[1]
+            @inbounds p2 = nodes[end]
 
-            if length(path) == 2
-                # This handles all the cases where you don't need to chain any transformations
+            if length(nodes) == 2
                 axid, tr = ($_pfun)(p1, p2, t)
                 if axid != axes
                     return $(axfun)(fr, axid, axes, t) * tr
                 end
                 return tr
             elseif axes == p1.axesid
-                # backward pass 
-                return $(_pbwd)(fr, p2, path, t)
+                return $(_pbwd)(fr, nodes, t)
             elseif axes == p2.axesid
-                # forward pass 
-                return $(_pfwd)(fr, p1, path, t)
+                return $(_pfwd)(fr, nodes, t)
             else
-                # Optimising this transformation would probably demand a significant 
-                # portion of time with respect to the time required by the whole transformation
-                # therefore forward pass is used without any optimisation
-                return $(axfun)(fr, p2.axesid, axes, t) * $(_pfwd)(fr, p1, path, t)
+                return $(axfun)(fr, p2.axesid, axes, t) * $(_pfwd)(fr, nodes, t)
 
             end
         end
 
-        @inbounds function ($_pfwd)(fr::FrameSystem, p1::FramePointNode, path::Vector{Int}, t::Number)
-            p2 = get_mappednode(points_graph(fr), path[2])
+        @inbounds function ($_pfwd)(fr::FrameSystem, nodes::Vector{<:FramePointNode}, t::Number)
+            p1 = nodes[1]
+            p2 = nodes[2]
             axid, tr = ($_pfun)(p1, p2, t)
-            for i in 2:(length(path)-1)
+            for i in 2:(length(nodes)-1)
                 p1 = p2
-                p2 = get_mappednode(points_graph(fr), path[i+1])
+                p2 = nodes[i+1]
                 ax2id, tr2 = ($_pfun)(p1, p2, t)
 
-                # Rotates previous vector to p2's axes
                 if ax2id != axid
                     tr = ($axfun)(fr, axid, ax2id, t) * tr
                 end
@@ -234,15 +236,16 @@ for (order, axfun, _axfun, pfun, _pfun, _pfwd, _pbwd, dfun) in zip(
             return tr
         end
 
-        @inbounds function ($_pbwd)(fr::FrameSystem, p1::FramePointNode, path::Vector{Int}, t::Number)
-            p2 = get_mappednode(points_graph(fr), path[end-1])
+        @inbounds function ($_pbwd)(fr::FrameSystem, nodes::Vector{<:FramePointNode}, t::Number)
+            N = length(nodes)
+            p1 = nodes[N]
+            p2 = nodes[N-1]
             axid, tr = ($_pfun)(p1, p2, t)
-            for i in 2:(length(path)-1)
+            for i in 2:(N-1)
                 p1 = p2
-                p2 = get_mappednode(points_graph(fr), path[end-i])
+                p2 = nodes[N-i]
                 ax2id, tr2 = ($_pfun)(p1, p2, t)
 
-                # Rotates previous vector to p2's axes
                 if ax2id != axid
                     tr = ($axfun)(fr, axid, ax2id, t) * tr
                 end

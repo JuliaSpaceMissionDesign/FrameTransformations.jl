@@ -58,13 +58,13 @@ function add_direction!(
                 if isnothing(δ²fun)
                     (
                         if isnothing(δfun)
-                            t -> Direction{O}(vcat(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t)))
+                            t -> Translation{O}(vcat(fun(t), D¹(fun, t), D²(fun, t), D³(fun, t)))
                         else
-                            t -> Direction{O}(vcat(δfun(t), D²(fun, t), D³(fun, t)))
+                            t -> Translation{O}(vcat(δfun(t), D²(fun, t), D³(fun, t)))
                         end
                     )
                 else
-                    t -> Direction{O}(vcat(δ²fun(t), D³(fun, t)))
+                    t -> Translation{O}(vcat(δ²fun(t), D³(fun, t)))
                 end
             )
         else
